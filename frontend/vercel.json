@@ -1,17 +1,5 @@
 {
   "cleanUrls": true,
-  "redirects": [
-    {
-      "source": "/admin",
-      "destination": "https://tauhid-shekhar-portfolio.onrender.com/admin",
-      "permanent": true
-    },
-    {
-      "source": "/admin/:path*",
-      "destination": "https://tauhid-shekhar-portfolio.onrender.com/admin/:path*",
-      "permanent": true
-    }
-  ],
   "rewrites": [
     {
       "source": "/(.*)",
