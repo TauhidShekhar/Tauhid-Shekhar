@@ -1,22 +1,16 @@
+// Load environment variables first
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
-const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const path = require('path');
 const { errorHandler } = require('./middleware/errorHandler');
 const { apiLimiter } = require('./middleware/rateLimiter');
-
-// Load environment variables
-dotenv.config();
-
-// Connect to database
-connectDB();
-const seedEcosystem = require('./utils/seeder');
-seedEcosystem();
 
 const app = express();
 
@@ -197,7 +191,6 @@ const seedAdmin = async () => {
     console.error('Error seeding default user:', error.message);
   }
 };
-seedAdmin();
 
 // Serve static built files in production
 if (process.env.NODE_ENV === 'production') {
@@ -271,8 +264,23 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
-});
-// Trigger nodemon reload for port free-up. (Reloaded v2)
+// Connect to database, run seeders, and start the server only when database is ready
+connectDB()
+  .then(async () => {
+    // Seed default admin user
+    await seedAdmin();
+    
+    // Seed default ecosystem configurations
+    const seedEcosystem = require('./utils/seeder');
+    await seedEcosystem();
+
+    // Start Express + Socket.io Server listening
+    const PORT = process.env.PORT || 5000;
+    server.listen(PORT, () => {
+      console.log(`Server running in ${process.env.NODE_ENV || 'production'} mode on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('Critical Database Connection Failure: Server could not be started.', err.message);
+    process.exit(1);
+  });
