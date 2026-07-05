@@ -17,13 +17,12 @@ const ProtectedRoute = ({ children, allowedRoles = ['Admin'] }) => {
   if (!isAuthenticated) {
     // Redirect to external admin login on port 5174, passing the callback url
     const callbackUrl = window.location.origin + location.pathname + location.search;
-    const protocol = window.location.protocol;
-    const hostname = window.location.hostname;
-    const isProductionPort = window.location.port !== '5173' && window.location.port !== '5174';
-    const defaultAdminPort = isProductionPort ? window.location.port : '5174';
-    const adminUrl = (import.meta.env.VITE_ADMIN_URL && import.meta.env.VITE_ADMIN_URL !== 'undefined' && import.meta.env.VITE_ADMIN_URL !== 'null')
-      ? import.meta.env.VITE_ADMIN_URL
-      : `${protocol}//${hostname}${defaultAdminPort ? `:${defaultAdminPort}` : ''}`;
+    const rawAdminUrl = import.meta.env.VITE_ADMIN_URL;
+    const adminUrl = (rawAdminUrl && rawAdminUrl !== 'undefined' && rawAdminUrl !== 'null')
+      ? rawAdminUrl
+      : (window.location.port === '5173' || window.location.port === '5174'
+          ? `${window.location.protocol}//${window.location.hostname}:5174`
+          : 'https://tauhid-shekhar-portfolio-f4xf.vercel.app');
     window.location.href = `${adminUrl}/admin/login?redirect=${encodeURIComponent(callbackUrl)}`;
     return (
       <div className="min-h-screen bg-[#09090c] flex items-center justify-center">

@@ -22,13 +22,12 @@ const CommunityLayout = () => {
   const [loadingSuggestions, setLoadingSuggestions] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const protocol = window.location.protocol;
-  const hostname = window.location.hostname;
-  const isProductionPort = window.location.port !== '5173' && window.location.port !== '5174';
-  const defaultAdminPort = isProductionPort ? window.location.port : '5174';
-  const VITE_ADMIN_URL = (import.meta.env.VITE_ADMIN_URL && import.meta.env.VITE_ADMIN_URL !== 'undefined' && import.meta.env.VITE_ADMIN_URL !== 'null')
-    ? import.meta.env.VITE_ADMIN_URL
-    : `${protocol}//${hostname}${defaultAdminPort ? `:${defaultAdminPort}` : ''}`;
+  const rawAdminUrl = import.meta.env.VITE_ADMIN_URL;
+  const VITE_ADMIN_URL = (rawAdminUrl && rawAdminUrl !== 'undefined' && rawAdminUrl !== 'null')
+    ? rawAdminUrl
+    : (window.location.port === '5173' || window.location.port === '5174'
+        ? `${window.location.protocol}//${window.location.hostname}:5174`
+        : 'https://tauhid-shekhar-portfolio-f4xf.vercel.app');
 
   const fetchData = async () => {
     try {

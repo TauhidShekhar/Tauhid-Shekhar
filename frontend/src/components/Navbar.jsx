@@ -11,13 +11,11 @@ import {
 const Navbar = ({ activeSection, toggleTheme, isDark }) => {
   const { user, isAuthenticated, logout } = useAuth();
   const rawAdminUrl = import.meta.env.VITE_ADMIN_URL;
-  const protocol = window.location.protocol;
-  const hostname = window.location.hostname;
-  const isProductionPort = window.location.port !== '5173' && window.location.port !== '5174';
-  const defaultAdminPort = isProductionPort ? window.location.port : '5174';
   const VITE_ADMIN_URL = (rawAdminUrl && rawAdminUrl !== 'undefined' && rawAdminUrl !== 'null') 
     ? rawAdminUrl 
-    : `${protocol}//${hostname}${defaultAdminPort ? `:${defaultAdminPort}` : ''}`;
+    : (window.location.port === '5173' || window.location.port === '5174'
+        ? `${window.location.protocol}//${window.location.hostname}:5174`
+        : 'https://tauhid-shekhar-portfolio-f4xf.vercel.app');
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [settings, setSettings] = useState(null);

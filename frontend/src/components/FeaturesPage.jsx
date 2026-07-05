@@ -97,6 +97,12 @@ const DEFAULT_FEATURES = [
 const FeaturesPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const rawAdminUrl = import.meta.env.VITE_ADMIN_URL;
+  const VITE_ADMIN_URL = (rawAdminUrl && rawAdminUrl !== 'undefined' && rawAdminUrl !== 'null')
+    ? rawAdminUrl
+    : (window.location.port === '5173' || window.location.port === '5174'
+        ? `${window.location.protocol}//${window.location.hostname}:5174`
+        : 'https://tauhid-shekhar-portfolio-f4xf.vercel.app');
   const [features, setFeatures] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -285,7 +291,7 @@ const FeaturesPage = () => {
                 <div className="flex gap-2 mt-auto border-t border-white/5 pt-4 z-10">
                   {feat.loginRequired && !user ? (
                     <a
-                      href="/admin/login"
+                      href={`${VITE_ADMIN_URL}/admin/login`}
                       className="w-full py-2 bg-[#181822] hover:bg-[#20202d] text-slate-350 border border-white/5 rounded-xl text-[9px] font-black uppercase tracking-wider text-center cursor-pointer transition-colors"
                     >
                       Login to Use
