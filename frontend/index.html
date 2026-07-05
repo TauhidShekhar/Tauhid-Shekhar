@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Tauhid Shekhar - Premium Recruiter Portfolio. Full Stack Developer, MERN Stack Developer, and Graphic Designer. Showcasing responsive web apps, brand assets, and technical expertise." />
+    <meta name="keywords" content="Tauhid Shekhar, Full Stack Developer, MERN Stack, React Developer, Graphic Designer, Portfolio, Recruiter, Vercel, Apple style animations" />
+    <meta name="author" content="Tauhid Shekhar" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://tauhidshekhar.com/" />
+    <meta property="og:title" content="Tauhid Shekhar | Full Stack Web Developer Portfolio" />
+    <meta property="og:description" content="Explore my premium recruiter-focused portfolio showcasing MERN stack web applications, REST APIs, and graphic designs." />
+    <meta property="og:image" content="assits/Profile_Pic.png" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://tauhidshekhar.com/" />
+    <meta property="twitter:title" content="Tauhid Shekhar | Full Stack Web Developer Portfolio" />
+    <meta property="twitter:description" content="Explore my premium recruiter-focused portfolio showcasing MERN stack web applications, REST APIs, and graphic designs." />
+    <meta property="twitter:image" content="assits/Profile_Pic.png" />
+
+    <!-- PWA Theme Meta -->
+    <meta name="theme-color" content="#0071e3" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/assits/tauhidshekhar.png" />
+    <link rel="icon" type="image/x-icon" href="/assits/tauhidshekhar.png" />
+
+    <!-- Google Fonts Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;850&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+    <title>Tauhid Shekhar | Creative Full Stack Portfolio</title>
+    <!-- Instant theme loading to prevent style flicker on reload -->
+    <script>
+      (function() {
+        try {
+          var savedTheme = localStorage.getItem('theme');
+          var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
+            document.documentElement.classList.add('darkmode');
+            document.body.classList.add('darkmode');
+          } else {
+            document.documentElement.classList.remove('darkmode');
+            document.body.classList.remove('darkmode');
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
