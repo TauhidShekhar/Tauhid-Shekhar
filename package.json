@@ -12,7 +12,7 @@
     "build:admin": "npm run build --prefix admin",
     "build": "npm run build:frontend && npm run build:admin",
     "lint": "oxlint",
-    "postinstall": "npm install --prefix backend && npm install --prefix frontend && npm install --prefix admin",
+    "postinstall": "npm install --prefix backend && npm install --prefix admin",
     "start": "npm start --prefix backend"
   },
   "dependencies": {
