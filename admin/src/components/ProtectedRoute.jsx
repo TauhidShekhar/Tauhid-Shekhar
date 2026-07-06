@@ -21,13 +21,10 @@ const ProtectedRoute = ({ children, allowedRoles = ['Admin'] }) => {
 
   if (allowedRoles && !allowedRoles.includes(user?.role)) {
     // If authenticated but role not authorized, redirect to frontend homepage
-    const protocol = window.location.protocol;
-    const hostname = window.location.hostname;
-    const isProductionPort = window.location.port !== '5173' && window.location.port !== '5174';
-    const defaultClientPort = isProductionPort ? window.location.port : '5173';
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const clientUrl = (import.meta.env.VITE_CLIENT_URL && import.meta.env.VITE_CLIENT_URL !== 'undefined' && import.meta.env.VITE_CLIENT_URL !== 'null')
       ? import.meta.env.VITE_CLIENT_URL
-      : `${protocol}//${hostname}${defaultClientPort ? `:${defaultClientPort}` : ''}`;
+      : (isLocal ? 'http://localhost:5173' : 'https://tauhidshekhar.vercel.app');
     window.location.href = clientUrl;
     return null;
   }

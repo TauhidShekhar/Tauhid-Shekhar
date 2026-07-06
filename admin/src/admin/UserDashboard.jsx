@@ -10,6 +10,10 @@ import {
 const UserDashboard = () => {
   const { user, logout, updateProfile } = useAuth();
   const navigate = useNavigate();
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const clientUrl = (import.meta.env.VITE_CLIENT_URL && import.meta.env.VITE_CLIENT_URL !== 'undefined' && import.meta.env.VITE_CLIENT_URL !== 'null')
+    ? import.meta.env.VITE_CLIENT_URL
+    : (isLocal ? 'http://localhost:5173' : 'https://tauhidshekhar.vercel.app');
 
   const [activeTab, setActiveTab] = useState('profile'); // profile, saved, orders, security, history, account
   
@@ -309,12 +313,12 @@ const UserDashboard = () => {
           {/* Breadcrumbs & Back Button */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             {getBreadcrumbs()}
-            <Link
-              to="/"
+            <a
+              href={clientUrl}
               className="w-fit flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-330 rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-white/5"
             >
               <span>&larr; Back to Website</span>
-            </Link>
+            </a>
           </div>
 
           <h2 className="text-2xl font-black font-title tracking-tight text-black dark:text-white mb-1">

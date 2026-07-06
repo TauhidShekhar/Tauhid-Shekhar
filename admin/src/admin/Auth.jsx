@@ -6,13 +6,10 @@ import { PasswordStrength } from '../components/ui/PasswordStrength';
 import { FaUserShield, FaLock, FaUser, FaEnvelope, FaEye, FaEyeSlash, FaArrowLeft, FaUserPlus } from 'react-icons/fa';
 
 const Auth = () => {
-  const protocol = window.location.protocol;
-  const hostname = window.location.hostname;
-  const isProductionPort = window.location.port !== '5173' && window.location.port !== '5174';
-  const defaultClientPort = isProductionPort ? window.location.port : '5173';
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   const clientUrl = (import.meta.env.VITE_CLIENT_URL && import.meta.env.VITE_CLIENT_URL !== 'undefined' && import.meta.env.VITE_CLIENT_URL !== 'null')
     ? import.meta.env.VITE_CLIENT_URL
-    : `${protocol}//${hostname}${defaultClientPort ? `:${defaultClientPort}` : ''}`;
+    : (isLocal ? 'http://localhost:5173' : 'https://tauhidshekhar.vercel.app');
 
   // Login fields
   const [loginIdentifier, setLoginIdentifier] = useState('');
@@ -44,13 +41,10 @@ const Auth = () => {
   useEffect(() => {
     if (isLoading) return; // Wait for active session check to finish
 
-    const protocol = window.location.protocol;
-    const hostname = window.location.hostname;
-    const isProductionPort = window.location.port !== '5173' && window.location.port !== '5174';
-    const defaultClientPort = isProductionPort ? window.location.port : '5173';
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const clientUrl = (import.meta.env.VITE_CLIENT_URL && import.meta.env.VITE_CLIENT_URL !== 'undefined' && import.meta.env.VITE_CLIENT_URL !== 'null')
       ? import.meta.env.VITE_CLIENT_URL
-      : `${protocol}//${hostname}${defaultClientPort ? `:${defaultClientPort}` : ''}`;
+      : (isLocal ? 'http://localhost:5173' : 'https://tauhidshekhar.vercel.app');
 
     // If already authenticated, redirect
     if (isAuthenticated) {
@@ -70,13 +64,10 @@ const Auth = () => {
     setSuccess('');
     setLoading(true);
 
-    const protocol = window.location.protocol;
-    const hostname = window.location.hostname;
-    const isProductionPort = window.location.port !== '5173' && window.location.port !== '5174';
-    const defaultClientPort = isProductionPort ? window.location.port : '5173';
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const clientUrl = (import.meta.env.VITE_CLIENT_URL && import.meta.env.VITE_CLIENT_URL !== 'undefined' && import.meta.env.VITE_CLIENT_URL !== 'null')
       ? import.meta.env.VITE_CLIENT_URL
-      : `${protocol}//${hostname}${defaultClientPort ? `:${defaultClientPort}` : ''}`;
+      : (isLocal ? 'http://localhost:5173' : 'https://tauhidshekhar.vercel.app');
 
     try {
       const res = await login(loginIdentifier, loginPassword, rememberMe);

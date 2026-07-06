@@ -1,29 +1,33 @@
 {
   "cleanUrls": true,
-  "routes": [
+  "redirects": [
     {
-      "src": "/admin",
+      "source": "/admin",
       "has": [
         {
           "type": "host",
           "value": "(tauhidshekhar.vercel.app|tauhid-shekhar-portfolio-f4xf.vercel.app|tauhidshekhar.app)"
         }
       ],
-      "status": 301,
-      "headers": { "Location": "https://tauhidshekhar-admin.vercel.app/admin" }
+      "destination": "https://tauhidshekhar-admin.vercel.app/admin",
+      "permanent": true
     },
     {
-      "src": "/admin/(.*)",
+      "source": "/admin/:path*",
       "has": [
         {
           "type": "host",
           "value": "(tauhidshekhar.vercel.app|tauhid-shekhar-portfolio-f4xf.vercel.app|tauhidshekhar.app)"
         }
       ],
-      "status": 301,
-      "headers": { "Location": "https://tauhidshekhar-admin.vercel.app/admin/$1" }
-    },
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/index.html" }
+      "destination": "https://tauhidshekhar-admin.vercel.app/admin/:path*",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/((?!api|assets|favicon.ico).*)",
+      "destination": "/index.html"
+    }
   ]
 }

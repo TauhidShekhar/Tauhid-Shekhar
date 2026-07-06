@@ -5,13 +5,10 @@ import { PasswordStrength } from '../components/ui/PasswordStrength';
 import { FaLock, FaEnvelope, FaUser, FaKey, FaArrowLeft, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
 
 const RecoverAccount = () => {
-  const protocol = window.location.protocol;
-  const hostname = window.location.hostname;
-  const isProductionPort = window.location.port !== '5173' && window.location.port !== '5174';
-  const defaultClientPort = isProductionPort ? window.location.port : '5173';
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   const clientUrl = (import.meta.env.VITE_CLIENT_URL && import.meta.env.VITE_CLIENT_URL !== 'undefined' && import.meta.env.VITE_CLIENT_URL !== 'null')
     ? import.meta.env.VITE_CLIENT_URL
-    : `${protocol}//${hostname}${defaultClientPort ? `:${defaultClientPort}` : ''}`;
+    : (isLocal ? 'http://localhost:5173' : 'https://tauhidshekhar.vercel.app');
 
   const [step, setStep] = useState(1); // 1 = Search, 2 = Verify OTP & Reset
   const [identifier, setIdentifier] = useState('');
