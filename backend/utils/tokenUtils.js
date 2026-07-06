@@ -46,7 +46,7 @@ const generateRefreshToken = (user) => {
  * @param {boolean} rememberMe – If true use a 30-day refresh cookie, else 24h
  */
 const setTokenCookies = (res, accessToken, refreshToken, rememberMe = false) => {
-  const isProduction = process.env.NODE_ENV === 'production';
+  const isProduction = process.env.NODE_ENV === 'production' || !!process.env.RENDER || !!process.env.VERCEL;
 
   const commonOptions = {
     httpOnly: true,
@@ -82,7 +82,7 @@ const setTokenCookies = (res, accessToken, refreshToken, rememberMe = false) => 
  * @param {import('express').Response} res
  */
 const clearTokenCookies = (res) => {
-  const isProduction = process.env.NODE_ENV === 'production';
+  const isProduction = process.env.NODE_ENV === 'production' || !!process.env.RENDER || !!process.env.VERCEL;
 
   const commonOptions = {
     httpOnly: true,
