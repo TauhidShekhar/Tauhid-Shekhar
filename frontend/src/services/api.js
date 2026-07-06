@@ -7,7 +7,7 @@ const getApiBase = () => {
   if (port === '5173' || port === '5174') {
     return `${protocol}//${hostname}:5000/api`;
   }
-  return 'https://tauhid-shekhar-portfolio.onrender.com/api';
+  return 'https://tauhidshekhar-backend.vercel.app/api';
 };
 const API_BASE = getApiBase();
 
