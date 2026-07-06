@@ -22,7 +22,7 @@ const ProtectedRoute = ({ children, allowedRoles = ['Admin'] }) => {
       ? rawAdminUrl
       : (window.location.port === '5173' || window.location.port === '5174'
           ? `${window.location.protocol}//${window.location.hostname}:5174`
-          : 'https://tauhid-shekhar-portfolio.onrender.com');
+          : 'https://tauhidshekhar-admin.vercel.app');
     window.location.href = `${adminUrl}/admin/login?redirect=${encodeURIComponent(callbackUrl)}`;
     return (
       <div className="min-h-screen bg-[#09090c] flex items-center justify-center">

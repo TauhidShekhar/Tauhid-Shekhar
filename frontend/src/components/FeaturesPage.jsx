@@ -102,7 +102,7 @@ const FeaturesPage = () => {
     ? rawAdminUrl
     : (window.location.port === '5173' || window.location.port === '5174'
         ? `${window.location.protocol}//${window.location.hostname}:5174`
-        : 'https://tauhid-shekhar-portfolio.onrender.com');
+        : 'https://tauhidshekhar-admin.vercel.app');
   const [features, setFeatures] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');

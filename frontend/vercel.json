@@ -3,12 +3,12 @@
   "redirects": [
     {
       "source": "/admin",
-      "destination": "https://tauhid-shekhar-portfolio.onrender.com/admin",
+      "destination": "https://tauhidshekhar-admin.vercel.app/admin",
       "permanent": true
     },
     {
       "source": "/admin/:path*",
-      "destination": "https://tauhid-shekhar-portfolio.onrender.com/admin/:path*",
+      "destination": "https://tauhidshekhar-admin.vercel.app/admin/:path*",
       "permanent": true
     }
   ],
