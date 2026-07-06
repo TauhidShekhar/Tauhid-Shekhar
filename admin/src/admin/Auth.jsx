@@ -125,7 +125,12 @@ const Auth = () => {
         }, 5000);
       }
     } catch (err) {
-      setError(err.message || 'Registration failed.');
+      if (err.errors && Array.isArray(err.errors)) {
+        const errorMsg = err.errors.map(e => e.message).join(', ');
+        setError(errorMsg);
+      } else {
+        setError(err.message || 'Registration failed.');
+      }
     } finally {
       setLoading(false);
     }
