@@ -34,9 +34,12 @@ const OrdersManager = () => {
 
   // Real-time socket updates
   useEffect(() => {
-    const socketUrl = import.meta.env.VITE_API_URL 
-      ? import.meta.env.VITE_API_URL.replace('/api', '') 
-      : 'http://localhost:5000';
+    const rawApiUrl = import.meta.env.VITE_API_URL;
+    const socketUrl = (rawApiUrl && rawApiUrl !== 'undefined' && rawApiUrl !== 'null')
+      ? rawApiUrl.replace('/api', '')
+      : (window.location.port === '5173' || window.location.port === '5174'
+          ? `${window.location.protocol}//${window.location.hostname}:5000`
+          : 'https://tauhid-shekhar-portfolio.onrender.com');
     const socket = io(socketUrl, { withCredentials: true });
 
     socket.on('new_service_order', (newOrder) => {

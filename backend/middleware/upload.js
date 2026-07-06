@@ -93,8 +93,9 @@ const uploadToLocal = async (buffer, folder) => {
     
     await fs.promises.writeFile(filePath, buffer);
     
-    // Serve locally relative path
-    const relativeUrl = `http://localhost:5000/uploads/${folder}/${fileName}`;
+    // Serve locally relative path dynamically
+    const host = process.env.BACKEND_URL || 'https://tauhid-shekhar-portfolio.onrender.com';
+    const relativeUrl = `${host}/uploads/${folder}/${fileName}`;
     return {
       url: relativeUrl,
       publicId: `local/${folder}/${fileName}`,
