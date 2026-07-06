@@ -14,6 +14,33 @@ const { apiLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
 
+// Middleware to ensure DB connection and admin seeder on Serverless hosts (Vercel)
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    // In serverless environments, check and run seeders on demand
+    if (process.env.VERCEL) {
+      const User = require('./models/User');
+      const adminExists = await User.findOne({ username: 'admin' });
+      if (!adminExists) {
+        await User.create({
+          fullName: 'Portfolio Administrator',
+          username: 'admin',
+          email: 'admin@example.com',
+          password: 'password123',
+          role: 'Admin',
+          isEmailVerified: true
+        });
+        const seedEcosystem = require('./utils/seeder');
+        await seedEcosystem();
+      }
+    }
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
+
 // Trust reverse proxies (Cloudflare, Heroku, Nginx, Vercel, etc.)
 app.set('trust proxy', 1);
 
@@ -264,23 +291,28 @@ io.on('connection', (socket) => {
   });
 });
 
-// Connect to database, run seeders, and start the server only when database is ready
-connectDB()
-  .then(async () => {
-    // Seed default admin user
-    await seedAdmin();
-    
-    // Seed default ecosystem configurations
-    const seedEcosystem = require('./utils/seeder');
-    await seedEcosystem();
+// Start server listening (for Render / Local development)
+if (!process.env.VERCEL) {
+  connectDB()
+    .then(async () => {
+      // Seed default admin user
+      await seedAdmin();
+      
+      // Seed default ecosystem configurations
+      const seedEcosystem = require('./utils/seeder');
+      await seedEcosystem();
 
-    // Start Express + Socket.io Server listening
-    const PORT = process.env.PORT || 5000;
-    server.listen(PORT, () => {
-      console.log(`Server running in ${process.env.NODE_ENV || 'production'} mode on port ${PORT}`);
+      // Start Express + Socket.io Server listening
+      const PORT = process.env.PORT || 5000;
+      server.listen(PORT, () => {
+        console.log(`Server running in ${process.env.NODE_ENV || 'production'} mode on port ${PORT}`);
+      });
+    })
+    .catch((err) => {
+      console.error('Critical Database Connection Failure: Server could not be started.', err.message);
+      process.exit(1);
     });
-  })
-  .catch((err) => {
-    console.error('Critical Database Connection Failure: Server could not be started.', err.message);
-    process.exit(1);
-  });
+}
+
+// Export app for Vercel Serverless hosting
+module.exports = app;
