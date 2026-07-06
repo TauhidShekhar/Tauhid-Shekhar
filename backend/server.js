@@ -109,7 +109,10 @@ const allowedOrigins = [
   'http://localhost:5000',
   'http://127.0.0.1:5000',
   'http://localhost:5174',
-  'http://127.0.0.1:5174'
+  'http://127.0.0.1:5174',
+  'https://tauhidshekhar.vercel.app',
+  'https://tauhidshekhar-admin.vercel.app',
+  'https://tauhid-shekhar-portfolio-f4xf.vercel.app'
 ];
 
 if (process.env.CLIENT_URL) {
