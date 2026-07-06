@@ -337,6 +337,7 @@ const getGroups = async (req, res, next) => {
     // Filter groups by visibility: Secret groups are only visible to members, admins, moderators, owner, or global admins
     const filteredGroups = allGroups.filter(group => {
       if (group.visibility !== 'secret') return true;
+      if (!req.user) return false;
       const isOwner = group.owner.toString() === req.user.id;
       const isGrpAdmin = group.admins && group.admins.some(a => a.toString() === req.user.id);
       const isMod = group.moderators && group.moderators.some(m => m.toString() === req.user.id);

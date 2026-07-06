@@ -1,21 +1,17 @@
 {
   "cleanUrls": true,
-  "redirects": [
+  "routes": [
     {
-      "source": "/admin",
-      "destination": "https://tauhidshekhar-admin.vercel.app/admin",
-      "permanent": true
+      "src": "/admin",
+      "status": 301,
+      "headers": { "Location": "https://tauhidshekhar-admin.vercel.app/admin" }
     },
     {
-      "source": "/admin/:path*",
-      "destination": "https://tauhidshekhar-admin.vercel.app/admin/:path*",
-      "permanent": true
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
+      "src": "/admin/(.*)",
+      "status": 301,
+      "headers": { "Location": "https://tauhidshekhar-admin.vercel.app/admin/$1" }
+    },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
