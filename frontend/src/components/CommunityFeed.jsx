@@ -6,7 +6,7 @@ import {
   FaRegHeart, FaHeart, FaComment, FaBookmark, FaRegBookmark, 
   FaShareAlt, FaPlus, FaImage, FaPaperclip, FaTags, FaFilter, 
   FaRegSmile, FaCheckCircle, FaThumbtack, FaTrash, FaPlusCircle,
-  FaFilePdf, FaVideo, FaPoll, FaRegComments, FaGlobe, FaChevronRight, FaGithub, FaPaperPlane, FaEdit
+  FaFilePdf, FaVideo, FaPoll, FaRegComments, FaGlobe, FaChevronRight, FaGithub, FaPaperPlane, FaEdit, FaUser
 } from 'react-icons/fa';
 
 const CommunityFeed = () => {
