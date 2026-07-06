@@ -26,8 +26,13 @@ const connectDB = () => {
         resolve(conn);
       } catch (error) {
         console.error(`Database Connection Error: ${error.message}`);
-        console.log('Retrying MongoDB connection in 5 seconds...');
-        setTimeout(connectWithRetry, 5000);
+        if (process.env.VERCEL) {
+          // On Vercel, fail fast to prevent serverless function execution timeouts
+          reject(error);
+        } else {
+          console.log('Retrying MongoDB connection in 5 seconds...');
+          setTimeout(connectWithRetry, 5000);
+        }
       }
     };
 
