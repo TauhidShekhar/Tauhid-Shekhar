@@ -223,18 +223,24 @@ const seedAdmin = async () => {
   }
 };
 
-// Serve static built files in production
-if (process.env.NODE_ENV === 'production') {
+// Serve static built files dynamically (based on build outputs)
+const fs = require('fs');
+const adminDistExists = fs.existsSync(path.join(__dirname, '../admin/dist'));
+const frontendDistExists = fs.existsSync(path.join(__dirname, '../frontend/dist'));
+
+if (adminDistExists) {
   // Serve admin static files at /admin path
   app.use('/admin', express.static(path.join(__dirname, '../admin/dist')));
   
-  // Serve frontend static files at root path
-  app.use(express.static(path.join(__dirname, '../frontend/dist')));
-
   // Route admin SPA routes to admin/index.html
   app.get('/admin/*', (req, res) => {
     res.sendFile(path.join(__dirname, '../admin/dist', 'index.html'));
   });
+}
+
+if (frontendDistExists) {
+  // Serve frontend static files at root path
+  app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
   // Route all other pages (except API) to frontend/index.html
   app.get(/^(?!\/api).*/, (req, res) => {
