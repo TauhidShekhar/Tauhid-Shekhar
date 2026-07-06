@@ -11,6 +11,26 @@ const getApiBase = () => {
 };
 const API_BASE = getApiBase();
 
+let authFailureCallback = null;
+
+export const registerAuthFailureCallback = (callback) => {
+  authFailureCallback = callback;
+};
+
+const checkResponse = async (response) => {
+  const result = await response.json();
+  if (!response.ok) {
+    if (response.status === 401 && authFailureCallback) {
+      authFailureCallback();
+    }
+    const error = new Error(result.message || 'API request failed');
+    error.status = response.status;
+    error.errors = result.errors;
+    throw error;
+  }
+  return result;
+};
+
 // Helper for fetch requests with credentials (cookie support)
 const apiRequest = async (endpoint, options = {}) => {
   const headers = {
@@ -24,14 +44,7 @@ const apiRequest = async (endpoint, options = {}) => {
     credentials: 'include', // Crucial for HttpOnly cookies on cross-origin requests
   });
 
-  const result = await response.json();
-  if (!response.ok) {
-    const error = new Error(result.message || 'API request failed');
-    error.status = response.status;
-    error.errors = result.errors;
-    throw error;
-  }
-  return result;
+  return checkResponse(response);
 };
 
 // Helper for multipart/form-data requests (file uploads)
@@ -43,14 +56,9 @@ const apiUploadRequest = async (endpoint, formData, options = {}) => {
     ...options
   });
 
-  const result = await response.json();
-  if (!response.ok) {
-    const error = new Error(result.message || 'File upload failed');
-    error.status = response.status;
-    throw error;
-  }
-  return result;
+  return checkResponse(response);
 };
+
 
 // API Services
 export const api = {
@@ -86,9 +94,7 @@ export const api = {
       body: formData,
       credentials: 'include'
     });
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.message || 'Profile update failed');
-    return result;
+    return checkResponse(response);
   },
   changePassword: async (oldPassword, newPassword, confirmPassword) => {
     return apiRequest('/auth/change-password', {

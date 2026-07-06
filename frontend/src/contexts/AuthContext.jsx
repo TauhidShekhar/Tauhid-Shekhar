@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
-import { api } from '../services/api';
+import { api, registerAuthFailureCallback } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -80,10 +80,11 @@ export const AuthProvider = ({ children }) => {
         persistUser(null);
       }
     } catch (err) {
+      const status = err?.status || err?.statusCode;
       const errMsg = err?.message || '';
       const isAuthError = 
-        err.status === 401 ||
-        err.status === 403 ||
+        status === 401 ||
+        status === 403 ||
         errMsg.includes('401') || 
         errMsg.toLowerCase().includes('unauthorized') || 
         errMsg.toLowerCase().includes('authentication') || 
@@ -136,6 +137,11 @@ export const AuthProvider = ({ children }) => {
 
   // On mount: verify session with the server
   useEffect(() => {
+    registerAuthFailureCallback(() => {
+      setUser(null);
+      setIsAuthenticated(false);
+      persistUser(null);
+    });
     checkAuthStatus();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
