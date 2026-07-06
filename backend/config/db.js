@@ -10,7 +10,6 @@ const connectDB = () => {
     
     // Prevent duplicate connections
     if (mongoose.connection.readyState === 1) {
-      console.log('MongoDB is already connected.');
       return resolve(mongoose.connection);
     }
 
