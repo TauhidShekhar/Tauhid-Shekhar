@@ -3,30 +3,44 @@
   "redirects": [
     {
       "source": "/admin",
-      "has": [
-        {
-          "type": "host",
-          "value": "(tauhidshekhar.vercel.app|tauhid-shekhar-portfolio-f4xf.vercel.app|tauhidshekhar.app)"
-        }
-      ],
+      "has": [{ "type": "host", "value": "tauhidshekhar.vercel.app" }],
       "destination": "https://tauhidshekhar-admin.vercel.app/admin",
       "permanent": true
     },
     {
       "source": "/admin/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "(tauhidshekhar.vercel.app|tauhid-shekhar-portfolio-f4xf.vercel.app|tauhidshekhar.app)"
-        }
-      ],
+      "has": [{ "type": "host", "value": "tauhidshekhar.vercel.app" }],
+      "destination": "https://tauhidshekhar-admin.vercel.app/admin/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/admin",
+      "has": [{ "type": "host", "value": "tauhid-shekhar-portfolio-f4xf.vercel.app" }],
+      "destination": "https://tauhidshekhar-admin.vercel.app/admin",
+      "permanent": true
+    },
+    {
+      "source": "/admin/:path*",
+      "has": [{ "type": "host", "value": "tauhid-shekhar-portfolio-f4xf.vercel.app" }],
+      "destination": "https://tauhidshekhar-admin.vercel.app/admin/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/admin",
+      "has": [{ "type": "host", "value": "tauhidshekhar.app" }],
+      "destination": "https://tauhidshekhar-admin.vercel.app/admin",
+      "permanent": true
+    },
+    {
+      "source": "/admin/:path*",
+      "has": [{ "type": "host", "value": "tauhidshekhar.app" }],
       "destination": "https://tauhidshekhar-admin.vercel.app/admin/:path*",
       "permanent": true
     }
   ],
   "rewrites": [
     {
-      "source": "/((?!api|assets|favicon.ico).*)",
+      "source": "/:path*",
       "destination": "/index.html"
     }
   ]
