@@ -16,8 +16,16 @@ const app = express();
 
 // Middleware to ensure DB connection and admin seeder on Serverless hosts (Vercel)
 app.use(async (req, res, next) => {
-  // Bypass DB check for root path (used by Vercel deployment preview scanner)
-  if (req.path === '/' || req.path === '/api/health') {
+  // Bypass DB check for root path, static assets, and uploads
+  if (
+    req.path === '/' || 
+    req.path === '/api/health' || 
+    req.path.startsWith('/admin/assets') || 
+    req.path.startsWith('/uploads') || 
+    req.path.endsWith('.ico') || 
+    req.path.endsWith('.css') || 
+    req.path.endsWith('.js')
+  ) {
     return next();
   }
   try {
