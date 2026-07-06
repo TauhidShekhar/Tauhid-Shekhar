@@ -1,0 +1,29 @@
+{
+  "cleanUrls": true,
+  "routes": [
+    {
+      "src": "/admin",
+      "has": [
+        {
+          "type": "host",
+          "value": "(tauhidshekhar.vercel.app|tauhid-shekhar-portfolio-f4xf.vercel.app|tauhidshekhar.app)"
+        }
+      ],
+      "status": 301,
+      "headers": { "Location": "https://tauhidshekhar-admin.vercel.app/admin" }
+    },
+    {
+      "src": "/admin/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "(tauhidshekhar.vercel.app|tauhid-shekhar-portfolio-f4xf.vercel.app|tauhidshekhar.app)"
+        }
+      ],
+      "status": 301,
+      "headers": { "Location": "https://tauhidshekhar-admin.vercel.app/admin/$1" }
+    },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}
