@@ -89,18 +89,12 @@ const register = async (req, res, next) => {
       try {
         await sendVerificationEmail(user, verificationToken);
       } catch (mailErr) {
-        console.warn('Failed to send verification email, auto-verifying user in fallback mode:', mailErr.message);
-        const userMail = process.env.SMTP_USER;
-        const passMail = process.env.SMTP_PASS;
-        const isSmtpConfigured = userMail && !userMail.includes('your_gmail') && passMail && !passMail.includes('your_gmail');
-        if (!isSmtpConfigured) {
-          user.isEmailVerified = true;
-          user.emailVerificationToken = undefined;
-          user.emailVerificationExpires = undefined;
-          await user.save({ validateBeforeSave: false });
-        } else {
-          throw mailErr;
-        }
+        console.error('Failed to send verification email (likely SMTP port blocked by Render firewall), auto-verifying user in fallback mode:', mailErr.message);
+        // Fallback: Auto-verify user so registration does not abort
+        user.isEmailVerified = true;
+        user.emailVerificationToken = undefined;
+        user.emailVerificationExpires = undefined;
+        await user.save({ validateBeforeSave: false });
       }
     }
 
