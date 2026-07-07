@@ -124,6 +124,7 @@ router.get('/leaderboard', optionalAuth, getLeaderboard);
 router.get('/users/:id/profile', optionalAuth, getPublicProfile);
 router.get('/events', optionalAuth, getEvents);
 router.get('/store/products', optionalAuth, getMarketplaceProducts);
+router.get('/groups/:id', optionalAuth, getGroupDetails);
 
 // ─── PROTECTED COMMUNITY ROUTES (Requires Authentication) ────────────
 router.use(protect);
@@ -146,7 +147,6 @@ router.route('/comments/:commentId')
 // Groups
 router.post('/groups', createGroup);
 router.route('/groups/:id')
-  .get(optionalAuth, getGroupDetails)
   .put(updateGroup)
   .delete(deleteGroup);
 

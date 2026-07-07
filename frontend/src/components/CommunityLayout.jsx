@@ -49,14 +49,14 @@ const CommunityLayout = () => {
         if (currentUserId) {
           // Groups joined by current user
           const joined = allGroups.filter(g => 
-            g.members?.some(m => m && (m.user || m || m._id || '').toString() === currentUserId.toString()) ||
+            g.members?.some(m => m && (m._id || m.user || m).toString() === currentUserId.toString()) ||
             (g.owner?._id || g.owner)?.toString() === currentUserId.toString()
           );
           setMyGroups(joined);
 
           // Suggested groups (not joined by current user)
           const unjoined = allGroups.filter(g => 
-            !g.members?.some(m => m && (m.user || m || m._id || '').toString() === currentUserId.toString()) &&
+            !g.members?.some(m => m && (m._id || m.user || m).toString() === currentUserId.toString()) &&
             (g.owner?._id || g.owner)?.toString() !== currentUserId.toString()
           );
           setSuggestedGroups(unjoined.slice(0, 3));
@@ -129,10 +129,11 @@ const CommunityLayout = () => {
     try {
       const res = await api.joinLeaveCommunityGroup(groupId);
       if (res.success) {
+        alert(res.message || 'Joined group successfully');
         fetchData(); // reload groups list
       }
     } catch (err) {
-      console.error(err);
+      alert(err.message || 'Failed to join group.');
     }
   };
 

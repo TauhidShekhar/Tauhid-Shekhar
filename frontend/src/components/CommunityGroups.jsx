@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 import { 
@@ -15,6 +15,9 @@ const CATEGORIES = ['General', 'React', 'Node.js', 'Design', 'Web3', 'AI/ML', 'D
 const CommunityGroups = () => {
   const { user } = useAuth();
   const currentUserId = user?._id || user?.id;
+  
+  const { groupId } = useParams();
+  const navigate = useNavigate();
   
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -246,6 +249,30 @@ const CommunityGroups = () => {
     fetchGroups();
   }, []);
 
+  useEffect(() => {
+    if (groupId && groups.length > 0) {
+      const selected = groups.find(g => g._id === groupId);
+      if (selected) {
+        handleOpenWorkspace(selected);
+      } else {
+        const loadGroup = async () => {
+          try {
+            const res = await api.getCommunityGroupDetails(groupId);
+            if (res.success) {
+              handleOpenWorkspace(res.data);
+            }
+          } catch (err) {
+            console.error('Failed to load deep-linked group:', err);
+            navigate('/community/groups');
+          }
+        };
+        loadGroup();
+      }
+    } else if (!groupId) {
+      setActiveGroup(null);
+    }
+  }, [groupId, groups]);
+
   const handleGroupSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -277,27 +304,27 @@ const CommunityGroups = () => {
     }
   };
 
-  const handleJoinRequest = async (groupId) => {
+  const handleJoinGroup = async (groupId) => {
     try {
-      const res = await api.manageCommunityGroupMembers(groupId, { action: 'request_join' });
+      const res = await api.joinLeaveCommunityGroup(groupId);
       if (res.success) {
-        alert(res.data.isPrivate ? 'Join request sent to moderators' : 'Joined group successfully');
+        alert(res.message || 'Joined group successfully');
         fetchGroups();
       }
     } catch (err) {
-      alert(err.message);
+      alert(err.message || 'Failed to join group.');
     }
   };
 
   const handleLeaveGroup = async (groupId) => {
     try {
-      const res = await api.manageCommunityGroupMembers(groupId, { action: 'leave' });
+      const res = await api.joinLeaveCommunityGroup(groupId);
       if (res.success) {
-        alert('Left group successfully');
+        alert(res.message || 'Left group successfully');
         fetchGroups();
       }
     } catch (err) {
-      alert(err.message);
+      alert(err.message || 'Failed to leave group.');
     }
   };
 
@@ -646,7 +673,6 @@ const CommunityGroups = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                 {filtered.map(group => {
                   const isMember = group.members?.some(m => (m._id || m) === currentUserId);
-                  const isPending = group.pendingRequests?.some(m => (m._id || m) === currentUserId);
                   const isOwner = group.owner?._id === currentUserId || group.owner === currentUserId;
 
                   return (
@@ -700,7 +726,7 @@ const CommunityGroups = () => {
                           <div className="flex gap-2">
                             {(isMember || isOwner) && (
                               <button
-                                onClick={() => handleOpenWorkspace(group)}
+                                onClick={() => navigate(`/community/groups/${group._id}`)}
                                 className="px-3.5 py-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-800 dark:text-white rounded-xl text-[10px] font-black uppercase tracking-wider cursor-pointer border border-slate-250 dark:border-white/5 transition-all"
                               >
                                 Workspace
@@ -718,15 +744,10 @@ const CommunityGroups = () => {
                               </button>
                             ) : (
                               <button
-                                onClick={() => handleJoinRequest(group._id)}
-                                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider cursor-pointer border transition-all ${
-                                  isPending
-                                    ? 'bg-amber-500/10 border-amber-500/20 text-amber-500'
-                                    : 'bg-primary-blue border-primary-blue text-white hover:bg-accent-blue shadow-sm'
-                                }`}
-                                disabled={isPending}
+                                onClick={() => handleJoinGroup(group._id)}
+                                className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider cursor-pointer border border-primary-blue bg-primary-blue text-white hover:bg-accent-blue shadow-sm transition-all"
                               >
-                                {isPending ? 'Pending' : 'Join Board'}
+                                Join Board
                               </button>
                             )}
                           </div>
@@ -747,7 +768,7 @@ const CommunityGroups = () => {
           
           {/* Back Action Bar */}
           <button
-            onClick={() => { setActiveGroup(null); fetchGroups(); }}
+            onClick={() => navigate('/community/groups')}
             className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-500 hover:text-black dark:hover:text-white cursor-pointer w-fit"
           >
             <FaArrowLeft /> Back to Boards list
@@ -1163,53 +1184,7 @@ const CommunityGroups = () => {
             {/* Members tab */}
             {activeTab === 'members' && (
               <div className="flex flex-col gap-6">
-                {/* Pending Requests for Owners */}
-                {(activeGroup.owner?._id === currentUserId || user?.role === 'Admin') && activeGroup.pendingRequests?.length > 0 && (
-                  <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-white/5 rounded-3xl p-6 shadow-sm">
-                    <h3 className="font-extrabold text-sm text-black dark:text-white border-b border-slate-100 dark:border-white/5 pb-3 mb-4 text-amber-500">
-                      Pending Join Requests ({activeGroup.pendingRequests.length})
-                    </h3>
 
-                    <div className="flex flex-col gap-3">
-                      {activeGroup.pendingRequests.map((reqUser) => {
-                        const userId = reqUser._id || reqUser;
-                        return (
-                          <div key={userId} className="flex justify-between items-center p-3.5 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-transparent">
-                            <div className="flex items-center gap-3">
-                              {reqUser.avatar?.url ? (
-                                <img src={reqUser.avatar.url} alt="" className="w-8 h-8 rounded-full object-cover" />
-                              ) : (
-                                <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-white/10 flex items-center justify-center text-xs font-bold text-slate-400">
-                                  {reqUser.fullName?.charAt(0) || reqUser.username?.charAt(0) || '?'}
-                                </div>
-                              )}
-                              <div>
-                                <p className="text-xs font-black text-black dark:text-white">{reqUser.fullName || 'Anonymous User'}</p>
-                                <p className="text-[10px] text-slate-400 font-bold">@{reqUser.username || 'unknown'}</p>
-                              </div>
-                            </div>
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => handleMemberAction('approve_join', userId)}
-                                className="p-2 bg-emerald-500 text-white rounded-lg cursor-pointer hover:bg-emerald-600 transition-colors"
-                                title="Approve"
-                              >
-                                <FaCheck size={10} />
-                              </button>
-                              <button
-                                onClick={() => handleMemberAction('reject_join', userId)}
-                                className="p-2 bg-red-500 text-white rounded-lg cursor-pointer hover:bg-red-600 transition-colors"
-                                title="Reject"
-                              >
-                                <FaTimes size={10} />
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
 
                 {/* Member List */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-white/5 rounded-3xl p-6 shadow-sm">

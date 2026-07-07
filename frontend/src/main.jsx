@@ -123,6 +123,14 @@ createRoot(document.getElementById('root')).render(
                   </ProtectedRoute>
                 } 
               />
+              <Route 
+                path="groups/:groupId" 
+                element={
+                  <ProtectedRoute allowedRoles={['User', 'Admin']}>
+                    <CommunityGroups />
+                  </ProtectedRoute>
+                } 
+              />
               <Route path="projects" element={<CommunityProjectDiscussions />} />
               <Route path="doubts" element={<CommunityDoubts />} />
               <Route path="resources" element={<CommunityResources />} />

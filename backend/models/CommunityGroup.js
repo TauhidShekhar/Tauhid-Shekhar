@@ -70,7 +70,6 @@ const communityGroupSchema = new mongoose.Schema(
     admins: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     moderators: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     members: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-    pendingRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     invitedMembers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     mutedMembers: [
       {

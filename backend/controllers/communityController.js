@@ -67,8 +67,13 @@ const awardXP = async (userId, amount) => {
 
 const getPosts = async (req, res, next) => {
   try {
-    const { page = 1, limit = 10, group = null, category = '', search = '', tag = '' } = req.query;
+    const { page = 1, limit = 10, group = null, category = '', search = '', tag = '', author, authorId } = req.query;
     const filter = { status: 'active' };
+
+    const authorFilter = author || authorId;
+    if (authorFilter) {
+      filter.author = authorFilter;
+    }
 
     if (group) {
       const communityGroup = await CommunityGroup.findById(group);
@@ -83,8 +88,8 @@ const getPosts = async (req, res, next) => {
         const isGlobalAdmin = req.user.role === 'Admin';
         const hasAccess = isOwner || isGrpAdmin || isMod || isMember || isGlobalAdmin;
 
-        if (!hasAccess && communityGroup.visibility === 'secret') {
-          return res.status(403).json({ success: false, message: 'You do not have permission to view this secret board.' });
+        if (!hasAccess) {
+          return res.status(403).json({ success: false, message: 'You do not have permission to view this private board.' });
         }
       }
       filter.group = group;
@@ -392,8 +397,7 @@ const populateGroupData = async (groupQuery) => {
     .populate('owner', 'fullName username avatar xp reputation role')
     .populate('admins', 'fullName username avatar xp reputation role')
     .populate('members', 'fullName username avatar xp reputation role')
-    .populate('moderators', 'fullName username avatar xp reputation role')
-    .populate('pendingRequests', 'fullName username avatar xp reputation role');
+    .populate('moderators', 'fullName username avatar xp reputation role');
 };
 
 const getGroups = async (req, res, next) => {
@@ -516,12 +520,7 @@ const joinLeaveGroup = async (req, res, next) => {
       }
 
       if (group.isPrivate || group.visibility === 'secret') {
-        if (group.pendingRequests.includes(req.user.id)) {
-          return res.status(400).json({ success: false, message: 'Join request is already pending.' });
-        }
-        group.pendingRequests.push(req.user.id);
-        await group.save();
-        res.json({ success: true, joined: false, pending: true, message: 'Join request sent successfully.' });
+        return res.status(403).json({ success: false, message: 'This group is private. You can only join by invitation.' });
       } else {
         group.members.push(req.user.id);
         await group.save();
@@ -965,50 +964,7 @@ const manageGroupMembers = async (req, res, next) => {
     const hasModPrivileges = isOwner || isGrpAdmin || isMod || isGlobalAdmin;
     const hasAdminPrivileges = isOwner || isGrpAdmin || isGlobalAdmin;
 
-    if (action === 'request_join') {
-      if (group.members.includes(req.user.id)) {
-        return res.status(400).json({ success: false, message: 'Already a member' });
-      }
-      // Check if banned
-      const isBanned = group.bannedMembers && group.bannedMembers.some(b => b.user.toString() === req.user.id);
-      if (isBanned) {
-        return res.status(403).json({ success: false, message: 'You have been banned from this group.' });
-      }
-
-      if (group.isPrivate || group.visibility === 'secret') {
-        if (group.pendingRequests.includes(req.user.id)) {
-          return res.status(400).json({ success: false, message: 'Request already pending' });
-        }
-        group.pendingRequests.push(req.user.id);
-      } else {
-        group.members.push(req.user.id);
-      }
-    } else if (action === 'reject_join') {
-      if (!hasModPrivileges) return res.status(403).json({ success: false, message: 'Not authorized' });
-      group.pendingRequests = group.pendingRequests.filter(id => id.toString() !== targetUserId);
-      
-      // Notify target user
-      await CommunityNotification.create({
-        recipient: targetUserId,
-        sender: req.user.id,
-        type: 'join_request',
-        group: group._id
-      });
-    } else if (action === 'approve_join') {
-      if (!hasModPrivileges) return res.status(403).json({ success: false, message: 'Not authorized' });
-      group.pendingRequests = group.pendingRequests.filter(id => id.toString() !== targetUserId);
-      if (!group.members.includes(targetUserId)) {
-        group.members.push(targetUserId);
-      }
-      
-      // Notify target user
-      await CommunityNotification.create({
-        recipient: targetUserId,
-        sender: req.user.id,
-        type: 'join_accept',
-        group: group._id
-      });
-    } else if (action === 'invite') {
+    if (action === 'invite') {
       const isMember = group.members && group.members.some(m => m.toString() === req.user.id);
       const isInviterAuthorized = isOwner || isGrpAdmin || isMod || isMember || isGlobalAdmin;
       if (!isInviterAuthorized) {
