@@ -181,6 +181,7 @@ const orderRoutes = require('./routes/orderRoutes');
 const serviceRoutes = require('./routes/serviceRoutes');
 const communityRoutes = require('./routes/communityRoutes');
 const featureRoutes = require('./routes/featureRoutes');
+const cmsRoutes = require('./routes/cmsRoutes');
 
 // Mount Routes
 app.use('/api/auth', authRoutes);
@@ -209,6 +210,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/community', communityRoutes);
 app.use('/api/features', featureRoutes);
+app.use('/api/cms', cmsRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

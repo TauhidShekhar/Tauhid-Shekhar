@@ -1095,5 +1095,30 @@ export const api = {
   },
   getWhatsNewFeatures: async () => {
     return apiRequest('/features/whats-new');
+  },
+
+  // CMS Draft & Versioning API
+  getCmsDraft: async (model, id) => {
+    return apiRequest(`/cms/draft/${model}/${id || 'new'}`);
+  },
+  saveCmsDraft: async (model, id, draftData) => {
+    return apiRequest(`/cms/draft/${model}/${id || 'new'}`, {
+      method: 'POST',
+      body: JSON.stringify({ draftData })
+    });
+  },
+  publishCmsDraft: async (model, id, comment) => {
+    return apiRequest(`/cms/publish/${model}/${id || 'new'}`, {
+      method: 'POST',
+      body: JSON.stringify({ comment })
+    });
+  },
+  getCmsVersions: async (model, id) => {
+    return apiRequest(`/cms/versions/${model}/${id}`);
+  },
+  restoreCmsVersion: async (versionId) => {
+    return apiRequest(`/cms/restore/${versionId}`, {
+      method: 'POST'
+    });
   }
 };
