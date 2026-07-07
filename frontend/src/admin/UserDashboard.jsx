@@ -8,7 +8,7 @@ import {
 } from 'react-icons/fa';
 
 const UserDashboard = () => {
-  const { user, logout, updateProfile } = useAuth();
+  const { user, logout, updateProfile, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('profile'); // profile, saved, orders, security, history, account
@@ -58,6 +58,9 @@ const UserDashboard = () => {
   };
 
   useEffect(() => {
+    if (isLoading) return;
+    if (!isAuthenticated) return;
+
     const loadProfile = async () => {
       try {
         const res = await api.getProfile();
@@ -71,7 +74,7 @@ const UserDashboard = () => {
     loadProfile();
     loadSavedProjects();
     loadUserOrders();
-  }, []);
+  }, [isLoading, isAuthenticated]);
 
   useEffect(() => {
     const handleShortcuts = (e) => {

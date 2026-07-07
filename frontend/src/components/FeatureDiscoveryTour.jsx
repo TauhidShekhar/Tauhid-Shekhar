@@ -31,7 +31,7 @@ const TOUR_STEPS = [
 ];
 
 const FeatureDiscoveryTour = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   
   // Popups visibility state
   const [showGuestWelcome, setShowGuestWelcome] = useState(false);
@@ -46,6 +46,7 @@ const FeatureDiscoveryTour = () => {
   // 1. Initial Load Checks (Logged-in users only)
   useEffect(() => {
     const runDiscoveryChecks = async () => {
+      if (isLoading) return;
       if (!isAuthenticated) return;
 
       // Logged in user onboarding checks
@@ -69,7 +70,7 @@ const FeatureDiscoveryTour = () => {
     };
 
     runDiscoveryChecks();
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, isLoading]);
 
   // Guest Onboarding Delay & Activity check (Delayed by 1 minute)
   useEffect(() => {
