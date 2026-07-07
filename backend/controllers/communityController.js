@@ -719,10 +719,10 @@ const toggleFollowUser = async (req, res, next) => {
         sender: req.user.id,
         type: 'follow'
       });
-      await awardXP(id, 15); // Target gets xp for gaining followers
-      
       await targetUser.save({ validateBeforeSave: false });
       await currentUser.save({ validateBeforeSave: false });
+
+      await awardXP(id, 15); // Target gets xp for gaining followers
       
       return res.json({ success: true, followed: true, message: 'User followed successfully!' });
     } else {
