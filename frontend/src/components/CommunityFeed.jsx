@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
+import socket from '../services/socket';
 import { 
   FaRegHeart, FaHeart, FaComment, FaBookmark, FaRegBookmark, 
   FaShareAlt, FaPlus, FaImage, FaPaperclip, FaTags, FaFilter, 
@@ -68,6 +69,35 @@ const CommunityFeed = () => {
   useEffect(() => {
     fetchFeed();
   }, [activeCategory, activeTagsFilter, searchUrlQuery]);
+
+  // Real-time socket event synchronization for community feed
+  useEffect(() => {
+    socket.on('post_change', (data) => {
+      if (data.action === 'create') {
+        setPosts(prev => {
+          if (prev.some(p => p._id === data.data._id)) return prev;
+          // Prepend new posts matching the selected category
+          if (activeCategory !== 'All' && data.data.category !== activeCategory) return prev;
+          return [data.data, ...prev];
+        });
+      } else if (data.action === 'update') {
+        setPosts(prev => prev.map(p => p._id === data.data._id ? data.data : p));
+      } else if (data.action === 'delete') {
+        setPosts(prev => prev.filter(p => p._id !== data.postId));
+      } else if (data.action === 'react') {
+        setPosts(prev => prev.map(p => {
+          if (p._id === data.postId) {
+            return { ...p, reactions: data.reactions };
+          }
+          return p;
+        }));
+      }
+    });
+
+    return () => {
+      socket.off('post_change');
+    };
+  }, [activeCategory]);
 
   const [attachedFileName, setAttachedFileName] = useState('');
 

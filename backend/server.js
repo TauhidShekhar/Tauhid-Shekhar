@@ -7,12 +7,16 @@ const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
+const compression = require('compression');
 const connectDB = require('./config/db');
 const path = require('path');
 const { errorHandler } = require('./middleware/errorHandler');
 const { apiLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
+
+// Enable GZIP compression to reduce payload transfer sizes
+app.use(compression());
 
 // Middleware to ensure DB connection and admin seeder on Serverless hosts (Vercel)
 app.use(async (req, res, next) => {
@@ -207,6 +211,10 @@ app.use('/api/community', communityRoutes);
 app.use('/api/features', featureRoutes);
 
 // Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ success: true, status: 'healthy', timestamp: new Date() });
+});
+
 app.get('/', (req, res) => {
   res.json({ success: true, message: 'Portfolio Enterprise API Server is running smoothly!' });
 });

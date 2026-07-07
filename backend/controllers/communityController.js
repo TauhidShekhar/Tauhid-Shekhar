@@ -173,6 +173,11 @@ const createPost = async (req, res, next) => {
 
     const populatedPost = await CommunityPost.findById(post._id).populate('author', 'fullName username avatar role xp reputation');
 
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('post_change', { action: 'create', data: populatedPost });
+    }
+
     res.status(201).json({ success: true, data: populatedPost });
   } catch (error) {
     next(error);
@@ -197,7 +202,12 @@ const updatePost = async (req, res, next) => {
     post.tags = tags || post.tags;
 
     await post.save();
-    res.json({ success: true, data: post });
+    const populated = await CommunityPost.findById(post._id).populate('author', 'fullName username avatar role xp reputation');
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('post_change', { action: 'update', data: populated });
+    }
+    res.json({ success: true, data: populated });
   } catch (error) {
     next(error);
   }
@@ -213,6 +223,10 @@ const deletePost = async (req, res, next) => {
     }
 
     await CommunityPost.findByIdAndDelete(req.params.id);
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('post_change', { action: 'delete', postId: req.params.id });
+    }
     res.json({ success: true, message: 'Post deleted successfully!' });
   } catch (error) {
     next(error);
@@ -262,6 +276,10 @@ const reactToPost = async (req, res, next) => {
     }
 
     await post.save();
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('post_change', { action: 'react', postId: id, reactions: post.reactions });
+    }
     res.json({ success: true, data: post.reactions });
   } catch (error) {
     next(error);
@@ -1184,6 +1202,10 @@ const createQuestion = async (req, res, next) => {
     await awardXP(req.user.id, 15); // XP for asking questions
 
     const populated = await CommunityQuestion.findById(question._id).populate('author', 'fullName username avatar role xp reputation');
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('question_change', { action: 'create', data: populated });
+    }
     res.status(201).json({ success: true, data: populated });
   } catch (error) {
     next(error);

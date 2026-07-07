@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
+import socket from '../services/socket';
 import { 
   FaQuestionCircle, FaPlus, FaTimes, FaSpinner, FaSearch, 
   FaUser, FaThumbsUp, FaThumbsDown, FaBookmark, FaCheck, FaTrash 
@@ -54,6 +55,23 @@ const CommunityDoubts = () => {
   useEffect(() => {
     fetchQuestions();
   }, [filterCategory, searchQuery, sortOption]);
+
+  // Real-time socket event synchronization for doubts board
+  useEffect(() => {
+    socket.on('question_change', (data) => {
+      if (data.action === 'create') {
+        setQuestions(prev => {
+          if (prev.some(q => q._id === data.data._id)) return prev;
+          if (filterCategory !== 'All' && data.data.category !== filterCategory) return prev;
+          return [data.data, ...prev];
+        });
+      }
+    });
+
+    return () => {
+      socket.off('question_change');
+    };
+  }, [filterCategory]);
 
   const handleAskQuestion = async (e) => {
     e.preventDefault();

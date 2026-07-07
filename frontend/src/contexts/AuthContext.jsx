@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { api, registerAuthFailureCallback } from '../services/api';
+import socket from '../services/socket';
 
 const AuthContext = createContext(null);
 
@@ -145,6 +146,19 @@ export const AuthProvider = ({ children }) => {
     checkAuthStatus();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Sync socket connection state with auth session
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      socket.connect();
+      socket.emit('join_room', user.id || user._id);
+    } else {
+      socket.disconnect();
+    }
+    return () => {
+      socket.disconnect();
+    };
+  }, [isAuthenticated, user]);
 
   // ---------------------------------------------------------------------------
   // login
