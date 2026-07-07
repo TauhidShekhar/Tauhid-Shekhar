@@ -154,25 +154,31 @@ const updateBlog = async (req, res, next) => {
       updates.publishedAt = new Date();
     }
 
-    if (req.file) {
-      const { uploadToCloudinary, deleteFromCloudinary } = require('../middleware/upload');
-      
-      // Delete old cover image if exists
-      if (blog.coverImage && blog.coverImage.publicId) {
-        await deleteFromCloudinary(blog.coverImage.publicId).catch(err => console.error('Cloudinary delete error:', err.message));
-      }
+    let oldCoverImageId = null;
 
+    if (req.file) {
+      const { uploadToCloudinary } = require('../middleware/upload');
+      
       const uploadResult = await uploadToCloudinary(req.file.buffer, 'blogs');
       updates.coverImage = {
         url: uploadResult.url,
         publicId: uploadResult.publicId
       };
+
+      if (blog.coverImage && blog.coverImage.publicId) {
+        oldCoverImageId = blog.coverImage.publicId;
+      }
     }
 
     const updatedBlog = await Blog.findByIdAndUpdate(req.params.id, updates, {
       new: true,
       runValidators: true
     });
+
+    if (oldCoverImageId) {
+      const { deleteFromCloudinary } = require('../middleware/upload');
+      await deleteFromCloudinary(oldCoverImageId).catch(err => console.error('Cloudinary delete error:', err.message));
+    }
 
     res.json({ success: true, data: updatedBlog });
   } catch (error) {

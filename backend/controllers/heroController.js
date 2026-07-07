@@ -25,38 +25,40 @@ const updateHero = async (req, res) => {
     if (!hero) {
       hero = await Hero.create(req.body);
     } else {
-      // Delete old hero image from Cloudinary if replaced
-      if (
+      const oldHeroImageId = (
         req.body.heroImage &&
         hero.heroImage &&
         hero.heroImage.publicId &&
         req.body.heroImage.publicId !== hero.heroImage.publicId
-      ) {
-        try {
-          await deleteFromCloudinary(hero.heroImage.publicId);
-        } catch (err) {
-          console.error('Failed to delete old hero image:', err.message);
-        }
-      }
+      ) ? hero.heroImage.publicId : null;
 
-      // Delete old hero background banner from Cloudinary if replaced
-      if (
+      const oldHeroBackgroundId = (
         req.body.heroBackground &&
         hero.heroBackground &&
         hero.heroBackground.publicId &&
         req.body.heroBackground.publicId !== hero.heroBackground.publicId
-      ) {
-        try {
-          await deleteFromCloudinary(hero.heroBackground.publicId);
-        } catch (err) {
-          console.error('Failed to delete old hero background:', err.message);
-        }
-      }
+      ) ? hero.heroBackground.publicId : null;
 
       hero = await Hero.findByIdAndUpdate(hero._id, req.body, {
         new: true,
         runValidators: true
       });
+
+      if (oldHeroImageId) {
+        try {
+          await deleteFromCloudinary(oldHeroImageId);
+        } catch (err) {
+          console.error('Failed to delete old hero image:', err.message);
+        }
+      }
+
+      if (oldHeroBackgroundId) {
+        try {
+          await deleteFromCloudinary(oldHeroBackgroundId);
+        } catch (err) {
+          console.error('Failed to delete old hero background:', err.message);
+        }
+      }
     }
     res.json({ success: true, data: hero });
   } catch (error) {

@@ -63,24 +63,31 @@ const updateCertificate = async (req, res, next) => {
     if (updates.displayOrder) updates.displayOrder = Number(updates.displayOrder);
     if (updates.date) updates.date = new Date(updates.date);
 
-    if (req.file) {
-      const { uploadToCloudinary, deleteFromCloudinary } = require('../middleware/upload');
-      
-      if (certificate.image && certificate.image.publicId) {
-        await deleteFromCloudinary(certificate.image.publicId).catch(err => console.error('Cloudinary delete error:', err.message));
-      }
+    let oldImageId = null;
 
+    if (req.file) {
+      const { uploadToCloudinary } = require('../middleware/upload');
+      
       const uploadResult = await uploadToCloudinary(req.file.buffer, 'certificates');
       updates.image = {
         url: uploadResult.url,
         publicId: uploadResult.publicId
       };
+
+      if (certificate.image && certificate.image.publicId) {
+        oldImageId = certificate.image.publicId;
+      }
     }
 
     const updatedCertificate = await Certificate.findByIdAndUpdate(req.params.id, updates, {
       new: true,
       runValidators: true
     });
+
+    if (oldImageId) {
+      const { deleteFromCloudinary } = require('../middleware/upload');
+      await deleteFromCloudinary(oldImageId).catch(err => console.error('Cloudinary delete error:', err.message));
+    }
 
     res.json({ success: true, data: updatedCertificate });
   } catch (error) {

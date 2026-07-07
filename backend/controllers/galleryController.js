@@ -60,24 +60,31 @@ const updateGalleryItem = async (req, res, next) => {
       updates.tags = updates.tags.split(',').map(t => t.trim()).filter(Boolean);
     }
 
-    if (req.file) {
-      const { uploadToCloudinary, deleteFromCloudinary } = require('../middleware/upload');
-      
-      if (item.image && item.image.publicId) {
-        await deleteFromCloudinary(item.image.publicId).catch(err => console.error('Cloudinary delete error:', err.message));
-      }
+    let oldImageId = null;
 
+    if (req.file) {
+      const { uploadToCloudinary } = require('../middleware/upload');
+      
       const uploadResult = await uploadToCloudinary(req.file.buffer, 'gallery');
       updates.image = {
         url: uploadResult.url,
         publicId: uploadResult.publicId
       };
+
+      if (item.image && item.image.publicId) {
+        oldImageId = item.image.publicId;
+      }
     }
 
     const updatedItem = await Gallery.findByIdAndUpdate(req.params.id, updates, {
       new: true,
       runValidators: true
     });
+
+    if (oldImageId) {
+      const { deleteFromCloudinary } = require('../middleware/upload');
+      await deleteFromCloudinary(oldImageId).catch(err => console.error('Cloudinary delete error:', err.message));
+    }
 
     res.json({ success: true, data: updatedItem });
   } catch (error) {

@@ -110,19 +110,20 @@ const uploadToLocal = async (buffer, folder) => {
 };
 
 /**
- * Upload a file buffer to Cloudinary (with local disk fallback).
+ * Upload a file buffer to Cloudinary (No local fallback to prevent data loss on container restarts).
  */
 const uploadToCloudinary = (buffer, folder, resourceType = 'auto') => {
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
   const apiKey = process.env.CLOUDINARY_API_KEY;
+  const apiSecret = process.env.CLOUDINARY_API_SECRET;
   
   const isCloudConfigured = 
     cloudName && !cloudName.includes('your_cloudinary') && 
-    apiKey && !apiKey.includes('your_cloudinary');
+    apiKey && !apiKey.includes('your_cloudinary') &&
+    apiSecret && !apiSecret.includes('your_cloudinary');
 
   if (!isCloudConfigured) {
-    console.log('Cloudinary credentials are not configured. Saving locally...');
-    return uploadToLocal(buffer, folder);
+    return Promise.reject(new Error('Cloudinary credentials are not configured. Upload aborted.'));
   }
 
   return new Promise((resolve, reject) => {
@@ -131,15 +132,10 @@ const uploadToCloudinary = (buffer, folder, resourceType = 'auto') => {
         folder: `portfolio/${folder}`,
         resource_type: resourceType,
       },
-      async (error, result) => {
+      (error, result) => {
         if (error) {
-          console.warn('Cloudinary upload failed, triggering local fallback:', error.message);
-          try {
-            const localResult = await uploadToLocal(buffer, folder);
-            return resolve(localResult);
-          } catch (localErr) {
-            return reject(error);
-          }
+          console.error('Cloudinary upload error:', error.message);
+          return reject(new Error('Cloudinary upload failed: ' + error.message));
         }
         resolve({
           url: result.secure_url,

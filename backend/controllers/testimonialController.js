@@ -65,24 +65,31 @@ const updateTestimonial = async (req, res, next) => {
     if (updates.displayOrder) updates.displayOrder = Number(updates.displayOrder);
     if (updates.featured !== undefined) updates.featured = updates.featured === 'true' || updates.featured === true;
 
-    if (req.file) {
-      const { uploadToCloudinary, deleteFromCloudinary } = require('../middleware/upload');
-      
-      if (testimonial.avatar && testimonial.avatar.publicId) {
-        await deleteFromCloudinary(testimonial.avatar.publicId).catch(err => console.error('Cloudinary delete error:', err.message));
-      }
+    let oldAvatarPublicId = null;
 
+    if (req.file) {
+      const { uploadToCloudinary } = require('../middleware/upload');
+      
       const uploadResult = await uploadToCloudinary(req.file.buffer, 'testimonials');
       updates.avatar = {
         url: uploadResult.url,
         publicId: uploadResult.publicId
       };
+
+      if (testimonial.avatar && testimonial.avatar.publicId) {
+        oldAvatarPublicId = testimonial.avatar.publicId;
+      }
     }
 
     const updatedTestimonial = await Testimonial.findByIdAndUpdate(req.params.id, updates, {
       new: true,
       runValidators: true
     });
+
+    if (oldAvatarPublicId) {
+      const { deleteFromCloudinary } = require('../middleware/upload');
+      await deleteFromCloudinary(oldAvatarPublicId).catch(err => console.error('Cloudinary delete error:', err.message));
+    }
 
     res.json({ success: true, data: updatedTestimonial });
   } catch (error) {

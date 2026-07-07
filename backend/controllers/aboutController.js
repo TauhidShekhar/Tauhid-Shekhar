@@ -25,24 +25,25 @@ const updateAbout = async (req, res) => {
     if (!about) {
       about = await About.create(req.body);
     } else {
-      // Delete old profile picture from Cloudinary if replaced
-      if (
+      const oldProfilePictureId = (
         req.body.profilePicture &&
         about.profilePicture &&
         about.profilePicture.publicId &&
         req.body.profilePicture.publicId !== about.profilePicture.publicId
-      ) {
-        try {
-          await deleteFromCloudinary(about.profilePicture.publicId);
-        } catch (err) {
-          console.error('Failed to delete old profile picture:', err.message);
-        }
-      }
+      ) ? about.profilePicture.publicId : null;
 
       about = await About.findByIdAndUpdate(about._id, req.body, {
         new: true,
         runValidators: true
       });
+
+      if (oldProfilePictureId) {
+        try {
+          await deleteFromCloudinary(oldProfilePictureId);
+        } catch (err) {
+          console.error('Failed to delete old profile picture:', err.message);
+        }
+      }
     }
     res.json({ success: true, data: about });
   } catch (error) {
