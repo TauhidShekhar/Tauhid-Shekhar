@@ -107,7 +107,7 @@ const settingSchema = new mongoose.Schema(
       primaryColor: { type: String, default: '#0071e3' }
     }
   },
-  { timestamps: true }
+  { timestamps: true, optimisticConcurrency: true }
 );
 
 module.exports = mongoose.model('Setting', settingSchema);

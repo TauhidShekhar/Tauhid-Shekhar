@@ -148,6 +148,14 @@ const verifyEmail = async (req, res, next) => {
 const login = async (req, res, next) => {
   try {
     const { identifier, password, rememberMe } = req.body;
+
+    if (!identifier || typeof identifier !== 'string') {
+      return res.status(400).json({ success: false, message: 'Email or username is required.' });
+    }
+    if (!password || typeof password !== 'string') {
+      return res.status(400).json({ success: false, message: 'Password is required.' });
+    }
+
     const deviceInfo = getDeviceInfo(req);
 
     // Dummy hash for timing attack mitigation (salt 12 bcrypt output)
@@ -155,7 +163,7 @@ const login = async (req, res, next) => {
 
     // Find user by username or email
     const user = await User.findOne({
-      $or: [{ email: identifier.toLowerCase() }, { username: identifier.toLowerCase() }]
+      $or: [{ email: identifier.trim().toLowerCase() }, { username: identifier.trim().toLowerCase() }]
     }).select('+password');
 
     if (!user) {

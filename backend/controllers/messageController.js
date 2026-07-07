@@ -20,11 +20,29 @@ const createMessage = async (req, res) => {
   try {
     const { name, email, phone, subject, message } = req.body;
 
+    // Validate inputs
+    if (!name || typeof name !== 'string' || !name.trim()) {
+      return res.status(400).json({ success: false, message: 'Name is required.' });
+    }
+    if (!email || typeof email !== 'string' || !email.trim()) {
+      return res.status(400).json({ success: false, message: 'Email address is required.' });
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      return res.status(400).json({ success: false, message: 'Please enter a valid email address.' });
+    }
+    if (!message || typeof message !== 'string' || !message.trim()) {
+      return res.status(400).json({ success: false, message: 'Message text is required.' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanMessage = message.trim();
+
     // 1. Duplicate submission protection (last 5 minutes)
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
     const duplicate = await Message.findOne({
-      email: email.toLowerCase(),
-      message,
+      email: cleanEmail,
+      message: cleanMessage,
       createdAt: { $gte: fiveMinutesAgo }
     });
 
@@ -37,11 +55,11 @@ const createMessage = async (req, res) => {
 
     // 2. Create message in MongoDB
     const newMessage = await Message.create({
-      name,
-      email: email.toLowerCase(),
-      phone,
-      subject: subject || 'No Subject',
-      message
+      name: name.trim(),
+      email: cleanEmail,
+      phone: phone ? phone.trim() : undefined,
+      subject: subject ? subject.trim() : 'No Subject',
+      message: cleanMessage
     });
 
     // 3. Send email notifications in the background (no await) to respond instantly
@@ -50,10 +68,10 @@ const createMessage = async (req, res) => {
       .then((settings) => {
         const adminEmail = settings?.email || 'shekhartauhid@gmail.com';
         // Admin Notification
-        sendContactAdminNotification(adminEmail, newMessage, req.ip || req.connection.remoteAddress)
+        sendContactAdminNotification(adminEmail, newMessage, req.ip || req.connection?.remoteAddress || '127.0.0.1')
           .catch((err) => console.error('Admin Email failed:', err.message));
         // User Confirmation
-        sendContactUserConfirmation(email.toLowerCase(), newMessage)
+        sendContactUserConfirmation(cleanEmail, newMessage)
           .catch((err) => console.error('User Email failed:', err.message));
       })
       .catch((err) => console.error('Settings fetch failed:', err.message));

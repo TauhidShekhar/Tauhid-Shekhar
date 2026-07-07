@@ -41,8 +41,10 @@ const blogSchema = new mongoose.Schema(
     metaTitle: { type: String },
     metaDescription: { type: String }
   },
-  { timestamps: true }
+  { timestamps: true, optimisticConcurrency: true }
 );
+
+blogSchema.index({ slug: 1, status: 1 });
 
 // ─── Pre-save: Auto-generate slug from title if not set ──────────────
 blogSchema.pre('save', function (next) {

@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import { StrictMode, Suspense, lazy } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import './index.css';
@@ -7,107 +7,117 @@ import './index.css';
 import { AuthProvider } from './contexts/AuthContext.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
-// Auth Pages
-import Auth from './admin/Auth.jsx';
-import ForgotPassword from './admin/ForgotPassword.jsx';
-import ResetPassword from './admin/ResetPassword.jsx';
-import VerifyEmail from './admin/VerifyEmail.jsx';
-import RecoverAccount from './admin/RecoverAccount.jsx';
+// Loading Screen Fallback Spinner
+const LoadingScreen = () => (
+  <div className="min-h-screen bg-slate-950 flex items-center justify-center flex-col gap-4">
+    <div className="w-12 h-12 rounded-full border-4 border-primary-blue/20 border-t-primary-blue animate-spin" />
+    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse">Loading CMS Panel...</span>
+  </div>
+);
+
+// Auth Pages (Lazy Loaded)
+const Auth = lazy(() => import('./admin/Auth.jsx'));
+const ForgotPassword = lazy(() => import('./admin/ForgotPassword.jsx'));
+const ResetPassword = lazy(() => import('./admin/ResetPassword.jsx'));
+const VerifyEmail = lazy(() => import('./admin/VerifyEmail.jsx'));
+const RecoverAccount = lazy(() => import('./admin/RecoverAccount.jsx'));
 
 // Admin CMS Panel Layout & Dashboards
 import AdminLayout from './admin/AdminLayout.jsx';
 import Dashboard from './admin/Dashboard.jsx';
 
-// Core CMS Managers
-import HeroManager from './admin/HeroManager.jsx';
-import AboutManager from './admin/AboutManager.jsx';
-import SkillsManager from './admin/SkillsManager.jsx';
-import ProjectsManager from './admin/ProjectsManager.jsx';
-import ExperienceManager from './admin/ExperienceManager.jsx';
-import EducationManager from './admin/EducationManager.jsx';
-import AchievementsManager from './admin/AchievementsManager.jsx';
-import CertificatesManager from './admin/CertificatesManager.jsx';
-import ResumeManager from './admin/ResumeManager.jsx';
-import BlogManager from './admin/BlogManager.jsx';
-import TestimonialsManager from './admin/TestimonialsManager.jsx';
-import GalleryManager from './admin/GalleryManager.jsx';
-import MessagesInbox from './admin/MessagesInbox.jsx';
-import OrdersManager from './admin/OrdersManager.jsx';
-import ServicesManager from './admin/ServicesManager.jsx';
+// Core CMS Managers (Lazy Loaded)
+const HeroManager = lazy(() => import('./admin/HeroManager.jsx'));
+const AboutManager = lazy(() => import('./admin/AboutManager.jsx'));
+const SkillsManager = lazy(() => import('./admin/SkillsManager.jsx'));
+const ProjectsManager = lazy(() => import('./admin/ProjectsManager.jsx'));
+const ExperienceManager = lazy(() => import('./admin/ExperienceManager.jsx'));
+const EducationManager = lazy(() => import('./admin/EducationManager.jsx'));
+const AchievementsManager = lazy(() => import('./admin/AchievementsManager.jsx'));
+const CertificatesManager = lazy(() => import('./admin/CertificatesManager.jsx'));
+const ResumeManager = lazy(() => import('./admin/ResumeManager.jsx'));
+const BlogManager = lazy(() => import('./admin/BlogManager.jsx'));
+const TestimonialsManager = lazy(() => import('./admin/TestimonialsManager.jsx'));
+const GalleryManager = lazy(() => import('./admin/GalleryManager.jsx'));
+const MessagesInbox = lazy(() => import('./admin/MessagesInbox.jsx'));
+const OrdersManager = lazy(() => import('./admin/OrdersManager.jsx'));
+const ServicesManager = lazy(() => import('./admin/ServicesManager.jsx'));
 
-// Utility & System Configuration Panels
-import MediaLibrary from './admin/MediaLibrary.jsx';
-import UsersManager from './admin/UsersManager.jsx';
-import AuditLogs from './admin/AuditLogs.jsx';
-import SettingsManager from './admin/SettingsManager.jsx';
-import SEOManager from './admin/SEOManager.jsx';
-import ThemeSettings from './admin/ThemeSettings.jsx';
-import AnalyticsManager from './admin/AnalyticsManager.jsx';
-import BackupManager from './admin/BackupManager.jsx';
-import ProfileManager from './admin/ProfileManager.jsx';
-import SecurityManager from './admin/SecurityManager.jsx';
-import CommunityCMS from './admin/CommunityCMS.jsx';
-import FeatureManagement from './admin/FeatureManagement.jsx';
+// Utility & System Configuration Panels (Lazy Loaded)
+const MediaLibrary = lazy(() => import('./admin/MediaLibrary.jsx'));
+const UsersManager = lazy(() => import('./admin/UsersManager.jsx'));
+const AuditLogs = lazy(() => import('./admin/AuditLogs.jsx'));
+const SettingsManager = lazy(() => import('./admin/SettingsManager.jsx'));
+const SEOManager = lazy(() => import('./admin/SEOManager.jsx'));
+const ThemeSettings = lazy(() => import('./admin/ThemeSettings.jsx'));
+const AnalyticsManager = lazy(() => import('./admin/AnalyticsManager.jsx'));
+const BackupManager = lazy(() => import('./admin/BackupManager.jsx'));
+const ProfileManager = lazy(() => import('./admin/ProfileManager.jsx'));
+const SecurityManager = lazy(() => import('./admin/SecurityManager.jsx'));
+const CommunityCMS = lazy(() => import('./admin/CommunityCMS.jsx'));
+const FeatureManagement = lazy(() => import('./admin/FeatureManagement.jsx'));
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
       <BrowserRouter>
-        <Routes>
-          {/* Automatic Redirect from Root to Admin Panel */}
-          <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
-          <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+        <Suspense fallback={<LoadingScreen />}>
+          <Routes>
+            {/* Automatic Redirect from Root to Admin Panel */}
+            <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
 
-          {/* Public Auth Routes */}
-          <Route path="/login" element={<Auth />} />
-          <Route path="/register" element={<Auth />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/recover-account" element={<RecoverAccount />} />
-          <Route path="/reset-password/:token" element={<ResetPassword />} />
-          <Route path="/verify-email/:token" element={<VerifyEmail />} />
+            {/* Public Auth Routes */}
+            <Route path="/login" element={<Auth />} />
+            <Route path="/register" element={<Auth />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/recover-account" element={<RecoverAccount />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
+            <Route path="/verify-email/:token" element={<VerifyEmail />} />
 
-          {/* Protected Admin CMS Dashboard Routes */}
-          <Route 
-            path="/admin/dashboard" 
-            element={
-              <ProtectedRoute allowedRoles={['Admin']}>
-                <AdminLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<Dashboard />} />
-            <Route path="hero" element={<HeroManager />} />
-            <Route path="about" element={<AboutManager />} />
-            <Route path="skills" element={<SkillsManager />} />
-            <Route path="projects" element={<ProjectsManager />} />
-            <Route path="experience" element={<ExperienceManager />} />
-            <Route path="education" element={<EducationManager />} />
-            <Route path="achievements" element={<AchievementsManager />} />
-            <Route path="certificates" element={<CertificatesManager />} />
-            <Route path="resume" element={<ResumeManager />} />
-            <Route path="blogs" element={<BlogManager />} />
-            <Route path="testimonials" element={<TestimonialsManager />} />
-            <Route path="gallery" element={<GalleryManager />} />
-            <Route path="messages" element={<MessagesInbox />} />
-            <Route path="orders" element={<OrdersManager />} />
-            <Route path="services" element={<ServicesManager />} />
-            <Route path="media" element={<MediaLibrary />} />
-            <Route path="users" element={<UsersManager />} />
-            <Route path="audit-logs" element={<AuditLogs />} />
-            <Route path="settings" element={<SettingsManager />} />
-            <Route path="seo" element={<SEOManager />} />
-            <Route path="theme" element={<ThemeSettings />} />
-            <Route path="analytics" element={<AnalyticsManager />} />
-            <Route path="backup" element={<BackupManager />} />
-            <Route path="profile" element={<ProfileManager />} />
-            <Route path="security" element={<SecurityManager />} />
-            <Route path="community" element={<CommunityCMS />} />
-            <Route path="features" element={<FeatureManagement />} />
-          </Route>
+            {/* Protected Admin CMS Dashboard Routes */}
+            <Route 
+              path="/admin/dashboard" 
+              element={
+                <ProtectedRoute allowedRoles={['Admin']}>
+                  <AdminLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Dashboard />} />
+              <Route path="hero" element={<HeroManager />} />
+              <Route path="about" element={<AboutManager />} />
+              <Route path="skills" element={<SkillsManager />} />
+              <Route path="projects" element={<ProjectsManager />} />
+              <Route path="experience" element={<ExperienceManager />} />
+              <Route path="education" element={<EducationManager />} />
+              <Route path="achievements" element={<AchievementsManager />} />
+              <Route path="certificates" element={<CertificatesManager />} />
+              <Route path="resume" element={<ResumeManager />} />
+              <Route path="blogs" element={<BlogManager />} />
+              <Route path="testimonials" element={<TestimonialsManager />} />
+              <Route path="gallery" element={<GalleryManager />} />
+              <Route path="messages" element={<MessagesInbox />} />
+              <Route path="orders" element={<OrdersManager />} />
+              <Route path="services" element={<ServicesManager />} />
+              <Route path="media" element={<MediaLibrary />} />
+              <Route path="users" element={<UsersManager />} />
+              <Route path="audit-logs" element={<AuditLogs />} />
+              <Route path="settings" element={<SettingsManager />} />
+              <Route path="seo" element={<SEOManager />} />
+              <Route path="theme" element={<ThemeSettings />} />
+              <Route path="analytics" element={<AnalyticsManager />} />
+              <Route path="backup" element={<BackupManager />} />
+              <Route path="profile" element={<ProfileManager />} />
+              <Route path="security" element={<SecurityManager />} />
+              <Route path="community" element={<CommunityCMS />} />
+              <Route path="features" element={<FeatureManagement />} />
+            </Route>
 
-          {/* Fallback to Admin Dashboard */}
-          <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
-        </Routes>
+            {/* Fallback to Admin Dashboard */}
+            <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </AuthProvider>
   </StrictMode>

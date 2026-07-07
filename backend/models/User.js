@@ -159,7 +159,7 @@ const userSchema = new mongoose.Schema(
       }
     ]
   },
-  { timestamps: true }
+  { timestamps: true, optimisticConcurrency: true }
 );
 
 // ─── Pre-save: Hash password (salt 12) ───────────────────────────────
