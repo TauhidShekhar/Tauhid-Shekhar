@@ -7,7 +7,7 @@ import {
   FaFileImage, FaFileVideo, FaFilePdf, FaFileArchive, FaFileCode, 
   FaUpload, FaDownload, FaCog, FaUserShield, FaUserTimes, FaCheck, FaTimes, 
   FaLockOpen, FaBookOpen, FaUserMinus, FaUserPlus, FaHashtag, FaListAlt,
-  FaImage, FaVideo, FaComment, FaBookmark, FaRegBookmark, FaRegHeart, FaHeart, FaPaperPlane
+  FaImage, FaVideo, FaComment, FaBookmark, FaRegBookmark, FaRegHeart, FaHeart, FaPaperPlane, FaSpinner
 } from 'react-icons/fa';
 
 const CATEGORIES = ['General', 'React', 'Node.js', 'Design', 'Web3', 'AI/ML', 'DevOps', 'Mobile'];
