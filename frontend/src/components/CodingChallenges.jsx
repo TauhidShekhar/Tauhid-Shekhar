@@ -155,6 +155,13 @@ const CodingChallenges = () => {
   const [submitting, setSubmitting] = useState(false);
   const [submitResult, setSubmitResult] = useState(null);
 
+  // Sandbox VM execution & Hints states
+  const [running, setRunning] = useState(false);
+  const [runResult, setRunResult] = useState(null);
+  const [unlockedHints, setUnlockedHints] = useState([]);
+  const [selectedHintLevel, setSelectedHintLevel] = useState(null);
+  const [selectedHintContent, setSelectedHintContent] = useState(null);
+
   // Spin Wheel States
   const [spinning, setSpinning] = useState(false);
   const [wheelResult, setWheelResult] = useState('');
@@ -176,6 +183,7 @@ const CodingChallenges = () => {
       if (res.success) {
         setChallenge(res.data.challenge);
         setIsSolved(res.data.isSolved);
+        setUnlockedHints(res.data.unlockedLevels || []);
         setCode(res.data.challenge?.codeTemplate || '');
       }
     } catch (err) {
@@ -202,12 +210,31 @@ const CodingChallenges = () => {
     return () => clearTimeout(timer);
   }, [quizTimeLeft, quizState]);
 
+  const handleRunCode = async () => {
+    if (!code.trim()) return;
+    setRunning(true);
+    setRunResult(null);
+    try {
+      const res = await api.submitChallengeSolution(challenge._id, code, true);
+      if (res.success) {
+        setRunResult(res);
+      }
+    } catch (err) {
+      setRunResult({
+        passed: false,
+        message: err.message || 'Execution check failed.'
+      });
+    } finally {
+      setRunning(false);
+    }
+  };
+
   const handleSubmitSolution = async () => {
     if (!code.trim()) return;
     setSubmitting(true);
     setSubmitResult(null);
     try {
-      const res = await api.submitChallengeSolution(challenge._id, code);
+      const res = await api.submitChallengeSolution(challenge._id, code, false);
       if (res.success) {
         setSubmitResult(res);
         if (res.passed) {
@@ -217,10 +244,30 @@ const CodingChallenges = () => {
     } catch (err) {
       setSubmitResult({
         passed: false,
-        message: err.message || 'Syntax compile check failed.'
+        message: err.message || 'Submission failed.'
       });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleUnlockHint = async (level, cost) => {
+    if (cost > 0 && user?.coins < cost) {
+      alert(`Insufficient Developer Coins. You need ${cost} coins, but you only have ${user?.coins || 0} coins.`);
+      return;
+    }
+    try {
+      const res = await api.unlockChallengeHint(challenge._id, level);
+      if (res.success) {
+        setUnlockedHints(prev => [...prev, level]);
+        setSelectedHintLevel(level);
+        setSelectedHintContent(res.hint);
+        if (cost > 0 && user) {
+          user.coins = res.coins;
+        }
+      }
+    } catch (err) {
+      alert(err.message || 'Failed to unlock hint.');
     }
   };
 
@@ -403,6 +450,61 @@ const CodingChallenges = () => {
               />
             </div>
 
+            {/* Hint & Solution Unlock System */}
+            <div className="bg-[#181822] p-4 rounded-2xl border border-white/5 mt-2 flex flex-col gap-3">
+              <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-1"><FaLightbulb className="text-amber-450" /> Hints & Solutions Unlock Panel</span>
+                <span className="text-[10px] text-amber-500 font-bold flex items-center gap-1"><FaCoins /> {user?.coins || 0} Coins Available</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+                {[
+                  { level: 1, name: 'Free Hint', cost: 0 },
+                  { level: 2, name: 'Algorithm', cost: 5 },
+                  { level: 3, name: 'Pseudo Code', cost: 10 },
+                  { level: 4, name: 'Partial Code', cost: 15 },
+                  { level: 5, name: 'Full Solution', cost: 25 }
+                ].map((item) => {
+                  const isUnlocked = unlockedHints.includes(item.level);
+                  return (
+                    <div key={item.level} className={`p-2.5 rounded-xl border flex flex-col gap-1.5 justify-between ${isUnlocked ? 'bg-purple-650/5 border-purple-500/10' : 'bg-[#121217] border-white/5'}`}>
+                      <div className="flex flex-col text-left">
+                        <span className="text-[8px] text-slate-500 font-bold uppercase">Lvl {item.level}</span>
+                        <span className="text-[9px] text-white font-bold leading-tight mt-0.5">{item.name}</span>
+                      </div>
+                      {isUnlocked ? (
+                        <button onClick={() => {
+                          setSelectedHintLevel(item.level);
+                          handleUnlockHint(item.level, 0);
+                        }} className="w-full py-1 bg-purple-650 hover:bg-purple-700 text-white rounded text-[8px] font-bold uppercase cursor-pointer">View</button>
+                      ) : (
+                        <button onClick={() => handleUnlockHint(item.level, item.cost)} className="w-full py-1 bg-amber-600/10 hover:bg-amber-600/20 text-amber-450 border border-amber-500/10 rounded text-[8px] font-black uppercase cursor-pointer flex items-center justify-center gap-0.5">
+                          <FaCoins size={7} /> {item.cost}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              {selectedHintContent && (
+                <div className="mt-1 p-3 bg-[#121217] border border-purple-500/10 rounded-xl text-left">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-[8px] font-black text-purple-400 uppercase">Level {selectedHintLevel} Hint Details</span>
+                    {(selectedHintLevel === 4 || selectedHintLevel === 5) && (
+                      <button 
+                        onClick={() => {
+                          setCode(selectedHintContent);
+                        }} 
+                        className="text-[8px] bg-purple-650/10 hover:bg-purple-650/20 text-purple-400 px-2 py-0.5 rounded uppercase font-black cursor-pointer"
+                      >
+                        Copy to Editor
+                      </button>
+                    )}
+                  </div>
+                  <pre className="text-[10px] text-slate-350 font-mono whitespace-pre-wrap leading-relaxed bg-black/20 p-2 rounded border border-white/5">{selectedHintContent}</pre>
+                </div>
+              )}
+            </div>
+
             {/* Action Row */}
             <div className="flex justify-between items-center mt-2 border-t border-white/5 pt-3.5">
               <div className="flex flex-col text-left">
@@ -419,8 +521,12 @@ const CodingChallenges = () => {
                       if (res.success) {
                         setChallenge(res.data.challenge);
                         setIsSolved(res.data.isSolved);
+                        setUnlockedHints(res.data.unlockedLevels || []);
                         setCode(res.data.challenge?.codeTemplate || '');
                         setSubmitResult(null);
+                        setRunResult(null);
+                        setSelectedHintLevel(null);
+                        setSelectedHintContent(null);
                       }
                     } catch (err) {
                       alert(err.message || 'Failed to load next challenge.');
@@ -433,15 +539,50 @@ const CodingChallenges = () => {
                   Practice Next Challenge
                 </button>
               ) : (
-                <button
-                  disabled={submitting}
-                  onClick={handleSubmitSolution}
-                  className="px-6 py-2.5 bg-purple-655 hover:bg-purple-700 disabled:opacity-50 text-white rounded-xl text-[10px] font-black uppercase tracking-wider cursor-pointer transition-colors"
-                >
-                  {submitting ? 'Compiling...' : 'Submit Code'}
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    disabled={running || submitting}
+                    onClick={handleRunCode}
+                    className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-white rounded-xl text-[10px] font-black uppercase tracking-wider cursor-pointer transition-colors"
+                  >
+                    {running ? 'Running...' : 'Run Code'}
+                  </button>
+                  <button
+                    disabled={running || submitting}
+                    onClick={handleSubmitSolution}
+                    className="px-5 py-2.5 bg-purple-655 hover:bg-purple-700 disabled:opacity-50 text-white rounded-xl text-[10px] font-black uppercase tracking-wider cursor-pointer transition-colors"
+                  >
+                    {submitting ? 'Submitting...' : 'Submit Code'}
+                  </button>
+                </div>
               )}
             </div>
+
+            {/* Run output */}
+            {runResult && (
+              <div className={`mt-3 p-4 rounded-xl border flex items-start gap-2.5 text-xs bg-slate-900/50 border-white/5 text-slate-350`}>
+                <div className="mt-0.5">
+                  {runResult.passed ? <FaCheckCircle className="text-green-500" /> : <FaExclamationTriangle className="text-yellow-500" />}
+                </div>
+                <div className="flex flex-col text-left min-w-0 w-full">
+                  <span className="font-bold uppercase tracking-wider text-[10px] text-white">
+                    {runResult.passed ? 'Code Run Successful' : 'Code Run Failures'}
+                  </span>
+                  <p className="mt-0.5 leading-relaxed text-[11px] font-mono">{runResult.message}</p>
+                  
+                  {runResult.results && (
+                    <div className="flex flex-col gap-1 mt-2 w-full">
+                      {runResult.results.map((r, idx) => (
+                        <div key={idx} className="flex justify-between items-center text-[10px] font-mono border-t border-white/5 pt-1.5 mt-1.5">
+                          <span>Test Case #{idx + 1}: {r.passed ? 'PASSED ✓' : 'FAILED ✗'}</span>
+                          {!r.passed && <span className="text-red-400 text-[9px]">{r.error}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Submit output */}
             {submitResult && (

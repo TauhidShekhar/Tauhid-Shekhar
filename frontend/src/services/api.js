@@ -625,6 +625,9 @@ export const api = {
   getCommunityGroups: async () => {
     return apiRequest('/community/groups');
   },
+  getCommunityGroupDetails: async (id) => {
+    return apiRequest(`/community/groups/${id}`);
+  },
   createCommunityGroup: async (payload) => {
     return apiRequest('/community/groups', {
       method: 'POST',
@@ -895,10 +898,16 @@ export const api = {
   getRandomChallenge: async () => {
     return apiRequest('/community/challenges/random');
   },
-  submitChallengeSolution: async (id, code) => {
+  submitChallengeSolution: async (id, code, runOnly = false) => {
     return apiRequest(`/community/challenges/${id}/submit`, {
       method: 'POST',
-      body: JSON.stringify({ code })
+      body: JSON.stringify({ code, runOnly })
+    });
+  },
+  unlockChallengeHint: async (id, level) => {
+    return apiRequest(`/community/challenges/${id}/unlock-hint`, {
+      method: 'POST',
+      body: JSON.stringify({ level })
     });
   },
   submitQuizScore: async (difficulty, score, totalQuestions) => {

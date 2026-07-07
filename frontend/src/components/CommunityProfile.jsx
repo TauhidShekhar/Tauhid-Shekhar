@@ -20,6 +20,8 @@ const CommunityProfile = () => {
   const [activeTab, setActiveTab] = useState('overview'); // overview, posts, groups, about, edit, settings
   const [userPosts, setUserPosts] = useState([]);
   const [userGroups, setUserGroups] = useState([]);
+  const [showFollowersModal, setShowFollowersModal] = useState(false);
+  const [showFollowingModal, setShowFollowingModal] = useState(false);
   
   // Edit Profile States
   const [isEditing, setIsEditing] = useState(false);
@@ -309,8 +311,8 @@ const CommunityProfile = () => {
             {/* Counters */}
             <div className="flex items-center gap-6 mt-4 text-[10px] text-slate-400 font-bold uppercase tracking-widest">
               <span><strong className="text-white text-xs font-black">{userPosts.length}</strong> Posts</span>
-              <span><strong className="text-white text-xs font-black">{profile.followers?.length || 0}</strong> Followers</span>
-              <span><strong className="text-white text-xs font-black">{profile.following?.length || 0}</strong> Following</span>
+              <button onClick={() => setShowFollowersModal(true)} className="hover:text-purple-400 cursor-pointer transition-colors bg-transparent border-none p-0 text-[10px] text-slate-400 font-bold uppercase tracking-widest"><strong className="text-white text-xs font-black">{profile.followers?.length || 0}</strong> Followers</button>
+              <button onClick={() => setShowFollowingModal(true)} className="hover:text-purple-400 cursor-pointer transition-colors bg-transparent border-none p-0 text-[10px] text-slate-400 font-bold uppercase tracking-widest"><strong className="text-white text-xs font-black">{profile.following?.length || 0}</strong> Following</button>
               <span><strong className="text-white text-xs font-black">{userGroups.length}</strong> Groups</span>
             </div>
           </div>
@@ -810,6 +812,63 @@ const CommunityProfile = () => {
               {saving ? 'Updating...' : 'Update Password'}
             </button>
           </form>
+        </div>
+      )}
+      {showFollowersModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#121217] border border-white/5 w-full max-w-sm rounded-3xl p-6 flex flex-col gap-4 shadow-xl text-left">
+            <div className="flex justify-between items-center border-b border-white/5 pb-3">
+              <h3 className="text-xs font-black text-white uppercase tracking-wider">Followers ({profile.followers?.length || 0})</h3>
+              <button onClick={() => setShowFollowersModal(false)} className="text-slate-400 hover:text-white text-[10px] font-black uppercase cursor-pointer border border-white/10 px-2 py-1 rounded-lg transition-colors">Close</button>
+            </div>
+            <div className="flex flex-col gap-3 max-h-60 overflow-y-auto pr-1">
+              {(profile.followers || []).length === 0 ? (
+                <p className="text-[10px] text-slate-500 italic py-4 text-center">No followers yet.</p>
+              ) : (
+                profile.followers.map(f => (
+                  <div key={f._id} className="flex items-center gap-3 justify-between p-2 hover:bg-white/5 rounded-xl transition-all">
+                    <a href={`/community/profile/${f._id}`} onClick={() => setShowFollowersModal(false)} className="flex items-center gap-2.5 hover:opacity-80">
+                      <img src={f.avatar?.url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80'} className="w-8 h-8 rounded-full border border-white/10" />
+                      <div className="flex flex-col text-left">
+                        <span className="text-[11px] font-bold text-white leading-tight">{f.fullName}</span>
+                        <span className="text-[9px] text-slate-500 font-medium">@{f.username}</span>
+                      </div>
+                    </a>
+                    <span className="text-[8px] bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded font-black uppercase tracking-wider">{f.xp || 0} XP</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showFollowingModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#121217] border border-white/5 w-full max-w-sm rounded-3xl p-6 flex flex-col gap-4 shadow-xl text-left">
+            <div className="flex justify-between items-center border-b border-white/5 pb-3">
+              <h3 className="text-xs font-black text-white uppercase tracking-wider">Following ({profile.following?.length || 0})</h3>
+              <button onClick={() => setShowFollowingModal(false)} className="text-slate-400 hover:text-white text-[10px] font-black uppercase cursor-pointer border border-white/10 px-2 py-1 rounded-lg transition-colors">Close</button>
+            </div>
+            <div className="flex flex-col gap-3 max-h-60 overflow-y-auto pr-1">
+              {(profile.following || []).length === 0 ? (
+                <p className="text-[10px] text-slate-500 italic py-4 text-center">Not following anyone yet.</p>
+              ) : (
+                profile.following.map(f => (
+                  <div key={f._id} className="flex items-center gap-3 justify-between p-2 hover:bg-white/5 rounded-xl transition-all">
+                    <a href={`/community/profile/${f._id}`} onClick={() => setShowFollowingModal(false)} className="flex items-center gap-2.5 hover:opacity-80">
+                      <img src={f.avatar?.url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80'} className="w-8 h-8 rounded-full border border-white/10" />
+                      <div className="flex flex-col text-left">
+                        <span className="text-[11px] font-bold text-white leading-tight">{f.fullName}</span>
+                        <span className="text-[9px] text-slate-500 font-medium">@{f.username}</span>
+                      </div>
+                    </a>
+                    <span className="text-[8px] bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded font-black uppercase tracking-wider">{f.xp || 0} XP</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </div>
       )}
 

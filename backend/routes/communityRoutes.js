@@ -36,6 +36,7 @@ const {
   // Extended group controllers
   updateGroup,
   deleteGroup,
+  getGroupDetails,
   uploadGroupAssets,
   manageGroupMembers,
   uploadGroupFile,
@@ -86,7 +87,8 @@ const {
   getDailyChallenge,
   submitChallengeSolution,
   submitQuizScore,
-  getRandomChallenge
+  getRandomChallenge,
+  unlockChallengeHint
 } = require('../controllers/challengeController');
 
 const {
@@ -144,6 +146,7 @@ router.route('/comments/:commentId')
 // Groups
 router.post('/groups', createGroup);
 router.route('/groups/:id')
+  .get(optionalAuth, getGroupDetails)
   .put(updateGroup)
   .delete(deleteGroup);
 
@@ -230,6 +233,7 @@ router.get('/rewards/leaderboard-ecosystem', getLeaderboards);
 router.get('/challenges/today', getDailyChallenge);
 router.get('/challenges/random', getRandomChallenge);
 router.post('/challenges/:id/submit', submitChallengeSolution);
+router.post('/challenges/:id/unlock-hint', protect, unlockChallengeHint);
 router.post('/challenges/quiz/submit', submitQuizScore);
 
 // Store / Marketplace

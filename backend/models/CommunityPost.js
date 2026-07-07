@@ -31,6 +31,28 @@ const communityPostSchema = new mongoose.Schema(
       ref: 'CommunityGroup',
       default: null
     },
+    postType: {
+      type: String,
+      enum: ['text', 'image', 'video', 'pdf', 'link', 'poll', 'code', 'announcement'],
+      default: 'text'
+    },
+    link: {
+      type: String,
+      default: ''
+    },
+    codeSnippet: {
+      code: { type: String, default: '' },
+      language: { type: String, default: '' }
+    },
+    poll: {
+      question: { type: String, default: '' },
+      options: [
+        {
+          option: { type: String, required: true },
+          votes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+        }
+      ]
+    },
     reactions: [
       {
         user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

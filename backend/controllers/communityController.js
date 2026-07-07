@@ -70,7 +70,27 @@ const getPosts = async (req, res, next) => {
     const { page = 1, limit = 10, group = null, category = '', search = '', tag = '' } = req.query;
     const filter = { status: 'active' };
 
-    if (group) filter.group = group;
+    if (group) {
+      const communityGroup = await CommunityGroup.findById(group);
+      if (communityGroup && (communityGroup.visibility === 'secret' || communityGroup.isPrivate)) {
+        if (!req.user) {
+          return res.status(401).json({ success: false, message: 'Authorization required for this private board.' });
+        }
+        const isOwner = communityGroup.owner.toString() === req.user.id;
+        const isGrpAdmin = communityGroup.admins && communityGroup.admins.some(a => a.toString() === req.user.id);
+        const isMod = communityGroup.moderators && communityGroup.moderators.some(m => m.toString() === req.user.id);
+        const isMember = communityGroup.members && communityGroup.members.some(m => m.toString() === req.user.id);
+        const isGlobalAdmin = req.user.role === 'Admin';
+        const hasAccess = isOwner || isGrpAdmin || isMod || isMember || isGlobalAdmin;
+
+        if (!hasAccess && communityGroup.visibility === 'secret') {
+          return res.status(403).json({ success: false, message: 'You do not have permission to view this secret board.' });
+        }
+      }
+      filter.group = group;
+    } else {
+      filter.group = null;
+    }
     if (category) filter.category = category;
     if (tag) filter.tags = tag;
     if (search) {
@@ -102,17 +122,43 @@ const getPosts = async (req, res, next) => {
 
 const createPost = async (req, res, next) => {
   try {
-    const { title, content, mediaUrl, mediaType, group, category, tags } = req.body;
+    const { title, content, mediaUrl, mediaType, group, category, tags, postType, link, codeSnippet, poll } = req.body;
+
+    // Check group membership permissions
+    if (group) {
+      const communityGroup = await CommunityGroup.findById(group);
+      if (!communityGroup) return res.status(404).json({ success: false, message: 'Group not found' });
+
+      const isOwner = communityGroup.owner.toString() === req.user.id;
+      const isGrpAdmin = communityGroup.admins && communityGroup.admins.some(a => a.toString() === req.user.id);
+      const isMod = communityGroup.moderators && communityGroup.moderators.some(m => m.toString() === req.user.id);
+      const isMember = communityGroup.members && communityGroup.members.some(m => m.toString() === req.user.id);
+      const isGlobalAdmin = req.user.role === 'Admin';
+
+      const hasAccess = isOwner || isGrpAdmin || isMod || isMember || isGlobalAdmin;
+      if (!hasAccess) {
+        return res.status(403).json({ success: false, message: 'You must join this board to post content.' });
+      }
+
+      // Check announcement restrictions (only owner/admins/mods/global admins)
+      if (postType === 'announcement' && !(isOwner || isGrpAdmin || isMod || isGlobalAdmin)) {
+        return res.status(403).json({ success: false, message: 'Only board admins or moderators can post announcements.' });
+      }
+    }
 
     const post = await CommunityPost.create({
       title,
       content,
-      mediaUrl,
-      mediaType,
+      mediaUrl: mediaUrl || '',
+      mediaType: mediaType || 'none',
       group: group || null,
       category: category || 'General',
       tags: tags || [],
-      author: req.user.id
+      author: req.user.id,
+      postType: postType || 'text',
+      link: link || '',
+      codeSnippet: codeSnippet || { code: '', language: '' },
+      poll: poll || { question: '', options: [] }
     });
 
     // Award XP to the creator
@@ -233,12 +279,13 @@ const bookmarkPost = async (req, res, next) => {
 
     if (index === -1) {
       post.bookmarks.push(req.user.id);
-      res.json({ success: true, isBookmarked: true, message: 'Post bookmarked!' });
+      await post.save();
+      return res.json({ success: true, isBookmarked: true, message: 'Post bookmarked!' });
     } else {
       post.bookmarks.splice(index, 1);
-      res.json({ success: true, isBookmarked: false, message: 'Bookmark removed!' });
+      await post.save();
+      return res.json({ success: true, isBookmarked: false, message: 'Bookmark removed!' });
     }
-    await post.save();
   } catch (error) {
     next(error);
   }
@@ -356,6 +403,42 @@ const getGroups = async (req, res, next) => {
   }
 };
 
+const getGroupDetails = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const group = await CommunityGroup.findById(id);
+    if (!group) return res.status(404).json({ success: false, message: 'Group not found' });
+
+    // Check if user is banned
+    const isBanned = group.bannedMembers && group.bannedMembers.some(b => b.user.toString() === req.user?.id?.toString());
+    if (isBanned) {
+      return res.status(403).json({ success: false, message: 'You have been banned from this group.' });
+    }
+
+    // Access control check for secret groups
+    if (group.visibility === 'secret') {
+      if (!req.user) {
+        return res.status(401).json({ success: false, message: 'Authorization required for this secret group.' });
+      }
+      const isOwner = group.owner.toString() === req.user.id;
+      const isGrpAdmin = group.admins && group.admins.some(a => a.toString() === req.user.id);
+      const isMod = group.moderators && group.moderators.some(m => m.toString() === req.user.id);
+      const isMember = group.members && group.members.some(m => m.toString() === req.user.id);
+      const isGlobalAdmin = req.user.role === 'Admin';
+      const hasAccess = isOwner || isGrpAdmin || isMod || isMember || isGlobalAdmin;
+
+      if (!hasAccess) {
+        return res.status(403).json({ success: false, message: 'You do not have permission to access this secret group.' });
+      }
+    }
+
+    const populated = await populateGroupData(CommunityGroup.findById(group._id));
+    res.json({ success: true, data: populated });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const createGroup = async (req, res, next) => {
   try {
     const { name, description, coverImage, logo, category, tags, rules, isPrivate, visibility, location, language } = req.body;
@@ -406,6 +489,14 @@ const joinLeaveGroup = async (req, res, next) => {
 
     const index = group.members.indexOf(req.user.id);
     if (index === -1) {
+      const inviteIndex = group.invitedMembers ? group.invitedMembers.indexOf(req.user.id) : -1;
+      if (inviteIndex > -1) {
+        group.invitedMembers.splice(inviteIndex, 1);
+        group.members.push(req.user.id);
+        await group.save();
+        return res.json({ success: true, joined: true, message: 'Joined board successfully via invitation!' });
+      }
+
       if (group.isPrivate || group.visibility === 'secret') {
         if (group.pendingRequests.includes(req.user.id)) {
           return res.status(400).json({ success: false, message: 'Join request is already pending.' });
@@ -629,16 +720,21 @@ const toggleFollowUser = async (req, res, next) => {
         type: 'follow'
       });
       await awardXP(id, 15); // Target gets xp for gaining followers
-      res.json({ success: true, followed: true, message: 'User followed successfully!' });
+      
+      await targetUser.save({ validateBeforeSave: false });
+      await currentUser.save({ validateBeforeSave: false });
+      
+      return res.json({ success: true, followed: true, message: 'User followed successfully!' });
     } else {
       targetUser.followers.splice(index, 1);
       const curIndex = currentUser.following.findIndex(fid => fid && fid.toString() === id.toString());
       if (curIndex > -1) currentUser.following.splice(curIndex, 1);
-      res.json({ success: true, followed: false, message: 'User unfollowed.' });
+      
+      await targetUser.save({ validateBeforeSave: false });
+      await currentUser.save({ validateBeforeSave: false });
+      
+      return res.json({ success: true, followed: false, message: 'User unfollowed.' });
     }
-
-    await targetUser.save({ validateBeforeSave: false });
-    await currentUser.save({ validateBeforeSave: false });
   } catch (error) {
     next(error);
   }
@@ -740,7 +836,9 @@ const getMessages = async (req, res, next) => {
 const getPublicProfile = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id)
-      .select('-password -refreshTokens -loginHistory -failedLoginAttempts -lockUntil -emailVerificationToken -resetPasswordToken');
+      .select('-password -refreshTokens -loginHistory -failedLoginAttempts -lockUntil -emailVerificationToken -resetPasswordToken')
+      .populate('followers', 'fullName username avatar role xp')
+      .populate('following', 'fullName username avatar role xp');
     
     if (!user || !user.isActive) {
       return res.status(404).json({ success: false, message: 'User not found' });
@@ -867,15 +965,53 @@ const manageGroupMembers = async (req, res, next) => {
       } else {
         group.members.push(req.user.id);
       }
+    } else if (action === 'reject_join') {
+      if (!hasModPrivileges) return res.status(403).json({ success: false, message: 'Not authorized' });
+      group.pendingRequests = group.pendingRequests.filter(id => id.toString() !== targetUserId);
+      
+      // Notify target user
+      await CommunityNotification.create({
+        recipient: targetUserId,
+        sender: req.user.id,
+        type: 'join_request',
+        group: group._id
+      });
     } else if (action === 'approve_join') {
       if (!hasModPrivileges) return res.status(403).json({ success: false, message: 'Not authorized' });
       group.pendingRequests = group.pendingRequests.filter(id => id.toString() !== targetUserId);
       if (!group.members.includes(targetUserId)) {
         group.members.push(targetUserId);
       }
-    } else if (action === 'reject_join') {
-      if (!hasModPrivileges) return res.status(403).json({ success: false, message: 'Not authorized' });
-      group.pendingRequests = group.pendingRequests.filter(id => id.toString() !== targetUserId);
+      
+      // Notify target user
+      await CommunityNotification.create({
+        recipient: targetUserId,
+        sender: req.user.id,
+        type: 'join_accept',
+        group: group._id
+      });
+    } else if (action === 'invite') {
+      const isMember = group.members && group.members.some(m => m.toString() === req.user.id);
+      const isInviterAuthorized = isOwner || isGrpAdmin || isMod || isMember || isGlobalAdmin;
+      if (!isInviterAuthorized) {
+        return res.status(403).json({ success: false, message: 'You must join this board to invite others.' });
+      }
+      if (group.members.includes(targetUserId)) {
+        return res.status(400).json({ success: false, message: 'User is already a member.' });
+      }
+      group.invitedMembers = group.invitedMembers || [];
+      if (group.invitedMembers.includes(targetUserId)) {
+        return res.status(400).json({ success: false, message: 'User is already invited.' });
+      }
+      group.invitedMembers.push(targetUserId);
+
+      // Create notification
+      await CommunityNotification.create({
+        recipient: targetUserId,
+        sender: req.user.id,
+        type: 'invite',
+        group: group._id
+      });
     } else if (action === 'make_admin') {
       if (!isOwner && !isGlobalAdmin) return res.status(403).json({ success: false, message: 'Only owner can assign group admins' });
       group.admins = group.admins || [];
@@ -1138,12 +1274,13 @@ const bookmarkQuestion = async (req, res, next) => {
 
     if (index === -1) {
       question.bookmarks.push(req.user.id);
-      res.json({ success: true, bookmarked: true, message: 'Question bookmarked' });
+      await question.save();
+      return res.json({ success: true, bookmarked: true, message: 'Question bookmarked' });
     } else {
       question.bookmarks.splice(index, 1);
-      res.json({ success: true, bookmarked: false, message: 'Bookmark removed' });
+      await question.save();
+      return res.json({ success: true, bookmarked: false, message: 'Bookmark removed' });
     }
-    await question.save();
   } catch (error) {
     next(error);
   }
@@ -1825,6 +1962,7 @@ module.exports = {
   deleteComment,
   updateComment,
   getGroups,
+  getGroupDetails,
   createGroup,
   joinLeaveGroup,
   getResources,

@@ -130,6 +130,7 @@ const userSchema = new mongoose.Schema(
     xp: { type: Number, default: 0 },
     reputation: { type: Number, default: 0 },
     coins: { type: Number, default: 0 },
+    challengesSolvedCount: { type: Number, default: 0 },
     level: { type: Number, default: 1 },
     rank: { type: String, default: 'Bronze' },
     dailyStreak: { type: Number, default: 0 },

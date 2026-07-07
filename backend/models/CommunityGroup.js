@@ -71,6 +71,7 @@ const communityGroupSchema = new mongoose.Schema(
     moderators: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     members: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     pendingRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    invitedMembers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     mutedMembers: [
       {
         user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
