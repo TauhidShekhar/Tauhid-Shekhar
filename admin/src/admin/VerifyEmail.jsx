@@ -60,7 +60,7 @@ const VerifyEmail = () => {
             <div className="w-14 h-14 rounded-full bg-green-500/10 border border-green-500/25 flex items-center justify-center text-green-500 text-2xl font-bold">✓</div>
             <h3 className="text-xl font-bold font-title text-black dark:text-white">Email Verified!</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">{message}</p>
-            <Link to="/admin/login" className="px-8 py-3 bg-primary-blue hover:bg-accent-blue text-white rounded-xl text-xs font-bold font-title mt-4 shadow-lg shadow-primary-blue/15 transition-all">
+            <Link to="/login" className="px-8 py-3 bg-primary-blue hover:bg-accent-blue text-white rounded-xl text-xs font-bold font-title mt-4 shadow-lg shadow-primary-blue/15 transition-all">
               Sign In to CMS
             </Link>
           </div>
@@ -71,7 +71,7 @@ const VerifyEmail = () => {
             <div className="w-14 h-14 rounded-full bg-red-500/10 border border-red-500/25 flex items-center justify-center text-red-500 text-2xl font-bold">✕</div>
             <h3 className="text-xl font-bold font-title text-black dark:text-white">Verification Failed</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">{message}</p>
-            <Link to="/admin/login" className="px-8 py-3 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 text-slate-800 dark:text-white border border-slate-200 dark:border-white/5 rounded-xl text-xs font-bold font-title mt-4 transition-all">
+            <Link to="/login" className="px-8 py-3 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 text-slate-800 dark:text-white border border-slate-200 dark:border-white/5 rounded-xl text-xs font-bold font-title mt-4 transition-all">
               Back to Login
             </Link>
           </div>

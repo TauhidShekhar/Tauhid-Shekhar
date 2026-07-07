@@ -55,19 +55,20 @@ createRoot(document.getElementById('root')).render(
       <BrowserRouter>
         <Routes>
           {/* Automatic Redirect from Root to Admin Panel */}
-          <Route path="/" element={<Navigate to="/admin" replace />} />
+          <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
 
           {/* Public Auth Routes */}
-          <Route path="/admin/login" element={<Auth />} />
-          <Route path="/admin/register" element={<Auth />} />
-          <Route path="/admin/forgot-password" element={<ForgotPassword />} />
-          <Route path="/admin/recover-account" element={<RecoverAccount />} />
-          <Route path="/admin/reset-password/:token" element={<ResetPassword />} />
-          <Route path="/admin/verify-email/:token" element={<VerifyEmail />} />
+          <Route path="/login" element={<Auth />} />
+          <Route path="/register" element={<Auth />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/recover-account" element={<RecoverAccount />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/verify-email/:token" element={<VerifyEmail />} />
 
           {/* Protected Admin CMS Dashboard Routes */}
           <Route 
-            path="/admin" 
+            path="/admin/dashboard" 
             element={
               <ProtectedRoute allowedRoles={['Admin']}>
                 <AdminLayout />
@@ -105,7 +106,7 @@ createRoot(document.getElementById('root')).render(
           </Route>
 
           {/* Fallback to Admin Dashboard */}
-          <Route path="*" element={<Navigate to="/admin" replace />} />
+          <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

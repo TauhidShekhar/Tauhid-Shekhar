@@ -151,13 +151,13 @@ const CommunityLayout = () => {
     { name: 'Resources', path: '/community/resources', icon: <FaFolderOpen /> },
     { name: 'Messages', path: '/community/chat', icon: <FaComments /> },
     { name: 'Notifications', path: '/community/notifications', icon: <FaBell />, badge: notifCount },
-    { name: 'Profile', path: user ? `/community/profile/${user?.id || user?._id}` : '/admin/login', icon: <FaUser /> },
+    { name: 'Profile', path: user ? `/community/profile/${user?.id || user?._id}` : '/login', icon: <FaUser /> },
     { name: 'Rewards Hub', path: '/community/rewards', icon: <FaTasks /> },
     { name: 'Daily Arena', path: '/community/challenges', icon: <FaCode /> },
     { name: 'Ecosystem Shop', path: '/community/store', icon: <FaGift /> },
     { name: 'AI Consultant', path: '/community/ai-assistant', icon: <FaBrain /> },
     { name: 'Career Hub', path: '/community/career-hub', icon: <FaBriefcase /> },
-    { name: 'Settings', path: user ? `/user/dashboard` : '/admin/login', icon: <FaCog /> }
+    { name: 'Settings', path: user ? `/user/dashboard` : '/login', icon: <FaCog /> }
   ];
 
   return (
@@ -236,12 +236,12 @@ const CommunityLayout = () => {
               </div>
             </Link>
           ) : (
-            <a
-              href={`${VITE_ADMIN_URL}/admin/login`}
+            <Link
+              to="/login"
               className="px-3.5 py-1.5 sm:px-4 sm:py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-[10px] sm:text-xs font-black shadow-md shadow-purple-600/10 flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
             >
               Join Community
-            </a>
+            </Link>
           )}
           
           <Link
@@ -362,12 +362,12 @@ const CommunityLayout = () => {
             <div className="bg-[#121217] border border-white/5 p-5 rounded-3xl flex flex-col gap-3 shadow-sm text-center">
               <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block">Developer Status</span>
               <p className="text-[10px] text-slate-400 leading-relaxed">Join DevCommunity to earn XP, coins, and track your streaks!</p>
-              <a
-                href={`${VITE_ADMIN_URL}/admin/login`}
+              <Link
+                to="/login"
                 className="w-full py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors cursor-pointer text-center"
               >
                 Log In
-              </a>
+              </Link>
             </div>
           )}
         </aside>

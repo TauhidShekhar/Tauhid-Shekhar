@@ -81,7 +81,7 @@ const ResetPassword = () => {
       if (res.success) {
         setSuccess(res.message || 'Password reset successfully!');
         setTimeout(() => {
-          navigate('/admin/login');
+          navigate('/login');
         }, 3000);
       }
     } catch (err) {
@@ -118,7 +118,7 @@ const ResetPassword = () => {
           <div className="w-14 h-14 rounded-full bg-red-500/10 border border-red-500/25 flex items-center justify-center text-red-500 text-2xl font-bold mx-auto mb-4">✕</div>
           <h3 className="text-lg font-bold font-title text-black dark:text-white">Link Expired</h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mt-2">{tokenErrorMessage}</p>
-          <Link to="/admin/forgot-password" className="inline-block px-6 py-3.5 bg-primary-blue hover:bg-accent-blue text-white rounded-xl text-xs font-bold font-title mt-6 shadow-lg shadow-primary-blue/15 transition-all w-full text-center">
+          <Link to="/forgot-password" className="inline-block px-6 py-3.5 bg-primary-blue hover:bg-accent-blue text-white rounded-xl text-xs font-bold font-title mt-6 shadow-lg shadow-primary-blue/15 transition-all w-full text-center">
             Request New Reset Link
           </Link>
         </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { 
   FaRocket, FaSearch, FaMagic, FaGift, FaUsers, FaUser, 
@@ -290,12 +290,12 @@ const FeaturesPage = () => {
                 {/* Card CTA Footer */}
                 <div className="flex gap-2 mt-auto border-t border-white/5 pt-4 z-10">
                   {feat.loginRequired && !user ? (
-                    <a
-                      href={`${VITE_ADMIN_URL}/admin/login`}
-                      className="w-full py-2 bg-[#181822] hover:bg-[#20202d] text-slate-350 border border-white/5 rounded-xl text-[9px] font-black uppercase tracking-wider text-center cursor-pointer transition-colors"
+                    <Link
+                      to="/login"
+                      className="w-full py-2 bg-[#181822] hover:bg-[#20202d] text-slate-355 border border-white/5 rounded-xl text-[9px] font-black uppercase tracking-wider text-center cursor-pointer transition-colors"
                     >
                       Login to Use
-                    </a>
+                    </Link>
                   ) : (
                     <button
                       disabled={feat.isComingSoon}

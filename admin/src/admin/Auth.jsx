@@ -33,7 +33,7 @@ const Auth = () => {
   const location = useLocation();
 
   const activeTab = location.pathname.includes('register') ? 'register' : 'login';
-  const redirectPath = location.state?.from?.pathname || '/admin';
+  const redirectPath = location.state?.from?.pathname || '/admin/dashboard';
 
   const queryParams = new URLSearchParams(location.search);
   const externalRedirect = queryParams.get('redirect');
@@ -53,7 +53,7 @@ const Auth = () => {
       } else if (user?.role === 'Admin') {
         navigate(redirectPath);
       } else {
-        window.location.href = `${clientUrl}/community`;
+        window.location.href = `${clientUrl}/dashboard`;
       }
     }
   }, [isAuthenticated, user, navigate, redirectPath, externalRedirect, isLoading]);
@@ -77,7 +77,7 @@ const Auth = () => {
         } else if (res.user.role === 'Admin') {
           navigate(redirectPath);
         } else {
-          window.location.href = `${clientUrl}/community`;
+          window.location.href = `${clientUrl}/dashboard`;
         }
       }
     } catch (err) {
@@ -120,7 +120,7 @@ const Auth = () => {
         setRegConfirmPassword('');
         // Toggle back to login tab
         setTimeout(() => {
-          navigate('/admin/login');
+          navigate('/login');
           setSuccess('');
         }, 5000);
       }
@@ -153,7 +153,7 @@ const Auth = () => {
         <div className="flex border-b border-slate-200 dark:border-white/5 mb-6 select-none">
           <button
             onClick={() => {
-              navigate('/admin/login');
+              navigate('/login');
               setError('');
               setSuccess('');
             }}
@@ -167,7 +167,7 @@ const Auth = () => {
           </button>
           <button
             onClick={() => {
-              navigate('/admin/register');
+              navigate('/register');
               setError('');
               setSuccess('');
             }}
@@ -218,11 +218,11 @@ const Auth = () => {
               <div className="flex justify-between items-center">
                 <label htmlFor="loginPassword" className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Password</label>
                 <div className="flex items-center gap-2">
-                  <Link to="/admin/recover-account" className="text-xs font-bold text-primary-purple hover:text-purple-400 transition-colors">
+                  <Link to="/recover-account" className="text-xs font-bold text-primary-purple hover:text-purple-400 transition-colors">
                     Recover Account
                   </Link>
                   <span className="text-slate-300 dark:text-white/10 text-xs">|</span>
-                  <Link to="/admin/forgot-password" className="text-xs font-bold text-primary-blue hover:text-accent-blue transition-colors">
+                  <Link to="/forgot-password" className="text-xs font-bold text-primary-blue hover:text-accent-blue transition-colors">
                     Forgot Password?
                   </Link>
                 </div>

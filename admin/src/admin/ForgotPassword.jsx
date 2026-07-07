@@ -42,7 +42,7 @@ const ForgotPassword = () => {
         
         {/* Back Links */}
         <div className="flex justify-between items-center mb-6">
-          <Link to="/admin/login" className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-primary-blue transition-colors">
+          <Link to="/login" className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-primary-blue transition-colors">
             <FaArrowLeft /> Back to login
           </Link>
           <a href={clientUrl} className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-primary-blue transition-colors">

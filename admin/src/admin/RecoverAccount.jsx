@@ -75,7 +75,7 @@ const RecoverAccount = () => {
         setSuccess(res.message || 'Account recovered successfully!');
         setStep(3); // success screen
         setTimeout(() => {
-          navigate('/admin/login');
+          navigate('/login');
         }, 3000);
       }
     } catch (err) {
@@ -96,7 +96,7 @@ const RecoverAccount = () => {
         {/* Back Links */}
         {step !== 3 && (
           <div className="flex justify-between items-center mb-6">
-            <Link to="/admin/login" className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-primary-blue transition-colors">
+            <Link to="/login" className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-primary-blue transition-colors">
               <FaArrowLeft /> Back to login
             </Link>
             <a href={clientUrl} className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-primary-blue transition-colors">

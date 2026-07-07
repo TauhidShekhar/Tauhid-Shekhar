@@ -202,12 +202,12 @@ const Navbar = ({ activeSection, toggleTheme, isDark }) => {
             </div>
           ) : (
             <div className="flex items-center gap-2 border-l border-slate-200/50 dark:border-white/10 pl-4 py-1">
-              <a
-                href={`${VITE_ADMIN_URL}/admin/login`}
+              <Link
+                to="/login"
                 className="px-4.5 py-2 bg-primary-blue hover:bg-accent-blue text-white rounded-full text-xs font-bold tracking-wider uppercase transition-all duration-300 hover:-translate-y-0.5 shadow-md shadow-primary-blue/20"
               >
                 Login
-              </a>
+              </Link>
             </div>
           )}
 
@@ -315,13 +315,13 @@ const Navbar = ({ activeSection, toggleTheme, isDark }) => {
             </div>
           ) : (
             <div className="mb-2">
-              <a
-                href={`${VITE_ADMIN_URL}/admin/login`}
+              <Link
+                to="/login"
                 onClick={() => setIsOpen(false)}
                 className="flex items-center justify-center w-full py-3 bg-primary-blue text-white rounded-xl font-bold text-sm shadow-md"
               >
                 Login
-              </a>
+              </Link>
             </div>
           )}
 

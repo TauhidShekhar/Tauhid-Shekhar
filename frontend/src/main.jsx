@@ -42,6 +42,13 @@ import Legal from './components/Legal.jsx';
 import Terms from './components/Terms.jsx';
 import Privacy from './components/Privacy.jsx';
 
+// Auth Pages
+import Auth from './admin/Auth.jsx';
+import ForgotPassword from './admin/ForgotPassword.jsx';
+import ResetPassword from './admin/ResetPassword.jsx';
+import VerifyEmail from './admin/VerifyEmail.jsx';
+import RecoverAccount from './admin/RecoverAccount.jsx';
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
@@ -55,9 +62,25 @@ createRoot(document.getElementById('root')).render(
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
 
+          {/* Public Auth Routes */}
+          <Route path="/login" element={<Auth />} />
+          <Route path="/register" element={<Auth />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/recover-account" element={<RecoverAccount />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/verify-email/:token" element={<VerifyEmail />} />
+
           {/* Protected User Dashboard Route */}
           <Route 
             path="/user/dashboard" 
+            element={
+              <ProtectedRoute allowedRoles={['User', 'Admin']}>
+                <UserDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route 
+            path="/dashboard" 
             element={
               <ProtectedRoute allowedRoles={['User', 'Admin']}>
                 <UserDashboard />

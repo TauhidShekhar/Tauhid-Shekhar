@@ -186,7 +186,7 @@ const UserDashboard = () => {
       if (res.success) {
         alert('Your account has been deleted successfully.');
         logout();
-        navigate('/admin/login');
+        navigate('/login');
       }
     } catch (err) {
       setError(err.message || 'Account deletion failed.');
@@ -195,7 +195,7 @@ const UserDashboard = () => {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/admin/login');
+    navigate('/login');
   };
 
   return (

@@ -490,7 +490,7 @@ const Projects = () => {
                       </form>
                     ) : (
                       <p className="text-xs text-slate-500 leading-relaxed">
-                        Please <a href={(import.meta.env.VITE_ADMIN_URL && import.meta.env.VITE_ADMIN_URL !== 'undefined') ? `${import.meta.env.VITE_ADMIN_URL}/admin/login` : 'http://localhost:5174/admin/login'} onClick={() => setActiveCaseStudy(null)} className="text-primary-blue font-bold hover:underline">log in</a> to post feedback or ask questions on this project.
+                        Please <Link to="/login" onClick={() => setActiveCaseStudy(null)} className="text-primary-blue font-bold hover:underline">log in</Link> to post feedback or ask questions on this project.
                       </p>
                     )}
                   </div>
