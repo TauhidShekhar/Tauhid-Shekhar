@@ -36,6 +36,10 @@ const messageSchema = new mongoose.Schema(
     },
     repliedAt: {
       type: Date
+    },
+    dynamicFields: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {}
     }
   },
   { timestamps: true }

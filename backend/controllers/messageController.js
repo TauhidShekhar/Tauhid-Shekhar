@@ -18,25 +18,55 @@ const getMessages = async (req, res) => {
 // @access  Public
 const createMessage = async (req, res) => {
   try {
-    const { name, email, phone, subject, message } = req.body;
+    const Setting = require('../models/Setting');
+    const settings = await Setting.findOne();
+    const formFields = settings?.contactFormFields || [];
 
-    // Validate inputs
-    if (!name || typeof name !== 'string' || !name.trim()) {
-      return res.status(400).json({ success: false, message: 'Name is required.' });
-    }
-    if (!email || typeof email !== 'string' || !email.trim()) {
-      return res.status(400).json({ success: false, message: 'Email address is required.' });
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.trim())) {
-      return res.status(400).json({ success: false, message: 'Please enter a valid email address.' });
-    }
-    if (!message || typeof message !== 'string' || !message.trim()) {
-      return res.status(400).json({ success: false, message: 'Message text is required.' });
+    const dynamicFields = {};
+    let name = req.body.name || '';
+    let email = req.body.email || '';
+    let phone = req.body.phone || '';
+    let subject = req.body.subject || '';
+    let message = req.body.message || '';
+
+    // If we have custom fields, validate and map them
+    if (formFields.length > 0) {
+      for (const field of formFields) {
+        const val = req.body[field.name];
+        if (field.required && (val === undefined || val === null || String(val).trim() === '')) {
+          return res.status(400).json({ success: false, message: `${field.label} is required.` });
+        }
+        if (val !== undefined && val !== null) {
+          if (field.name === 'name') name = String(val);
+          else if (field.name === 'email') email = String(val);
+          else if (field.name === 'phone') phone = String(val);
+          else if (field.name === 'subject') subject = String(val);
+          else if (field.name === 'message') message = String(val);
+          else {
+            dynamicFields[field.name] = String(val);
+          }
+        }
+      }
+    } else {
+      // Fallback validation for standard fields
+      if (!name || typeof name !== 'string' || !name.trim()) {
+        return res.status(400).json({ success: false, message: 'Name is required.' });
+      }
+      if (!email || typeof email !== 'string' || !email.trim()) {
+        return res.status(400).json({ success: false, message: 'Email address is required.' });
+      }
+      if (!message || typeof message !== 'string' || !message.trim()) {
+        return res.status(400).json({ success: false, message: 'Message text is required.' });
+      }
     }
 
     const cleanEmail = email.trim().toLowerCase();
     const cleanMessage = message.trim();
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (cleanEmail && !emailRegex.test(cleanEmail)) {
+      return res.status(400).json({ success: false, message: 'Please enter a valid email address.' });
+    }
 
     // 1. Duplicate submission protection (last 5 minutes)
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
@@ -59,22 +89,16 @@ const createMessage = async (req, res) => {
       email: cleanEmail,
       phone: phone ? phone.trim() : undefined,
       subject: subject ? subject.trim() : 'No Subject',
-      message: cleanMessage
+      message: cleanMessage,
+      dynamicFields
     });
 
-    // 3. Send email notifications in the background (no await) to respond instantly
-    const Setting = require('../models/Setting');
-    Setting.findOne()
-      .then((settings) => {
-        const adminEmail = settings?.email || 'shekhartauhid@gmail.com';
-        // Admin Notification
-        sendContactAdminNotification(adminEmail, newMessage, req.ip || req.connection?.remoteAddress || '127.0.0.1')
-          .catch((err) => console.error('Admin Email failed:', err.message));
-        // User Confirmation
-        sendContactUserConfirmation(cleanEmail, newMessage)
-          .catch((err) => console.error('User Email failed:', err.message));
-      })
-      .catch((err) => console.error('Settings fetch failed:', err.message));
+    // 3. Send email notifications in the background (no await)
+    const adminEmail = settings?.email || 'shekhartauhid@gmail.com';
+    sendContactAdminNotification(adminEmail, newMessage, req.ip || req.connection?.remoteAddress || '127.0.0.1')
+      .catch((err) => console.error('Admin Email failed:', err.message));
+    sendContactUserConfirmation(cleanEmail, newMessage)
+      .catch((err) => console.error('User Email failed:', err.message));
 
     // 4. Broadcast live update to socket clients
     const io = req.app.get('io');
@@ -139,4 +163,34 @@ const toggleArchive = async (req, res) => {
   }
 };
 
-module.exports = { getMessages, createMessage, markAsRead, deleteMessage, toggleArchive };
+// @desc    Reply to a contact message
+// @route   POST /api/contact/:id/reply
+// @access  Private (Admin only)
+const replyMessage = async (req, res) => {
+  try {
+    const { replyText } = req.body;
+    if (!replyText || !replyText.trim()) {
+      return res.status(400).json({ success: false, message: 'Reply message text is required.' });
+    }
+
+    const message = await Message.findById(req.params.id);
+    if (!message) {
+      return res.status(404).json({ success: false, message: 'Message not found' });
+    }
+
+    message.reply = replyText.trim();
+    message.repliedAt = new Date();
+    message.isRead = true;
+    await message.save();
+
+    // Send the email reply
+    const { sendContactAdminReply } = require('../utils/emailService');
+    await sendContactAdminReply(message.email, message.name, message.message, replyText.trim());
+
+    res.json({ success: true, message: 'Reply sent successfully!', data: message });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = { getMessages, createMessage, markAsRead, deleteMessage, toggleArchive, replyMessage };

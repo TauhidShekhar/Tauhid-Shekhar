@@ -16,6 +16,24 @@ const settingSchema = new mongoose.Schema(
     whatsapp: { type: String },
     address: { type: String },
     mapEmbed: { type: String },
+    workingHours: { type: String, default: 'Mon - Fri: 9:00 AM - 6:00 PM' },
+    contactFormFields: {
+      type: [{
+        id: String,
+        name: String,
+        label: String,
+        type: { type: String },
+        required: { type: Boolean, default: false },
+        placeholder: String,
+        options: [String]
+      }],
+      default: [
+        { id: '1', name: 'name', label: 'Name', type: 'text', required: true, placeholder: 'Enter your name' },
+        { id: '2', name: 'email', label: 'Email', type: 'email', required: true, placeholder: 'Enter your email address' },
+        { id: '3', name: 'subject', label: 'Subject', type: 'text', required: true, placeholder: 'What is this about?' },
+        { id: '4', name: 'message', label: 'Message', type: 'textarea', required: true, placeholder: 'Your message here' }
+      ]
+    },
 
     // ── Resume ─────────────────────────────────────────────────────
     resumeUrl: { type: String },

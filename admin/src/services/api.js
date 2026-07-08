@@ -484,6 +484,12 @@ export const api = {
   toggleMessageArchive: async (id) => {
     return apiRequest(`/contact/${id}/archive`, { method: 'PATCH' });
   },
+  replyMessage: async (id, replyText) => {
+    return apiRequest(`/contact/${id}/reply`, {
+      method: 'POST',
+      body: JSON.stringify({ replyText })
+    });
+  },
 
   // User Management
   getUsers: async () => {

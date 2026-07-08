@@ -306,6 +306,28 @@ const sendOrderUserConfirmation = async (userEmail, orderData) => {
   await sendEmail(userEmail, 'Thank You! We Received Your Request', html);
 };
 
+/**
+ * Send an email reply from the admin back to the user.
+ */
+const sendContactAdminReply = async (userEmail, name, originalMessage, replyText) => {
+  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+  const html = wrapTemplate(
+    'Reply to Your Contact Inquiry',
+    `<p>Hi <strong>${name}</strong>,</p>
+     <p>I am writing to follow up on the contact message you submitted recently.</p>
+     <div style="background-color:#f3f4f6;border-left:4px solid #6366f1;padding:12px 16px;margin:20px 0;font-style:italic;color:#4b5563;">
+       "${originalMessage}"
+     </div>
+     <p><strong>My Reply:</strong></p>
+     <p style="color:#1f2937;font-size:15px;line-height:1.7;white-space:pre-wrap;background-color:#fdfdfd;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:16px 0;">${replyText}</p>
+     <hr style="border:0;border-top:1px solid #e5e7eb;margin:24px 0;" />
+     <p style="font-size:13px;color:#6b7280;margin:0;">Best Regards,</p>
+     <p style="font-size:14px;font-weight:700;color:#1f2937;margin:4px 0 0 0;">Tauhid Shekhar</p>
+     <p style="font-size:13px;color:#6b7280;margin:2px 0 0 0;"><a href="${clientUrl}" style="color:#6366f1;text-decoration:none;">${clientUrl}</a> | shekhartauhid@gmail.com</p>`
+  );
+  await sendEmail(userEmail, 'Re: Your Portfolio Inquiry', html);
+};
+
 module.exports = {
   sendVerificationEmail,
   sendPasswordResetEmail,
@@ -313,6 +335,7 @@ module.exports = {
   sendLoginAlertEmail,
   sendContactAdminNotification,
   sendContactUserConfirmation,
+  sendContactAdminReply,
   sendOrderAdminNotification,
   sendOrderUserConfirmation,
 };

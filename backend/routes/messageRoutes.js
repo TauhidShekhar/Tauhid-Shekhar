@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { getMessages, createMessage, markAsRead, deleteMessage, toggleArchive } = require('../controllers/messageController');
+const { getMessages, createMessage, markAsRead, deleteMessage, toggleArchive, replyMessage } = require('../controllers/messageController');
 const { protect, requireAdmin } = require('../middleware/authMiddleware');
 const { contactLimiter } = require('../middleware/rateLimiter');
-const { validate, contactSchema } = require('../middleware/validators');
 
 router.route('/')
   .get(protect, requireAdmin, getMessages)
-  .post(contactLimiter, validate(contactSchema), createMessage);
+  .post(contactLimiter, createMessage);
 
+router.post('/:id/reply', protect, requireAdmin, replyMessage);
 router.patch('/:id/read', protect, requireAdmin, markAsRead);
 router.patch('/:id/archive', protect, requireAdmin, toggleArchive);
 router.delete('/:id', protect, requireAdmin, deleteMessage);

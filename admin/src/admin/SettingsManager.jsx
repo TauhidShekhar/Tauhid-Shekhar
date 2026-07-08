@@ -59,8 +59,28 @@ const SettingsManager = () => {
     copyrightText: '',
     legalContent: '',
     termsContent: '',
-    privacyContent: ''
+    privacyContent: '',
+    mapEmbed: '',
+    workingHours: '',
+    socialLinks: {
+      github: '',
+      linkedin: '',
+      twitter: '',
+      instagram: '',
+      youtube: '',
+      facebook: ''
+    },
+    contactFormFields: []
   });
+
+  const [newField, setNewField] = useState({
+    label: '',
+    type: 'text',
+    required: false,
+    placeholder: '',
+    optionsInput: ''
+  });
+  const [editingFieldId, setEditingFieldId] = useState(null);
   
   // Password state
   const [passwordData, setPasswordData] = useState({
@@ -90,7 +110,18 @@ const SettingsManager = () => {
             copyrightText: res.data.copyrightText || '',
             legalContent: res.data.legalContent || DEFAULT_LEGAL,
             termsContent: res.data.termsContent || DEFAULT_TERMS,
-            privacyContent: res.data.privacyContent || DEFAULT_PRIVACY
+            privacyContent: res.data.privacyContent || DEFAULT_PRIVACY,
+            mapEmbed: res.data.mapEmbed || '',
+            workingHours: res.data.workingHours || 'Mon - Fri: 9:00 AM - 6:00 PM',
+            socialLinks: {
+              github: res.data.socialLinks?.github || '',
+              linkedin: res.data.socialLinks?.linkedin || '',
+              twitter: res.data.socialLinks?.twitter || '',
+              instagram: res.data.socialLinks?.instagram || '',
+              youtube: res.data.socialLinks?.youtube || '',
+              facebook: res.data.socialLinks?.facebook || ''
+            },
+            contactFormFields: res.data.contactFormFields || []
           });
         }
       } catch (err) {
@@ -106,6 +137,70 @@ const SettingsManager = () => {
   const handleSettingsChange = (e) => {
     const { name, value } = e.target;
     setSettings(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSocialLinkChange = (e) => {
+    const { name, value } = e.target;
+    setSettings(prev => ({
+      ...prev,
+      socialLinks: {
+        ...prev.socialLinks,
+        [name]: value
+      }
+    }));
+  };
+
+  const handleAddField = () => {
+    if (!newField.label.trim()) return;
+    const name = newField.label.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/(^_+|+$)/g, '');
+    const options = newField.optionsInput.split(',').map(o => o.trim()).filter(Boolean);
+    
+    const fieldData = {
+      id: editingFieldId || Date.now().toString(),
+      name,
+      label: newField.label.trim(),
+      type: newField.type,
+      required: newField.required,
+      placeholder: newField.placeholder.trim(),
+      options
+    };
+
+    setSettings(prev => {
+      let fields = [...(prev.contactFormFields || [])];
+      if (editingFieldId) {
+        fields = fields.map(f => f.id === editingFieldId ? fieldData : f);
+        setEditingFieldId(null);
+      } else {
+        fields.push(fieldData);
+      }
+      return { ...prev, contactFormFields: fields };
+    });
+
+    setNewField({
+      label: '',
+      type: 'text',
+      required: false,
+      placeholder: '',
+      optionsInput: ''
+    });
+  };
+
+  const handleEditField = (field) => {
+    setEditingFieldId(field.id);
+    setNewField({
+      label: field.label,
+      type: field.type,
+      required: field.required,
+      placeholder: field.placeholder || '',
+      optionsInput: field.options?.join(', ') || ''
+    });
+  };
+
+  const handleDeleteField = (id) => {
+    setSettings(prev => ({
+      ...prev,
+      contactFormFields: (prev.contactFormFields || []).filter(f => f.id !== id)
+    }));
   };
 
   const handleSettingsSubmit = async (e) => {
@@ -251,6 +346,34 @@ const SettingsManager = () => {
               </div>
             </div>
 
+            {/* Google Map embed link & Working Hours */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-2">
+                <label htmlFor="mapEmbed" className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Google Maps Embed URL</label>
+                <input
+                  type="text"
+                  id="mapEmbed"
+                  name="mapEmbed"
+                  value={settings.mapEmbed}
+                  onChange={handleSettingsChange}
+                  placeholder="https://www.google.com/maps/embed?pb=..."
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-primary-blue dark:focus:border-primary-blue text-sm transition-colors"
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label htmlFor="workingHours" className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Working Hours</label>
+                <input
+                  type="text"
+                  id="workingHours"
+                  name="workingHours"
+                  value={settings.workingHours}
+                  onChange={handleSettingsChange}
+                  placeholder="e.g. Mon - Fri: 9:00 AM - 6:00 PM"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-primary-blue dark:focus:border-primary-blue text-sm transition-colors"
+                />
+              </div>
+            </div>
+
             {/* WhatsApp Link & Resume PDF URL */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex flex-col gap-2">
@@ -348,7 +471,163 @@ const SettingsManager = () => {
               <FaSave /> Save Configurations
             </button>
           </form>
-        </div>
+
+            {/* Social Media Links Card */}
+            <div className="glass p-6 rounded-2xl border border-slate-200/60 dark:border-white/5 shadow-sm mt-6">
+              <h3 className="text-sm font-bold font-title text-black dark:text-white mb-4">Social Media Links</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {['github', 'linkedin', 'twitter', 'instagram', 'youtube', 'facebook'].map((platform) => (
+                  <div key={platform} className="flex flex-col gap-2">
+                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 capitalize">{platform} Profile URL</label>
+                    <input
+                      type="text"
+                      name={platform}
+                      value={settings.socialLinks?.[platform] || ''}
+                      onChange={handleSocialLinkChange}
+                      placeholder={`https://${platform}.com/username`}
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Contact Form Builder Card */}
+            <div className="glass p-6 rounded-2xl border border-slate-200/60 dark:border-white/5 shadow-sm mt-6">
+              <h3 className="text-base font-bold font-title text-black dark:text-white mb-2">Dynamic Contact Form Builder</h3>
+              <p className="text-xs text-slate-500 mb-6">Customize the inputs for your website's contact form. Changes sync instantly.</p>
+              
+              {/* Current Fields List */}
+              <div className="flex flex-col gap-3 mb-6">
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Form Fields</h4>
+                {settings.contactFormFields?.length > 0 ? (
+                  <div className="flex flex-col gap-2">
+                    {settings.contactFormFields.map((field, idx) => (
+                      <div key={field.id || idx} className="flex items-center justify-between p-3 rounded-xl bg-slate-5-0 dark:bg-slate-900 border border-slate-200/40 dark:border-white/5">
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs font-bold px-2 py-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-655 dark:text-slate-400 uppercase text-[9px]">{field.type}</span>
+                          <span className="text-sm font-bold text-slate-800 dark:text-slate-100">{field.label}</span>
+                          {field.required && <span className="text-red-500 text-xs font-bold">* Required</span>}
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleEditField(field)}
+                            className="text-xs font-bold text-primary-blue hover:underline cursor-pointer"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteField(field.id)}
+                            className="text-xs font-bold text-red-500 hover:underline cursor-pointer"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-400 italic">No fields defined. Using default contact form fields.</p>
+                )}
+              </div>
+
+              {/* Add/Edit field builder inputs */}
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/40 dark:border-white/5 flex flex-col gap-4">
+                <h4 className="text-xs font-bold text-slate-850 dark:text-slate-200">{editingFieldId ? 'Edit Field' : 'Create New Form Field'}</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-bold text-slate-450 uppercase">Field Label</label>
+                    <input
+                      type="text"
+                      value={newField.label}
+                      onChange={(e) => setNewField(prev => ({ ...prev, label: e.target.value }))}
+                      placeholder="e.g. Your Phone Number"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-bold text-slate-455 uppercase">Field Type</label>
+                    <select
+                      value={newField.type}
+                      onChange={(e) => setNewField(prev => ({ ...prev, type: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue"
+                    >
+                      <option value="text">Text Input</option>
+                      <option value="email">Email Address</option>
+                      <option value="tel">Phone Number</option>
+                      <option value="number">Numeric Input</option>
+                      <option value="textarea">Multi-line Text (Textarea)</option>
+                      <option value="select">Dropdown Select</option>
+                      <option value="checkbox">Single Checkbox</option>
+                      <option value="radio">Radio Buttons</option>
+                      <option value="date">Date Selection</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-bold text-slate-450 uppercase">Placeholder text</label>
+                    <input
+                      type="text"
+                      value={newField.placeholder}
+                      onChange={(e) => setNewField(prev => ({ ...prev, placeholder: e.target.value }))}
+                      placeholder="e.g. Enter phone number..."
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 pt-5">
+                    <input
+                      type="checkbox"
+                      id="field_req"
+                      checked={newField.required}
+                      onChange={(e) => setNewField(prev => ({ ...prev, required: e.target.checked }))}
+                      className="w-4 h-4 text-primary-blue rounded"
+                    />
+                    <label htmlFor="field_req" className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer">Required Field</label>
+                  </div>
+                </div>
+
+                {/* Options list input (for dropdown/radio) */}
+                {(newField.type === 'select' || newField.type === 'radio') && (
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-bold text-slate-450 uppercase">Dropdown / Radio Options (comma separated)</label>
+                    <input
+                      type="text"
+                      value={newField.optionsInput}
+                      onChange={(e) => setNewField(prev => ({ ...prev, optionsInput: e.target.value }))}
+                      placeholder="e.g. Graphic Design, Web Development, SEO, App Launch"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue"
+                    />
+                  </div>
+                )}
+
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={handleAddField}
+                    className="px-4 py-2 bg-primary-purple text-white text-xs font-bold rounded-lg hover:bg-opacity-90 cursor-pointer"
+                  >
+                    {editingFieldId ? 'Save Field Changes' : 'Add Field'}
+                  </button>
+                  {editingFieldId && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingFieldId(null);
+                        setNewField({ label: '', type: 'text', required: false, placeholder: '', optionsInput: '' });
+                      }}
+                      className="px-4 py-2 bg-slate-200 dark:bg-slate-800 text-slate-655 dark:text-slate-400 text-xs font-bold rounded-lg cursor-pointer"
+                    >
+                      Cancel Edit
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
 
         {/* Right: Security & Password Change */}
         <div className="lg:col-span-4 glass p-6 rounded-2xl border border-slate-200/60 dark:border-white/5 shadow-sm">

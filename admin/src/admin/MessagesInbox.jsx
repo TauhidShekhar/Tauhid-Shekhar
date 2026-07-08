@@ -15,6 +15,11 @@ const MessagesInbox = () => {
   const [viewTab, setViewTab] = useState('active'); // active, archived
   const [sortBy, setSortBy] = useState('newest'); // newest, oldest
 
+  // Reply states
+  const [replyActiveId, setReplyActiveId] = useState(null);
+  const [replyText, setReplyText] = useState('');
+  const [replyingId, setReplyingId] = useState(null);
+
   const fetchMessages = async () => {
     try {
       const res = await api.getMessages();
@@ -119,6 +124,24 @@ const MessagesInbox = () => {
       }
     } catch (err) {
       console.error('Deletion failed:', err);
+    }
+  };
+
+  const handleSendReply = async (id) => {
+    if (!replyText.trim()) return;
+    setReplyingId(id);
+    try {
+      const res = await api.replyMessage(id, replyText);
+      if (res.success) {
+        alert('Reply sent successfully via email!');
+        setMessages(prev => prev.map(m => m._id === id ? { ...m, reply: replyText, repliedAt: new Date(), isRead: true } : m));
+        setReplyActiveId(null);
+        setReplyText('');
+      }
+    } catch (err) {
+      alert('Failed to send reply: ' + err.message);
+    } finally {
+      setReplyingId(null);
     }
   };
 
@@ -330,6 +353,22 @@ const MessagesInbox = () => {
                   >
                     <FaTrash size={13} />
                   </button>
+
+                  {/* Reply button */}
+                  <button
+                    onClick={() => {
+                      setReplyActiveId(prev => prev === msg._id ? null : msg._id);
+                      setReplyText('');
+                    }}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                      replyActiveId === msg._id
+                        ? 'bg-purple-600 text-white border-purple-600 shadow-sm shadow-purple-600/10'
+                        : 'bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border-purple-500/10'
+                    }`}
+                    title="Reply via Email"
+                  >
+                    {replyActiveId === msg._id ? 'Cancel' : 'Reply'}
+                  </button>
                 </div>
               </div>
             </div>
@@ -341,6 +380,48 @@ const MessagesInbox = () => {
                 {msg.message}
               </p>
             </div>
+
+            {/* Dynamic Custom Fields display */}
+            {msg.dynamicFields && Object.keys(msg.dynamicFields).length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-550/5 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-white/5">
+                {Object.entries(msg.dynamicFields).map(([key, val]) => (
+                  <div key={key} className="flex gap-2">
+                    <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider shrink-0 w-24">{key.replace(/_/g, ' ')}:</span>
+                    <span className="text-xs text-slate-800 dark:text-slate-200 font-bold">{String(val)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Reply history */}
+            {msg.reply && (
+              <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/10 text-left">
+                <span className="text-[10px] font-black text-purple-400 uppercase tracking-wider block mb-1">Your Reply (Sent via Email):</span>
+                <p className="text-xs text-slate-700 dark:text-slate-350 italic">{msg.reply}</p>
+                <span className="text-[9px] font-bold text-slate-400 block mt-1">Replied at: {new Date(msg.repliedAt).toLocaleString()}</span>
+              </div>
+            )}
+
+            {/* Reply active form box */}
+            {replyActiveId === msg._id && (
+              <div className="border-t border-slate-100 dark:border-white/5 pt-4 flex flex-col gap-3">
+                <textarea
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  placeholder={`Reply to ${msg.name} (${msg.email})...`}
+                  rows={4}
+                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue resize-none"
+                />
+                <button
+                  type="button"
+                  disabled={replyingId === msg._id || !replyText.trim()}
+                  onClick={() => handleSendReply(msg._id)}
+                  className="px-4 py-2 bg-primary-blue hover:bg-accent-blue disabled:bg-slate-400 text-white text-xs font-bold rounded-lg w-fit transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  {replyingId === msg._id ? 'Sending...' : 'Send Reply via Email'}
+                </button>
+              </div>
+            )}
           </div>
         ))}
 
