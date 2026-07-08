@@ -912,6 +912,9 @@ const getUserOrders = async (req, res, next) => {
 // @route   GET /api/auth/google
 // @access  Public
 const googleLogin = (req, res) => {
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    return res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/login?error=Google Sign-In has not been configured in the backend environment yet.`);
+  }
   const rootUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
   const options = {
     redirect_uri: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:5000/api/auth/google/callback',
@@ -1041,6 +1044,9 @@ const googleCallback = async (req, res, next) => {
 // @route   GET /api/auth/github
 // @access  Public
 const githubLogin = (req, res) => {
+  if (!process.env.GITHUB_CLIENT_ID || !process.env.GITHUB_CLIENT_SECRET) {
+    return res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/login?error=GitHub Sign-In has not been configured in the backend environment yet.`);
+  }
   const rootUrl = 'https://github.com/login/oauth/authorize';
   const options = {
     client_id: process.env.GITHUB_CLIENT_ID,
