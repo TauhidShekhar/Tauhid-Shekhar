@@ -5,13 +5,20 @@ import { FaGraduationCap, FaAward, FaBriefcase, FaCheckCircle, FaLanguage } from
 
 const About = () => {
   const [settings, setSettings] = useState(null);
+  const [activeResume, setActiveResume] = useState(null);
 
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const res = await api.getAbout();
-        if (res.success) {
-          setSettings(res.data);
+        const [aboutRes, resumeRes] = await Promise.all([
+          api.getAbout().catch(() => null),
+          api.getActiveResume().catch(() => null)
+        ]);
+        if (aboutRes && aboutRes.success) {
+          setSettings(aboutRes.data);
+        }
+        if (resumeRes && resumeRes.success) {
+          setActiveResume(resumeRes.data);
         }
       } catch (err) {
         console.error('Failed to load settings in About:', err.message);
@@ -69,7 +76,7 @@ const About = () => {
   const aboutSkillsSummary = settings?.aboutSkillsSummary || 'Full Stack Web Developer & Graphic Designer';
   const profilePic = settings?.profilePicture?.url || 'assits/Profile-Img.png';
   const aboutText = settings?.aboutContent || 'Results-oriented Full Stack Web Developer with practical experience in building responsive web applications using HTML5, CSS3, JavaScript, React.js, Node.js, Express.js, MongoDB, and MySQL. Experienced in developing REST APIs, authentication systems, dashboards, and responsive user interfaces. Passionate about solving real-world problems, writing clean code, and continuously learning modern technologies.';
-  const resumeLink = settings?.resumeUrl || 'assits/Resume-file.pdf';
+  const resumeLink = activeResume?.fileUrl || settings?.resumeUrl || '';
   
   // Dynamic Personal Info Grids
   const personalInfo = settings?.aboutPersonalInfo || [];

@@ -4,7 +4,7 @@ const { requireAuth, requireAdmin } = require('../middleware/authMiddleware');
 const { upload } = require('../middleware/upload');
 
 // Portfolio Admin CV controllers
-const { getResumes, uploadResume, deleteResume } = require('../controllers/resumeController');
+const { getResumes, uploadResume, deleteResume, getActiveResume } = require('../controllers/resumeController');
 
 // ATS Analyzer controllers
 const {
@@ -31,6 +31,7 @@ const {
 } = require('../controllers/atsCommunityController');
 
 // ─── 1. Portfolio Admin Resume Uploads (Existing) ───────────────────
+router.get('/active', getActiveResume);
 router.route('/')
   .get(getResumes)
   .post(requireAuth, requireAdmin, upload.single('resume'), uploadResume);

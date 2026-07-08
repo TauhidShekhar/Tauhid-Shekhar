@@ -119,8 +119,25 @@ const deleteResume = async (req, res, next) => {
   }
 };
 
+const getActiveResume = async (req, res, next) => {
+  try {
+    const User = require('../models/User');
+    const admins = await User.find({ role: 'Admin' }).select('_id');
+    const adminIds = admins.map(a => a._id);
+
+    const activeResume = await Resume.findOne({ uploadedBy: { $in: adminIds }, isActive: true }).sort({ createdAt: -1 });
+    if (!activeResume) {
+      return res.status(404).json({ success: false, message: 'No active resume found' });
+    }
+    res.json({ success: true, data: activeResume });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getResumes,
   uploadResume,
-  deleteResume
+  deleteResume,
+  getActiveResume
 };

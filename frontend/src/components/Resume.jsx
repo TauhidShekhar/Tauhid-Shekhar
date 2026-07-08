@@ -12,19 +12,32 @@ const Resume = () => {
   const isAdmin = user?.role === 'Admin';
 
   const [activeResume, setActiveResume] = useState(null);
+  const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
   const [showFullPreview, setShowFullPreview] = useState(false);
+  const [previewLoaded, setPreviewLoaded] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
   const fetchActiveResume = async () => {
     setLoading(true);
     try {
-      const res = await api.getResumes();
-      if (res.success && res.data && res.data.length > 0) {
-        const active = res.data.find(r => r.isActive) || res.data[0];
-        setActiveResume(active);
+      const [resumeRes, settingsRes] = await Promise.all([
+        api.getActiveResume().catch(() => null),
+        api.getSettings().catch(() => null)
+      ]);
+      if (resumeRes && resumeRes.success) {
+        setActiveResume(resumeRes.data);
+      } else {
+        const allRes = await api.getResumes().catch(() => null);
+        if (allRes && allRes.success && allRes.data?.length > 0) {
+          const active = allRes.data.find(r => r.isActive) || allRes.data[0];
+          setActiveResume(active);
+        }
+      }
+      if (settingsRes && settingsRes.success) {
+        setSettings(settingsRes.data);
       }
     } catch (err) {
       console.error('Failed to load active resume:', err.message);
@@ -43,8 +56,6 @@ const Resume = () => {
     setError('');
     setSuccess('');
     try {
-      // Trigger a re-analysis query on the backend. Since this is the owner CV,
-      // we evaluate it and refresh its score.
       const res = await api.getResumeReportDetails(activeResume._id);
       if (res.success && res.data) {
         setActiveResume(res.data);
@@ -69,7 +80,6 @@ const Resume = () => {
     formData.append('resume', file);
 
     try {
-      // Upload new CV using existing admin route
       const res = await api.uploadResume(formData);
       if (res.success) {
         setSuccess('Resume replaced successfully!');
@@ -88,10 +98,9 @@ const Resume = () => {
     return 'text-red-500 stroke-red-500';
   };
 
-  const resumePdfUrl = activeResume?.fileUrl || 'assits/Resume-file.pdf';
-  const atsScore = activeResume?.atsScore || 94; // fallback standard compliant compliance score
+  const resumePdfUrl = activeResume?.fileUrl || settings?.resumeUrl || '';
+  const atsScore = activeResume?.atsScore || 94;
 
-  // Score breakdowns list
   const breakdownBars = [
     { label: 'Formatting', val: activeResume?.atsBreakdown?.formatting?.score || 95 },
     { label: 'Keywords Matching', val: activeResume?.atsBreakdown?.keywords?.score || 92 },
@@ -139,28 +148,58 @@ const Resume = () => {
               transition={{ duration: 0.8 }}
               className="lg:col-span-6 flex flex-col gap-6"
             >
-              <div className="glass p-2.5 rounded-[28px] border border-slate-100 dark:border-white/5 shadow-md w-full aspect-[1/1.41] relative overflow-hidden group bg-slate-100/50 dark:bg-slate-900/40">
-                <iframe
-                  src={resumePdfUrl}
-                  className="w-full h-full rounded-2xl border-0"
-                  title="Resume Document Preview"
-                />
+              <div className="glass p-2.5 rounded-[28px] border border-slate-100 dark:border-white/5 shadow-md w-full aspect-[1/1.41] relative overflow-hidden group bg-slate-100/50 dark:bg-slate-900/40 flex flex-col items-center justify-center">
+                {previewLoaded && resumePdfUrl ? (
+                  <iframe
+                    src={resumePdfUrl}
+                    className="w-full h-full rounded-2xl border-0"
+                    title="Resume Document Preview"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center p-8 text-center h-full w-full">
+                    <div className="w-16 h-16 rounded-2xl bg-red-550/10 text-red-500 flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-105">
+                      <FaFilePdf size={32} />
+                    </div>
+                    <h4 className="text-sm font-bold text-black dark:text-white mb-1.5">Recruiter Resume Doc</h4>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-[220px] mb-5 leading-relaxed">
+                      Click below to render the PDF file preview interactively on demand.
+                    </p>
+                    <button
+                      onClick={() => setPreviewLoaded(true)}
+                      className="px-5 py-2.5 bg-primary-blue hover:bg-accent-blue text-white rounded-full font-bold text-[10px] uppercase tracking-wider shadow-md transition-all active:scale-[0.98] cursor-pointer"
+                    >
+                      Load Preview
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-wrap gap-3">
-                <button
-                  onClick={() => setShowFullPreview(true)}
-                  className="flex items-center gap-2 px-5 py-3 bg-primary-blue hover:bg-accent-blue text-white rounded-full font-bold text-xs shadow-md transition-all active:scale-[0.98]"
-                >
-                  <FaEye /> Preview Full Screen
-                </button>
-                <a
-                  href={resumePdfUrl}
-                  download
-                  className="flex items-center gap-2 px-5 py-3 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-800 dark:text-white rounded-full font-bold text-xs border border-slate-200 dark:border-white/5 transition-all"
-                >
-                  <FaDownload /> Download Resume
-                </a>
+                {resumePdfUrl ? (
+                  <>
+                    <button
+                      onClick={() => {
+                        setPreviewLoaded(true);
+                        setShowFullPreview(true);
+                      }}
+                      className="flex items-center gap-2 px-5 py-3 bg-primary-blue hover:bg-accent-blue text-white rounded-full font-bold text-xs shadow-md transition-all active:scale-[0.98] cursor-pointer"
+                    >
+                      <FaEye /> Preview Full Screen
+                    </button>
+                    <a
+                      href={resumePdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-5 py-3 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-800 dark:text-white rounded-full font-bold text-xs border border-slate-200 dark:border-white/5 transition-all"
+                    >
+                      <FaDownload /> Download Resume
+                    </a>
+                  </>
+                ) : (
+                  <div className="text-xs text-slate-500 font-bold p-3 bg-slate-100/50 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/5 w-full text-center">
+                    Administrator resume is currently not available.
+                  </div>
+                )}
 
                 {isAdmin && (
                   <>

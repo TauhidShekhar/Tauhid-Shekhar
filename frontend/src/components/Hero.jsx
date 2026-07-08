@@ -18,6 +18,7 @@ const Hero = () => {
   const [displayText, setDisplayText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [settings, setSettings] = useState(null);
+  const [activeResume, setActiveResume] = useState(null);
 
   // Dynamically use roles from DB settings, or fall back to defaults
   const roles = settings?.heroRoles?.length ? settings.heroRoles : defaultRoles;
@@ -25,9 +26,15 @@ const Hero = () => {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const res = await api.getHero();
-        if (res.success) {
-          setSettings(res.data);
+        const [heroRes, resumeRes] = await Promise.all([
+          api.getHero().catch(() => null),
+          api.getActiveResume().catch(() => null)
+        ]);
+        if (heroRes && heroRes.success) {
+          setSettings(heroRes.data);
+        }
+        if (resumeRes && resumeRes.success) {
+          setActiveResume(resumeRes.data);
         }
       } catch (err) {
         console.error('Failed to load settings in Hero:', err.message);
@@ -115,7 +122,7 @@ const Hero = () => {
   const heroHeading = settings?.heroHeading || 'Hi,';
   const siteDescription = settings?.heroDescription || settings?.siteTagline || 'Results-oriented Full Stack Web Developer with practical experience in building responsive web applications using HTML5, CSS3, JavaScript, React.js, Node.js, Express.js, MongoDB, and MySQL. Experienced in developing REST APIs, authentication systems, dashboards, and responsive user interfaces. Passionate about solving real-world problems, writing clean code, and continuously learning modern technologies.';
   const heroImg = settings?.heroImage?.url || 'assits/Profile_Pic.png';
-  const resumeLink = settings?.resumeUrl || 'assits/Resume-file.pdf';
+  const resumeLink = activeResume?.fileUrl || settings?.resumeUrl || '';
   const heroBg = settings?.heroBackground?.url || '';
 
   // Social Links

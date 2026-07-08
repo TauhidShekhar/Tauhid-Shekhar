@@ -395,6 +395,9 @@ export const api = {
   getResumes: async () => {
     return apiRequest('/resume');
   },
+  getActiveResume: async () => {
+    return apiRequest('/resume/active');
+  },
   uploadResume: async (formData) => {
     const response = await fetch(`${API_BASE}/resume`, {
       method: 'POST',
