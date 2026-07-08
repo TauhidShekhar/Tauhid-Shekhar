@@ -31,10 +31,11 @@ const checkResponse = async (response) => {
   return result;
 };
 
-// Helper for fetch requests with credentials (cookie support)
 const apiRequest = async (endpoint, options = {}) => {
   const headers = {
     'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache',
+    'Pragma': 'no-cache',
     ...options.headers,
   };
 
@@ -42,6 +43,7 @@ const apiRequest = async (endpoint, options = {}) => {
     ...options,
     headers,
     credentials: 'include', // Crucial for HttpOnly cookies on cross-origin requests
+    cache: 'no-store', // Disable browser caching for fresh database data
   });
 
   return checkResponse(response);

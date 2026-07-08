@@ -155,6 +155,14 @@ app.use(xss());
 // Apply general API rate limiter
 app.use('/api', apiLimiter);
 
+// Disable caching for all API responses to ensure fresh DB sync on every request
+app.use('/api', (req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  next();
+});
+
 // Import Routes
 const authRoutes = require('./routes/authRoutes');
 const skillRoutes = require('./routes/skillRoutes');
