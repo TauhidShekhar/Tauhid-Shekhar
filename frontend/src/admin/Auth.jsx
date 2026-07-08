@@ -120,17 +120,15 @@ const Auth = () => {
       
       const res = await api.register(payload);
       if (res.success) {
-        setSuccess(res.message || 'Registration successful! Verification link sent to email.');
-        // Reset registration fields
+        setSuccess('Registration successful! Redirecting to login...');
         setRegFullName('');
         setRegEmail('');
         setRegPassword('');
         setRegConfirmPassword('');
-        // Toggle back to login tab
         setTimeout(() => {
           navigate('/login');
           setSuccess('');
-        }, 5000);
+        }, 1500);
       }
     } catch (err) {
       if (err.errors && Array.isArray(err.errors)) {
@@ -150,7 +148,7 @@ const Auth = () => {
       <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-primary-blue/10 blur-[100px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-primary-purple/10 blur-[100px] pointer-events-none" />
 
-      <div className="glass p-8 md:p-10 rounded-[30px] border border-slate-200/60 dark:border-white/5 shadow-xl w-full max-w-[440px] relative z-10 text-left">
+      <div className="glass p-5 sm:p-8 md:p-10 rounded-[20px] sm:rounded-[30px] border border-slate-200/60 dark:border-white/5 shadow-xl w-full max-w-[440px] relative z-10 text-left">
         
         {/* Back Link */}
         <a href={clientUrl} className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-primary-blue transition-colors mb-6">
@@ -323,7 +321,7 @@ const Auth = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="regPassword" className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Password</label>
                 <div className="relative">

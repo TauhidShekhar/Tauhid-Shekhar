@@ -37,6 +37,10 @@ const register = async (req, res, next) => {
   try {
     const { fullName, username, email, phone, password } = req.body;
 
+    if (!fullName || !email || !password) {
+      return res.status(400).json({ success: false, message: 'Full name, email, and password are required' });
+    }
+
     let finalUsername = username;
     if (!finalUsername && email) {
       finalUsername = email.split('@')[0];
@@ -50,8 +54,10 @@ const register = async (req, res, next) => {
       finalUsername = 'user_' + Math.random().toString(36).substring(2, 8);
     }
 
+    const emailQuery = email.toLowerCase().trim();
+
     // Check if user already exists
-    const userExists = await User.findOne({ $or: [{ email: email.toLowerCase() }, { username: finalUsername }] });
+    const userExists = await User.findOne({ $or: [{ email: emailQuery }, { username: finalUsername }] });
     if (userExists) {
       if (!userExists.isEmailVerified) {
         // Stale unverified registration fallback - delete old doc to retry
@@ -71,38 +77,31 @@ const register = async (req, res, next) => {
     const defaultAvatarUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(fullName || 'User')}`;
     const avatar = req.body.avatar || { url: defaultAvatarUrl, publicId: 'default' };
 
+    // Optimize counting check with O(1) estimate
+    const userCount = await User.estimatedDocumentCount();
+    const isFirstUser = userCount === 0;
+
     const user = await User.create({
       fullName,
       username: finalUsername,
-      email,
+      email: emailQuery,
       phone,
       password,
       avatar,
       emailVerificationToken: verificationToken,
       emailVerificationExpires: verificationTokenExpires,
-      // If there are no users, the first user becomes Admin
-      role: (await User.countDocuments({})) === 0 ? 'Admin' : 'User',
-      isEmailVerified: (await User.countDocuments({})) === 0 // Auto-verify first user
+      role: isFirstUser ? 'Admin' : 'User',
+      isEmailVerified: true // Auto-verify to bypass SMTP port delay bottlenecks
     });
 
-    if (!user.isEmailVerified) {
-      try {
-        await sendVerificationEmail(user, verificationToken);
-      } catch (mailErr) {
-        console.error('Failed to send verification email (likely SMTP port blocked by Render firewall), auto-verifying user in fallback mode:', mailErr.message);
-        // Fallback: Auto-verify user so registration does not abort
-        user.isEmailVerified = true;
-        user.emailVerificationToken = undefined;
-        user.emailVerificationExpires = undefined;
-        await user.save({ validateBeforeSave: false });
-      }
-    }
+    // Send welcome mail asynchronously in the background so it doesn't block API response
+    sendVerificationEmail(user, verificationToken).catch((mailErr) => {
+      console.warn('Welcome/Verification background email skipped:', mailErr.message);
+    });
 
     res.status(201).json({
       success: true,
-      message: user.isEmailVerified
-        ? 'Account registered and auto-verified successfully!'
-        : 'Registration successful! Please check your email to verify your account.'
+      message: 'Account registered and auto-verified successfully!'
     });
   } catch (error) {
     next(error);

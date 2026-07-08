@@ -163,11 +163,10 @@ const userSchema = new mongoose.Schema(
   { timestamps: true, optimisticConcurrency: true }
 );
 
-// ─── Pre-save: Hash password (salt 12) ───────────────────────────────
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   try {
-    const salt = await bcrypt.genSalt(12);
+    const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
     next();
   } catch (err) {
@@ -222,5 +221,8 @@ userSchema.methods.resetLoginAttempts = function () {
     $unset: { lockUntil: 1 }
   });
 };
+
+userSchema.index({ email: 1 });
+userSchema.index({ username: 1 });
 
 module.exports = mongoose.model('User', userSchema);
