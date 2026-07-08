@@ -159,7 +159,14 @@ const About = () => {
 
             <motion.div variants={childVariants} className="flex gap-4">
               {resumeLink && (
-                <a href={resumeLink} target="_blank" rel="noopener noreferrer" className="px-8 py-3.5 bg-primary-blue hover:bg-accent-blue text-white rounded-full font-bold transition-all duration-300 hover:-translate-y-0.5 shadow-lg shadow-primary-blue/20">View Resume</a>
+                <a 
+                  href={resumeLink.startsWith('http') ? `https://docs.google.com/gview?url=${encodeURIComponent(resumeLink)}` : resumeLink} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="px-8 py-3.5 bg-primary-blue hover:bg-accent-blue text-white rounded-full font-bold transition-all duration-300 hover:-translate-y-0.5 shadow-lg shadow-primary-blue/20"
+                >
+                  View Resume
+                </a>
               )}
               <a href="#contact" className="px-8 py-3.5 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 text-slate-800 dark:text-white rounded-full font-bold transition-all">Let's Talk</a>
             </motion.div>
