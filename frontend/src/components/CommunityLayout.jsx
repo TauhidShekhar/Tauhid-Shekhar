@@ -249,7 +249,8 @@ const CommunityLayout = () => {
             to="/"
             className="flex items-center gap-1 px-2 py-1.5 sm:px-3 sm:py-1.5 bg-[#1c1c24] hover:bg-[#252530] text-slate-300 rounded-xl text-[10px] sm:text-xs font-bold transition-all border border-white/5"
           >
-            <span>&larr; Back</span>
+            <span className="hidden sm:inline">&larr; Back</span>
+            <span className="sm:hidden">&larr;</span>
           </Link>
         </div>
       </header>

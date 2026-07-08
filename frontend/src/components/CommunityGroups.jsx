@@ -831,7 +831,7 @@ const CommunityGroups = () => {
             </div>
 
             {/* Tab Navigators */}
-            <div className="border-t border-slate-100 dark:border-white/5 px-6 flex overflow-x-auto gap-4">
+            <div className="border-t border-slate-100 dark:border-white/5 px-4 sm:px-6 flex overflow-x-auto gap-3 sm:gap-6 scrollbar-none">
               {[
                 { id: 'feed', label: 'Discussions Feed', icon: <FaListAlt /> },
                 { id: 'files', label: 'Group Uploads', icon: <FaUpload /> },
@@ -843,13 +843,17 @@ const CommunityGroups = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 py-4 text-xs font-black uppercase tracking-wider cursor-pointer border-b-2 transition-all ${
+                  className={`flex items-center gap-1.5 sm:gap-2 py-3.5 sm:py-4 text-[10px] sm:text-xs font-black uppercase tracking-wider cursor-pointer border-b-2 transition-all shrink-0 ${
                     activeTab === tab.id
                       ? 'border-primary-blue text-primary-blue'
                       : 'border-transparent text-slate-450 hover:text-slate-700 dark:hover:text-white'
                   }`}
                 >
-                  {tab.icon} {tab.label}
+                  {tab.icon}
+                  <span className="hidden sm:inline">{tab.label}</span>
+                  <span className="sm:hidden">
+                    {tab.id === 'feed' ? 'Feed' : tab.id === 'files' ? 'Files' : tab.id === 'members' ? 'Members' : 'Settings'}
+                  </span>
                 </button>
               ))}
             </div>
