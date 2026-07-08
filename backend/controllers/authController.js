@@ -898,6 +898,16 @@ const deleteAccount = async (req, res, next) => {
 // @desc    Get Logged-in User's Orders
 // @route   GET /api/auth/my-orders
 // @access  Private
+const getUserOrders = async (req, res, next) => {
+  try {
+    const Order = require('../models/Order');
+    const orders = await Order.find({ email: req.user.email }).sort({ createdAt: -1 });
+    res.json({ success: true, data: orders });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Initiate Google OAuth flow
 // @route   GET /api/auth/google
 // @access  Public
