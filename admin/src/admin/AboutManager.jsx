@@ -49,6 +49,7 @@ const AboutManager = () => {
     contactEmail: '',
     contactPhone: '',
     contactAddress: '',
+    personalInfoAddress: '',
 
     // Add inputs
     newStrengthTitle: '',
@@ -100,6 +101,8 @@ const AboutManager = () => {
           contactEmail: d.aboutContactInfo?.email || d.email || '',
           contactPhone: d.aboutContactInfo?.phone || d.phone || '',
           contactAddress: d.aboutContactInfo?.address || d.address || '',
+          personalInfoAddress: (d.aboutPersonalInfo?.find(item => item.label.toLowerCase() === 'address')?.value) || 
+                               (d.aboutPersonalInfo?.length ? '' : 'Bettiah, Bihar, India'),
 
           newStrengthTitle: '',
           newStrengthDesc: '',
@@ -125,6 +128,24 @@ const AboutManager = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handlePersonalInfoAddressChange = (e) => {
+    const value = e.target.value;
+    setFormData(prev => {
+      let list = [...(prev.aboutPersonalInfo || [])];
+      const idx = list.findIndex(item => item.label.toLowerCase() === 'address');
+      if (idx !== -1) {
+        list[idx] = { ...list[idx], value };
+      } else {
+        list.push({ label: 'Address', value });
+      }
+      return {
+        ...prev,
+        personalInfoAddress: value,
+        aboutPersonalInfo: list
+      };
+    });
   };
 
   // Image Upload handler
@@ -413,8 +434,12 @@ const AboutManager = () => {
                 <input type="text" name="contactPhone" value={formData.contactPhone} onChange={handleInputChange} className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-purple" />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1.5"><FaMapMarkerAlt /> Address</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1.5"><FaMapMarkerAlt /> Address (Contact Card)</label>
                 <input type="text" name="contactAddress" value={formData.contactAddress} onChange={handleInputChange} className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-purple" />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1.5"><FaMapMarkerAlt /> Address (About Me Intro)</label>
+                <input type="text" name="personalInfoAddress" value={formData.personalInfoAddress} onChange={handlePersonalInfoAddressChange} className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-purple" placeholder="e.g. Patna, Bihar, India" />
               </div>
             </div>
           </div>
