@@ -16,7 +16,6 @@ const Resume = () => {
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
   const [showFullPreview, setShowFullPreview] = useState(false);
-  const [previewLoaded, setPreviewLoaded] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -168,28 +167,22 @@ const Resume = () => {
               transition={{ duration: 0.8 }}
               className="lg:col-span-6 flex flex-col gap-6"
             >
-              <div className="glass p-2.5 rounded-[28px] border border-slate-100 dark:border-white/5 shadow-md w-full aspect-[1/1.41] relative overflow-hidden group bg-slate-100/50 dark:bg-slate-900/40 flex flex-col items-center justify-center">
-                {previewLoaded && resumePdfUrl ? (
+              <div className="glass p-2.5 rounded-[28px] border border-slate-100 dark:border-white/5 shadow-md w-full aspect-[1/1.41] relative overflow-hidden group bg-white dark:bg-[#121217] flex flex-col items-center justify-center">
+                {resumePdfUrl ? (
                   <iframe
-                    src={resumePdfUrl}
-                    className="w-full h-full rounded-2xl border-0"
+                    src={`https://docs.google.com/gview?url=${encodeURIComponent(resumePdfUrl)}&embedded=true`}
+                    className="w-full h-full rounded-2xl border-0 bg-white"
                     title="Resume Document Preview"
                   />
                 ) : (
                   <div className="flex flex-col items-center justify-center p-8 text-center h-full w-full">
-                    <div className="w-16 h-16 rounded-2xl bg-red-550/10 text-red-500 flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-105">
+                    <div className="w-16 h-16 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center mb-5">
                       <FaFilePdf size={32} />
                     </div>
-                    <h4 className="text-sm font-bold text-black dark:text-white mb-1.5">Recruiter Resume Doc</h4>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-[220px] mb-5 leading-relaxed">
-                      Click below to render the PDF file preview interactively on demand.
+                    <h4 className="text-sm font-bold text-slate-800 dark:text-white mb-1.5">No Resume Available</h4>
+                    <p className="text-[11px] text-slate-550 dark:text-slate-400 max-w-[220px] leading-relaxed">
+                      Administrator has not uploaded an active resume yet.
                     </p>
-                    <button
-                      onClick={() => setPreviewLoaded(true)}
-                      className="px-5 py-2.5 bg-primary-blue hover:bg-accent-blue text-white rounded-full font-bold text-[10px] uppercase tracking-wider shadow-md transition-all active:scale-[0.98] cursor-pointer"
-                    >
-                      Load Preview
-                    </button>
                   </div>
                 )}
               </div>
@@ -199,7 +192,6 @@ const Resume = () => {
                   <>
                     <button
                       onClick={() => {
-                        setPreviewLoaded(true);
                         setShowFullPreview(true);
                       }}
                       className="flex items-center gap-2 px-5 py-3 bg-primary-blue hover:bg-accent-blue text-white rounded-full font-bold text-xs shadow-md transition-all active:scale-[0.98] cursor-pointer"
@@ -350,7 +342,7 @@ const Resume = () => {
                 </button>
               </div>
               <div className="flex-1 p-2">
-                <iframe src={resumePdfUrl} className="w-full h-full border-0 rounded-2xl" />
+                <iframe src={`https://docs.google.com/gview?url=${encodeURIComponent(resumePdfUrl)}&embedded=true`} className="w-full h-full border-0 rounded-2xl bg-white" />
               </div>
             </div>
           </div>
