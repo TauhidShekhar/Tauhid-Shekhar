@@ -92,6 +92,26 @@ const Resume = () => {
     }
   };
 
+  const handleDownloadResume = async (e) => {
+    e.preventDefault();
+    if (!resumePdfUrl) return;
+    try {
+      const response = await fetch(resumePdfUrl);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.setAttribute('download', activeResume?.fileName || 'Resume.pdf');
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error('Failed to download resume file directly:', err.message);
+      window.open(resumePdfUrl, '_blank');
+    }
+  };
+
   const getScoreColor = (score) => {
     if (score >= 80) return 'text-green-500 stroke-green-500';
     if (score >= 60) return 'text-amber-500 stroke-amber-500';
@@ -188,9 +208,8 @@ const Resume = () => {
                     </button>
                     <a
                       href={resumePdfUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 px-5 py-3 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-800 dark:text-white rounded-full font-bold text-xs border border-slate-200 dark:border-white/5 transition-all"
+                      onClick={handleDownloadResume}
+                      className="flex items-center gap-2 px-5 py-3 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-800 dark:text-white rounded-full font-bold text-xs border border-slate-200 dark:border-white/5 transition-all cursor-pointer"
                     >
                       <FaDownload /> Download Resume
                     </a>
