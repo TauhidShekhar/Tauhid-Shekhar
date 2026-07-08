@@ -94,12 +94,12 @@ const Navbar = ({ activeSection, toggleTheme, isDark }) => {
       <nav className="max-w-full mx-auto px-6 md:px-12 xl:px-16 flex items-center justify-between">
         
         {/* Section 1: Logo (Left) */}
-        <div className="shrink-0 flex items-center">
-          <a href="#home" onClick={(e) => handleNavClick(e, '#home')} className="transition-opacity hover:opacity-90 block">
+        <div className="shrink-0 flex items-center h-10 md:h-12 overflow-hidden">
+          <a href="#home" onClick={(e) => handleNavClick(e, '#home')} className="transition-opacity hover:opacity-90 block -my-5 md:-my-6">
             <img 
               src="/assits/logo.png" 
               alt="Tauhid Shekhar" 
-              className="h-8 md:h-9 w-auto object-contain block" 
+              className="h-20 md:h-24 w-auto object-contain block" 
             />
           </a>
         </div>
@@ -251,14 +251,16 @@ const Navbar = ({ activeSection, toggleTheme, isDark }) => {
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        <div className="flex justify-between items-center mb-2 border-b border-slate-100 dark:border-white/5 pb-4">
-          <a href="#home" onClick={(e) => { handleNavClick(e, '#home'); setIsOpen(false); }} className="transition-opacity hover:opacity-90 block">
-            <img 
-              src="/assits/logo.png" 
-              alt="Tauhid Shekhar" 
-              className="h-7 w-auto object-contain block" 
-            />
-          </a>
+        <div className="flex justify-between items-center mb-2 border-b border-slate-100 dark:border-white/5 pb-2">
+          <div className="h-10 overflow-hidden flex items-center">
+            <a href="#home" onClick={(e) => { handleNavClick(e, '#home'); setIsOpen(false); }} className="transition-opacity hover:opacity-90 block -my-5">
+              <img 
+                src="/assits/logo.png" 
+                alt="Tauhid Shekhar" 
+                className="h-20 w-auto object-contain block" 
+              />
+            </a>
+          </div>
           <button onClick={() => setIsOpen(false)} className="text-2xl text-black dark:text-white cursor-pointer">
             <FaTimes />
           </button>
