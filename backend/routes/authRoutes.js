@@ -19,7 +19,11 @@ const {
   toggleSaveProject,
   getSavedProjects,
   deleteAccount,
-  getUserOrders
+  getUserOrders,
+  googleLogin,
+  googleCallback,
+  githubLogin,
+  githubCallback
 } = require('../controllers/authController');
 const { requireAuth } = require('../middleware/authMiddleware');
 const {
@@ -51,6 +55,12 @@ router.post('/verify-reset-token', recoveryLimiter, verifyResetToken);
 router.post('/reset-password/:token', validate(resetPasswordSchema), resetPassword);
 router.post('/recover-account', recoveryLimiter, validate(recoverAccountSchema), recoverAccount);
 router.post('/verify-recovery-otp', recoveryLimiter, validate(verifyRecoveryOtpSchema), verifyRecoveryOtp);
+
+// Social OAuth endpoints
+router.get('/google', googleLogin);
+router.get('/google/callback', googleCallback);
+router.get('/github', githubLogin);
+router.get('/github/callback', githubCallback);
 
 // Protected endpoints
 router.get('/me', requireAuth, getProfile);

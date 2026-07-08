@@ -898,13 +898,271 @@ const deleteAccount = async (req, res, next) => {
 // @desc    Get Logged-in User's Orders
 // @route   GET /api/auth/my-orders
 // @access  Private
-const getUserOrders = async (req, res, next) => {
+// @desc    Initiate Google OAuth flow
+// @route   GET /api/auth/google
+// @access  Public
+const googleLogin = (req, res) => {
+  const rootUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
+  const options = {
+    redirect_uri: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:5000/api/auth/google/callback',
+    client_id: process.env.GOOGLE_CLIENT_ID,
+    access_type: 'offline',
+    response_type: 'code',
+    prompt: 'consent',
+    scope: [
+      'https://www.googleapis.com/auth/userinfo.profile',
+      'https://www.googleapis.com/auth/userinfo.email',
+    ].join(' '),
+  };
+
+  const qs = new URLSearchParams(options);
+  res.redirect(`${rootUrl}?${qs.toString()}`);
+};
+
+// @desc    Google OAuth Callback
+// @route   GET /api/auth/google/callback
+// @access  Public
+const googleCallback = async (req, res, next) => {
+  const code = req.query.code;
+  if (!code) {
+    return res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/login?error=Google auth failed`);
+  }
+
   try {
-    const Order = require('../models/Order');
-    const orders = await Order.find({ email: req.user.email }).sort({ createdAt: -1 });
-    res.json({ success: true, data: orders });
+    const axios = require('axios');
+    const tokenUrl = 'https://oauth2.googleapis.com/token';
+    const values = {
+      code,
+      client_id: process.env.GOOGLE_CLIENT_ID,
+      client_secret: process.env.GOOGLE_CLIENT_SECRET,
+      redirect_uri: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:5000/api/auth/google/callback',
+      grant_type: 'authorization_code',
+    };
+
+    const tokenResponse = await axios.post(tokenUrl, new URLSearchParams(values), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    });
+
+    const { id_token, access_token } = tokenResponse.data;
+
+    const userinfoResponse = await axios.get(
+      `https://www.googleapis.com/oauth2/v2/userinfo?alt=json&access_token=${access_token}`,
+      {
+        headers: {
+          Authorization: `Bearer ${id_token}`,
+        },
+      }
+    );
+
+    const { id, email, name, picture } = userinfoResponse.data;
+
+    if (!email) {
+      return res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/login?error=Email permission required`);
+    }
+
+    let user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+    const deviceInfo = getDeviceInfo(req);
+
+    if (user) {
+      user.fullName = user.fullName || name;
+      user.avatar = user.avatar && user.avatar.url ? user.avatar : { url: picture || '', publicId: 'google' };
+      if (user.provider === 'Email') {
+        user.provider = 'Google';
+        user.providerId = id;
+      }
+      user.lastLogin = new Date();
+      user.loginHistory.push({ ...deviceInfo, success: true });
+      await user.save({ validateBeforeSave: false });
+    } else {
+      let baseUsername = email.split('@')[0].trim().toLowerCase().replace(/[^a-zA-Z0-9_]/g, '_');
+      if (baseUsername.length < 3) baseUsername += '___';
+      
+      let finalUsername = baseUsername;
+      let count = 0;
+      while (await User.findOne({ username: finalUsername })) {
+        count++;
+        finalUsername = `${baseUsername}_${count}`;
+      }
+
+      const userCount = await User.estimatedDocumentCount();
+      const isFirstUser = userCount === 0;
+
+      user = await User.create({
+        fullName: name || finalUsername,
+        username: finalUsername,
+        email: email.toLowerCase().trim(),
+        avatar: { url: picture || '', publicId: 'google' },
+        role: isFirstUser ? 'Admin' : 'User',
+        isEmailVerified: true,
+        provider: 'Google',
+        providerId: id
+      });
+      user.lastLogin = new Date();
+      user.loginHistory.push({ ...deviceInfo, success: true });
+      await user.save({ validateBeforeSave: false });
+    }
+
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    user.refreshTokens = user.refreshTokens.filter(
+      rt => rt.expiresAt && new Date(rt.expiresAt) > new Date()
+    );
+    if (user.refreshTokens.length >= 10) user.refreshTokens.shift();
+
+    user.refreshTokens.push({
+      token: refreshToken,
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    });
+    await user.save({ validateBeforeSave: false });
+
+    setTokenCookies(res, accessToken, refreshToken, true);
+    res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/dashboard`);
   } catch (error) {
-    next(error);
+    console.error('Google callback error:', error.message);
+    res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/login?error=Google authentication failed`);
+  }
+};
+
+// @desc    Initiate GitHub OAuth flow
+// @route   GET /api/auth/github
+// @access  Public
+const githubLogin = (req, res) => {
+  const rootUrl = 'https://github.com/login/oauth/authorize';
+  const options = {
+    client_id: process.env.GITHUB_CLIENT_ID,
+    redirect_uri: process.env.GITHUB_CALLBACK_URL || 'http://localhost:5000/api/auth/github/callback',
+    scope: 'user:email',
+  };
+
+  const qs = new URLSearchParams(options);
+  res.redirect(`${rootUrl}?${qs.toString()}`);
+};
+
+// @desc    GitHub OAuth Callback
+// @route   GET /api/auth/github/callback
+// @access  Public
+const githubCallback = async (req, res, next) => {
+  const code = req.query.code;
+  if (!code) {
+    return res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/login?error=GitHub auth failed`);
+  }
+
+  try {
+    const axios = require('axios');
+    const tokenUrl = 'https://github.com/login/oauth/access_token';
+    const values = {
+      code,
+      client_id: process.env.GITHUB_CLIENT_ID,
+      client_secret: process.env.GITHUB_CLIENT_SECRET,
+      redirect_uri: process.env.GITHUB_CALLBACK_URL || 'http://localhost:5000/api/auth/github/callback',
+    };
+
+    const tokenResponse = await axios.post(tokenUrl, values, {
+      headers: {
+        Accept: 'application/json',
+      },
+    });
+
+    const accessToken = tokenResponse.data.access_token;
+    if (!accessToken) {
+      return res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/login?error=GitHub token exchange failed`);
+    }
+
+    const userResponse = await axios.get('https://api.github.com/user', {
+      headers: {
+        Authorization: `token ${accessToken}`,
+        'User-Agent': 'node.js',
+      },
+    });
+
+    const { id, name, login, avatar_url, email: githubEmail } = userResponse.data;
+    let email = githubEmail;
+
+    if (!email) {
+      try {
+        const emailsResponse = await axios.get('https://api.github.com/user/emails', {
+          headers: {
+            Authorization: `token ${accessToken}`,
+            'User-Agent': 'node.js',
+          },
+        });
+        const primaryEmail = emailsResponse.data.find(e => e.primary && e.verified) || emailsResponse.data[0];
+        email = primaryEmail ? primaryEmail.email : null;
+      } catch (emailErr) {
+        console.error('Failed to fetch private GitHub email:', emailErr.message);
+      }
+    }
+
+    if (!email) {
+      return res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/login?error=GitHub email verification required`);
+    }
+
+    let user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+    const deviceInfo = getDeviceInfo(req);
+
+    if (user) {
+      user.fullName = user.fullName || name || login;
+      user.avatar = user.avatar && user.avatar.url ? user.avatar : { url: avatar_url || '', publicId: 'github' };
+      if (user.provider === 'Email') {
+        user.provider = 'GitHub';
+        user.providerId = id;
+      }
+      user.lastLogin = new Date();
+      user.loginHistory.push({ ...deviceInfo, success: true });
+      await user.save({ validateBeforeSave: false });
+    } else {
+      let baseUsername = login ? login.toLowerCase().replace(/[^a-zA-Z0-9_]/g, '_') : email.split('@')[0].trim().toLowerCase().replace(/[^a-zA-Z0-9_]/g, '_');
+      if (baseUsername.length < 3) baseUsername += '___';
+      
+      let finalUsername = baseUsername;
+      let count = 0;
+      while (await User.findOne({ username: finalUsername })) {
+        count++;
+        finalUsername = `${baseUsername}_${count}`;
+      }
+
+      const userCount = await User.estimatedDocumentCount();
+      const isFirstUser = userCount === 0;
+
+      user = await User.create({
+        fullName: name || login || finalUsername,
+        username: finalUsername,
+        email: email.toLowerCase().trim(),
+        avatar: { url: avatar_url || '', publicId: 'github' },
+        role: isFirstUser ? 'Admin' : 'User',
+        isEmailVerified: true,
+        provider: 'GitHub',
+        providerId: id
+      });
+      user.lastLogin = new Date();
+      user.loginHistory.push({ ...deviceInfo, success: true });
+      await user.save({ validateBeforeSave: false });
+    }
+
+    const jwtAccessToken = generateAccessToken(user);
+    const jwtRefreshToken = generateRefreshToken(user);
+
+    user.refreshTokens = user.refreshTokens.filter(
+      rt => rt.expiresAt && new Date(rt.expiresAt) > new Date()
+    );
+    if (user.refreshTokens.length >= 10) user.refreshTokens.shift();
+
+    user.refreshTokens.push({
+      token: jwtRefreshToken,
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    });
+    await user.save({ validateBeforeSave: false });
+
+    setTokenCookies(res, jwtAccessToken, jwtRefreshToken, true);
+    res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/dashboard`);
+  } catch (error) {
+    console.error('GitHub callback error:', error.message);
+    res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/login?error=GitHub authentication failed`);
   }
 };
 
@@ -927,5 +1185,9 @@ module.exports = {
   toggleSaveProject,
   getSavedProjects,
   deleteAccount,
-  getUserOrders
+  getUserOrders,
+  googleLogin,
+  googleCallback,
+  githubLogin,
+  githubCallback
 };

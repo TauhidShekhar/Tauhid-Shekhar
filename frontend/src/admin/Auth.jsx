@@ -3,7 +3,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 import { PasswordStrength } from '../components/ui/PasswordStrength';
-import { FaUserShield, FaLock, FaUser, FaEnvelope, FaEye, FaEyeSlash, FaArrowLeft, FaUserPlus } from 'react-icons/fa';
+import { FaUserShield, FaLock, FaUser, FaEnvelope, FaEye, FaEyeSlash, FaArrowLeft, FaUserPlus, FaGoogle, FaGithub } from 'react-icons/fa';
 
 const Auth = () => {
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -37,6 +37,13 @@ const Auth = () => {
 
   const queryParams = new URLSearchParams(location.search);
   const externalRedirect = queryParams.get('redirect');
+
+  useEffect(() => {
+    const errorParam = queryParams.get('error');
+    if (errorParam) {
+      setError(errorParam);
+    }
+  }, [location.search]);
 
   useEffect(() => {
     if (isLoading) return; // Wait for active session check to finish
@@ -388,6 +395,37 @@ const Auth = () => {
             </button>
           </form>
         )}
+
+        {/* Divider */}
+        <div className="relative flex py-3 items-center select-none mt-2">
+          <div className="flex-grow border-t border-slate-200 dark:border-white/5"></div>
+          <span className="flex-shrink mx-4 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Or Continue With</span>
+          <div className="flex-grow border-t border-slate-200 dark:border-white/5"></div>
+        </div>
+
+        {/* Social Actions Grid */}
+        <div className="grid grid-cols-2 gap-3 mt-1">
+          <button
+            onClick={() => {
+              const apiBase = import.meta.env.VITE_API_URL || (window.location.port === '5173' || window.location.port === '5174' ? 'http://localhost:5000/api' : 'https://tauhid-shekhar-portfolio.onrender.com/api');
+              window.location.href = `${apiBase}/auth/google`;
+            }}
+            className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/60 dark:hover:bg-slate-900 text-slate-800 dark:text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer"
+          >
+            <FaGoogle className="text-red-500 text-sm" />
+            <span>Google</span>
+          </button>
+          <button
+            onClick={() => {
+              const apiBase = import.meta.env.VITE_API_URL || (window.location.port === '5173' || window.location.port === '5174' ? 'http://localhost:5000/api' : 'https://tauhid-shekhar-portfolio.onrender.com/api');
+              window.location.href = `${apiBase}/auth/github`;
+            }}
+            className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/60 dark:hover:bg-slate-900 text-slate-800 dark:text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer"
+          >
+            <FaGithub className="text-slate-900 dark:text-white text-sm" />
+            <span>GitHub</span>
+          </button>
+        </div>
       </div>
     </div>
   );

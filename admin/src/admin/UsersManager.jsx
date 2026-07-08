@@ -83,8 +83,10 @@ const UsersManager = () => {
             <tr className="border-b border-slate-250 dark:border-white/5 text-slate-500 uppercase font-bold tracking-wider">
               <th className="pb-3 pr-4">User</th>
               <th className="pb-3">Role</th>
+              <th className="pb-3">Provider</th>
               <th className="pb-3">Status</th>
               <th className="pb-3">Email Verified</th>
+              <th className="pb-3">Last Login</th>
               <th className="pb-3 text-right">Actions</th>
             </tr>
           </thead>
@@ -115,6 +117,15 @@ const UsersManager = () => {
                 </td>
                 <td className="py-4">
                   <span className={`inline-flex px-2 py-0.5 rounded-md font-bold uppercase tracking-wider text-[9px] ${
+                    u.provider === 'Google' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
+                    u.provider === 'GitHub' ? 'bg-slate-800 dark:bg-white/10 text-slate-700 dark:text-white border border-slate-700 dark:border-white/15' :
+                    'bg-primary-blue/10 text-primary-blue border border-primary-blue/20'
+                  }`}>
+                    {u.provider || 'Email'}
+                  </span>
+                </td>
+                <td className="py-4">
+                  <span className={`inline-flex px-2 py-0.5 rounded-md font-bold uppercase tracking-wider text-[9px] ${
                     u.isActive ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'
                   }`}>
                     {u.isActive ? 'Active' : 'Inactive'}
@@ -122,6 +133,9 @@ const UsersManager = () => {
                 </td>
                 <td className="py-4 font-bold text-slate-500">
                   {u.isEmailVerified ? 'Yes' : 'No'}
+                </td>
+                <td className="py-4 text-slate-500">
+                  {u.lastLogin ? new Date(u.lastLogin).toLocaleString() : 'Never'}
                 </td>
                 <td className="py-4 text-right">
                   {u._id === currentUser.id ? (
