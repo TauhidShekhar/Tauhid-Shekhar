@@ -94,7 +94,7 @@ const AboutManager = () => {
           aboutPersonalInfo: d.aboutPersonalInfo?.length ? d.aboutPersonalInfo : [
             { label: 'Freelance', value: 'Available' },
             { label: 'Age', value: '21' },
-            { label: 'Address', value: 'Patna, Bihar, India' }
+            { label: 'Address', value: 'Bettiah, Bihar, India' }
           ],
 
           contactEmail: d.aboutContactInfo?.email || d.email || '',
