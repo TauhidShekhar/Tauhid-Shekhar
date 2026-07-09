@@ -256,7 +256,7 @@ const CommunityLayout = () => {
       </header>
 
       {/* Main Grid Wrapper */}
-      <div className="flex-1 max-w-[1400px] w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 min-h-0">
+      <div className="flex-1 max-w-[1400px] w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 pb-24 lg:pb-6 min-h-0">
         
         {/* Left Sidebar Navigator (col-span-3) */}
         <aside className="hidden lg:flex flex-col gap-6 col-span-3 sticky top-[72px] h-[calc(100vh-100px)] overflow-y-auto pr-1 text-left scrollbar-none">
@@ -390,28 +390,32 @@ const CommunityLayout = () => {
             </div>
 
             <div className="flex flex-col gap-3">
-              {suggestedDevs.filter(Boolean).map(dev => {
+              {suggestedDevs.filter(Boolean).map((dev, idx) => {
                 const currentUserId = (user?.id || user?._id)?.toString();
                 const isFollowing = dev.followers?.some(fid => fid && fid.toString() === currentUserId);
+                const rankColor = idx === 0 ? 'text-amber-400 font-extrabold' : idx === 1 ? 'text-slate-350 font-bold' : idx === 2 ? 'text-amber-600 font-bold' : 'text-slate-500';
                 return (
                   <div key={dev._id} className="flex items-center justify-between gap-2.5 p-1 rounded-xl">
-                    <Link to={`/community/profile/${dev._id}`} className="flex items-center gap-2 min-w-0">
-                      <div className="w-8.5 h-8.5 rounded-xl overflow-hidden bg-[#1e1e24] border border-white/10 shrink-0 flex items-center justify-center">
-                        {dev.avatar?.url ? (
-                          <img src={dev.avatar.url} alt="Profile" className="w-full h-full object-cover" />
-                        ) : (
-                          <FaUser className="text-slate-500" size={12} />
-                        )}
-                      </div>
-                      <div className="flex flex-col text-left min-w-0">
-                        <span className="text-[11px] font-bold text-white hover:text-purple-400 transition-colors truncate">{dev.fullName}</span>
-                        <span className="text-[9px] text-slate-500 mt-0.5 truncate">@{dev.username}</span>
-                      </div>
-                    </Link>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className={`text-[10px] w-4 text-center shrink-0 ${rankColor}`}>#{idx + 1}</span>
+                      <Link to={`/community/profile/${dev._id}`} className="flex items-center gap-2 min-w-0">
+                        <div className="w-8.5 h-8.5 rounded-xl overflow-hidden bg-[#1e1e24] border border-white/10 shrink-0 flex items-center justify-center">
+                          {dev.avatar?.url ? (
+                            <img src={dev.avatar.url} alt="Profile" className="w-full h-full object-cover" />
+                          ) : (
+                            <FaUser className="text-slate-500" size={12} />
+                          )}
+                        </div>
+                        <div className="flex flex-col text-left min-w-0">
+                          <span className="text-[11px] font-bold text-white hover:text-purple-400 transition-colors truncate">{dev.fullName}</span>
+                          <span className="text-[9px] text-slate-500 mt-0.5 truncate">{dev.xp || 0} XP</span>
+                        </div>
+                      </Link>
+                    </div>
                     
                     <button
                       onClick={() => handleFollowDeveloper(dev._id)}
-                      className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider border cursor-pointer transition-all ${
+                      className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider border cursor-pointer transition-all shrink-0 ${
                         isFollowing 
                           ? 'bg-transparent border-slate-700 text-slate-400' 
                           : 'bg-purple-600/10 border-purple-500/20 text-purple-400 hover:bg-purple-600 hover:text-white'
@@ -429,41 +433,38 @@ const CommunityLayout = () => {
             </div>
           </div>
 
-          {/* Groups You May Like */}
-          <div className="bg-[#121217] border border-white/5 p-4 rounded-3xl flex flex-col gap-3.5 shadow-sm">
+          {/* Popular Tags */}
+          <div className="bg-[#121217] border border-white/5 p-4 rounded-3xl flex flex-col gap-3 shadow-sm text-left">
             <div className="flex items-center justify-between border-b border-white/5 pb-2">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Suggested Groups</span>
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Popular Tags</span>
             </div>
-
-            <div className="flex flex-col gap-3">
-              {suggestedGroups.filter(Boolean).map(group => (
-                <div key={group._id} className="flex items-center justify-between gap-2.5 p-1 rounded-xl">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className="w-8.5 h-8.5 rounded-xl overflow-hidden bg-purple-600/10 text-purple-400 border border-purple-500/15 flex items-center justify-center shrink-0 font-black text-[10px] uppercase">
-                      {group.logo?.url ? (
-                        <img src={group.logo.url} alt="logo" className="w-full h-full object-cover" />
-                      ) : (
-                        (group.name || '').substring(0, 2)
-                      )}
-                    </div>
-                    <div className="flex flex-col text-left min-w-0">
-                      <span className="text-[11px] font-bold text-white truncate">{group.name || 'Unnamed Group'}</span>
-                      <span className="text-[9px] text-slate-500 mt-0.5">{group.members?.length || 0} members</span>
-                    </div>
-                  </div>
-                  
-                  <button
-                    onClick={() => handleJoinGroup(group._id)}
-                    className="px-3 py-1.5 bg-purple-600/10 hover:bg-purple-600 border border-purple-500/20 text-purple-400 hover:text-white rounded-lg text-[9px] font-black uppercase tracking-wider cursor-pointer transition-all"
-                  >
-                    Join
-                  </button>
-                </div>
+            <div className="flex flex-wrap gap-2 pt-1">
+              {['react', 'nodejs', 'webdev', 'ai', 'mongodb', 'javascript', 'tailwind', 'nextjs'].map(tag => (
+                <Link
+                  key={tag}
+                  to={`/community?search=${tag}`}
+                  className="px-2.5 py-1 bg-purple-600/10 border border-purple-500/10 text-purple-400 hover:bg-purple-600 hover:text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition-all"
+                >
+                  #{tag}
+                </Link>
               ))}
+            </div>
+          </div>
 
-              {suggestedGroups.length === 0 && (
-                <div className="text-[10px] text-slate-550 italic text-center py-2">No new groups recommendations.</div>
-              )}
+          {/* Announcements */}
+          <div className="bg-[#121217] border border-white/5 p-4 rounded-3xl flex flex-col gap-3 shadow-sm text-left">
+            <div className="flex items-center justify-between border-b border-white/5 pb-2">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Announcements</span>
+            </div>
+            <div className="flex flex-col gap-2.5 pt-1">
+              <div className="p-2.5 bg-[#1c1c24]/50 rounded-xl border border-white/5 text-[10px] leading-relaxed">
+                <span className="text-purple-400 font-bold block mb-0.5">🚀 Hackathon July 2026</span>
+                <span className="text-slate-350">Showcase your AI projects by July 25 to win custom profile badges & reputation XP!</span>
+              </div>
+              <div className="p-2.5 bg-[#1c1c24]/50 rounded-xl border border-white/5 text-[10px] leading-relaxed">
+                <span className="text-purple-400 font-bold block mb-0.5">⚙️ Platform Updates</span>
+                <span className="text-slate-350">Gemini 2.5 real-time memory consultant, voice transcription, and Kanban trackers are now live.</span>
+              </div>
             </div>
           </div>
         </aside>
@@ -523,6 +524,33 @@ const CommunityLayout = () => {
           })}
         </nav>
       </aside>
+
+      {/* Mobile Bottom Navigation Bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[99] bg-[#121217]/95 backdrop-blur-lg border-t border-white/5 py-2 px-4 flex items-center justify-around shadow-2xl">
+        {[
+          { name: 'Feed', path: '/community', icon: <FaHome size={16} /> },
+          { name: 'Doubts', path: '/community/doubts', icon: <FaQuestionCircle size={16} /> },
+          { name: 'Projects', path: '/community/projects', icon: <FaCompass size={16} /> },
+          { name: 'Careers', path: '/community/career-hub', icon: <FaBriefcase size={16} /> },
+          { name: 'Ecosystem', path: '/community/store', icon: <FaGift size={16} /> }
+        ].map(item => {
+          const active = location.pathname === item.path;
+          return (
+            <Link
+              key={item.name}
+              to={item.path}
+              className={`flex flex-col items-center justify-center gap-1 py-1 px-3.5 rounded-xl transition-all ${
+                active 
+                  ? 'text-purple-400 font-black' 
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <span>{item.icon}</span>
+              <span className="text-[9px] font-bold uppercase tracking-wider">{item.name}</span>
+            </Link>
+          );
+        })}
+      </div>
 
     </div>
   );

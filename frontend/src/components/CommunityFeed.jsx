@@ -410,6 +410,36 @@ const CommunityFeed = () => {
   return (
     <div className="flex flex-col gap-6 w-full text-left">
       
+      {/* Top Banner Card */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-900/60 to-indigo-900/40 border border-purple-500/20 p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-2xl">
+        <div className="absolute -top-12 -right-12 w-48 h-48 bg-purple-500/20 rounded-full blur-3xl" />
+        <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-indigo-500/20 rounded-full blur-3xl" />
+
+        <div className="z-10 text-left">
+          <h2 className="text-xl md:text-2xl font-black text-white font-title tracking-tight leading-tight">
+            Build Projects, Learn Together
+          </h2>
+          <p className="text-xs md:text-sm text-slate-350 mt-1 max-w-md font-medium leading-relaxed">
+            Join coding challenges, resolve doubts, and unlock rewards with other developers.
+          </p>
+        </div>
+
+        <div className="z-10 flex flex-wrap gap-4 sm:gap-6 shrink-0">
+          <div className="px-4 py-2.5 rounded-2xl bg-[#121217]/60 border border-white/5 flex flex-col items-start min-w-[90px]">
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Members</span>
+            <span className="text-base font-black text-white mt-0.5">4.5K</span>
+          </div>
+          <div className="px-4 py-2.5 rounded-2xl bg-[#121217]/60 border border-white/5 flex flex-col items-start min-w-[90px]">
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Active</span>
+            <span className="text-base font-black text-white mt-0.5">250+</span>
+          </div>
+          <div className="px-4 py-2.5 rounded-2xl bg-[#121217]/60 border border-white/5 flex flex-col items-start min-w-[90px]">
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Rewards</span>
+            <span className="text-base font-black text-purple-400 mt-0.5">$500+</span>
+          </div>
+        </div>
+      </div>
+
       {/* Search & Category Filter Header */}
       <div className="bg-[#121217] border border-white/5 p-4 rounded-3xl flex flex-col md:flex-row gap-4 items-center justify-between shadow-sm">
         <div className="flex flex-nowrap items-center gap-2 overflow-x-auto w-full md:w-auto scrollbar-none py-1.5">
