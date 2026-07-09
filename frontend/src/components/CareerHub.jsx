@@ -15,6 +15,53 @@ const CareerHub = () => {
   // Tab State
   const [activeSubTab, setActiveSubTab] = useState('atsChecker'); // atsChecker, coverLetter, builder, interviewPrep, toolkit, templates
   
+  // Job Tracker States
+  const [jobs, setJobs] = useState(() => {
+    try {
+      const saved = localStorage.getItem('portfolio_job_tracker_entries');
+      return saved ? JSON.parse(saved) : [
+        { id: '1', title: 'React Developer', company: 'Google', date: '2026-07-01', status: 'Applied', notes: 'Referred by engineer.' },
+        { id: '2', title: 'Full Stack Intern', company: 'Vercel', date: '2026-07-03', status: 'Phone Screen', notes: 'Scheduled for next Tuesday.' },
+        { id: '3', title: 'Frontend Engineer', company: 'Linear', date: '2026-06-25', status: 'Technical Round', notes: 'Completed live coding.' },
+        { id: '4', title: 'Intern Solutions Architect', company: 'Notion', date: '2026-06-15', status: 'Offer Received', notes: 'Accepted!' }
+      ];
+    } catch (_) {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('portfolio_job_tracker_entries', JSON.stringify(jobs));
+    } catch (_) {}
+  }, [jobs]);
+
+  const [showAddJobModal, setShowAddJobModal] = useState(false);
+  const [newJob, setNewJob] = useState({ title: '', company: '', date: '', status: 'Applied', notes: '' });
+
+  const handleAddJob = (e) => {
+    e.preventDefault();
+    if (!newJob.title || !newJob.company) return;
+    const item = {
+      ...newJob,
+      id: Date.now().toString(),
+      date: newJob.date || new Date().toISOString().split('T')[0]
+    };
+    setJobs(prev => [...prev, item]);
+    setNewJob({ title: '', company: '', date: '', status: 'Applied', notes: '' });
+    setShowAddJobModal(false);
+  };
+
+  const handleUpdateJobStatus = (jobId, nextStatus) => {
+    setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status: nextStatus } : j));
+  };
+
+  const handleDeleteJob = (jobId) => {
+    if (window.confirm('Delete this job entry?')) {
+      setJobs(prev => prev.filter(j => j.id !== jobId));
+    }
+  };
+  
   // ATS Checker States
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -608,7 +655,8 @@ ${builderData.educations.map(edu => `- ${edu.degree} from ${edu.school} (${edu.y
           { id: 'coverLetter', label: 'Cover Letter Maker' },
           { id: 'builder', label: 'AI Resume Builder & Templates' },
           { id: 'interviewPrep', label: 'Interview Prep QA' },
-          { id: 'toolkit', label: 'Career Toolkit' }
+          { id: 'toolkit', label: 'Career Toolkit' },
+          { id: 'jobTracker', label: 'Job & Internship Tracker' }
         ].map(tab => (
           <button
             key={tab.id}
@@ -1321,8 +1369,7 @@ ${builderData.educations.map(edu => `- ${edu.degree} from ${edu.school} (${edu.y
                   </div>
                 </div>
               </div>
-
-              {/* Career Tips */}
+               {/* Career Tips */}
               <div className="lg:col-span-6 bg-[#121217] border border-white/5 p-6 rounded-3xl shadow-xl flex flex-col gap-4">
                 <h3 className="text-sm font-black text-white">Career Growth Tips</h3>
                 <p className="text-[11px] text-slate-400">Pro tips to structure developer profiles and clear technical loops.</p>
@@ -1339,6 +1386,178 @@ ${builderData.educations.map(edu => `- ${edu.degree} from ${edu.school} (${edu.y
                     </div>
                   ))}
                 </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* TAB 6: Job & Internship Tracker (Kanban Board) */}
+          {activeSubTab === 'jobTracker' && (
+            <motion.div
+              key="jobTracker"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="flex flex-col gap-6 text-left"
+            >
+              <div className="flex justify-between items-center bg-[#121217] border border-white/5 p-4 rounded-3xl shrink-0">
+                <div>
+                  <h3 className="text-sm font-black text-white">Application Kanban Board</h3>
+                  <p className="text-[11px] text-slate-455 mt-0.5">Manage and track your job/internship application cycles</p>
+                </div>
+                <button
+                  onClick={() => setShowAddJobModal(true)}
+                  className="px-4 py-2 bg-gradient-to-r from-purple-650 to-indigo-650 text-white rounded-xl text-xs font-black flex items-center gap-1.5 shadow hover:scale-[1.02] transition-transform cursor-pointer"
+                >
+                  <FaPlus size={10} /> Add Application
+                </button>
+              </div>
+
+              {/* Add Job Modal popup */}
+              {showAddJobModal && (
+                <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
+                  <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowAddJobModal(false)} />
+                  <div className="relative w-full max-w-md bg-[#121217] border border-white/10 rounded-3xl p-6 shadow-2xl text-white">
+                    <h3 className="text-sm font-black uppercase tracking-wider mb-4">Add Job Application</h3>
+                    <form onSubmit={handleAddJob} className="flex flex-col gap-4">
+                      <div>
+                        <label className="text-[10px] font-black uppercase text-slate-400 block mb-1">Role Title</label>
+                        <input
+                          type="text"
+                          required
+                          value={newJob.title}
+                          onChange={(e) => setNewJob(prev => ({ ...prev, title: e.target.value }))}
+                          placeholder="e.g. Frontend Intern"
+                          className="w-full px-3.5 py-2 bg-[#1e1e24] border border-white/5 rounded-xl text-xs focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-black uppercase text-slate-400 block mb-1">Company</label>
+                        <input
+                          type="text"
+                          required
+                          value={newJob.company}
+                          onChange={(e) => setNewJob(prev => ({ ...prev, company: e.target.value }))}
+                          placeholder="e.g. Vercel"
+                          className="w-full px-3.5 py-2 bg-[#1e1e24] border border-white/5 rounded-xl text-xs focus:outline-none"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-[10px] font-black uppercase text-slate-400 block mb-1">Date Applied</label>
+                          <input
+                            type="date"
+                            value={newJob.date}
+                            onChange={(e) => setNewJob(prev => ({ ...prev, date: e.target.value }))}
+                            className="w-full px-3.5 py-2 bg-[#1e1e24] border border-white/5 rounded-xl text-xs focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-black uppercase text-slate-400 block mb-1">Current Status</label>
+                          <select
+                            value={newJob.status}
+                            onChange={(e) => setNewJob(prev => ({ ...prev, status: e.target.value }))}
+                            className="w-full px-3.5 py-2 bg-[#1e1e24] border border-white/5 rounded-xl text-xs focus:outline-none"
+                          >
+                            {['Applied', 'Phone Screen', 'Technical Round', 'Offer Received', 'Rejected'].map(s => (
+                              <option key={s} value={s}>{s}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-black uppercase text-slate-400 block mb-1">Notes</label>
+                        <textarea
+                          value={newJob.notes}
+                          onChange={(e) => setNewJob(prev => ({ ...prev, notes: e.target.value }))}
+                          placeholder="e.g. Contacted via recruiter on LinkedIn..."
+                          rows={3}
+                          className="w-full px-3.5 py-2 bg-[#1e1e24] border border-white/5 rounded-xl text-xs focus:outline-none resize-none"
+                        />
+                      </div>
+                      <div className="flex justify-end gap-2.5 pt-2">
+                        <button
+                          type="button"
+                          onClick={() => setShowAddJobModal(false)}
+                          className="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-4 py-2 bg-gradient-to-r from-purple-650 to-indigo-650 text-white rounded-xl text-xs font-black shadow hover:scale-[1.02] transition-transform cursor-pointer"
+                        >
+                          Add Entry
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+
+              {/* Kanban Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4 overflow-x-auto pb-4">
+                {['Applied', 'Phone Screen', 'Technical Round', 'Offer Received', 'Rejected'].map(columnStatus => {
+                  const filtered = jobs.filter(j => j.status === columnStatus);
+                  return (
+                    <div key={columnStatus} className="bg-[#121217]/50 border border-white/5 rounded-3xl p-4 flex flex-col gap-3 min-w-[200px] h-[450px]">
+                      <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">{columnStatus}</span>
+                        <span className="px-2 py-0.5 rounded bg-white/5 text-[9px] font-black text-slate-350">{filtered.length}</span>
+                      </div>
+
+                      <div className="flex-1 overflow-y-auto space-y-2 pr-1 scrollbar-thin">
+                        {filtered.length > 0 ? (
+                          filtered.map(job => (
+                            <div
+                              key={job.id}
+                              className="p-3.5 rounded-2xl bg-[#1c1c24] border border-white/5 hover:border-purple-500/25 transition-all text-left flex flex-col gap-2 relative group"
+                            >
+                              <div>
+                                <span className="text-xs font-black text-white block">{job.title}</span>
+                                <span className="text-[10px] text-purple-400 font-bold block mt-0.5">{job.company}</span>
+                              </div>
+                              
+                              {job.notes && (
+                                <p className="text-[9px] text-slate-455 italic leading-relaxed mt-1">
+                                  {job.notes}
+                                </p>
+                              )}
+
+                              <div className="flex justify-between items-center text-[8px] text-slate-500 font-bold mt-2 pt-2 border-t border-white/5">
+                                <span>Applied: {job.date}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteJob(job.id)}
+                                  className="text-slate-500 hover:text-red-400 cursor-pointer"
+                                  title="Delete Application"
+                                >
+                                  <FaTrash size={8} />
+                                </button>
+                              </div>
+
+                              {/* Column status shift quick toggle dropdown overlay */}
+                              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <select
+                                  value={job.status}
+                                  onChange={(e) => handleUpdateJobStatus(job.id, e.target.value)}
+                                  className="bg-[#121217] border border-white/10 text-[8px] text-slate-350 rounded p-0.5 focus:outline-none cursor-pointer"
+                                >
+                                  {['Applied', 'Phone Screen', 'Technical Round', 'Offer Received', 'Rejected'].map(s => (
+                                    <option key={s} value={s}>{s}</option>
+                                  ))}
+                                </select>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="py-12 text-center text-[9px] text-slate-500 font-bold uppercase italic">
+                            No applications
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </motion.div>
           )}

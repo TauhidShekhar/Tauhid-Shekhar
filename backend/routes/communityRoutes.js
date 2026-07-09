@@ -72,7 +72,8 @@ const {
   getReports,
   actionReport,
   deleteResource,
-  updateResource
+  updateResource,
+  votePollOption
 } = require('../controllers/communityController');
 
 // Gamification / Rewards & Ecosystem Controllers
@@ -137,6 +138,7 @@ router.route('/posts/:id')
 
 router.post('/posts/:id/react', reactToPost);
 router.post('/posts/:id/bookmark', bookmarkPost);
+router.post('/posts/:id/poll/vote', votePollOption);
 
 // Comments
 router.post('/posts/:id/comments', addComment);

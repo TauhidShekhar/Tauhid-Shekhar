@@ -66,11 +66,62 @@ const createAIChat = async (req, res, next) => {
   }
 };
 
+// Helper: query Gemini API with chat history context and multi-modal attachments
+const queryGeminiChatWithMemory = async (messages, category, attachments) => {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey.includes('your_gemini_api_key')) {
+    return null;
+  }
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    
+    const systemInstruction = `You are a helpful, senior developer assistant specialized in ${category}. Speak in clear, professional English. Support markdown formatting and code examples.`;
+
+    const formattedContents = messages.map(m => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }]
+    }));
+
+    // Inject attachments if any exist in payload into the last user message block
+    if (attachments && attachments.length > 0) {
+      const lastMessageParts = formattedContents[formattedContents.length - 1].parts;
+      attachments.forEach(att => {
+        if (att.data) {
+          const base64Data = att.data.split(',')[1] || att.data;
+          const mimeType = att.type === 'image' ? 'image/jpeg' : 'application/pdf';
+          lastMessageParts.push({
+            inlineData: {
+              mimeType,
+              data: base64Data
+            }
+          });
+        }
+      });
+    }
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: formattedContents,
+        systemInstruction: {
+          parts: [{ text: systemInstruction }]
+        }
+      })
+    });
+    const result = await response.json();
+    return result.candidates?.[0]?.content?.parts?.[0]?.text || null;
+  } catch (err) {
+    console.error('Gemini query error:', err.message);
+    return null;
+  }
+};
+
 // POST /api/community/ai/chats/:chatId/messages
 const sendAIChatMessage = async (req, res, next) => {
   try {
-    const { content } = req.body;
-    if (!content || !content.trim()) {
+    const { content, attachments } = req.body;
+    if ((!content || !content.trim()) && (!attachments || attachments.length === 0)) {
       return res.status(450).json({ success: false, message: 'Message content cannot be blank.' });
     }
 
@@ -90,14 +141,25 @@ const sendAIChatMessage = async (req, res, next) => {
     user.aiCredits -= 1;
     await user.save({ validateBeforeSave: false });
 
-    // Append user message
+    // Build user message content including attachment annotations
+    let finalContent = content || '';
+    if (attachments && attachments.length > 0) {
+      attachments.forEach(att => {
+        finalContent += `\n\n*[Attached ${att.type.toUpperCase()}: ${att.name}]*`;
+      });
+    }
+
+    // Append user message to database
     chat.messages.push({
       role: 'user',
-      content
+      content: finalContent
     });
 
-    // Simulate smart AI reply
-    const aiResponse = generateSmartAIResponse(content, chat.category);
+    // Query Gemini with conversation memory or use mock template as fallback
+    let aiResponse = await queryGeminiChatWithMemory(chat.messages, chat.category, attachments);
+    if (!aiResponse) {
+      aiResponse = generateSmartAIResponse(finalContent, chat.category);
+    }
 
     chat.messages.push({
       role: 'assistant',
@@ -106,7 +168,7 @@ const sendAIChatMessage = async (req, res, next) => {
 
     // Auto-update title if it's the default and this is the first custom message
     if (chat.title === 'New AI Consultation' && chat.messages.length <= 3) {
-      chat.title = content.substring(0, 30) + (content.length > 30 ? '...' : '');
+      chat.title = finalContent.substring(0, 30) + (finalContent.length > 30 ? '...' : '');
     }
 
     await chat.save();

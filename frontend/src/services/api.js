@@ -616,6 +616,12 @@ export const api = {
   bookmarkCommunityPost: async (id) => {
     return apiRequest(`/community/posts/${id}/bookmark`, { method: 'POST' });
   },
+  votePollOption: async (postId, optionId) => {
+    return apiRequest(`/community/posts/${postId}/poll/vote`, {
+      method: 'POST',
+      body: JSON.stringify({ optionId })
+    });
+  },
   getCommunityComments: async (postId) => {
     return apiRequest(`/community/posts/${postId}/comments`);
   },
@@ -972,10 +978,10 @@ export const api = {
       body: JSON.stringify(payload)
     });
   },
-  sendAIChatMessage: async (chatId, content) => {
+  sendAIChatMessage: async (chatId, content, attachments = null) => {
     return apiRequest(`/community/ai/chats/${chatId}/messages`, {
       method: 'POST',
-      body: JSON.stringify({ content })
+      body: JSON.stringify({ content, attachments })
     });
   },
   updateAIChat: async (chatId, payload) => {

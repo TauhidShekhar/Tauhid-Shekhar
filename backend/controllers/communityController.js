@@ -1927,6 +1927,49 @@ const updateResource = async (req, res, next) => {
   }
 };
 
+// POST /api/community/posts/:id/poll/vote
+const votePollOption = async (req, res, next) => {
+  try {
+    const { optionId } = req.body;
+    if (!optionId) {
+      return res.status(400).json({ success: false, message: 'Option ID is required.' });
+    }
+
+    const post = await CommunityPost.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found.' });
+    }
+
+    if (!post.poll || !post.poll.options || post.poll.options.length === 0) {
+      return res.status(400).json({ success: false, message: 'Post does not contain a poll.' });
+    }
+
+    const userId = req.user.id.toString();
+
+    // Ensure the user can only vote on one option per poll
+    post.poll.options.forEach(opt => {
+      opt.votes = (opt.votes || []).filter(v => v.toString() !== userId);
+    });
+
+    const option = post.poll.options.id(optionId);
+    if (!option) {
+      return res.status(404).json({ success: false, message: 'Option not found.' });
+    }
+
+    option.votes.push(userId);
+    await post.save();
+
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('post_change', { action: 'update', data: post });
+    }
+
+    res.json({ success: true, data: post });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   awardXP,
   getPosts,
@@ -1993,5 +2036,6 @@ module.exports = {
   submitReport,
   getReports,
   actionReport,
-  autoModerateText
+  autoModerateText,
+  votePollOption
 };

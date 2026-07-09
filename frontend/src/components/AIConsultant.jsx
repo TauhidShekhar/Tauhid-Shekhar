@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { 
-  FaRobot, FaBrain, FaPlus, FaTrash, FaEdit, FaStar, FaCheck,
-  FaCheckCircle, FaExclamationTriangle, FaCode, FaFileAlt, 
-  FaPaperPlane, FaDownload, FaTools, FaChevronRight, FaRegStar
+  FaRobot, FaBrain, FaPlus, FaTrash, FaEdit, FaCheck,
+  FaCode, FaFileAlt, FaPaperPlane, FaDownload, FaShareAlt,
+  FaMicrophone, FaMicrophoneSlash, FaVolumeUp, FaPaperclip, FaTimes, FaSearch
 } from 'react-icons/fa';
 
 const AIConsultant = () => {
@@ -14,49 +14,64 @@ const AIConsultant = () => {
   const [loadingChats, setLoadingChats] = useState(true);
   const [credits, setCredits] = useState(10);
   
-  // New chat creation state
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newChatTitle, setNewChatTitle] = useState('');
-  const [newChatCategory, setNewChatCategory] = useState('React Help');
+  // Search and sidebar list filter
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Voice Inputs / Outputs state
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef(null);
 
   // Active chat inputs & scroll
   const [inputMsg, setInputMsg] = useState('');
   const [sendingMsg, setSendingMsg] = useState(false);
+  
+  // File upload state
+  const [attachment, setAttachment] = useState(null);
+  const fileInputRef = useRef(null);
+
+  // Rename modal / inline edit state
   const [editingChatId, setEditingChatId] = useState(null);
   const [editTitleVal, setEditTitleVal] = useState('');
-  const [filterBookmarked, setFilterBookmarked] = useState(false);
-  
-  // Specialized Audit tools toggle (Quick Utility mode)
+
+  // Audit Tab quick modes
   const [utilityMode, setUtilityMode] = useState(false);
   const [activeUtilityTab, setActiveUtilityTab] = useState('code');
-
-  // Audit tab inputs
   const [auditCode, setAuditCode] = useState('');
   const [auditLanguage, setAuditLanguage] = useState('Javascript');
   const [auditCodeOutput, setAuditCodeOutput] = useState(null);
   const [auditResumeText, setAuditResumeText] = useState('');
   const [auditResumeOutput, setAuditResumeOutput] = useState(null);
-  const [auditTopic, setAuditTopic] = useState('');
-  const [auditCategory, setAuditCategory] = useState('General');
-  const [auditGenOutput, setAuditGenOutput] = useState('');
   const [utilityLoading, setUtilityLoading] = useState(false);
 
-  const [audits, setAudits] = useState(() => {
-    try {
-      const saved = localStorage.getItem('portfolio_ai_audits');
-      return saved ? JSON.parse(saved) : [];
-    } catch (_) {
-      return [];
-    }
-  });
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('portfolio_ai_audits', JSON.stringify(audits));
-    } catch (_) {}
-  }, [audits]);
-
   const messagesEndRef = useRef(null);
+
+  const suggestedPrompts = [
+    { 
+      title: '🤖 AI Portfolio Reviewer', 
+      desc: 'Suggest improvements for developer portfolio aesthetics & structure.',
+      prompt: 'Review my developer portfolio outline and suggest enhancements for UI design and project showcase layout.'
+    },
+    { 
+      title: '📄 AI Resume Optimizer', 
+      desc: 'Improve technical resume items to score high in ATS tracking tools.',
+      prompt: 'Analyze this technical experience bullet point and rewrite it to highlight impact and keywords for ATS algorithms: "Fixed bugs in React frontend and worked on databases."'
+    },
+    { 
+      title: '💻 AI Code Reviewer', 
+      desc: 'Audit custom codebase snippets for performance issues.',
+      prompt: 'Audit the following code for memory leaks, performance bottlenecks, and CamelCase syntax errors: \n\n```javascript\nfunction load_data() {\n  setInterval(async function() {\n    let res = await fetch("/api/status");\n    console.log(res);\n  }, 1000);\n}\n```'
+    },
+    { 
+      title: '🐞 AI Bug Fix Assistant', 
+      desc: 'Identify compiler errors and suggest fixes.',
+      prompt: 'I am getting a "VersionError: No document found for query" inside Mongoose save hooks. Explain why this happens and write a solution snippet.'
+    },
+    { 
+      title: '🎯 AI Career Coach', 
+      desc: 'Draft roadmaps for transitioning to senior roles.',
+      prompt: 'Map out a technical skill learning roadmap for transitioning from a frontend builder to a Cloud-Native Full Stack Solutions Architect.'
+    }
+  ];
 
   // Load chat histories
   const loadChats = async () => {
@@ -65,7 +80,6 @@ const AIConsultant = () => {
       if (res.success) {
         setChats(res.data || []);
         if (res.data && res.data.length > 0 && !activeChat) {
-          // Default to first chat if none selected
           setActiveChat(res.data[0]);
         }
       }
@@ -100,758 +114,553 @@ const AIConsultant = () => {
   }, [activeChat?.messages, sendingMsg]);
 
   // Create chat session
-  const handleCreateChat = async (e) => {
-    if (e) e.preventDefault();
+  const handleCreateChat = async (category = 'General') => {
     try {
-      const title = newChatTitle.trim() || `AI ${newChatCategory} Consultation`;
-      const res = await api.createAIChat({ title, category: newChatCategory });
+      const title = `AI ${category} Consultation`;
+      const res = await api.createAIChat({ title, category });
       if (res.success) {
         setChats(prev => [res.data, ...prev]);
         setActiveChat(res.data);
-        setShowCreateModal(false);
-        setNewChatTitle('');
-        setUtilityMode(false); // Switch back from utility view
+        setUtilityMode(false);
       }
     } catch (err) {
       alert(err.message || 'Failed to create chat.');
     }
   };
 
-  // Send message
+  // Send message with attachments
   const handleSendMessage = async (e) => {
     if (e) e.preventDefault();
-    if (!inputMsg.trim() || !activeChat || sendingMsg) return;
+    if ((!inputMsg.trim() && !attachment) || !activeChat || sendingMsg) return;
 
-    const userMessage = { role: 'user', content: inputMsg, timestamp: new Date() };
-    
-    // Optimistically update active chat UI
+    let displayContent = inputMsg;
+    if (attachment) {
+      displayContent += `\n\n*[Attached ${attachment.type.toUpperCase()}: ${attachment.name}]*`;
+    }
+
+    const userMessage = { role: 'user', content: displayContent, timestamp: new Date() };
     const updatedMessages = [...activeChat.messages, userMessage];
+    
+    // Update local active chat UI optimistically
     setActiveChat(prev => ({ ...prev, messages: updatedMessages }));
     setInputMsg('');
     setSendingMsg(true);
 
+    const activeAttachments = attachment ? [attachment] : null;
+    setAttachment(null);
+
     try {
-      const res = await api.sendAIChatMessage(activeChat._id, userMessage.content);
+      const res = await api.sendAIChatMessage(activeChat._id, userMessage.content, activeAttachments);
       if (res.success) {
         setActiveChat(res.data);
         setCredits(res.creditsLeft);
-        // Sync local chat lists
         setChats(prev => prev.map(c => c._id === res.data._id ? res.data : c));
       }
     } catch (err) {
       alert(err.message || 'Failed to communicate with AI Assistant.');
-      // Revert optimistic updates on failure
       loadChats();
     } finally {
       setSendingMsg(false);
     }
   };
 
-  // Toggle Bookmark
-  const handleToggleBookmark = async (chat) => {
-    try {
-      const res = await api.updateAIChat(chat._id, { isBookmarked: !chat.isBookmarked });
-      if (res.success) {
-        setChats(prev => prev.map(c => c._id === chat._id ? { ...c, isBookmarked: res.data.isBookmarked } : c));
-        if (activeChat && activeChat._id === chat._id) {
-          setActiveChat(prev => ({ ...prev, isBookmarked: res.data.isBookmarked }));
-        }
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  // Rename chat
+  // Rename chat title
   const handleRenameChat = async (chatId) => {
     if (!editTitleVal.trim()) return;
     try {
       const res = await api.updateAIChat(chatId, { title: editTitleVal.trim() });
       if (res.success) {
         setChats(prev => prev.map(c => c._id === chatId ? { ...c, title: res.data.title } : c));
-        if (activeChat && activeChat._id === chatId) {
+        if (activeChat?._id === chatId) {
           setActiveChat(prev => ({ ...prev, title: res.data.title }));
         }
         setEditingChatId(null);
       }
     } catch (err) {
-      console.error(err);
+      alert(err.message || 'Failed to rename chat.');
     }
   };
 
-  // Delete chat
-  const handleDeleteChat = async (chatId) => {
-    if (!window.confirm('Delete this AI chat session permanently?')) return;
+  // Delete chat session
+  const handleDeleteChat = async (chatId, e) => {
+    e.stopPropagation();
+    if (!window.confirm('Delete this AI conversation history permanently?')) return;
     try {
       const res = await api.deleteAIChat(chatId);
       if (res.success) {
-        const remaining = chats.filter(c => c._id !== chatId);
-        setChats(remaining);
-        if (activeChat && activeChat._id === chatId) {
-          setActiveChat(remaining.length > 0 ? remaining[0] : null);
+        setChats(prev => prev.filter(c => c._id !== chatId));
+        if (activeChat?._id === chatId) {
+          setActiveChat(chats.find(c => c._id !== chatId) || null);
         }
       }
     } catch (err) {
-      console.error(err);
+      alert(err.message || 'Failed to delete chat.');
     }
   };
 
-  // Export Chat
-  const handleExportChat = () => {
+  // Voice Speech Recognition
+  const startVoiceInput = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Web Speech Recognition API is not supported in this browser.');
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.onstart = () => setIsListening(true);
+    recognition.onend = () => setIsListening(false);
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setInputMsg(prev => (prev ? `${prev} ${transcript}` : transcript));
+    };
+    recognition.onerror = () => setIsListening(false);
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  };
+
+  const stopVoiceInput = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+  };
+
+  // Voice Speech Output
+  const speakText = (text) => {
+    if (!window.speechSynthesis) {
+      alert('Speech Synthesis API is not supported in this browser.');
+      return;
+    }
+    window.speechSynthesis.cancel(); // Stop current speech
+    const utterance = new SpeechSynthesisUtterance(text.replace(/[#*`]/g, ''));
+    utterance.lang = 'en-US';
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // File Attachments parser
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Attachments size limit is 5MB.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setAttachment({
+        name: file.name,
+        type: file.type.startsWith('image/') ? 'image' : 'pdf',
+        data: reader.result
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Export Chat PDF / Markdown
+  const exportChatHistory = (format) => {
+    if (!activeChat || activeChat.messages.length === 0) return;
+    
+    let docText = `# AI Consultant History: ${activeChat.title}\n\n`;
+    activeChat.messages.forEach(m => {
+      docText += `### [${m.role.toUpperCase()}]\n${m.content}\n\n`;
+    });
+
+    if (format === 'markdown') {
+      const blob = new Blob([docText], { type: 'text/markdown;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${activeChat.title.replace(/\s+/g, '_')}.md`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      const win = window.open('', '_blank');
+      win.document.write(`
+        <html>
+          <head>
+            <title>${activeChat.title}</title>
+            <style>
+              body { font-family: sans-serif; padding: 40px; color: #1e293b; line-height: 1.6; }
+              h1 { border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; color: #0f172a; }
+              .msg { margin-bottom: 20px; padding: 15px; border-radius: 12px; }
+              .user { background: #f8fafc; border: 1px solid #e2e8f0; }
+              .assistant { background: #f3e8ff; border-left: 4px solid #a855f7; }
+              pre { background: #0f172a; color: #f8fafc; padding: 15px; border-radius: 8px; overflow-x: auto; }
+            </style>
+          </head>
+          <body>
+            <h1>${activeChat.title}</h1>
+            ${activeChat.messages.map(m => `
+              <div class="msg ${m.role}">
+                <strong>${m.role === 'user' ? 'User' : 'AI Consultant'}</strong>
+                <div>${m.content.replace(/\n/g, '<br>')}</div>
+              </div>
+            `).join('')}
+            <script>window.onload = function() { window.print(); }</script>
+          </body>
+        </html>
+      `);
+      win.document.close();
+    }
+  };
+
+  // Share conversation simulation
+  const shareChatLink = () => {
     if (!activeChat) return;
-    const log = activeChat.messages.map(m => `[${m.role.toUpperCase()}] - ${new Date(m.timestamp).toLocaleTimeString()}\n${m.content}\n\n`).join('---\n\n');
-    const blob = new Blob([log], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `AI_Consultation_${activeChat.category.replace(/\s+/g, '_')}.txt`;
-    link.click();
-    URL.revokeObjectURL(url);
+    const shareUrl = `${window.location.origin}/community/ai-assistant/share/${activeChat._id}`;
+    navigator.clipboard.writeText(shareUrl);
+    alert('Conversation link copied to clipboard! (Share URL generated)');
   };
 
-  // --- Audit Utility Methods ---
-  const runCodeReview = async () => {
-    if (!auditCode.trim()) return;
-    setUtilityLoading(true);
-    setAuditCodeOutput(null);
-    try {
-      const res = await api.aiReviewCode(auditCode, auditLanguage);
-      if (res.success) {
-        setAuditCodeOutput(res.data);
-        setCredits(res.creditsLeft);
-        
-        const newAudit = {
-          id: Date.now().toString(),
-          type: 'code',
-          title: `Code Audit (${auditLanguage} - Score: ${res.data.score}/100)`,
-          timestamp: new Date(),
-          inputs: { auditCode, auditLanguage },
-          output: res.data
-        };
-        setAudits(prev => [newAudit, ...prev]);
-
-        loadChats(); // refresh logs
+  // Code Block parsing helper
+  const parseMessageContent = (text) => {
+    if (!text) return null;
+    const parts = text.split(/(```[\s\S]*?```)/g);
+    return parts.map((part, index) => {
+      if (part.startsWith('```') && part.endsWith('```')) {
+        const rawCode = part.slice(3, -3);
+        const codeLines = rawCode.split('\n');
+        const language = codeLines[0].trim() || 'javascript';
+        const codeText = codeLines.slice(1).join('\n');
+        return (
+          <div key={index} className="my-3 overflow-hidden rounded-xl border border-white/5 bg-[#09090c] font-mono text-xs">
+            <div className="flex justify-between items-center bg-white/5 px-4 py-2 border-b border-white/5 text-[10px] text-slate-400 font-bold uppercase">
+              <span>{language}</span>
+              <button 
+                onClick={() => {
+                  navigator.clipboard.writeText(codeText);
+                  alert('Code snippet copied to clipboard!');
+                }}
+                className="hover:text-white transition-colors cursor-pointer"
+              >
+                Copy Code
+              </button>
+            </div>
+            <pre className="p-4 overflow-x-auto text-left text-purple-200 scrollbar-thin">
+              <code>{codeText}</code>
+            </pre>
+          </div>
+        );
       }
-    } catch (err) {
-      alert(err.message || 'Audit failed.');
-    } finally {
-      setUtilityLoading(false);
-    }
+      return <span key={index} className="whitespace-pre-wrap">{part}</span>;
+    });
   };
 
-  const runResumeReview = async () => {
-    if (!auditResumeText.trim()) return;
-    setUtilityLoading(true);
-    setAuditResumeOutput(null);
-    try {
-      const res = await api.aiReviewResume(auditResumeText);
-      if (res.success) {
-        setAuditResumeOutput(res.data);
-        setCredits(res.creditsLeft);
-
-        const newAudit = {
-          id: Date.now().toString(),
-          type: 'resume',
-          title: `ATS Match (${res.data.overallScore}%)`,
-          timestamp: new Date(),
-          inputs: { auditResumeText },
-          output: res.data
-        };
-        setAudits(prev => [newAudit, ...prev]);
-
-        loadChats();
-      }
-    } catch (err) {
-      alert(err.message || 'Resume audit failed.');
-    } finally {
-      setUtilityLoading(false);
-    }
-  };
-
-  const runContentGenerator = async () => {
-    if (!auditTopic.trim()) return;
-    setUtilityLoading(true);
-    setAuditGenOutput('');
-    try {
-      const res = await api.aiGenerateContent(auditTopic, auditCategory);
-      if (res.success) {
-        setAuditGenOutput(res.data);
-        setCredits(res.creditsLeft);
-
-        const newAudit = {
-          id: Date.now().toString(),
-          type: 'generator',
-          title: `Post: ${auditTopic.length > 25 ? auditTopic.substring(0, 25) + '...' : auditTopic}`,
-          timestamp: new Date(),
-          inputs: { auditTopic, auditCategory },
-          output: res.data
-        };
-        setAudits(prev => [newAudit, ...prev]);
-
-        loadChats();
-      }
-    } catch (err) {
-      alert(err.message || 'Generator failed.');
-    } finally {
-      setUtilityLoading(false);
-    }
-  };
-
-  const displayChats = filterBookmarked ? chats.filter(c => c.isBookmarked) : chats;
+  const filteredChatsList = chats.filter(c => 
+    c.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <div className="flex flex-col gap-6 text-left relative min-h-[600px] h-[calc(100vh-140px)]">
-      
-      {/* Upper header */}
-      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-white/5 pb-3">
-        <div>
-          <h1 className="text-xl font-black text-white uppercase tracking-wider flex items-center gap-2">
-            <FaRobot className="text-purple-400" /> AI Developer Consultant
-          </h1>
-          <p className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">
-            Optimize code, evaluate ATS resumes, or chat with specialized developer assistants
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2.5">
-          {/* Toggle audit tools */}
-          <button
-            onClick={() => setUtilityMode(!utilityMode)}
-            className={`px-4 py-2 border rounded-xl text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-colors ${
-              utilityMode 
-                ? 'bg-purple-650/15 border-purple-500/30 text-purple-400' 
-                : 'bg-[#121217] border-white/5 text-slate-350 hover:text-white'
-            }`}
-          >
-            <FaTools /> {utilityMode ? 'Open Chat Hub' : 'Audit Toolkits'}
-          </button>
-
-          {/* Credits Display */}
-          <div className="px-4 py-2 bg-purple-650/10 border border-purple-500/15 rounded-xl text-[10px] font-black uppercase text-purple-400 flex items-center gap-1.5">
-            <FaBrain /> {credits} AI Credits Left
-          </div>
-        </div>
+    <div className="flex flex-col gap-6 text-left">
+      <div>
+        <h1 className="text-xl font-black text-white uppercase tracking-wider">AI Consultant Studio</h1>
+        <p className="text-xs text-slate-400 font-bold uppercase mt-0.5">ChatGPT-like specialized agent for developer workflows</p>
       </div>
 
-      {utilityMode ? (
-        /* --- UTILITY AUDIT MODE --- */
-        <div className="flex flex-col gap-5 bg-[#121217] border border-white/5 p-6 rounded-3xl flex-1 overflow-y-auto">
-          <div className="flex gap-2 border-b border-white/5 pb-3">
-            {['code', 'resume', 'generator'].map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveUtilityTab(tab)}
-                className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${
-                  activeUtilityTab === tab 
-                    ? 'bg-purple-650 text-white' 
-                    : 'bg-[#181822] border border-white/5 text-slate-450 hover:text-white'
-                }`}
-              >
-                {tab === 'code' && 'AI Code Audit'}
-                {tab === 'resume' && 'ATS Resume score'}
-                {tab === 'generator' && 'Post Generator'}
-              </button>
-            ))}
-          </div>
-
-          {activeUtilityTab === 'code' && (
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1">
-                <span className="text-[10px] font-black text-white uppercase flex items-center gap-1"><FaCode /> Run Code Scan</span>
-                <p className="text-[8px] text-slate-450 uppercase">Reviews architecture, syntax issues, and leaks. Cost: 1 credit.</p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <textarea
-                  value={auditCode}
-                  onChange={(e) => setAuditCode(e.target.value)}
-                  placeholder="Paste component logic or queries here..."
-                  className="w-full h-44 md:col-span-3 p-4 bg-[#181822] border border-white/5 rounded-2xl text-[10px] font-mono text-white focus:outline-none focus:border-purple-500 resize-none leading-relaxed"
-                />
-                <div className="flex flex-col gap-3 justify-between">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[8px] text-slate-500 font-bold uppercase">Language</span>
-                    <select
-                      value={auditLanguage}
-                      onChange={(e) => setAuditLanguage(e.target.value)}
-                      className="w-full px-3 py-2 bg-[#181822] border border-white/5 rounded-lg text-xs text-white"
-                    >
-                      <option>Javascript</option>
-                      <option>Python</option>
-                      <option>HTML/CSS</option>
-                      <option>Java</option>
-                      <option>Go Lang</option>
-                    </select>
-                  </div>
-                  <button
-                    disabled={utilityLoading || !auditCode.trim()}
-                    onClick={runCodeReview}
-                    className="w-full py-2.5 bg-purple-650 hover:bg-purple-700 text-white rounded-xl text-[9px] font-black uppercase cursor-pointer"
-                  >
-                    {utilityLoading ? 'Analyzing...' : 'Run Audit'}
-                  </button>
-                </div>
-              </div>
-
-              {auditCodeOutput && (
-                <div className="border-t border-white/5 pt-4 flex flex-col gap-3 animate-fade-in text-xs">
-                  <div className="flex items-center gap-3">
-                    <span className="text-[9px] font-black text-slate-400 uppercase">Analysis Output</span>
-                    <span className="text-[9px] bg-purple-600/20 text-purple-400 border border-purple-500/10 px-2.5 py-0.5 rounded-full font-black">Score: {auditCodeOutput.score}/100</span>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 rounded-2xl bg-[#181822] border border-white/5">
-                      <span className="text-[9px] text-green-400 font-black uppercase flex items-center gap-1"><FaCheckCircle /> Strengths</span>
-                      <ul className="list-disc pl-4 text-slate-350 mt-1 flex flex-col gap-1 text-[10px]">
-                        {auditCodeOutput.positives?.map((p, i) => <li key={i}>{p}</li>)}
-                      </ul>
-                    </div>
-                    <div className="p-4 rounded-2xl bg-[#181822] border border-white/5">
-                      <span className="text-[9px] text-yellow-500 font-black uppercase flex items-center gap-1"><FaExclamationTriangle /> Warnings</span>
-                      <ul className="list-disc pl-4 text-slate-350 mt-1 flex flex-col gap-1 text-[10px]">
-                        {auditCodeOutput.warnings?.map((w, i) => <li key={i}>{w}</li>)}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeUtilityTab === 'resume' && (
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1">
-                <span className="text-[10px] font-black text-white uppercase flex items-center gap-1"><FaFileAlt /> ATS Keyword Score</span>
-                <p className="text-[8px] text-slate-450 uppercase">Inspects profile resume text alignments. Cost: 1 credit.</p>
-              </div>
-              <textarea
-                value={auditResumeText}
-                onChange={(e) => setAuditResumeText(e.target.value)}
-                placeholder="Paste markdown experience descriptions here..."
-                className="w-full h-36 p-4 bg-[#181822] border border-white/5 rounded-2xl text-[10px] font-mono text-white focus:outline-none focus:border-purple-500 resize-none leading-relaxed"
-              />
-              <button
-                disabled={utilityLoading || !auditResumeText.trim()}
-                onClick={runResumeReview}
-                className="self-end px-6 py-2.5 bg-purple-650 hover:bg-purple-700 text-white rounded-xl text-[9px] font-black uppercase cursor-pointer"
-              >
-                {utilityLoading ? 'Analyzing...' : 'Evaluate Resume'}
-              </button>
-
-              {auditResumeOutput && (
-                <div className="border-t border-white/5 pt-4 flex flex-col gap-3 animate-fade-in text-xs">
-                  <div className="flex items-center gap-3">
-                    <span className="text-[9px] font-black text-slate-400 uppercase font-black">Critique Analysis</span>
-                    <span className="text-[9px] bg-purple-600/20 text-purple-400 border border-purple-500/10 px-2.5 py-0.5 rounded-full font-black">ATS Match: {auditResumeOutput.overallScore}%</span>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 rounded-2xl bg-[#181822] border border-white/5">
-                      <span className="text-[9px] text-green-400 font-black uppercase flex items-center gap-1"><FaCheckCircle /> Strengths</span>
-                      <ul className="list-disc pl-4 text-slate-350 mt-1 flex flex-col gap-1 text-[10px]">
-                        {auditResumeOutput.strengths?.map((s, i) => <li key={i}>{s}</li>)}
-                      </ul>
-                    </div>
-                    <div className="p-4 rounded-2xl bg-[#181822] border border-white/5">
-                      <span className="text-[9px] text-yellow-500 font-black uppercase flex items-center gap-1"><FaExclamationTriangle /> Gaps</span>
-                      <ul className="list-disc pl-4 text-slate-350 mt-1 flex flex-col gap-1 text-[10px]">
-                        {auditResumeOutput.gaps?.map((g, i) => <li key={i}>{g}</li>)}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeUtilityTab === 'generator' && (
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1">
-                <span className="text-[10px] font-black text-white uppercase flex items-center gap-1"><FaRobot /> Engagement Social Generator</span>
-                <p className="text-[8px] text-slate-450 uppercase">Generates clean markdown social copies. Cost: 1 credit.</p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                <input
-                  type="text"
-                  placeholder="Enter topic details (e.g. Hooks vs State)..."
-                  value={auditTopic}
-                  onChange={(e) => setAuditTopic(e.target.value)}
-                  className="w-full md:col-span-3 px-4 py-2.5 rounded-xl bg-[#181822] border border-white/5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
-                />
-                <select
-                  value={auditCategory}
-                  onChange={(e) => setAuditCategory(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-[#181822] border border-white/5 rounded-xl text-xs text-white"
-                >
-                  <option>General</option>
-                  <option>Tutorials</option>
-                  <option>QA Doubt</option>
-                </select>
-              </div>
-              <button
-                disabled={utilityLoading || !auditTopic.trim()}
-                onClick={runContentGenerator}
-                className="self-end px-6 py-2.5 bg-purple-650 hover:bg-purple-700 text-white rounded-xl text-[9px] font-black uppercase cursor-pointer"
-              >
-                {utilityLoading ? 'Drafting...' : 'Generate social post'}
-              </button>
-
-              {auditGenOutput && (
-                <div className="border-t border-white/5 pt-4 flex flex-col gap-2 text-xs">
-                  <span className="text-[8px] text-slate-500 font-bold uppercase">Generated Post Code</span>
-                  <div className="p-4 bg-[#181822] border border-white/5 rounded-2xl text-[10px] text-slate-200 leading-relaxed whitespace-pre-wrap select-all cursor-pointer">
-                    {auditGenOutput}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-          {/* Completed AI Audit Logs */}
-          {audits.length > 0 && (
-            <div className="border-t border-white/5 pt-5 mt-4 flex flex-col gap-3">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                <FaCheckCircle className="text-purple-400" /> Completed AI Audit Logs
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {audits.map(audit => (
-                  <div 
-                    key={audit.id}
-                    onClick={() => {
-                      setActiveUtilityTab(audit.type);
-                      if (audit.type === 'code') {
-                        setAuditCode(audit.inputs.auditCode);
-                        setAuditLanguage(audit.inputs.auditLanguage);
-                        setAuditCodeOutput(audit.output);
-                      } else if (audit.type === 'resume') {
-                        setAuditResumeText(audit.inputs.auditResumeText);
-                        setAuditResumeOutput(audit.output);
-                      } else if (audit.type === 'generator') {
-                        setAuditTopic(audit.inputs.auditTopic);
-                        setAuditCategory(audit.inputs.auditCategory);
-                        setAuditGenOutput(audit.output);
-                      }
-                    }}
-                    className="p-3 bg-[#181822] hover:bg-purple-650/10 border border-white/5 hover:border-purple-500/25 rounded-2xl cursor-pointer text-left transition-all flex flex-col justify-between min-h-[60px]"
-                  >
-                    <div className="flex justify-between items-start gap-2">
-                      <span className="text-[10px] font-black text-white truncate max-w-[150px]">{audit.title}</span>
-                      <span className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 text-slate-400 font-bold uppercase shrink-0">
-                        {audit.type}
-                      </span>
-                    </div>
-                    <span className="text-[8px] text-slate-550 mt-1 block">
-                      {new Date(audit.timestamp).toLocaleString()}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      ) : (
-        /* --- ACTIVE CHAT WORKSPACE DUAL PANE --- */
-        <div className="flex flex-col md:flex-row gap-5 flex-1 h-[calc(100%-80px)] overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        
+        {/* Left Column: Chats Sidebar */}
+        <div className="lg:col-span-1 flex flex-col gap-4 bg-[#121217] border border-white/5 p-4 rounded-3xl h-[600px]">
           
-          {/* Left panel: Chat sessions list */}
-          <div className="w-full md:w-64 bg-[#121217] border border-white/5 rounded-3xl flex flex-col overflow-hidden shrink-0">
-            <div className="p-4 border-b border-white/5 flex flex-col gap-3">
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="w-full py-2.5 bg-purple-650 hover:bg-purple-700 text-white rounded-xl text-[9px] font-black uppercase tracking-wider cursor-pointer flex items-center justify-center gap-1.5 transition-colors"
-              >
-                <FaPlus /> Start Consultation
-              </button>
+          <button
+            onClick={() => handleCreateChat('General')}
+            className="w-full py-2.5 bg-gradient-to-r from-purple-650 to-indigo-650 text-white rounded-xl text-xs font-black flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer shadow-md shadow-purple-600/10"
+          >
+            <FaPlus size={10} /> New AI Chat
+          </button>
 
-              {/* Filters */}
-              <div className="flex justify-between items-center text-[9px] text-slate-500 mt-1">
-                <span className="font-bold uppercase">Conversations</span>
-                <button
-                  onClick={() => setFilterBookmarked(!filterBookmarked)}
-                  className={`flex items-center gap-1 cursor-pointer hover:text-white transition-colors ${filterBookmarked ? 'text-amber-400 font-black' : ''}`}
-                >
-                  <FaStar size={8} /> {filterBookmarked ? 'Starred Only' : 'Show All'}
-                </button>
-              </div>
-            </div>
-
-            {/* List */}
-            <div className="flex-1 overflow-y-auto p-2 flex flex-col gap-1">
-              {loadingChats ? (
-                <div className="flex items-center justify-center p-8">
-                  <div className="w-4 h-4 rounded-full border-2 border-purple-500/20 border-t-purple-500 animate-spin" />
-                </div>
-              ) : displayChats.length === 0 ? (
-                <span className="text-[9px] text-slate-550 italic text-center py-8">No chats logged yet.</span>
-              ) : (
-                displayChats.map(c => {
-                  const isActive = activeChat && activeChat._id === c._id;
-                  return (
-                    <div
-                      key={c._id}
-                      className={`group relative p-2.5 rounded-xl flex items-center justify-between gap-2 border transition-all cursor-pointer ${
-                        isActive 
-                          ? 'bg-purple-600/10 border-purple-500/20 text-white' 
-                          : 'bg-[#181822]/40 border-transparent text-slate-400 hover:bg-[#181822] hover:text-white'
-                      }`}
-                      onClick={() => setActiveChat(c)}
-                    >
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-[9px] font-bold ${
-                          isActive ? 'bg-purple-650/20 text-purple-400' : 'bg-white/5 text-slate-500'
-                        }`}>
-                          <FaRobot size={10} />
-                        </div>
-                        
-                        {editingChatId === c._id ? (
-                          <input
-                            type="text"
-                            value={editTitleVal}
-                            onChange={(e) => setEditTitleVal(e.target.value)}
-                            onBlur={() => handleRenameChat(c._id)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleRenameChat(c._id)}
-                            className="bg-[#121217] border border-purple-500/35 text-[10px] text-white px-1.5 py-0.5 rounded w-full focus:outline-none"
-                            autoFocus
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        ) : (
-                          <div className="flex flex-col text-left min-w-0">
-                            <span className="text-[10px] font-bold truncate pr-3">{c.title}</span>
-                            <span className="text-[8px] text-slate-500 uppercase mt-0.5">{c.category}</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Hover action bar */}
-                      <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingChatId(c._id);
-                            setEditTitleVal(c.title);
-                          }}
-                          className="p-1 text-slate-500 hover:text-white cursor-pointer"
-                        >
-                          <FaEdit size={8} />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleToggleBookmark(c);
-                          }}
-                          className={`p-1 cursor-pointer ${c.isBookmarked ? 'text-amber-450' : 'text-slate-550 hover:text-amber-450'}`}
-                        >
-                          {c.isBookmarked ? <FaStar size={8} /> : <FaRegStar size={8} />}
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteChat(c._id);
-                          }}
-                          className="p-1 text-slate-500 hover:text-red-400 cursor-pointer"
-                        >
-                          <FaTrash size={8} />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search chats..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-8 pr-3 py-2 rounded-xl bg-[#1e1e24] border border-white/5 text-xs text-white placeholder-slate-450 focus:outline-none"
+            />
+            <FaSearch className="absolute left-3 top-2.5 text-slate-450" size={10} />
           </div>
 
-          {/* Right panel: Active Chat dialogue */}
-          <div className="flex-1 bg-[#121217] border border-white/5 rounded-3xl flex flex-col overflow-hidden relative">
-            {activeChat ? (
-              <>
-                {/* Chat window Header */}
-                <div className="px-5 py-4 border-b border-white/5 flex items-center justify-between shrink-0">
-                  <div className="flex items-center gap-2.5 text-left">
-                    <div className="w-8 h-8 rounded-xl bg-purple-600/10 flex items-center justify-center text-purple-400">
-                      <FaRobot size={15} />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-xs font-black text-white">{activeChat.title}</span>
-                      <span className="text-[8px] text-purple-400 font-bold uppercase tracking-wider mt-0.5">{activeChat.category} Assistant</span>
-                    </div>
+          <div className="flex-1 overflow-y-auto flex flex-col gap-1.5 pr-1 scrollbar-thin">
+            {loadingChats ? (
+              <div className="py-12 flex justify-center">
+                <div className="w-5 h-5 rounded-full border-2 border-purple-500/20 border-t-purple-500 animate-spin" />
+              </div>
+            ) : filteredChatsList.length > 0 ? (
+              filteredChatsList.map(c => (
+                <div
+                  key={c._id}
+                  onClick={() => {
+                    setActiveChat(c);
+                    setUtilityMode(false);
+                  }}
+                  className={`group p-2.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all duration-150 ${
+                    activeChat?._id === c._id && !utilityMode
+                      ? 'bg-purple-600/10 border-purple-500/20 text-white'
+                      : 'bg-white/2 border-transparent text-slate-400 hover:bg-white/4'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <FaBrain className="text-purple-400 shrink-0 text-xs" />
+                    {editingChatId === c._id ? (
+                      <input
+                        type="text"
+                        value={editTitleVal}
+                        onChange={(e) => setEditTitleVal(e.target.value)}
+                        onBlur={() => handleRenameChat(c._id)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleRenameChat(c._id)}
+                        className="bg-[#1e1e24] border border-white/10 text-white text-[11px] px-1.5 py-0.5 rounded focus:outline-none w-full"
+                        autoFocus
+                      />
+                    ) : (
+                      <span className="text-[11px] font-black truncate">{c.title}</span>
+                    )}
                   </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleToggleBookmark(activeChat)}
-                      className={`p-2 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors cursor-pointer text-xs ${
-                        activeChat.isBookmarked ? 'text-amber-400' : 'text-slate-400'
-                      }`}
-                    >
-                      <FaStar />
-                    </button>
-                    <button
-                      onClick={handleExportChat}
-                      title="Download chat logs"
-                      className="p-2 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer text-xs"
-                    >
-                      <FaDownload />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Messages dialogue body */}
-                <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-4">
-                  {activeChat.messages.map((m, idx) => {
-                    const isAi = m.role === 'assistant';
-                    return (
-                      <div
-                        key={idx}
-                        className={`flex gap-3 max-w-[85%] ${isAi ? 'self-start text-left' : 'self-end flex-row-reverse text-right'}`}
+                  
+                  {editingChatId !== c._id && (
+                    <div className="hidden group-hover:flex items-center gap-1.5 shrink-0 ml-1.5">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingChatId(c._id);
+                          setEditTitleVal(c.title);
+                        }}
+                        className="text-[10px] text-slate-400 hover:text-white cursor-pointer"
+                        title="Rename chat"
                       >
-                        {isAi && (
-                          <div className="w-7 h-7 rounded-lg bg-purple-600/10 border border-purple-500/10 flex items-center justify-center text-purple-400 shrink-0 mt-0.5">
-                            <FaRobot size={11} />
-                          </div>
-                        )}
-                        
-                        <div className="flex flex-col gap-1">
-                          <div className={`p-3.5 rounded-2xl text-[11px] leading-relaxed select-text ${
-                            isAi 
-                              ? 'bg-[#181822] border border-white/5 text-slate-200 rounded-tl-none' 
-                              : 'bg-purple-650 text-white rounded-tr-none'
-                          }`}>
-                            {/* Parse custom titles or blocks inside the simulated replies */}
-                            <div className="whitespace-pre-wrap font-sans text-left">
-                              {m.content}
-                            </div>
-                          </div>
-                          
-                          <span className="text-[7px] text-slate-550 font-bold uppercase px-1">
-                            {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                  {sendingMsg && (
-                    <div className="flex gap-3 self-start items-center">
-                      <div className="w-7 h-7 rounded-lg bg-purple-600/10 border border-purple-500/10 flex items-center justify-center text-purple-400 shrink-0">
-                        <FaRobot size={11} />
-                      </div>
-                      <div className="p-3 bg-[#181822] rounded-2xl rounded-tl-none border border-white/5 flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '0ms' }} />
-                        <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '150ms' }} />
-                        <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '300ms' }} />
-                      </div>
+                        <FaEdit />
+                      </button>
+                      <button
+                        onClick={(e) => handleDeleteChat(c._id, e)}
+                        className="text-[10px] text-slate-400 hover:text-red-400 cursor-pointer"
+                        title="Delete chat"
+                      >
+                        <FaTrash />
+                      </button>
                     </div>
                   )}
-
-                  <div ref={messagesEndRef} />
                 </div>
-
-                {/* Input form */}
-                <form
-                  onSubmit={handleSendMessage}
-                  className="p-4 border-t border-white/5 bg-[#121217] flex gap-2 shrink-0"
-                >
-                  <input
-                    type="text"
-                    disabled={sendingMsg}
-                    value={inputMsg}
-                    onChange={(e) => setInputMsg(e.target.value)}
-                    placeholder={`Ask AI specialized ${activeChat.category} (Cost: 1 Credit)...`}
-                    className="flex-1 px-4 py-2.5 rounded-xl bg-[#181822] border border-white/5 text-[11px] text-white focus:outline-none focus:border-purple-500"
-                  />
-                  <button
-                    type="submit"
-                    disabled={sendingMsg || !inputMsg.trim()}
-                    className="px-4 bg-purple-650 hover:bg-purple-700 disabled:opacity-40 text-white rounded-xl text-xs flex items-center justify-center cursor-pointer transition-colors"
-                  >
-                    <FaPaperPlane />
-                  </button>
-                </form>
-              </>
+              ))
             ) : (
-              /* --- EMPTY CHAT VIEWPORT --- */
-              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#121217]/50">
-                <div className="w-14 h-14 rounded-2xl bg-purple-600/5 border border-purple-500/10 flex items-center justify-center text-purple-400 mb-4 animate-pulse">
-                  <FaRobot size={24} />
-                </div>
-                <h3 className="font-black text-sm text-white uppercase tracking-wider">Start an AI Consultation</h3>
-                <p className="text-[10px] text-slate-450 max-w-xs mt-1.5 leading-relaxed">
-                  Select a past session or start a new developer thread to review code, debug, or discuss roadmap strategies!
-                </p>
-                <button
-                  onClick={() => setShowCreateModal(true)}
-                  className="mt-4 px-5 py-2.5 bg-purple-650 hover:bg-purple-700 text-white rounded-xl text-[9px] font-black uppercase tracking-wider cursor-pointer transition-colors"
-                >
-                  Create Session
-                </button>
+              <div className="py-12 text-center text-[10px] text-slate-450 font-bold">
+                No active chat sessions
               </div>
             )}
           </div>
-          
+
+          <div className="pt-2 border-t border-white/5 flex justify-between items-center text-[10px] text-slate-450 font-bold uppercase">
+            <span>AI Studio Balance</span>
+            <span className="text-purple-400 font-black">{credits} Credits Left</span>
+          </div>
         </div>
-      )}
 
-      {/* --- CREATE SESSION MODAL OVERLAY --- */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <form
-            onSubmit={handleCreateChat}
-            className="bg-[#121217] border border-white/10 p-6 rounded-[30px] w-full max-w-sm flex flex-col gap-4 text-xs shadow-xl animate-scale-up"
-          >
-            <div className="border-b border-white/5 pb-2 text-left">
-              <h3 className="text-sm font-black text-white uppercase">New AI Consultation</h3>
-              <span className="text-[8px] text-slate-500 font-bold uppercase mt-0.5 block">Select an assistant category</span>
+        {/* Right Column: Chat Interface & Utility Panels */}
+        <div className="lg:col-span-3 flex flex-col bg-[#121217] border border-white/5 rounded-3xl h-[600px] overflow-hidden">
+          
+          {/* Active Chat Header */}
+          <div className="px-5 py-3 border-b border-white/5 bg-[#171720]/80 flex justify-between items-center shrink-0">
+            <div className="flex items-center gap-2">
+              <FaRobot className="text-purple-400 text-sm" />
+              <span className="text-xs font-black text-white">
+                {activeChat ? activeChat.title : 'Assistant Console'}
+              </span>
             </div>
+            {activeChat && (
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={shareChatLink}
+                  className="p-1.5 text-slate-400 hover:text-white text-xs cursor-pointer rounded-lg hover:bg-white/5 transition-all"
+                  title="Share Conversation"
+                >
+                  <FaShareAlt />
+                </button>
+                <div className="relative group/export">
+                  <button
+                    className="p-1.5 text-slate-400 hover:text-white text-xs cursor-pointer rounded-lg hover:bg-white/5 transition-all flex items-center gap-1"
+                    title="Export Chat"
+                  >
+                    <FaDownload />
+                  </button>
+                  <div className="absolute right-0 top-6 hidden group-hover/export:flex flex-col bg-[#1e1e24] border border-white/5 rounded-xl py-1 shadow-xl z-50 min-w-[100px]">
+                    <button 
+                      onClick={() => exportChatHistory('markdown')}
+                      className="px-3 py-1.5 text-left text-[10px] font-bold text-slate-350 hover:bg-white/5 hover:text-white cursor-pointer"
+                    >
+                      Markdown
+                    </button>
+                    <button 
+                      onClick={() => exportChatHistory('pdf')}
+                      className="px-3 py-1.5 text-left text-[10px] font-bold text-slate-350 hover:bg-white/5 hover:text-white cursor-pointer"
+                    >
+                      Print / PDF
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
-            <div className="flex flex-col gap-3 text-left">
-              <div className="flex flex-col gap-1">
-                <span className="text-[9px] text-slate-400 font-bold uppercase">Session Name (Optional)</span>
+          {/* Chat Messages Log */}
+          <div className="flex-1 overflow-y-auto p-5 space-y-4 scrollbar-thin">
+            {activeChat && activeChat.messages ? (
+              activeChat.messages.length <= 1 ? (
+                /* Suggested prompt grid if no user message yet */
+                <div className="py-6 max-w-xl mx-auto space-y-6">
+                  <div className="text-center">
+                    <h3 className="text-sm font-black text-white">Ask anything to kickstart your project</h3>
+                    <p className="text-[11px] text-slate-450 mt-1">Select a quick recommendation topic to check code, resume, or plans</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {suggestedPrompts.map((p, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => {
+                          setInputMsg(p.prompt);
+                        }}
+                        className="p-3 rounded-2xl bg-white/2 hover:bg-purple-600/5 border border-white/5 hover:border-purple-500/20 cursor-pointer text-left transition-all"
+                      >
+                        <span className="text-[11px] font-black text-white">{p.title}</span>
+                        <p className="text-[9px] text-slate-450 mt-1 font-bold">{p.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                /* Chat logs list */
+                <div className="space-y-4 max-w-2xl mx-auto">
+                  {activeChat.messages.map((m, idx) => (
+                    <div key={idx} className={`flex gap-3.5 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      {m.role !== 'user' && (
+                        <div className="w-8 h-8 rounded-xl bg-purple-650/15 border border-purple-500/10 flex items-center justify-center shrink-0">
+                          <FaRobot className="text-purple-400" size={13} />
+                        </div>
+                      )}
+                      
+                      <div className={`p-3.5 rounded-2xl max-w-[85%] text-xs text-left relative ${
+                        m.role === 'user'
+                          ? 'bg-purple-600/15 text-purple-100 rounded-tr-none border border-purple-500/10'
+                          : 'bg-[#181822] text-slate-300 rounded-tl-none border border-white/5'
+                      }`}>
+                        <div className="prose prose-invert prose-xs">
+                          {parseMessageContent(m.content)}
+                        </div>
+
+                        {m.role !== 'user' && (
+                          <button
+                            onClick={() => speakText(m.content)}
+                            className="absolute -bottom-2 -right-2 p-1 bg-[#1e1e24] hover:bg-purple-600 border border-white/5 text-[9px] text-slate-400 hover:text-white rounded-lg transition-all cursor-pointer shadow"
+                            title="Speak Response"
+                          >
+                            <FaVolumeUp />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {sendingMsg && (
+                    <div className="flex gap-3.5 justify-start items-center">
+                      <div className="w-8 h-8 rounded-xl bg-purple-650/15 border border-purple-500/10 flex items-center justify-center shrink-0">
+                        <FaRobot className="text-purple-400" size={13} />
+                      </div>
+                      <div className="p-3 bg-[#181822] border border-white/5 rounded-2xl rounded-tl-none text-slate-400 text-xs flex items-center gap-2">
+                        <div className="flex gap-1">
+                          <div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                          <div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-bounce" style={{ animationDelay: '300ms' }} />
+                        </div>
+                        <span className="font-bold text-[10px] uppercase tracking-wider text-slate-450">AI is thinking...</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div ref={messagesEndRef} />
+                </div>
+              )
+            ) : (
+              <div className="py-24 text-center text-xs text-slate-400 font-bold">
+                Select an active chat session or create a new one to begin.
+              </div>
+            )}
+          </div>
+
+          {/* File attachment preview */}
+          {attachment && (
+            <div className="px-5 py-2 border-t border-white/5 bg-[#171720]/40 flex justify-between items-center text-[10px] text-slate-350 shrink-0">
+              <span className="font-bold">Attached: {attachment.name} ({attachment.type.toUpperCase()})</span>
+              <button 
+                onClick={() => setAttachment(null)}
+                className="text-slate-400 hover:text-white cursor-pointer"
+              >
+                Remove
+              </button>
+            </div>
+          )}
+
+          {/* Message Input Form */}
+          <div className="p-4 border-t border-white/5 bg-[#171720]/50 shrink-0">
+            {activeChat ? (
+              <form onSubmit={handleSendMessage} className="flex gap-2">
+                
+                {/* File Attachment Triggers */}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-3 bg-[#1e1e24] hover:bg-[#252530] text-slate-400 hover:text-white rounded-xl border border-white/5 flex items-center justify-center cursor-pointer transition-colors"
+                  title="Attach file (PDF/Image)"
+                >
+                  <FaPaperclip size={12} />
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*,application/pdf"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+
                 <input
                   type="text"
-                  placeholder="e.g. Debugging Mongoose Middleware"
-                  value={newChatTitle}
-                  onChange={(e) => setNewChatTitle(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#181822] border border-white/5 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-purple-500"
+                  placeholder={isListening ? "Listening..." : "Ask AI Developer Assistant..."}
+                  value={inputMsg}
+                  onChange={(e) => setInputMsg(e.target.value)}
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-[#181822] border border-white/5 text-xs text-white placeholder-slate-450 focus:outline-none focus:border-purple-500 focus:bg-[#1e1e28] transition-colors"
+                  disabled={isListening}
                 />
-              </div>
 
-              <div className="flex flex-col gap-1">
-                <span className="text-[9px] text-slate-400 font-bold uppercase">Assistant Specialty</span>
-                <select
-                  value={newChatCategory}
-                  onChange={(e) => setNewChatCategory(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#181822] border border-white/5 rounded-xl text-xs text-white focus:outline-none focus:border-purple-500"
+                {/* Voice Input Trigger */}
+                <button
+                  type="button"
+                  onClick={isListening ? stopVoiceInput : startVoiceInput}
+                  className={`p-3 rounded-xl border flex items-center justify-center cursor-pointer transition-colors ${
+                    isListening
+                      ? 'bg-red-500 text-white border-red-500/20 animate-pulse'
+                      : 'bg-[#1e1e24] hover:bg-[#252530] text-slate-400 hover:text-white border-white/5'
+                  }`}
+                  title={isListening ? "Stop Voice Input" : "Voice Input"}
                 >
-                  <option>React Help</option>
-                  <option>Node/Express Help</option>
-                  <option>MongoDB/SQL Help</option>
-                  <option>DSA Help</option>
-                  <option>Career Roadmap</option>
-                  <option>Interview Questions</option>
-                  <option>General Coding</option>
-                </select>
+                  <FaMicrophone size={12} />
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={(!inputMsg.trim() && !attachment) || sendingMsg}
+                  className="px-5 bg-gradient-to-r from-purple-650 to-indigo-650 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-xs font-black flex items-center gap-1.5 transition-all shadow-md shadow-purple-600/10 cursor-pointer disabled:opacity-50 disabled:pointer-events-none active:scale-[0.97]"
+                >
+                  <FaPaperPlane size={10} /> Send
+                </button>
+              </form>
+            ) : (
+              <div className="text-center text-[10px] font-bold text-slate-450 uppercase py-2">
+                AI Consultative Workspace locked. Select a history channel above.
               </div>
-            </div>
-
-            <div className="flex gap-3 justify-end mt-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowCreateModal(false);
-                  setNewChatTitle('');
-                }}
-                className="px-4 py-2 bg-[#181822] border border-white/5 text-slate-450 hover:text-white rounded-xl text-[9px] font-black uppercase cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-5 py-2 bg-purple-650 hover:bg-purple-700 text-white rounded-xl text-[9px] font-black uppercase cursor-pointer transition-colors"
-              >
-                Launch
-              </button>
-            </div>
-          </form>
+            )}
+          </div>
         </div>
-      )}
-
+      </div>
     </div>
   );
 };

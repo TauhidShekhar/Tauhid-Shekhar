@@ -30,6 +30,25 @@ const CommunityFeed = () => {
   const [tags, setTags] = useState('');
   const [uploading, setUploading] = useState(false);
   
+  // Post Draft States & Effects
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('portfolio_post_draft');
+      if (saved) setContent(saved);
+    } catch (_) {}
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('portfolio_post_draft', content);
+    } catch (_) {}
+  }, [content]);
+
+  // Poll Creator States
+  const [showPollCreator, setShowPollCreator] = useState(false);
+  const [pollQuestion, setPollQuestion] = useState('');
+  const [pollOptions, setPollOptions] = useState(['', '']);
+  
   // Comment states
   const [commentInputs, setCommentInputs] = useState({}); // { postId: text }
   const [comments, setComments] = useState({}); // { postId: [comment] }
@@ -155,8 +174,14 @@ const CommunityFeed = () => {
 
     try {
       const tagsArray = tags.split(',').map(t => t.trim()).filter(Boolean);
-      // Auto-title generation from content if not present
       const generatedTitle = content.split('\n')[0].substring(0, 80) + '...';
+
+      const pollData = showPollCreator && pollQuestion.trim() && pollOptions.filter(o => o.trim()).length >= 2
+        ? {
+            question: pollQuestion.trim(),
+            options: pollOptions.filter(o => o.trim()).map(optText => ({ optionText: optText, votes: [] }))
+          }
+        : null;
 
       const res = await api.createCommunityPost({
         title: generatedTitle,
@@ -164,7 +189,9 @@ const CommunityFeed = () => {
         mediaUrl,
         mediaType,
         category,
-        tags: tagsArray
+        tags: tagsArray,
+        postType: pollData ? 'poll' : (mediaType !== 'none' ? mediaType : 'text'),
+        poll: pollData
       });
 
       if (res.success) {
@@ -173,9 +200,34 @@ const CommunityFeed = () => {
         setMediaUrl('');
         setMediaType('none');
         setTags('');
+
+        // Reset poll builder
+        setShowPollCreator(false);
+        setPollQuestion('');
+        setPollOptions(['', '']);
+
+        // Clear local storage draft
+        try {
+          localStorage.removeItem('portfolio_post_draft');
+        } catch (_) {}
       }
     } catch (err) {
       alert('Post creation failed: ' + err.message);
+    }
+  };
+
+  const handleVotePoll = async (postId, optionId) => {
+    if (!user) {
+      alert('Please log in to vote on polls.');
+      return;
+    }
+    try {
+      const res = await api.votePollOption(postId, optionId);
+      if (res.success) {
+        setPosts(prev => prev.map(p => p._id === postId ? res.data : p));
+      }
+    } catch (err) {
+      alert('Voting failed: ' + err.message);
     }
   };
 
@@ -440,6 +492,23 @@ const CommunityFeed = () => {
                 <FaFilePdf size={12} /> PDF
                 <input type="file" accept="application/pdf" onChange={handleMediaUpload} className="hidden" />
               </label>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPollCreator(prev => !prev);
+                  if (!showPollCreator) {
+                    setPollQuestion('');
+                    setPollOptions(['', '']);
+                  }
+                }}
+                className={`p-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider border ${
+                  showPollCreator
+                    ? 'bg-purple-600 text-white border-purple-500/20 shadow-md shadow-purple-600/10'
+                    : 'bg-[#1c1c24] hover:bg-[#252530] text-purple-400 border-white/5'
+                }`}
+              >
+                <FaPoll size={12} /> Poll
+              </button>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
@@ -461,6 +530,56 @@ const CommunityFeed = () => {
               {uploading ? 'Uploading...' : 'Post'}
             </button>
           </div>
+
+          {showPollCreator && (
+            <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col gap-3">
+              <span className="text-[10px] font-black uppercase text-purple-400">Create Poll Questionnaire</span>
+              <div>
+                <input
+                  type="text"
+                  placeholder="Ask a question..."
+                  value={pollQuestion}
+                  onChange={(e) => setPollQuestion(e.target.value)}
+                  className="w-full px-3.5 py-2 bg-[#1e1e24] border border-white/5 rounded-xl text-xs text-white focus:outline-none"
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                {pollOptions.map((opt, idx) => (
+                  <div key={idx} className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      placeholder={`Option ${idx + 1}`}
+                      value={opt}
+                      onChange={(e) => {
+                        const updated = [...pollOptions];
+                        updated[idx] = e.target.value;
+                        setPollOptions(updated);
+                      }}
+                      className="flex-1 px-3.5 py-2 bg-[#1e1e24] border border-white/5 rounded-xl text-xs text-white focus:outline-none"
+                    />
+                    {pollOptions.length > 2 && (
+                      <button
+                        type="button"
+                        onClick={() => setPollOptions(prev => prev.filter((_, i) => i !== idx))}
+                        className="text-slate-500 hover:text-red-400 text-xs shrink-0 cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {pollOptions.length < 5 && (
+                <button
+                  type="button"
+                  onClick={() => setPollOptions(prev => [...prev, ''])}
+                  className="text-left text-[9px] font-black uppercase text-purple-400 hover:underline cursor-pointer"
+                >
+                  + Add Option Choice
+                </button>
+              )}
+            </div>
+          )}
         </div>
       )}
 
@@ -581,6 +700,61 @@ const CommunityFeed = () => {
                     <p className="text-xs sm:text-sm text-slate-200 leading-relaxed whitespace-pre-wrap break-words">
                       {post.content}
                     </p>
+                  )}
+
+                  {/* Poll View Component */}
+                  {post.poll && post.poll.options && post.poll.options.length > 0 && (
+                    <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col gap-3 my-2">
+                      <span className="text-xs font-black text-white">{post.poll.question}</span>
+                      
+                      {(() => {
+                        const totalVotes = post.poll.options.reduce((sum, o) => sum + (o.votes || []).length, 0);
+                        const hasVoted = post.poll.options.some(o => (o.votes || []).some(v => v.toString() === currentUserId?.toString()));
+                        
+                        return (
+                          <div className="flex flex-col gap-2.5">
+                            {post.poll.options.map(opt => {
+                              const voteCount = (opt.votes || []).length;
+                              const percent = totalVotes > 0 ? Math.round((voteCount / totalVotes) * 100) : 0;
+                              const userVotedForThis = (opt.votes || []).some(v => v.toString() === currentUserId?.toString());
+                              
+                              if (hasVoted) {
+                                return (
+                                  <div key={opt._id} className="relative flex flex-col gap-1">
+                                    <div className="flex justify-between items-center text-[10px] font-bold text-slate-300 z-10 px-3 py-2">
+                                      <span className="flex items-center gap-1.5">
+                                        {opt.optionText}
+                                        {userVotedForThis && <span className="text-[8px] bg-purple-650 text-white px-1.5 py-0.5 rounded-full uppercase font-black">Your Vote</span>}
+                                      </span>
+                                      <span>{percent}% ({voteCount})</span>
+                                    </div>
+                                    <div className="absolute inset-0 bg-white/5 rounded-xl" />
+                                    <div 
+                                      className={`absolute left-0 top-0 bottom-0 rounded-xl transition-all duration-500 ${userVotedForThis ? 'bg-purple-650/20 border border-purple-500/20' : 'bg-white/10'}`}
+                                      style={{ width: `${percent}%` }}
+                                    />
+                                  </div>
+                                );
+                              }
+                              
+                              return (
+                                <button
+                                  key={opt._id}
+                                  onClick={() => handleVotePoll(post._id, opt._id)}
+                                  className="w-full text-left px-4 py-2.5 rounded-xl bg-white/5 hover:bg-purple-650/10 border border-white/5 hover:border-purple-500/30 text-xs font-bold text-slate-350 hover:text-white transition-all cursor-pointer"
+                                >
+                                  {opt.optionText}
+                                </button>
+                              );
+                            })}
+                            
+                            <div className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mt-1">
+                              Total: {totalVotes} Votes
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
                   )}
 
                   {/* Attachment Media if present */}
