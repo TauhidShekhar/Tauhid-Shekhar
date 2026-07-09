@@ -165,7 +165,7 @@ const SettingsManager = () => {
 
   const handleAddField = () => {
     if (!newField.label.trim()) return;
-    const name = newField.label.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/(^_+|+$)/g, '');
+    const name = newField.label.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/(^_+|_+$)/g, '');
     const options = newField.optionsInput.split(',').map(o => o.trim()).filter(Boolean);
     
     const fieldData = {
