@@ -14,7 +14,7 @@ import GitHubStats from './components/GitHubStats';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import { FaWhatsapp, FaChevronUp, FaCircleCheck } from 'react-icons/fa6';
-import { FaBrain, FaComments, FaEnvelope } from 'react-icons/fa';
+import { FaBrain, FaComments, FaPlus } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import CommandPalette from './components/CommandPalette';
 import socket from './services/socket';
@@ -38,6 +38,7 @@ const App = () => {
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [drawerExpanded, setDrawerExpanded] = useState(true);
 
   // Listen for Ctrl+K global keyboard shortcut
   useEffect(() => {
@@ -167,45 +168,59 @@ const App = () => {
       <Footer key={`footer-${refreshKey}`} />
 
       {/* Floating Actions Drawer */}
-      <div className="fixed bottom-8 right-8 z-[900] flex flex-col gap-4">
-        {/* Floating AI Assistant Trigger */}
+      <div className="fixed bottom-8 right-8 z-[900] flex flex-col gap-4 items-center">
+        {/* Expandable actions list with animation */}
+        <div className={`flex flex-col gap-4 transition-all duration-300 transform ${
+          drawerExpanded 
+            ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto' 
+            : 'opacity-0 translate-y-4 scale-75 pointer-events-none h-0 overflow-hidden'
+        }`}>
+          {/* Floating AI Assistant Trigger */}
+          <button
+            onClick={() => navigate('/community/ai-assistant')}
+            className="w-12 h-12 bg-gradient-to-r from-purple-650 to-indigo-650 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300 cursor-pointer border border-purple-500/20"
+            title="Open AI Consultant"
+          >
+            <FaBrain size={18} />
+          </button>
+
+          {/* Floating Community Link */}
+          <Link
+            to="/community"
+            className="w-12 h-12 bg-[#121217] hover:bg-[#1e1e28] text-purple-400 hover:text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300 border border-white/5"
+            title="Go to DevCommunity"
+          >
+            <FaComments size={18} />
+          </Link>
+
+          {/* WhatsApp */}
+          <a
+            href="https://wa.me/919142725562"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-12 h-12 bg-[#25d366] text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 hover:shadow-green-500/20 transition-all duration-300"
+            aria-label="Contact via WhatsApp"
+            title="WhatsApp Chat"
+          >
+            <FaWhatsapp size={22} />
+          </a>
+        </div>
+
+        {/* Toggle Button */}
         <button
-          onClick={() => navigate('/community/ai-assistant')}
-          className="w-12 h-12 bg-gradient-to-r from-purple-600 to-indigo-650 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300 cursor-pointer border border-purple-500/20"
-          title="Open AI Consultant"
+          onClick={() => setDrawerExpanded(prev => !prev)}
+          className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg cursor-pointer transition-all duration-300 border ${
+            drawerExpanded 
+              ? 'bg-[#1c1c24] text-slate-400 border-white/5 hover:text-white' 
+              : 'bg-gradient-to-r from-purple-650 to-indigo-650 text-white border-purple-500/20 hover:scale-110'
+          }`}
+          title={drawerExpanded ? 'Hide Actions' : 'Show Actions'}
         >
-          <FaBrain size={18} />
+          <FaPlus 
+            size={16} 
+            className={`transition-transform duration-300 ${drawerExpanded ? 'rotate-45' : 'rotate-0'}`} 
+          />
         </button>
-
-        {/* Floating Community Link */}
-        <Link
-          to="/community"
-          className="w-12 h-12 bg-[#121217] hover:bg-[#1e1e28] text-purple-400 hover:text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300 border border-white/5"
-          title="Go to DevCommunity"
-        >
-          <FaComments size={18} />
-        </Link>
-
-        {/* Floating Contact Form Link */}
-        <a
-          href="#contact"
-          className="w-12 h-12 bg-[#1c1c24] hover:bg-[#252530] text-slate-300 hover:text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300 border border-white/5"
-          title="Contact Me"
-        >
-          <FaEnvelope size={18} />
-        </a>
-
-        {/* WhatsApp */}
-        <a
-          href="https://wa.me/919142725562"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="w-12 h-12 bg-[#25d366] text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 hover:shadow-green-500/20 transition-all duration-300"
-          aria-label="Contact via WhatsApp"
-          title="WhatsApp Chat"
-        >
-          <FaWhatsapp size={22} />
-        </a>
 
         {/* Back to Top */}
         <button
