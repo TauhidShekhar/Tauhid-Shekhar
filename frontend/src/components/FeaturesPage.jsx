@@ -135,6 +135,16 @@ const FeaturesPage = () => {
       }
     };
     fetchFeatures();
+
+    const handleUpdate = () => {
+      fetchFeatures();
+    };
+
+    window.addEventListener('cms-content-update', handleUpdate);
+
+    return () => {
+      window.removeEventListener('cms-content-update', handleUpdate);
+    };
   }, []);
 
   // Filter features based on search and active category

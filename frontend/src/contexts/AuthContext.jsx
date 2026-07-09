@@ -147,18 +147,31 @@ export const AuthProvider = ({ children }) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Sync socket connection state with auth session
+  // Sync socket connection state for all users (including guests)
   useEffect(() => {
+    socket.connect();
     if (isAuthenticated && user) {
-      socket.connect();
       socket.emit('join_room', user.id || user._id);
-    } else {
-      socket.disconnect();
     }
     return () => {
       socket.disconnect();
     };
   }, [isAuthenticated, user]);
+
+  // Listen for real-time content updates globally and dispatch a custom window event
+  useEffect(() => {
+    const handleSyncUpdate = (payload) => {
+      window.dispatchEvent(new CustomEvent('cms-content-update', { detail: payload }));
+    };
+
+    socket.on('cms_publish', handleSyncUpdate);
+    socket.on('content_update', handleSyncUpdate);
+
+    return () => {
+      socket.off('cms_publish', handleSyncUpdate);
+      socket.off('content_update', handleSyncUpdate);
+    };
+  }, []);
 
   // ---------------------------------------------------------------------------
   // login

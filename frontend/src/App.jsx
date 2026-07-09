@@ -14,6 +14,7 @@ import GitHubStats from './components/GitHubStats';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import { FaWhatsapp, FaChevronUp, FaCircleCheck } from 'react-icons/fa6';
+import socket from './services/socket';
 
 const App = () => {
   const [isDark, setIsDark] = useState(() => {
@@ -30,6 +31,21 @@ const App = () => {
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Listen for real-time content updates
+  useEffect(() => {
+    const handleSyncUpdate = () => {
+      // Re-trigger component updates dynamically by updating refreshKey
+      setRefreshKey(prev => prev + 1);
+    };
+
+    window.addEventListener('cms-content-update', handleSyncUpdate);
+
+    return () => {
+      window.removeEventListener('cms-content-update', handleSyncUpdate);
+    };
+  }, []);
 
   // 1. Theme Configuration
   useEffect(() => {
@@ -113,24 +129,24 @@ const App = () => {
       <ParticlesBackground />
 
       {/* Nav */}
-      <Navbar activeSection={activeSection} toggleTheme={toggleTheme} isDark={isDark} />
+      <Navbar key={`nav-${refreshKey}`} activeSection={activeSection} toggleTheme={toggleTheme} isDark={isDark} />
 
       {/* Main Content Layout */}
       <main className="relative">
-        <Hero />
-        <About />
-        <Skills />
-        <Projects />
-        <Experience />
-        <Services />
-        <Resume />
-        <EducationCertificates />
-        <GitHubStats />
-        <Contact onShowToast={triggerToast} />
+        <Hero key={`hero-${refreshKey}`} />
+        <About key={`about-${refreshKey}`} />
+        <Skills key={`skills-${refreshKey}`} />
+        <Projects key={`projects-${refreshKey}`} />
+        <Experience key={`experience-${refreshKey}`} />
+        <Services key={`services-${refreshKey}`} />
+        <Resume key={`resume-${refreshKey}`} />
+        <EducationCertificates key={`edu-${refreshKey}`} />
+        <GitHubStats key={`github-${refreshKey}`} />
+        <Contact key={`contact-${refreshKey}`} onShowToast={triggerToast} />
       </main>
 
       {/* Footer */}
-      <Footer />
+      <Footer key={`footer-${refreshKey}`} />
 
       {/* Floating Actions CTA */}
       <div className="fixed bottom-8 right-8 z-[900] flex flex-col gap-4">

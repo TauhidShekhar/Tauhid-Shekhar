@@ -2,6 +2,10 @@
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env'), override: true });
 
+const mongoose = require('mongoose');
+const socketUtil = require('./utils/socketUtil');
+mongoose.plugin(socketUtil.contentSyncPlugin);
+
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
@@ -295,6 +299,7 @@ const io = new Server(server, {
   }
 });
 app.set('io', io);
+socketUtil.setIO(io);
 
 io.on('connection', (socket) => {
   // Join room conversation

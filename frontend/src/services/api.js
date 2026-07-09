@@ -51,11 +51,18 @@ const apiRequest = async (endpoint, options = {}) => {
 
 // Helper for multipart/form-data requests (file uploads)
 const apiUploadRequest = async (endpoint, formData, options = {}) => {
+  const headers = {
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    ...options.headers,
+  };
   const response = await fetch(`${API_BASE}${endpoint}`, {
     method: 'POST',
     body: formData,
     credentials: 'include',
-    ...options
+    cache: 'no-store',
+    ...options,
+    headers
   });
 
   return checkResponse(response);
