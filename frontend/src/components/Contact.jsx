@@ -11,6 +11,7 @@ const Contact = ({ onShowToast }) => {
   const [submitting, setSubmitting] = useState(false);
   const [settings, setSettings] = useState(null);
   const [aboutSettings, setAboutSettings] = useState(null);
+  const [selectedLocationIdx, setSelectedLocationIdx] = useState(0);
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -47,11 +48,16 @@ const Contact = ({ onShowToast }) => {
     loadSettings();
   }, []);
 
-  const emailVal = aboutSettings?.aboutContactInfo?.email || settings?.email || 'shekhartauhid@gmail.com';
-  const phoneVal = aboutSettings?.aboutContactInfo?.phone || settings?.phone || '+91 9142725562';
-  const addressVal = aboutSettings?.aboutContactInfo?.address || settings?.address || 'Amritsar, Punjab, India';
-  const workingHoursVal = settings?.workingHours || 'Mon - Fri: 9:00 AM - 6:00 PM';
-  const mapEmbedVal = settings?.mapEmbed || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d108604.38204859068!2d74.80284487532353!3d31.633979268875355!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4d74.87226424999999!3m2!1m2!1s0x391964aa569e7355%3A0xe021a60ccab1c0ef!2sAmritsar%2C%20Punjab!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin";
+  // Resolve active/selected location details
+  const activeLocation = settings?.locations?.length > 0 
+    ? settings.locations[selectedLocationIdx] 
+    : null;
+
+  const emailVal = activeLocation?.email || aboutSettings?.aboutContactInfo?.email || settings?.email || 'shekhartauhid@gmail.com';
+  const phoneVal = activeLocation?.phone || aboutSettings?.aboutContactInfo?.phone || settings?.phone || '+91 9142725562';
+  const addressVal = activeLocation?.address || aboutSettings?.aboutContactInfo?.address || settings?.address || 'Amritsar, Punjab, India';
+  const workingHoursVal = activeLocation?.workingHours || settings?.workingHours || 'Mon - Fri: 9:00 AM - 6:00 PM';
+  const mapEmbedVal = activeLocation?.mapEmbed || settings?.mapEmbed || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d108604.38204859068!2d74.80284487532353!3d31.633979268875355!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4d74.87226424999999!3m2!1m2!1s0x391964aa569e7355%3A0xe021a60ccab1c0ef!2sAmritsar%2C%20Punjab!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin";
 
   const contactDetails = [
     { title: 'Email', value: emailVal, href: `mailto:${emailVal}`, icon: <FaEnvelope className="text-primary-blue" /> },
@@ -132,6 +138,26 @@ const Contact = ({ onShowToast }) => {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="lg:col-span-5 flex flex-col gap-6"
           >
+            {/* Multiple Locations Tabs */}
+            {settings?.locations?.length > 1 && (
+              <div className="flex flex-wrap gap-2 mb-2 p-1.5 bg-slate-550/5 rounded-2xl border border-slate-200/40 dark:border-white/5">
+                {settings.locations.map((loc, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedLocationIdx(idx)}
+                    type="button"
+                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                      selectedLocationIdx === idx
+                        ? 'bg-primary-blue text-white shadow-md'
+                        : 'bg-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                    }`}
+                  >
+                    {loc.title || `Location ${idx + 1}`}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {contactDetails.map((detail, idx) => (
               <div
                 key={idx}

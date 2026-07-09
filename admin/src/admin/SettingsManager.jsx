@@ -70,7 +70,8 @@ const SettingsManager = () => {
       youtube: '',
       facebook: ''
     },
-    contactFormFields: []
+    contactFormFields: [],
+    locations: []
   });
 
   const [newField, setNewField] = useState({
@@ -81,6 +82,17 @@ const SettingsManager = () => {
     optionsInput: ''
   });
   const [editingFieldId, setEditingFieldId] = useState(null);
+
+  // Map Locations state
+  const [newLocation, setNewLocation] = useState({
+    title: '',
+    address: '',
+    mapEmbed: '',
+    workingHours: 'Mon - Fri: 9:00 AM - 6:00 PM',
+    email: '',
+    phone: '',
+  });
+  const [editingLocationId, setEditingLocationId] = useState(null);
   
   // Password state
   const [passwordData, setPasswordData] = useState({
@@ -121,7 +133,8 @@ const SettingsManager = () => {
               youtube: res.data.socialLinks?.youtube || '',
               facebook: res.data.socialLinks?.facebook || ''
             },
-            contactFormFields: res.data.contactFormFields || []
+            contactFormFields: res.data.contactFormFields || [],
+            locations: res.data.locations || []
           });
         }
       } catch (err) {
@@ -201,6 +214,104 @@ const SettingsManager = () => {
       ...prev,
       contactFormFields: (prev.contactFormFields || []).filter(f => f.id !== id)
     }));
+  };
+
+  const handleAddLocation = () => {
+    if (!newLocation.title || !newLocation.address || !newLocation.mapEmbed) {
+      alert('Title, Address, and Google Maps Embed URL are required.');
+      return;
+    }
+
+    setSettings(prev => {
+      const updatedLocations = [...(prev.locations || [])];
+      
+      if (editingLocationId !== null) {
+        // Edit mode
+        updatedLocations[editingLocationId] = {
+          ...updatedLocations[editingLocationId],
+          ...newLocation
+        };
+      } else {
+        // Add mode
+        const isFirst = updatedLocations.length === 0;
+        updatedLocations.push({
+          ...newLocation,
+          isPrimary: isFirst
+        });
+      }
+
+      return {
+        ...prev,
+        locations: updatedLocations
+      };
+    });
+
+    setNewLocation({
+      title: '',
+      address: '',
+      mapEmbed: '',
+      workingHours: 'Mon - Fri: 9:00 AM - 6:00 PM',
+      email: '',
+      phone: '',
+    });
+    setEditingLocationId(null);
+  };
+
+  const handleEditLocation = (index) => {
+    const loc = settings.locations[index];
+    setNewLocation({
+      title: loc.title || '',
+      address: loc.address || '',
+      mapEmbed: loc.mapEmbed || '',
+      workingHours: loc.workingHours || 'Mon - Fri: 9:00 AM - 6:00 PM',
+      email: loc.email || '',
+      phone: loc.phone || '',
+    });
+    setEditingLocationId(index);
+  };
+
+  const handleDeleteLocation = (index) => {
+    if (!window.confirm('Are you sure you want to delete this map location?')) return;
+    setSettings(prev => {
+      let updatedLocations = (prev.locations || []).filter((_, idx) => idx !== index);
+      if (prev.locations[index]?.isPrimary && updatedLocations.length > 0) {
+        updatedLocations[0].isPrimary = true;
+      }
+      return {
+        ...prev,
+        locations: updatedLocations
+      };
+    });
+    if (editingLocationId === index) {
+      setEditingLocationId(null);
+      setNewLocation({
+        title: '',
+        address: '',
+        mapEmbed: '',
+        workingHours: 'Mon - Fri: 9:00 AM - 6:00 PM',
+        email: '',
+        phone: '',
+      });
+    }
+  };
+
+  const handleSetPrimaryLocation = (index) => {
+    setSettings(prev => {
+      const updatedLocations = (prev.locations || []).map((loc, idx) => ({
+        ...loc,
+        isPrimary: idx === index
+      }));
+      const selectedLoc = updatedLocations[index];
+      return {
+        ...prev,
+        locations: updatedLocations,
+        mapEmbed: selectedLoc.mapEmbed || prev.mapEmbed,
+        address: selectedLoc.address || prev.address,
+        workingHours: selectedLoc.workingHours || prev.workingHours,
+        email: selectedLoc.email || prev.email,
+        phone: selectedLoc.phone || prev.phone
+      };
+    });
   };
 
   const handleSettingsSubmit = async (e) => {
@@ -415,6 +526,164 @@ const SettingsManager = () => {
                 placeholder="e.g. © 2026 Tauhid Shekhar. All Rights Reserved."
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-primary-blue dark:focus:border-primary-blue text-sm transition-colors"
               />
+            </div>
+
+            {/* Office Locations & Maps Manager */}
+            <div className="border-t border-slate-200 dark:border-white/5 pt-6 mt-4 flex flex-col gap-4 text-left">
+              <h4 className="text-sm font-black font-title uppercase tracking-widest text-slate-400">Office Locations & Maps</h4>
+              
+              {/* Existing Locations list */}
+              <div className="flex flex-col gap-3">
+                {settings.locations?.map((loc, idx) => (
+                  <div key={idx} className="flex flex-col md:flex-row items-start md:items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/40 dark:border-white/5 gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-black text-slate-800 dark:text-slate-100">{loc.title}</span>
+                        {loc.isPrimary && (
+                          <span className="px-2 py-0.5 text-[8px] font-black uppercase bg-purple-600/10 border border-purple-500/20 text-purple-400 rounded">
+                            Active Map
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-500 mt-1 truncate">{loc.address}</p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">{loc.workingHours} | {loc.email || 'No email'} | {loc.phone || 'No phone'}</p>
+                    </div>
+                    
+                    <div className="flex items-center gap-3 shrink-0">
+                      {!loc.isPrimary && (
+                        <button
+                          type="button"
+                          onClick={() => handleSetPrimaryLocation(idx)}
+                          className="px-2.5 py-1 bg-purple-650/15 hover:bg-purple-650 text-purple-400 hover:text-white rounded-lg text-[9px] font-black uppercase tracking-wider cursor-pointer transition-all"
+                        >
+                          Set Active Map
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleEditLocation(idx)}
+                        className="text-xs font-bold text-primary-blue hover:underline cursor-pointer"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteLocation(idx)}
+                        className="text-xs font-bold text-red-500 hover:underline cursor-pointer"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                {(!settings.locations || settings.locations.length === 0) && (
+                  <div className="text-xs italic text-slate-400">No custom locations added. Using default map location.</div>
+                )}
+              </div>
+
+              {/* Add / Edit Location Sub-form */}
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/40 dark:border-white/5 flex flex-col gap-4 mt-2">
+                <h5 className="text-xs font-bold text-slate-850 dark:text-slate-200">
+                  {editingLocationId !== null ? '✏️ Edit Location Details' : '➕ Add New Office Location'}
+                </h5>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-bold text-slate-450 uppercase">Location Title *</label>
+                    <input
+                      type="text"
+                      value={newLocation.title}
+                      onChange={(e) => setNewLocation(prev => ({ ...prev, title: e.target.value }))}
+                      placeholder="e.g. Headquarters / Amritsar Office"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-955 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-bold text-slate-450 uppercase">Address *</label>
+                    <input
+                      type="text"
+                      value={newLocation.address}
+                      onChange={(e) => setNewLocation(prev => ({ ...prev, address: e.target.value }))}
+                      placeholder="e.g. Delhi, Sangam Vihar, India"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-955 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] font-bold text-slate-450 uppercase">Google Maps Embed URL *</label>
+                  <input
+                    type="text"
+                    value={newLocation.mapEmbed}
+                    onChange={(e) => setNewLocation(prev => ({ ...prev, mapEmbed: e.target.value }))}
+                    placeholder="https://www.google.com/maps/embed?pb=..."
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-955 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue"
+                  />
+                  <span className="text-[9px] text-slate-400 mt-0.5">Go to Google Maps {"→"} Share {"→"} Embed a map {"→"} Copy iframe src link.</span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-bold text-slate-450 uppercase">Working Hours</label>
+                    <input
+                      type="text"
+                      value={newLocation.workingHours}
+                      onChange={(e) => setNewLocation(prev => ({ ...prev, workingHours: e.target.value }))}
+                      placeholder="e.g. Mon - Fri: 9:00 AM - 6:00 PM"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-955 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-bold text-slate-450 uppercase">Location Email</label>
+                    <input
+                      type="email"
+                      value={newLocation.email}
+                      onChange={(e) => setNewLocation(prev => ({ ...prev, email: e.target.value }))}
+                      placeholder="e.g. shekhartauhid@gmail.com"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-955 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-bold text-slate-450 uppercase">Location Phone</label>
+                    <input
+                      type="text"
+                      value={newLocation.phone}
+                      onChange={(e) => setNewLocation(prev => ({ ...prev, phone: e.target.value }))}
+                      placeholder="e.g. +91 9142725562"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-955 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={handleAddLocation}
+                    className="px-4 py-2 bg-purple-650 hover:bg-purple-700 text-white text-xs font-bold rounded-lg cursor-pointer transition-colors"
+                  >
+                    {editingLocationId !== null ? 'Save Location' : 'Add Location'}
+                  </button>
+                  {editingLocationId !== null && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingLocationId(null);
+                        setNewLocation({
+                          title: '',
+                          address: '',
+                          mapEmbed: '',
+                          workingHours: 'Mon - Fri: 9:00 AM - 6:00 PM',
+                          email: '',
+                          phone: '',
+                        });
+                      }}
+                      className="px-4 py-2 bg-slate-200 dark:bg-slate-800 text-slate-655 dark:text-slate-400 text-xs font-bold rounded-lg cursor-pointer transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Legal / Policy Updates Section */}

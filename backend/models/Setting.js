@@ -17,6 +17,28 @@ const settingSchema = new mongoose.Schema(
     address: { type: String },
     mapEmbed: { type: String },
     workingHours: { type: String, default: 'Mon - Fri: 9:00 AM - 6:00 PM' },
+    locations: {
+      type: [{
+        title: { type: String, required: true },
+        address: { type: String, required: true },
+        mapEmbed: { type: String, required: true },
+        workingHours: { type: String, default: 'Mon - Fri: 9:00 AM - 6:00 PM' },
+        email: { type: String },
+        phone: { type: String },
+        isPrimary: { type: Boolean, default: false }
+      }],
+      default: [
+        {
+          title: 'Office Location',
+          address: 'Delhi, Sangam Vihar, India',
+          mapEmbed: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d108604.38204859068!2d74.80284487532353!3d31.633979268875355!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4d74.87226424999999!3m2!1m2!1s0x391964aa569e7355%3A0xe021a60ccab1c0ef!2sAmritsar%2C%20Punjab!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin',
+          workingHours: 'Mon - Fri: 9:00 AM - 6:00 PM',
+          email: 'shekhartauhid@gmail.com',
+          phone: '+91 9142725562',
+          isPrimary: true
+        }
+      ]
+    },
     contactFormFields: {
       type: [{
         id: String,
