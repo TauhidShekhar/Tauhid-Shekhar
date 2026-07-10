@@ -186,34 +186,43 @@ const Resume = () => {
               transition={{ duration: 0.8 }}
               className="lg:col-span-4 flex flex-col gap-6"
             >
-              <div className="glass p-2.5 rounded-[28px] border border-slate-100 dark:border-white/5 shadow-md w-full aspect-[1/1.41] relative overflow-hidden group bg-white dark:bg-[#121217] flex flex-col items-center justify-center">
+              <div className="glass p-2.5 rounded-[28px] border border-slate-100 dark:border-white/5 shadow-md w-full aspect-[1/1.41] relative overflow-hidden bg-white dark:bg-[#121217]">
                 {resumePdfUrl ? (
-                  <div 
-                    onClick={() => window.open(resumePdfUrl, '_blank')}
-                    className="w-full h-full rounded-2xl flex flex-col items-center justify-center p-6 text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-all group relative border border-dashed border-slate-200 dark:border-white/10"
+                  <object
+                    data={resumePdfUrl}
+                    type="application/pdf"
+                    className="w-full h-full rounded-2xl border-0 bg-white"
                   >
-                    {/* Glowing background gradient on hover */}
-                    <div className="absolute inset-0 bg-gradient-to-tr from-primary-blue/5 to-primary-purple/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl" />
-                    
-                    <div className="w-20 h-20 rounded-3xl bg-red-500/10 dark:bg-red-500/15 text-red-500 flex items-center justify-center mb-6 shadow-inner transform group-hover:scale-110 transition-all duration-300 relative z-10">
-                      <FaFilePdf size={40} />
-                    </div>
-                    
-                    <div className="relative z-10">
-                      <h4 className="text-sm font-black text-slate-800 dark:text-white mb-2 truncate max-w-[240px]">
-                        {settings?.siteName ? `${settings.siteName.replace(/\s+/g, '_')}_CV.pdf` : 'Tauhid_Shekhar_CV.pdf'}
-                      </h4>
-                      <p className="text-[11px] text-slate-550 dark:text-slate-400 font-bold uppercase tracking-wider mb-4">
-                        Click to View Document
-                      </p>
+                    {/* Fallback card for mobile / browsers without native PDF viewing */}
+                    <a 
+                      href={resumePdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full h-full rounded-2xl flex flex-col items-center justify-center p-6 text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-all group relative border border-dashed border-slate-200 dark:border-white/10 block"
+                    >
+                      {/* Glowing background gradient on hover */}
+                      <div className="absolute inset-0 bg-gradient-to-tr from-primary-blue/5 to-primary-purple/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl" />
                       
-                      {/* Premium Badge */}
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-[9px] font-black uppercase tracking-wider">
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                        Verified PDF
-                      </span>
-                    </div>
-                  </div>
+                      <div className="w-20 h-20 rounded-3xl bg-red-500/10 dark:bg-red-500/15 text-red-500 flex items-center justify-center mb-6 shadow-inner transform group-hover:scale-110 transition-all duration-300 relative z-10">
+                        <FaFilePdf size={40} />
+                      </div>
+                      
+                      <div className="relative z-10">
+                        <h4 className="text-sm font-black text-slate-800 dark:text-white mb-2 truncate max-w-[240px]">
+                          {settings?.siteName ? `${settings.siteName.replace(/\s+/g, '_')}_CV.pdf` : 'Tauhid_Shekhar_CV.pdf'}
+                        </h4>
+                        <p className="text-[11px] text-slate-550 dark:text-slate-400 font-bold uppercase tracking-wider mb-4">
+                          Click to View Document
+                        </p>
+                        
+                        {/* Premium Badge */}
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-[9px] font-black uppercase tracking-wider">
+                          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                          Verified PDF
+                        </span>
+                      </div>
+                    </a>
+                  </object>
                 ) : (
                   <div className="flex flex-col items-center justify-center p-8 text-center h-full w-full">
                     <div className="w-16 h-16 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center mb-5">
@@ -230,12 +239,14 @@ const Resume = () => {
               <div className="flex flex-col gap-2.5">
                 {resumePdfUrl ? (
                   <div className="flex flex-wrap gap-2">
-                    <button
-                      onClick={() => window.open(resumePdfUrl, '_blank')}
+                    <a
+                      href={resumePdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary-blue hover:bg-accent-blue text-white rounded-full font-bold text-[11px] shadow-sm transition-all active:scale-[0.98] cursor-pointer"
                     >
                       <FaEye /> View Resume PDF
-                    </button>
+                    </a>
                     <a
                       href={resumePdfUrl}
                       onClick={handleDownloadResume}
