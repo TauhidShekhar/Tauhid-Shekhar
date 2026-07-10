@@ -47,6 +47,18 @@ We apply advanced cryptographic hashing algorithms (bcrypt salt 12) for account 
 5. Data Access and Deletion Rights
 You retain complete control over your personal profile data. You can inspect, edit, or remove your profile information directly from your Account Dashboard. If you wish to delete your account and all associated community posts, please get in touch with our system support at shekhartauhid@gmail.com.`;
 
+const extractIframeSrc = (input) => {
+  if (!input) return '';
+  const trimmed = input.trim();
+  if (trimmed.includes('<iframe') && trimmed.includes('src=')) {
+    const match = trimmed.match(/src=["']([^"']+)["']/);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+  return trimmed;
+};
+
 const SettingsManager = () => {
   const [settings, setSettings] = useState({
     title: '',
@@ -256,18 +268,20 @@ const SettingsManager = () => {
 
     setSettings(prev => {
       const updatedLocations = [...(prev.locations || [])];
+      const parsedMapEmbed = extractIframeSrc(newLocation.mapEmbed);
+      const cleanLocation = { ...newLocation, mapEmbed: parsedMapEmbed };
       
       if (editingLocationId !== null) {
         // Edit mode
         updatedLocations[editingLocationId] = {
           ...updatedLocations[editingLocationId],
-          ...newLocation
+          ...cleanLocation
         };
       } else {
         // Add mode
         const isFirst = updatedLocations.length === 0;
         updatedLocations.push({
-          ...newLocation,
+          ...cleanLocation,
           isPrimary: isFirst
         });
       }
@@ -383,8 +397,11 @@ const SettingsManager = () => {
     setSaveSuccess('');
     setLoading(true);
     try {
+      const cleanedMapEmbed = extractIframeSrc(settings.mapEmbed);
+      const updatedSettings = { ...settings, mapEmbed: cleanedMapEmbed };
+
       const data = new FormData();
-      Object.keys(settings).forEach(key => {
+      Object.keys(updatedSettings).forEach(key => {
         if (
           key === 'socialLinks' || 
           key === 'locations' || 
@@ -397,9 +414,9 @@ const SettingsManager = () => {
           key === 'heroCtaButtons' ||
           key === 'aboutStats'
         ) {
-          data.append(key, JSON.stringify(settings[key]));
+          data.append(key, JSON.stringify(updatedSettings[key]));
         } else {
-          data.append(key, settings[key]);
+          data.append(key, updatedSettings[key]);
         }
       });
 

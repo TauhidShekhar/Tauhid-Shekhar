@@ -6,6 +6,15 @@ import {
   FaTwitter, FaYoutube, FaFacebook 
 } from 'react-icons/fa';
 
+const formatExternalLink = (url) => {
+  if (!url) return '';
+  const trimmed = url.trim();
+  if (/^(f|ht)tps?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+  return `https://${trimmed}`;
+};
+
 const Footer = () => {
   const [settings, setSettings] = useState(null);
   const [heroSettings, setHeroSettings] = useState(null);
@@ -49,13 +58,13 @@ const Footer = () => {
 
   const footerTextVal = settings?.footerText || 'Creative Graphic Designer & Full Stack Web Developer. Bridging logical systems engineering with responsive frontend interfaces.';
   
-  // Dynamic social media icons fetched from Hero configuration
+  // Dynamic social media icons fetched from Hero configuration with settings fallbacks
   const githubLink = heroSettings?.socialLinks?.github || settings?.socialLinks?.github || 'https://github.com/TauhidShekhar';
   const linkedinLink = heroSettings?.socialLinks?.linkedin || settings?.socialLinks?.linkedin || 'https://www.linkedin.com/in/tauhidshekhar/';
   const instagramLink = heroSettings?.socialLinks?.instagram || settings?.socialLinks?.instagram || 'https://www.instagram.com/tauhidshekhar/';
-  const twitterLink = heroSettings?.socialLinks?.twitter;
-  const youtubeLink = heroSettings?.socialLinks?.youtube;
-  const facebookLink = heroSettings?.socialLinks?.facebook;
+  const twitterLink = heroSettings?.socialLinks?.twitter || settings?.socialLinks?.twitter;
+  const youtubeLink = heroSettings?.socialLinks?.youtube || settings?.socialLinks?.youtube;
+  const facebookLink = heroSettings?.socialLinks?.facebook || settings?.socialLinks?.facebook;
   
   const emailLink = settings?.email || heroSettings?.email || 'shekhartauhid@gmail.com';
   const siteName = settings?.siteName || heroSettings?.siteName || 'TAUHID SHEKHAR';
@@ -75,7 +84,7 @@ const Footer = () => {
           <div className="flex items-center gap-4">
             {githubLink && (
               <a
-                href={githubLink}
+                href={formatExternalLink(githubLink)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-slate-600 dark:text-slate-400 hover:text-primary-blue transition-colors"
@@ -85,7 +94,7 @@ const Footer = () => {
             )}
             {linkedinLink && (
               <a
-                href={linkedinLink}
+                href={formatExternalLink(linkedinLink)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-slate-600 dark:text-slate-400 hover:text-primary-blue transition-colors"
@@ -95,7 +104,7 @@ const Footer = () => {
             )}
             {twitterLink && (
               <a
-                href={twitterLink}
+                href={formatExternalLink(twitterLink)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-slate-600 dark:text-slate-400 hover:text-primary-blue transition-colors"
@@ -105,7 +114,7 @@ const Footer = () => {
             )}
             {instagramLink && (
               <a
-                href={instagramLink}
+                href={formatExternalLink(instagramLink)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-slate-600 dark:text-slate-400 hover:text-primary-blue transition-colors"
@@ -115,7 +124,7 @@ const Footer = () => {
             )}
             {youtubeLink && (
               <a
-                href={youtubeLink}
+                href={formatExternalLink(youtubeLink)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-slate-600 dark:text-slate-400 hover:text-primary-blue transition-colors"
@@ -125,7 +134,7 @@ const Footer = () => {
             )}
             {facebookLink && (
               <a
-                href={facebookLink}
+                href={formatExternalLink(facebookLink)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-slate-600 dark:text-slate-400 hover:text-primary-blue transition-colors"

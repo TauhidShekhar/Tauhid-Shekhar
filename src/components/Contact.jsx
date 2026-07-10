@@ -3,6 +3,27 @@ import { motion } from 'framer-motion';
 import { api } from '../services/api';
 import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaPaperPlane } from 'react-icons/fa';
 
+const formatExternalLink = (url) => {
+  if (!url) return '';
+  const trimmed = url.trim();
+  if (/^(f|ht)tps?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+  return `https://${trimmed}`;
+};
+
+const extractIframeSrc = (input) => {
+  if (!input) return '';
+  const trimmed = input.trim();
+  if (trimmed.includes('<iframe') && trimmed.includes('src=')) {
+    const match = trimmed.match(/src=["']([^"']+)["']/);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+  return trimmed;
+};
+
 const Contact = ({ onShowToast }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -39,7 +60,8 @@ const Contact = ({ onShowToast }) => {
   const emailVal = aboutSettings?.aboutContactInfo?.email || settings?.email || 'shekhartauhid@gmail.com';
   const phoneVal = aboutSettings?.aboutContactInfo?.phone || settings?.phone || '+91 9142725562';
   const addressVal = aboutSettings?.aboutContactInfo?.address || settings?.address || 'Amritsar, Punjab, India';
-  const mapEmbedVal = settings?.mapEmbed || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d108604.38204859068!2d74.80284487532353!3d31.633979268875355!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4d74.87226424999999!3m2!1m2!1s0x391964aa569e7355%3A0xe021a60ccab1c0ef!2sAmritsar%2C%20Punjab!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin";
+  const mapEmbedRaw = settings?.mapEmbed || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d108604.38204859068!2d74.80284487532353!3d31.633979268875355!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4d74.87226424999999!3m2!1m2!1s0x391964aa569e7355%3A0xe021a60ccab1c0ef!2sAmritsar%2C%20Punjab!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin";
+  const mapEmbedVal = extractIframeSrc(mapEmbedRaw);
 
   const contactDetails = [
     { title: 'Email', value: emailVal, href: `mailto:${emailVal}`, icon: <FaEnvelope className="text-primary-blue" /> },

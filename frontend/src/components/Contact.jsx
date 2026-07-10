@@ -6,6 +6,27 @@ import {
   FaGithub, FaLinkedin, FaTwitter, FaInstagram, FaYoutube, FaFacebook 
 } from 'react-icons/fa';
 
+const formatExternalLink = (url) => {
+  if (!url) return '';
+  const trimmed = url.trim();
+  if (/^(f|ht)tps?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+  return `https://${trimmed}`;
+};
+
+const extractIframeSrc = (input) => {
+  if (!input) return '';
+  const trimmed = input.trim();
+  if (trimmed.includes('<iframe') && trimmed.includes('src=')) {
+    const match = trimmed.match(/src=["']([^"']+)["']/);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+  return trimmed;
+};
+
 const Contact = ({ onShowToast }) => {
   const [formData, setFormData] = useState({});
   const [submitting, setSubmitting] = useState(false);
@@ -57,7 +78,8 @@ const Contact = ({ onShowToast }) => {
   const phoneVal = activeLocation?.phone || aboutSettings?.aboutContactInfo?.phone || settings?.phone || '+91 9142725562';
   const addressVal = activeLocation?.address || aboutSettings?.aboutContactInfo?.address || settings?.address || 'Amritsar, Punjab, India';
   const workingHoursVal = activeLocation?.workingHours || settings?.workingHours || 'Mon - Fri: 9:00 AM - 6:00 PM';
-  const mapEmbedVal = activeLocation?.mapEmbed || settings?.mapEmbed || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d108604.38204859068!2d74.80284487532353!3d31.633979268875355!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4d74.87226424999999!3m2!1m2!1s0x391964aa569e7355%3A0xe021a60ccab1c0ef!2sAmritsar%2C%20Punjab!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin";
+  const mapEmbedRaw = activeLocation?.mapEmbed || settings?.mapEmbed || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d108604.38204859068!2d74.80284487532353!3d31.633979268875355!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4d74.87226424999999!3m2!1m2!1s0x391964aa569e7355%3A0xe021a60ccab1c0ef!2sAmritsar%2C%20Punjab!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin";
+  const mapEmbedVal = extractIframeSrc(mapEmbedRaw);
 
   const contactDetails = [
     { title: 'Email', value: emailVal, href: `mailto:${emailVal}`, icon: <FaEnvelope className="text-primary-blue" /> },
@@ -114,7 +136,7 @@ const Contact = ({ onShowToast }) => {
     { key: 'linkedin', icon: <FaLinkedin />, color: 'hover:bg-blue-700' },
     { key: 'twitter', icon: <FaTwitter />, color: 'hover:bg-sky-500' },
     { key: 'instagram', icon: <FaInstagram />, color: 'hover:bg-pink-600' },
-    { key: 'youtube', icon: <FaYoutube />, color: 'hover:bg-red-650' },
+    { key: 'youtube', icon: <FaYoutube />, color: 'hover:bg-red-600' },
     { key: 'facebook', icon: <FaFacebook />, color: 'hover:bg-blue-600' }
   ].filter(p => socialLinks[p.key]);
 
@@ -187,7 +209,7 @@ const Contact = ({ onShowToast }) => {
                   {socialPlatforms.map((platform, pIdx) => (
                     <a
                       key={pIdx}
-                      href={socialLinks[platform.key]}
+                      href={formatExternalLink(socialLinks[platform.key])}
                       target="_blank"
                       rel="noopener noreferrer"
                       className={`w-10 h-10 rounded-xl bg-slate-550/5 dark:bg-slate-900 border border-slate-200/40 dark:border-white/5 flex items-center justify-center text-slate-655 dark:text-slate-300 transition-all duration-300 hover:text-white ${platform.color} shadow-sm`}
