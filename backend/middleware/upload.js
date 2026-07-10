@@ -112,7 +112,7 @@ const uploadToLocal = async (buffer, folder) => {
 /**
  * Upload a file buffer to Cloudinary (No local fallback to prevent data loss on container restarts).
  */
-const uploadToCloudinary = (buffer, folder, resourceType = 'auto') => {
+const uploadToCloudinary = (buffer, folder, resourceType = 'auto', originalName = null) => {
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
   const apiKey = process.env.CLOUDINARY_API_KEY;
   const apiSecret = process.env.CLOUDINARY_API_SECRET;
@@ -127,11 +127,21 @@ const uploadToCloudinary = (buffer, folder, resourceType = 'auto') => {
   }
 
   return new Promise((resolve, reject) => {
+    const options = {
+      folder: `portfolio/${folder}`,
+      resource_type: resourceType,
+    };
+
+    if (originalName) {
+      const cleanName = path.parse(originalName).name
+        .replace(/[^a-zA-Z0-9_]/g, '_')
+        .substring(0, 100);
+      options.public_id = `${cleanName}_${Date.now()}`;
+      options.use_filename = true;
+    }
+
     const stream = cloudinary.uploader.upload_stream(
-      {
-        folder: `portfolio/${folder}`,
-        resource_type: resourceType,
-      },
+      options,
       (error, result) => {
         if (error) {
           console.error('Cloudinary upload error:', error.message);

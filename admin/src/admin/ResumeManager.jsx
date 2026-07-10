@@ -5,6 +5,18 @@ import {
   FaChartBar, FaSearch, FaFilter, FaShareAlt, FaBan, FaCheck, FaExclamationTriangle, FaEye
 } from 'react-icons/fa';
 
+const getAbsolutePdfUrl = (url) => {
+  if (!url) return '';
+  let cleanUrl = url.trim();
+  if (cleanUrl.includes('/raw/upload/') && cleanUrl.toLowerCase().endsWith('.pdf')) {
+    cleanUrl = cleanUrl.replace('/raw/upload/', '/image/upload/');
+  }
+  if (/^(f|ht)tps?:\/\//i.test(cleanUrl)) {
+    return cleanUrl;
+  }
+  return `https://${cleanUrl}`;
+};
+
 const ResumeManager = () => {
   // Tab State
   const [activeTab, setActiveTab] = useState('portfolio'); // portfolio, atsCms

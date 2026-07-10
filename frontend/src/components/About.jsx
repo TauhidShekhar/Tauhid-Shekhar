@@ -3,6 +3,18 @@ import { motion } from 'framer-motion';
 import { api } from '../services/api';
 import { FaGraduationCap, FaAward, FaBriefcase, FaCheckCircle, FaLanguage } from 'react-icons/fa';
 
+const getAbsolutePdfUrl = (url) => {
+  if (!url) return '';
+  let cleanUrl = url.trim();
+  if (cleanUrl.includes('/raw/upload/') && cleanUrl.toLowerCase().endsWith('.pdf')) {
+    cleanUrl = cleanUrl.replace('/raw/upload/', '/image/upload/');
+  }
+  if (/^(f|ht)tps?:\/\//i.test(cleanUrl)) {
+    return cleanUrl;
+  }
+  return `https://${cleanUrl}`;
+};
+
 const About = () => {
   const [settings, setSettings] = useState(null);
   const [activeResume, setActiveResume] = useState(null);
@@ -78,7 +90,7 @@ const About = () => {
     ? `${settings.profilePicture.url}?v=${settings.updatedAt ? new Date(settings.updatedAt).getTime() : Date.now()}` 
     : 'assits/Profile-Img.png';
   const aboutText = settings?.aboutContent || 'Results-oriented Full Stack Web Developer with practical experience in building responsive web applications using HTML5, CSS3, JavaScript, React.js, Node.js, Express.js, MongoDB, and MySQL. Experienced in developing REST APIs, authentication systems, dashboards, and responsive user interfaces. Passionate about solving real-world problems, writing clean code, and continuously learning modern technologies.';
-  const resumeLink = activeResume?.fileUrl || settings?.resumeUrl || '';
+  const resumeLink = getAbsolutePdfUrl(activeResume?.fileUrl || settings?.resumeUrl || '');
   
   // Dynamic Personal Info Grids
   const personalInfo = settings?.aboutPersonalInfo || [];

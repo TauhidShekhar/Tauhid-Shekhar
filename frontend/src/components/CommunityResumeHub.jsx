@@ -9,6 +9,18 @@ import {
 import { api } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 
+const getAbsolutePdfUrl = (url) => {
+  if (!url) return '';
+  let cleanUrl = url.trim();
+  if (cleanUrl.includes('/raw/upload/') && cleanUrl.toLowerCase().endsWith('.pdf')) {
+    cleanUrl = cleanUrl.replace('/raw/upload/', '/image/upload/');
+  }
+  if (/^(f|ht)tps?:\/\//i.test(cleanUrl)) {
+    return cleanUrl;
+  }
+  return `https://${cleanUrl}`;
+};
+
 const CommunityResumeHub = () => {
   const { user } = useAuth();
   
@@ -552,7 +564,7 @@ const CommunityResumeHub = () => {
                       </div>
 
                       <a
-                        href={resumeDetail.fileUrl}
+                        href={getAbsolutePdfUrl(resumeDetail.fileUrl)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="mt-2 w-full py-2.5 bg-[#1a1a24] hover:bg-[#20202a] text-slate-300 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 border border-white/5 transition-colors cursor-pointer"

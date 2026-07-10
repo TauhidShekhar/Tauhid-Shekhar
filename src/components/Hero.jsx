@@ -6,6 +6,18 @@ import {
   FaTwitter, FaInstagram, FaYoutube, FaFacebook 
 } from 'react-icons/fa';
 
+const getAbsolutePdfUrl = (url) => {
+  if (!url) return '';
+  let cleanUrl = url.trim();
+  if (cleanUrl.includes('/raw/upload/') && cleanUrl.toLowerCase().endsWith('.pdf')) {
+    cleanUrl = cleanUrl.replace('/raw/upload/', '/image/upload/');
+  }
+  if (/^(f|ht)tps?:\/\//i.test(cleanUrl)) {
+    return cleanUrl;
+  }
+  return `https://${cleanUrl}`;
+};
+
 const Hero = () => {
   const defaultRoles = [
     'Full Stack Developer',
@@ -115,7 +127,7 @@ const Hero = () => {
   const heroHeading = settings?.heroHeading || 'Hi,';
   const siteDescription = settings?.heroDescription || settings?.siteTagline || 'Results-oriented Full Stack Web Developer with practical experience in building responsive web applications using HTML5, CSS3, JavaScript, React.js, Node.js, Express.js, MongoDB, and MySQL. Experienced in developing REST APIs, authentication systems, dashboards, and responsive user interfaces. Passionate about solving real-world problems, writing clean code, and continuously learning modern technologies.';
   const heroImg = settings?.heroImage?.url || 'assits/Profile_Pic.png';
-  const resumeLink = settings?.resumeUrl || 'assits/Resume-file.pdf';
+  const resumeLink = getAbsolutePdfUrl(settings?.resumeUrl || 'assits/Resume-file.pdf');
   const heroBg = settings?.heroBackground?.url || '';
 
   // Social Links

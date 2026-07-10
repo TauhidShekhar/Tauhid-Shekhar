@@ -7,6 +7,18 @@ import {
 } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 
+const getAbsolutePdfUrl = (url) => {
+  if (!url) return '';
+  let cleanUrl = url.trim();
+  if (cleanUrl.includes('/raw/upload/') && cleanUrl.toLowerCase().endsWith('.pdf')) {
+    cleanUrl = cleanUrl.replace('/raw/upload/', '/image/upload/');
+  }
+  if (/^(f|ht)tps?:\/\//i.test(cleanUrl)) {
+    return cleanUrl;
+  }
+  return `https://${cleanUrl}`;
+};
+
 const Resume = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === 'Admin';
@@ -96,6 +108,7 @@ const Resume = () => {
     if (!resumePdfUrl) return;
     try {
       const response = await fetch(resumePdfUrl);
+      if (!response.ok) throw new Error('Fetch failed');
       const blob = await response.blob();
       const blobUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -106,8 +119,14 @@ const Resume = () => {
       link.parentNode.removeChild(link);
       window.URL.revokeObjectURL(blobUrl);
     } catch (err) {
-      console.error('Failed to download resume file directly:', err.message);
-      window.open(resumePdfUrl, '_blank');
+      console.error('Failed to download resume directly, using fl_attachment redirect:', err.message);
+      let downloadUrl = resumePdfUrl;
+      if (downloadUrl.includes('/image/upload/')) {
+        downloadUrl = downloadUrl.replace('/image/upload/', '/image/upload/fl_attachment/');
+      } else if (downloadUrl.includes('/raw/upload/')) {
+        downloadUrl = downloadUrl.replace('/raw/upload/', '/raw/upload/fl_attachment/');
+      }
+      window.open(downloadUrl, '_blank');
     }
   };
 
@@ -117,7 +136,7 @@ const Resume = () => {
     return 'text-red-500 stroke-red-500';
   };
 
-  const resumePdfUrl = activeResume?.fileUrl || settings?.resumeUrl || '';
+  const resumePdfUrl = getAbsolutePdfUrl(activeResume?.fileUrl || settings?.resumeUrl || '');
   const atsScore = activeResume?.atsScore || 94;
 
   const breakdownBars = [

@@ -616,7 +616,14 @@ ${builderData.educations.map(edu => `- ${edu.degree} from ${edu.school} (${edu.y
   // Google Doc Viewer wrapper to embed Cloudinary PDFs cleanly
   const getEmbeddablePdfUrl = (url) => {
     if (!url) return '';
-    return `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
+    let cleanUrl = url.trim();
+    if (cleanUrl.includes('/raw/upload/') && cleanUrl.toLowerCase().endsWith('.pdf')) {
+      cleanUrl = cleanUrl.replace('/raw/upload/', '/image/upload/');
+    }
+    if (/^(f|ht)tps?:\/\//i.test(cleanUrl)) {
+      return cleanUrl;
+    }
+    return `https://${cleanUrl}`;
   };
 
   return (

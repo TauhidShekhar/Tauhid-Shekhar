@@ -10,6 +10,18 @@ import {
   FaMapPin, FaGlobe, FaChevronRight, FaTimes, FaUserCheck, FaCoins
 } from 'react-icons/fa';
 
+const getAbsolutePdfUrl = (url) => {
+  if (!url) return '';
+  let cleanUrl = url.trim();
+  if (cleanUrl.includes('/raw/upload/') && cleanUrl.toLowerCase().endsWith('.pdf')) {
+    cleanUrl = cleanUrl.replace('/raw/upload/', '/image/upload/');
+  }
+  if (/^(f|ht)tps?:\/\//i.test(cleanUrl)) {
+    return cleanUrl;
+  }
+  return `https://${cleanUrl}`;
+};
+
 const CommunityProfile = () => {
   const { id } = useParams();
   const { user: currentUser } = useAuth();
@@ -419,7 +431,7 @@ const CommunityProfile = () => {
                 {profile.location && <span className="flex items-center gap-2"><FaMapMarkerAlt className="text-purple-400" /> {profile.location}</span>}
                 
                 {profile.resume?.url && (
-                  <a href={profile.resume.url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-green-500 hover:underline">
+                  <a href={getAbsolutePdfUrl(profile.resume.url)} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-green-500 hover:underline">
                     <FaFilePdf /> View Resume
                   </a>
                 )}

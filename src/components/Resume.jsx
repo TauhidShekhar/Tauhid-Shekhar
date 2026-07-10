@@ -3,6 +3,18 @@ import { motion } from 'framer-motion';
 import { api } from '../services/api';
 import { FaFileDownload, FaPrint, FaSearch, FaCheck, FaGraduationCap, FaAward, FaCode } from 'react-icons/fa';
 
+const getAbsolutePdfUrl = (url) => {
+  if (!url) return '';
+  let cleanUrl = url.trim();
+  if (cleanUrl.includes('/raw/upload/') && cleanUrl.toLowerCase().endsWith('.pdf')) {
+    cleanUrl = cleanUrl.replace('/raw/upload/', '/image/upload/');
+  }
+  if (/^(f|ht)tps?:\/\//i.test(cleanUrl)) {
+    return cleanUrl;
+  }
+  return `https://${cleanUrl}`;
+};
+
 const Resume = () => {
   const [activeResume, setActiveResume] = useState(null);
 
@@ -21,8 +33,35 @@ const Resume = () => {
     fetchActiveResume();
   }, []);
 
-  const resumePdfUrl = activeResume?.fileUrl || 'assits/Resume-file.pdf';
+  const resumePdfUrl = getAbsolutePdfUrl(activeResume?.fileUrl || 'assits/Resume-file.pdf');
   const resumePngUrl = activeResume?.fileUrl ? activeResume.fileUrl.replace(/\.pdf$/i, '.png') : 'assits/Resume-file.png';
+
+  const handleDownloadResume = async (e) => {
+    e.preventDefault();
+    if (!resumePdfUrl) return;
+    try {
+      const response = await fetch(resumePdfUrl);
+      if (!response.ok) throw new Error('Fetch failed');
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.setAttribute('download', activeResume?.fileName || 'Resume.pdf');
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error('Failed to download resume directly, using fl_attachment redirect:', err.message);
+      let downloadUrl = resumePdfUrl;
+      if (downloadUrl.includes('/image/upload/')) {
+        downloadUrl = downloadUrl.replace('/image/upload/', '/image/upload/fl_attachment/');
+      } else if (downloadUrl.includes('/raw/upload/')) {
+        downloadUrl = downloadUrl.replace('/raw/upload/', '/raw/upload/fl_attachment/');
+      }
+      window.open(downloadUrl, '_blank');
+    }
+  };
 
   const highlights = [
     { title: 'Full Stack Web Developer', desc: 'MERN stack projects, REST APIs, and database modeling.', icon: <FaCode className="text-primary-blue" /> },
@@ -85,7 +124,7 @@ const Resume = () => {
               </a>
               <a
                 href={resumePdfUrl}
-                download
+                onClick={handleDownloadResume}
                 className="flex items-center gap-2 px-6 py-3 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 text-slate-800 dark:text-white rounded-full font-bold text-sm border border-slate-200 dark:border-white/5 transition-all cursor-pointer"
               >
                 <FaFileDownload size={14} /> Download PDF

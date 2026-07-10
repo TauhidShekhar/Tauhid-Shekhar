@@ -238,10 +238,13 @@ const generateOfflineFallbackAnalysis = (parsed, ats) => {
 // Reusable helper to perform full parser text extraction, scoring, and Gemini AI resume auditing
 const analyzeAndSaveResume = async (file, userId, extraFields = {}) => {
   const { uploadToCloudinary } = require('../middleware/upload');
+  const path = require('path');
+  const ext = path.extname(file.originalname).toLowerCase();
+  const resourceType = ext === '.pdf' ? 'image' : 'raw';
   
-  // 1. Upload raw file to Cloudinary
+  // 1. Upload file to Cloudinary
   const folderName = 'resumes_hub';
-  const uploadResult = await uploadToCloudinary(file.buffer, folderName, 'raw');
+  const uploadResult = await uploadToCloudinary(file.buffer, folderName, resourceType, file.originalname);
 
   // 2. Extract Text
   const text = await extractTextFromFile(file);
@@ -716,6 +719,12 @@ const deleteAnalysis = async (req, res, next) => {
     const resume = await Resume.findOneAndDelete(query);
     if (!resume) {
       return res.status(404).json({ success: false, message: 'Resume record not found.' });
+    }
+
+    if (resume.publicId) {
+      const { deleteFromCloudinary } = require('../middleware/upload');
+      const resourceType = resume.fileType === 'pdf' ? 'image' : 'raw';
+      await deleteFromCloudinary(resume.publicId, resourceType).catch(err => console.error('Cloudinary delete error:', err.message));
     }
 
     // Clean up associated comments if any

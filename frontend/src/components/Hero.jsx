@@ -6,6 +6,18 @@ import {
   FaTwitter, FaInstagram, FaYoutube, FaFacebook 
 } from 'react-icons/fa';
 
+const getAbsolutePdfUrl = (url) => {
+  if (!url) return '';
+  let cleanUrl = url.trim();
+  if (cleanUrl.includes('/raw/upload/') && cleanUrl.toLowerCase().endsWith('.pdf')) {
+    cleanUrl = cleanUrl.replace('/raw/upload/', '/image/upload/');
+  }
+  if (/^(f|ht)tps?:\/\//i.test(cleanUrl)) {
+    return cleanUrl;
+  }
+  return `https://${cleanUrl}`;
+};
+
 const Hero = () => {
   const defaultRoles = [
     'Full Stack Developer',
@@ -124,7 +136,7 @@ const Hero = () => {
   const heroImg = settings?.heroImage?.url 
     ? `${settings.heroImage.url}?v=${settings.updatedAt ? new Date(settings.updatedAt).getTime() : Date.now()}` 
     : 'assits/Profile_Pic.png';
-  const resumeLink = activeResume?.fileUrl || settings?.resumeUrl || '';
+  const resumeLink = getAbsolutePdfUrl(activeResume?.fileUrl || settings?.resumeUrl || '');
   const heroBg = settings?.heroBackground?.url 
     ? `${settings.heroBackground.url}?v=${settings.updatedAt ? new Date(settings.updatedAt).getTime() : Date.now()}` 
     : '';

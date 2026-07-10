@@ -775,7 +775,11 @@ const updateProfile = async (req, res, next) => {
     }
 
     if (files.resume && files.resume[0]) {
-      const uploadResult = await uploadToCloudinary(files.resume[0].buffer, 'resumes', 'raw');
+      const file = files.resume[0];
+      const path = require('path');
+      const ext = path.extname(file.originalname).toLowerCase();
+      const resourceType = ext === '.pdf' ? 'image' : 'raw';
+      const uploadResult = await uploadToCloudinary(file.buffer, 'resumes', resourceType, file.originalname);
       user.resume = {
         url: uploadResult.url,
         publicId: uploadResult.publicId

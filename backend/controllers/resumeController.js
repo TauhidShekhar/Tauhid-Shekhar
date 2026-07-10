@@ -100,7 +100,8 @@ const deleteResume = async (req, res, next) => {
 
     if (resume.publicId) {
       const { deleteFromCloudinary } = require('../middleware/upload');
-      await deleteFromCloudinary(resume.publicId, 'raw').catch(err => console.error('Cloudinary delete error:', err.message));
+      const resourceType = resume.fileType === 'pdf' ? 'image' : 'raw';
+      await deleteFromCloudinary(resume.publicId, resourceType).catch(err => console.error('Cloudinary delete error:', err.message));
     }
 
     await resume.deleteOne();
