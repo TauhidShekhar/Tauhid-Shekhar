@@ -467,6 +467,9 @@ export const api = {
     return apiRequest('/settings');
   },
   updateSettings: async (settingsData) => {
+    if (settingsData instanceof FormData) {
+      return apiUploadRequest('/settings', settingsData, { method: 'PUT' });
+    }
     return apiRequest('/settings', {
       method: 'PUT',
       body: JSON.stringify(settingsData)

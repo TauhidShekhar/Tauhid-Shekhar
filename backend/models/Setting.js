@@ -145,7 +145,29 @@ const settingSchema = new mongoose.Schema(
         default: 'dark'
       },
       primaryColor: { type: String, default: '#0071e3' }
-    }
+    },
+
+    // ── Maintenance & Status ────────────────────────────────────────
+    maintenanceMode: { type: Boolean, default: false },
+    websiteStatus: {
+      enabled: { type: Boolean, default: true }
+    },
+
+    // ── Announcement Banner ─────────────────────────────────────────
+    announcementBanner: {
+      show: { type: Boolean, default: false },
+      text: { type: String, default: '' },
+      link: { type: String, default: '' }
+    },
+
+    // ── Cookie Notice ───────────────────────────────────────────────
+    cookieSettings: {
+      show: { type: Boolean, default: true },
+      text: { type: String, default: 'We use cookies to improve your user experience.' }
+    },
+
+    // ── Scripts ─────────────────────────────────────────────────────
+    customFooterScripts: { type: String }
   },
   { timestamps: true, optimisticConcurrency: true }
 );

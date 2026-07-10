@@ -418,6 +418,16 @@ export const api = {
     return apiRequest('/settings');
   },
   updateSettings: async (settingsData) => {
+    if (settingsData instanceof FormData) {
+      const response = await fetch(`${API_BASE}/settings`, {
+        method: 'PUT',
+        body: settingsData,
+        credentials: 'include'
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || 'Settings update failed');
+      return result;
+    }
     return apiRequest('/settings', {
       method: 'PUT',
       body: JSON.stringify(settingsData)

@@ -95,8 +95,11 @@ const Navbar = ({ activeSection, toggleTheme, isDark }) => {
         
         {/* Section 1: Logo (Left) */}
         <div className="text-lg md:text-xl font-black font-title tracking-wider text-black dark:text-white shrink-0">
-          <a href="#home" onClick={(e) => handleNavClick(e, '#home')} className="hover:text-primary-blue transition-colors">
-            TAUHID SHEKHAR
+          <a href="#home" onClick={(e) => handleNavClick(e, '#home')} className="hover:text-primary-blue transition-colors flex items-center gap-2">
+            {settings?.logo?.url && (
+              <img src={settings.logo.url} alt={settings?.siteName || 'Logo'} className="h-8 w-auto object-contain" />
+            )}
+            <span className="uppercase">{settings?.siteName || 'TAUHID SHEKHAR'}</span>
           </a>
         </div>
 

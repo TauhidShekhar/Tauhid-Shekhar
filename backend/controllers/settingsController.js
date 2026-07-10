@@ -22,61 +22,94 @@ const getSettings = async (req, res) => {
 const updateSettings = async (req, res) => {
   try {
     let settings = await Setting.findOne({});
-    if (!settings) {
-      settings = await Setting.create(req.body);
-    } else {
-      const oldHeroImageId = (
-        req.body.heroImage &&
-        settings.heroImage &&
-        settings.heroImage.publicId &&
-        req.body.heroImage.publicId !== settings.heroImage.publicId
-      ) ? settings.heroImage.publicId : null;
+    
+    // Parse nested objects sent as JSON strings or raw objects
+    const updates = { ...req.body };
+    if (typeof updates.socialLinks === 'string') {
+      try { updates.socialLinks = JSON.parse(updates.socialLinks); } catch (_) {}
+    }
+    if (typeof updates.locations === 'string') {
+      try { updates.locations = JSON.parse(updates.locations); } catch (_) {}
+    }
+    if (typeof updates.contactFormFields === 'string') {
+      try { updates.contactFormFields = JSON.parse(updates.contactFormFields); } catch (_) {}
+    }
+    if (typeof updates.heroCtaButtons === 'string') {
+      try { updates.heroCtaButtons = JSON.parse(updates.heroCtaButtons); } catch (_) {}
+    }
+    if (typeof updates.aboutStats === 'string') {
+      try { updates.aboutStats = JSON.parse(updates.aboutStats); } catch (_) {}
+    }
+    if (typeof updates.coreStrengths === 'string') {
+      try { updates.coreStrengths = JSON.parse(updates.coreStrengths); } catch (_) {}
+    }
+    if (typeof updates.languages === 'string') {
+      try { updates.languages = JSON.parse(updates.languages); } catch (_) {}
+    }
+    if (typeof updates.aboutPersonalInfo === 'string') {
+      try { updates.aboutPersonalInfo = JSON.parse(updates.aboutPersonalInfo); } catch (_) {}
+    }
+    if (typeof updates.aboutContactInfo === 'string') {
+      try { updates.aboutContactInfo = JSON.parse(updates.aboutContactInfo); } catch (_) {}
+    }
+    if (typeof updates.navbarConfig === 'string') {
+      try { updates.navbarConfig = JSON.parse(updates.navbarConfig); } catch (_) {}
+    }
+    if (typeof updates.theme === 'string') {
+      try { updates.theme = JSON.parse(updates.theme); } catch (_) {}
+    }
+    if (typeof updates.announcementBanner === 'string') {
+      try { updates.announcementBanner = JSON.parse(updates.announcementBanner); } catch (_) {}
+    }
+    if (typeof updates.cookieSettings === 'string') {
+      try { updates.cookieSettings = JSON.parse(updates.cookieSettings); } catch (_) {}
+    }
+    if (typeof updates.websiteStatus === 'string') {
+      try { updates.websiteStatus = JSON.parse(updates.websiteStatus); } catch (_) {}
+    }
 
-      const oldProfilePictureId = (
-        req.body.profilePicture &&
-        settings.profilePicture &&
-        settings.profilePicture.publicId &&
-        req.body.profilePicture.publicId !== settings.profilePicture.publicId
-      ) ? settings.profilePicture.publicId : null;
+    const oldImageIds = [];
 
-      const oldHeroBackgroundId = (
-        req.body.heroBackground &&
-        settings.heroBackground &&
-        settings.heroBackground.publicId &&
-        req.body.heroBackground.publicId !== settings.heroBackground.publicId
-      ) ? settings.heroBackground.publicId : null;
-
-      // Update document
-      settings = await Setting.findByIdAndUpdate(settings._id, req.body, {
-        new: true,
-        runValidators: true
-      });
-
-      // Cleanup files only after successful DB update
-      if (oldHeroImageId) {
-        try {
-          await deleteFromCloudinary(oldHeroImageId);
-        } catch (err) {
-          console.error('Failed to delete old hero image:', err.message);
-        }
-      }
-
-      if (oldProfilePictureId) {
-        try {
-          await deleteFromCloudinary(oldProfilePictureId);
-        } catch (err) {
-          console.error('Failed to delete old profile picture:', err.message);
-        }
-      }
-
-      if (oldHeroBackgroundId) {
-        try {
-          await deleteFromCloudinary(oldHeroBackgroundId);
-        } catch (err) {
-          console.error('Failed to delete old hero background:', err.message);
+    // Handle uploads to Cloudinary
+    if (req.files) {
+      const { uploadToCloudinary } = require('../middleware/upload');
+      
+      const fileFields = ['logo', 'favicon', 'heroImage', 'profilePicture', 'heroBackground'];
+      for (const field of fileFields) {
+        if (req.files[field] && req.files[field][0]) {
+          const file = req.files[field][0];
+          const uploadResult = await uploadToCloudinary(file.buffer, 'settings');
+          updates[field] = {
+            url: uploadResult.url,
+            publicId: uploadResult.publicId
+          };
+          if (settings && settings[field] && settings[field].publicId) {
+            oldImageIds.push(settings[field].publicId);
+          }
         }
       }
     }
+
+    if (!settings) {
+      settings = await Setting.create(updates);
+    } else {
+      settings = await Setting.findByIdAndUpdate(settings._id, updates, {
+        new: true,
+        runValidators: true
+      });
+    }
+
+    // Clean up old images after successful DB save
+    if (oldImageIds.length > 0) {
+      for (const publicId of oldImageIds) {
+        try {
+          await deleteFromCloudinary(publicId);
+        } catch (err) {
+          console.error('Failed to delete old image:', publicId, err.message);
+        }
+      }
+    }
+
     res.json({ success: true, data: settings });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
