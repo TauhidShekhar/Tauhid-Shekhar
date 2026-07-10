@@ -45,49 +45,40 @@ const getResumes = async (req, res, next) => {
 // @desc    Upload/Replace resume PDF
 // @route   POST /api/resume
 // @access  Private/Admin
+const { analyzeAndSaveResume } = require('./atsResumeController');
+
 const uploadResume = async (req, res, next) => {
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'PDF document file is required' });
     }
 
-    const { uploadToCloudinary } = require('../middleware/upload');
-    
-    // Upload to Cloudinary under 'resumes' folder
-    const uploadResult = await uploadToCloudinary(req.file.buffer, 'resumes', 'raw');
-
     // Deactivate previous active resumes of the current admin
     await Resume.updateMany({ uploadedBy: req.user._id }, { isActive: false });
 
-    const resume = await Resume.create({
-      fileUrl: uploadResult.url,
-      publicId: uploadResult.publicId,
-      fileName: req.file.originalname,
-      fileSize: req.file.size,
-      isActive: true,
-      uploadedBy: req.user._id
-    });
+    // Run real analysis and save the resume with active status
+    const resume = await analyzeAndSaveResume(req.file, req.user._id, { isActive: true });
 
     // 1. Sync resume URL with Settings
     let settings = await Setting.findOne({});
     if (!settings) {
-      settings = await Setting.create({ resumeUrl: uploadResult.url });
+      settings = await Setting.create({ resumeUrl: resume.fileUrl });
     } else {
-      settings.resumeUrl = uploadResult.url;
+      settings.resumeUrl = resume.fileUrl;
       await settings.save();
     }
 
     // 2. Sync resume URL with Hero
     let hero = await Hero.findOne({});
     if (hero) {
-      hero.resumeUrl = uploadResult.url;
+      hero.resumeUrl = resume.fileUrl;
       await hero.save();
     }
 
     // 3. Sync resume URL with About
     let about = await About.findOne({});
     if (about) {
-      about.resumeUrl = uploadResult.url;
+      about.resumeUrl = resume.fileUrl;
       await about.save();
     }
 

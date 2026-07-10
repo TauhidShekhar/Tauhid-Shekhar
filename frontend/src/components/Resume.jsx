@@ -157,15 +157,15 @@ const Resume = () => {
             <FaSpinner className="animate-spin text-primary-blue" size={32} />
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
-            {/* Left Side: Resume PDF Preview */}
+            {/* Column 1 (col-span-4): Resume PDF Preview & Actions */}
             <motion.div
-              initial={{ opacity: 0, x: -30 }}
+              initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
-              className="lg:col-span-6 flex flex-col gap-6"
+              className="lg:col-span-4 flex flex-col gap-6"
             >
               <div className="glass p-2.5 rounded-[28px] border border-slate-100 dark:border-white/5 shadow-md w-full aspect-[1/1.41] relative overflow-hidden group bg-white dark:bg-[#121217] flex flex-col items-center justify-center">
                 {resumePdfUrl ? (
@@ -187,25 +187,23 @@ const Resume = () => {
                 )}
               </div>
 
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-col gap-2.5">
                 {resumePdfUrl ? (
-                  <>
+                  <div className="flex flex-wrap gap-2">
                     <button
-                      onClick={() => {
-                        setShowFullPreview(true);
-                      }}
-                      className="flex items-center gap-2 px-5 py-3 bg-primary-blue hover:bg-accent-blue text-white rounded-full font-bold text-xs shadow-md transition-all active:scale-[0.98] cursor-pointer"
+                      onClick={() => setShowFullPreview(true)}
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary-blue hover:bg-accent-blue text-white rounded-full font-bold text-[11px] shadow-sm transition-all active:scale-[0.98] cursor-pointer"
                     >
                       <FaEye /> Preview Full Screen
                     </button>
                     <a
                       href={resumePdfUrl}
                       onClick={handleDownloadResume}
-                      className="flex items-center gap-2 px-5 py-3 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-800 dark:text-white rounded-full font-bold text-xs border border-slate-200 dark:border-white/5 transition-all cursor-pointer"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-800 dark:text-white rounded-full font-bold text-[11px] border border-slate-200 dark:border-white/5 transition-all cursor-pointer"
                     >
-                      <FaDownload /> Download Resume
+                      <FaDownload /> Download CV
                     </a>
-                  </>
+                  </div>
                 ) : (
                   <div className="text-xs text-slate-500 font-bold p-3 bg-slate-100/50 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/5 w-full text-center">
                     Administrator resume is currently not available.
@@ -213,15 +211,15 @@ const Resume = () => {
                 )}
 
                 {isAdmin && (
-                  <>
+                  <div className="flex gap-2">
                     <button
                       onClick={handleReanalyze}
                       disabled={analyzing}
-                      className="flex items-center gap-2 px-5 py-3 bg-purple-600/10 hover:bg-purple-650/20 text-purple-400 rounded-full font-bold text-xs border border-purple-500/20 transition-all"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-purple-600/10 hover:bg-purple-650/20 text-purple-400 rounded-full font-bold text-[11px] border border-purple-500/20 transition-all"
                     >
                       {analyzing ? <FaSpinner className="animate-spin" /> : <FaRedo />} Re-analyze
                     </button>
-                    <label className="flex items-center gap-2 px-5 py-3 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 rounded-full font-bold text-xs border border-amber-500/20 transition-all cursor-pointer">
+                    <label className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 rounded-full font-bold text-[11px] border border-amber-500/20 transition-all cursor-pointer">
                       <FaUpload /> Replace Resume
                       <input
                         type="file"
@@ -230,71 +228,71 @@ const Resume = () => {
                         className="hidden"
                       />
                     </label>
-                  </>
+                  </div>
                 )}
               </div>
             </motion.div>
 
-            {/* Right Side: ATS Score circle & progress bars */}
+            {/* Column 2 (col-span-4): ATS Score Dial & Compatibility Bars */}
             <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
-              className="lg:col-span-6 flex flex-col gap-8"
+              className="lg:col-span-4 flex flex-col gap-6"
             >
               {/* ATS circular status dial */}
-              <div className="glass p-6 md:p-8 rounded-[24px] border border-slate-100 dark:border-white/5 flex items-center justify-between gap-6 shadow-sm bg-white dark:bg-[#121217]">
-                <div>
-                  <h3 className="text-xl font-black font-title text-black dark:text-white mb-2">
+              <div className="glass p-6 rounded-[24px] border border-slate-100 dark:border-white/5 flex items-center justify-between gap-4 shadow-sm bg-white dark:bg-[#121217]">
+                <div className="text-left">
+                  <h3 className="text-sm font-black font-title text-black dark:text-white mb-1">
                     ATS Verification Index
                   </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                    Evaluated against industrial keyword scanners, semantic structures, and parsing rules.
+                  <p className="text-[10px] text-slate-550 dark:text-slate-400 leading-normal">
+                    Scanned against industry parser syntax rules.
                   </p>
                 </div>
 
-                <div className="relative w-20 h-20 rounded-full flex items-center justify-center shrink-0 bg-slate-50 dark:bg-[#171720] border border-slate-200 dark:border-white/5">
+                <div className="relative w-16 h-16 rounded-full flex items-center justify-center shrink-0 bg-slate-50 dark:bg-[#171720] border border-slate-200 dark:border-white/5">
                   <svg className="w-full h-full rotate-[-90deg]">
                     <circle
-                      cx="40"
-                      cy="40"
-                      r="34"
+                      cx="32"
+                      cy="32"
+                      r="26"
                       stroke="currentColor"
-                      strokeWidth="3.5"
+                      strokeWidth="3"
                       fill="transparent"
                       className="text-slate-100 dark:text-white/5"
                     />
                     <circle
-                      cx="40"
-                      cy="40"
-                      r="34"
+                      cx="32"
+                      cy="32"
+                      r="26"
                       stroke="currentColor"
-                      strokeWidth="4"
+                      strokeWidth="3.5"
                       fill="transparent"
-                      strokeDasharray={2 * Math.PI * 34}
-                      strokeDashoffset={2 * Math.PI * 34 * (1 - atsScore / 100)}
+                      strokeDasharray={2 * Math.PI * 26}
+                      strokeDashoffset={2 * Math.PI * 26 * (1 - atsScore / 100)}
                       className={getScoreColor(atsScore)}
                     />
                   </svg>
-                  <div className="absolute text-base font-black font-title text-primary-blue">
+                  <div className="absolute text-xs font-black font-title text-primary-blue">
                     {atsScore}%
                   </div>
                 </div>
               </div>
 
               {/* Progress Bars checklist */}
-              <div className="flex flex-col gap-4">
-                <h4 className="text-sm font-black font-title text-black dark:text-white uppercase tracking-wider mb-2">CV Breakdown Compatibility</h4>
+              <div className="glass p-6 rounded-[24px] border border-slate-100 dark:border-white/5 bg-white dark:bg-[#121217] flex flex-col gap-3">
+                <h4 className="text-xs font-black font-title text-black dark:text-white uppercase tracking-wider mb-1 text-left">CV Section Compatibility</h4>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-3">
                   {breakdownBars.map((bar, idx) => (
                     <div key={idx} className="flex flex-col gap-1 text-left">
-                      <div className="flex justify-between items-center text-xs font-bold text-slate-600 dark:text-slate-350">
+                      <div className="flex justify-between items-center text-[10px] font-bold text-slate-600 dark:text-slate-350">
                         <span>{bar.label}</span>
                         <span>{bar.val}%</span>
                       </div>
-                      <div className="w-full h-2 bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden">
+                      <div className="w-full h-1.5 bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-primary-blue rounded-full transition-all duration-1000"
                           style={{ width: `${bar.val}%` }}
@@ -304,22 +302,105 @@ const Resume = () => {
                   ))}
                 </div>
               </div>
+            </motion.div>
 
-              {/* Suggestions Summary block */}
-              {activeResume?.aiSuggestions && activeResume.aiSuggestions.length > 0 && (
-                <div className="flex flex-col gap-3">
-                  <h4 className="text-sm font-black font-title text-black dark:text-white uppercase tracking-wider mb-1">AI Improvement Suggestions</h4>
-                  <div className="flex flex-col gap-3">
-                    {activeResume.aiSuggestions.slice(0, 2).map((item, idx) => (
-                      <div key={idx} className="p-4 bg-purple-600/5 border border-purple-500/10 rounded-2xl">
-                        <span className="text-[10px] font-black text-purple-400 uppercase">{item.section} Suggestion</span>
-                        <p className="text-[11px] text-slate-400 mt-1 leading-normal font-medium">"{item.explanation}"</p>
-                      </div>
-                    ))}
+            {/* Column 3 (col-span-4): Key Resume Highlights Sidebar */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+              className="lg:col-span-4 flex flex-col gap-6"
+            >
+              <div className="glass p-6 md:p-7 rounded-[24px] border border-slate-100 dark:border-white/5 flex flex-col gap-5 shadow-sm bg-white dark:bg-[#121217]">
+                <div className="border-b border-slate-150 dark:border-white/5 pb-3 text-left">
+                  <h3 className="text-xs font-black font-title text-black dark:text-white uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                    <FaAward className="text-primary-blue animate-pulse" /> Key Resume Highlights
+                  </h3>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                    AI-powered summary of profile strength markers.
+                  </p>
+                </div>
+
+                {/* Profile Summary */}
+                <div className="flex flex-col gap-1.5 text-left">
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                    <FaBook size={10} className="text-purple-400" /> Career Summary
+                  </span>
+                  <p className="text-[11px] text-slate-650 dark:text-slate-350 leading-relaxed italic bg-slate-50 dark:bg-[#181822] p-3 rounded-2xl border border-slate-150 dark:border-white/5">
+                    {activeResume?.parsedData?.summary ? `"${activeResume.parsedData.summary}"` : `"Full stack software engineer with extensive experience in the MERN stack ecosystem. Specialized in constructing high-performance REST APIs, stateful interfaces, and database architectures."`}
+                  </p>
+                </div>
+
+                {/* Tone & Level metrics */}
+                <div className="grid grid-cols-2 gap-3 text-left">
+                  <div className="p-3 bg-slate-50 dark:bg-[#181822] border border-slate-150 dark:border-white/5 rounded-2xl">
+                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider block mb-1">Tone Analysis</span>
+                    <span className="text-xs font-bold text-slate-800 dark:text-white capitalize">
+                      {activeResume?.readability?.tone || 'Professional'}
+                    </span>
+                  </div>
+                  <div className="p-3 bg-slate-50 dark:bg-[#181822] border border-slate-150 dark:border-white/5 rounded-2xl">
+                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider block mb-1">Career Level</span>
+                    <span className="text-xs font-bold text-slate-800 dark:text-white capitalize">
+                      {activeResume?.aiAnalysis?.careerLevel || 'Mid to Senior'}
+                    </span>
                   </div>
                 </div>
-              )}
 
+                {/* Technical Skills Badge List */}
+                <div className="flex flex-col gap-1.5 text-left">
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                    <FaCode size={10} className="text-primary-blue" /> Verified Technical Skills
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {activeResume?.parsedData?.skills && activeResume.parsedData.skills.length > 0 ? (
+                      activeResume.parsedData.skills.map((s, idx) => (
+                        <span key={idx} className="px-2.5 py-1 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-slate-750 dark:text-slate-300 rounded-lg text-[10px] font-bold">
+                          {s}
+                        </span>
+                      ))
+                    ) : (
+                      ['React', 'Node.js', 'Express', 'MongoDB', 'REST API', 'GraphQL', 'JWT', 'TypeScript', 'Docker', 'AWS'].map((s, idx) => (
+                        <span key={idx} className="px-2.5 py-1 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-slate-750 dark:text-slate-300 rounded-lg text-[10px] font-bold">
+                          {s}
+                        </span>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                {/* Audit Key Weak Bullet Points or Suggestions */}
+                <div className="flex flex-col gap-1.5 text-left">
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                    <FaTasks size={10} className="text-amber-500 animate-pulse" /> Recommended Improvements
+                  </span>
+                  <div className="flex flex-col gap-2">
+                    {activeResume?.aiSuggestions && activeResume.aiSuggestions.length > 0 ? (
+                      activeResume.aiSuggestions.slice(0, 2).map((s, idx) => (
+                        <div key={idx} className="p-2.5 bg-amber-500/5 border border-amber-500/10 rounded-xl flex flex-col gap-1">
+                          <span className="text-[9px] font-black text-amber-500 uppercase">Change in {s.section}:</span>
+                          {s.currentText && <span className="text-[10px] line-through text-slate-400">{s.currentText}</span>}
+                          <span className="text-[10px] text-slate-800 dark:text-slate-200 font-bold">{s.improvedText}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <>
+                        <div className="p-2.5 bg-amber-500/5 border border-amber-500/10 rounded-xl flex flex-col gap-1">
+                          <span className="text-[9px] font-black text-amber-500 uppercase">Change in Projects:</span>
+                          <span className="text-[10px] line-through text-slate-400">Worked on MERN Project</span>
+                          <span className="text-[10px] text-slate-800 dark:text-slate-200 font-bold">Designed a scalable portfolio CMS stack serving 1,000+ active users.</span>
+                        </div>
+                        <div className="p-2.5 bg-amber-500/5 border border-amber-500/10 rounded-xl flex flex-col gap-1">
+                          <span className="text-[9px] font-black text-amber-500 uppercase">Change in Skills:</span>
+                          <span className="text-[10px] text-slate-800 dark:text-slate-200 font-bold">Integrate CI/CD pipelines and microservices deployments.</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+              </div>
             </motion.div>
 
           </div>

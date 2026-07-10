@@ -235,6 +235,298 @@ const generateOfflineFallbackAnalysis = (parsed, ats) => {
   };
 };
 
+// Reusable helper to perform full parser text extraction, scoring, and Gemini AI resume auditing
+const analyzeAndSaveResume = async (file, userId, extraFields = {}) => {
+  const { uploadToCloudinary } = require('../middleware/upload');
+  
+  // 1. Upload raw file to Cloudinary
+  const folderName = 'resumes_hub';
+  const uploadResult = await uploadToCloudinary(file.buffer, folderName, 'raw');
+
+  // 2. Extract Text
+  const text = await extractTextFromFile(file);
+  if (!text || text.trim().length < 50) {
+    throw new Error('Extracted resume text is too short or file is an un-scanned image.');
+  }
+
+  // 3. Simple regex-based entity parsing
+  const emailRegex = /[\w.-]+@[\w.-]+\.\w+/g;
+  const phoneRegex = /(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g;
+  const linkRegex = /(https?:\/\/[^\s]+)/g;
+
+  const emails = text.match(emailRegex) || [];
+  const phones = text.match(phoneRegex) || [];
+  const links = text.match(linkRegex) || [];
+
+  const parsedData = {
+    name: (text.split('\n')[0] || '').trim(),
+    email: emails[0] || '',
+    phone: phones[0] || '',
+    address: '',
+    linkedin: links.find(l => l.includes('linkedin.com')) || '',
+    github: links.find(l => l.includes('github.com')) || '',
+    portfolio: links.find(l => !l.includes('linkedin.com') && !l.includes('github.com')) || '',
+    skills: [],
+    experience: [],
+    education: [],
+    projects: [],
+    summary: ''
+  };
+
+  parsedData.skills = DICTS.atsKeywords.filter(k => text.toLowerCase().includes(k.toLowerCase()));
+
+  // 4. Score using ATS scoring engine
+  const atsScoreResults = calculateAtsScore(text, parsedData);
+
+  // 5. Query Gemini for AI Analysis
+  const prompt = `
+    You are a professional ATS recruiter & Resume Auditor. Analyze the following resume text.
+    
+    Resume text:
+    """
+    ${text.substring(0, 4000)}
+    """
+
+    Return a JSON object containing the exact structure below. Do not output anything other than JSON.
+    JSON Schema:
+    {
+      "parsedData": {
+        "name": "string",
+        "email": "string",
+        "phone": "string",
+        "address": "string",
+        "linkedin": "string",
+        "github": "string",
+        "portfolio": "string",
+        "skills": ["string"],
+        "technicalSkills": ["string"],
+        "softSkills": ["string"],
+        "summary": "string",
+        "experience": [
+          { "jobTitle": "string", "company": "string", "duration": "string", "description": "string" }
+        ],
+        "education": [
+          { "degree": "string", "school": "string", "year": "string" }
+        ],
+        "projects": [
+          { "title": "string", "techUsed": "string", "description": "string" }
+        ]
+      },
+      "aiAnalysis": {
+        "grammar": "string summary",
+        "sentenceQuality": "string summary",
+        "tone": "string",
+        "projects": "string summary",
+        "experience": "string summary",
+        "education": "string summary",
+        "skills": "string summary",
+        "leadership": "string summary",
+        "achievements": "string summary",
+        "actionVerbs": "string summary",
+        "numbers": "string summary",
+        "impact": "string summary",
+        "missingSections": ["string"],
+        "weakBulletPoints": ["string"],
+        "repeatedWords": ["string"],
+        "passiveVoice": ["string"],
+        "careerLevel": "string"
+      },
+      "aiSuggestions": [
+        { "section": "string", "currentText": "string", "improvedText": "string", "explanation": "string", "atsIncrease": number }
+      ],
+      "readability": {
+        "readingTime": number,
+        "tone": "string",
+        "complexity": "string",
+        "sentenceLength": number,
+        "score": number
+      },
+      "grammarChecker": {
+        "errors": [
+          { "word": "string", "errorType": "string", "suggestion": "string", "context": "string" }
+        ],
+        "passiveVoiceCount": number,
+        "weakWordsCount": number,
+        "repeatedWordsCount": number
+      }
+    }
+  `;
+
+  let aiResults = await queryGeminiAPI(prompt, 'You are an expert recruitment ATS parser. Always return JSON.');
+  if (!aiResults) {
+    aiResults = generateOfflineFallbackAnalysis(parsedData, atsScoreResults);
+  }
+
+  // Save report in Collection
+  const resumeReport = await Resume.create({
+    fileUrl: uploadResult.url,
+    publicId: uploadResult.publicId,
+    fileName: file.originalname,
+    fileSize: file.size,
+    fileType: file.originalname.endsWith('.docx') ? 'docx' : file.originalname.endsWith('.doc') ? 'doc' : 'pdf',
+    extractedText: text,
+    uploadedBy: userId,
+    parsedData: aiResults.parsedData || parsedData,
+    atsScore: atsScoreResults.overallScore,
+    atsBreakdown: atsScoreResults.atsBreakdown,
+    aiAnalysis: aiResults.aiAnalysis,
+    aiSuggestions: aiResults.aiSuggestions,
+    keywords: {
+      matched: atsScoreResults.matchedKeywords,
+      missing: atsScoreResults.missingKeywords
+    },
+    grammarChecker: aiResults.grammarChecker,
+    readability: aiResults.readability,
+    sectionHealth: atsScoreResults.sectionHealth,
+    status: 'Approved',
+    ...extraFields
+  });
+
+  return resumeReport;
+};
+
+// Reusable helper to perform inline parser text extraction and scoring for existing/legacy resumes
+const analyzeResumeInline = async (resume) => {
+  let text = resume.extractedText;
+  if (!text || text.trim().length < 50) {
+    if (resume.fileUrl) {
+      try {
+        const response = await fetch(resume.fileUrl);
+        const buffer = Buffer.from(await response.arrayBuffer());
+        const ext = resume.fileName.split('.').pop().toLowerCase();
+        const virtualFile = { originalname: resume.fileName, buffer };
+        text = await extractTextFromFile(virtualFile);
+      } catch (err) {
+        console.error('Failed to extract text during inline analysis:', err.message);
+      }
+    }
+  }
+
+  if (!text || text.trim().length < 50) {
+    return; // Cannot analyze
+  }
+
+  const emailRegex = /[\w.-]+@[\w.-]+\.\w+/g;
+  const phoneRegex = /(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g;
+  const linkRegex = /(https?:\/\/[^\s]+)/g;
+
+  const emails = text.match(emailRegex) || [];
+  const phones = text.match(phoneRegex) || [];
+  const links = text.match(linkRegex) || [];
+
+  const parsedData = {
+    name: (text.split('\n')[0] || '').trim(),
+    email: emails[0] || '',
+    phone: phones[0] || '',
+    address: '',
+    linkedin: links.find(l => l.includes('linkedin.com')) || '',
+    github: links.find(l => l.includes('github.com')) || '',
+    portfolio: links.find(l => !l.includes('linkedin.com') && !l.includes('github.com')) || '',
+    skills: [],
+    experience: [],
+    education: [],
+    projects: [],
+    summary: ''
+  };
+
+  parsedData.skills = DICTS.atsKeywords.filter(k => text.toLowerCase().includes(k.toLowerCase()));
+
+  const atsScoreResults = calculateAtsScore(text, parsedData);
+
+  const prompt = `
+    You are a professional ATS recruiter & Resume Auditor. Analyze the following resume text.
+    Resume text:
+    """
+    ${text.substring(0, 4000)}
+    """
+
+    Return a JSON object containing the exact structure below. Do not output anything other than JSON.
+    JSON Schema:
+    {
+      "parsedData": {
+        "name": "string",
+        "email": "string",
+        "phone": "string",
+        "address": "string",
+        "linkedin": "string",
+        "github": "string",
+        "portfolio": "string",
+        "skills": ["string"],
+        "technicalSkills": ["string"],
+        "softSkills": ["string"],
+        "summary": "string",
+        "experience": [
+          { "jobTitle": "string", "company": "string", "duration": "string", "description": "string" }
+        ],
+        "education": [
+          { "degree": "string", "school": "string", "year": "string" }
+        ],
+        "projects": [
+          { "title": "string", "techUsed": "string", "description": "string" }
+        ]
+      },
+      "aiAnalysis": {
+        "grammar": "string summary",
+        "sentenceQuality": "string summary",
+        "tone": "string",
+        "projects": "string summary",
+        "experience": "string summary",
+        "education": "string summary",
+        "skills": "string summary",
+        "leadership": "string summary",
+        "achievements": "string summary",
+        "actionVerbs": "string summary",
+        "numbers": "string summary",
+        "impact": "string summary",
+        "missingSections": ["string"],
+        "weakBulletPoints": ["string"],
+        "repeatedWords": ["string"],
+        "passiveVoice": ["string"],
+        "careerLevel": "string"
+      },
+      "aiSuggestions": [
+        { "section": "string", "currentText": "string", "improvedText": "string", "explanation": "string", "atsIncrease": number }
+      ],
+      "readability": {
+        "readingTime": number,
+        "tone": "string",
+        "complexity": "string",
+        "sentenceLength": number,
+        "score": number
+      },
+      "grammarChecker": {
+        "errors": [
+          { "word": "string", "errorType": "string", "suggestion": "string", "context": "string" }
+        ],
+        "passiveVoiceCount": number,
+        "weakWordsCount": number,
+        "repeatedWordsCount": number
+      }
+    }
+  `;
+
+  let aiResults = await queryGeminiAPI(prompt, 'You are an expert recruitment ATS parser. Always return JSON.');
+  if (!aiResults) {
+    aiResults = generateOfflineFallbackAnalysis(parsedData, atsScoreResults);
+  }
+
+  resume.extractedText = text;
+  resume.parsedData = aiResults.parsedData || parsedData;
+  resume.atsScore = atsScoreResults.overallScore;
+  resume.atsBreakdown = atsScoreResults.atsBreakdown;
+  resume.aiAnalysis = aiResults.aiAnalysis;
+  resume.aiSuggestions = aiResults.aiSuggestions;
+  resume.keywords = {
+    matched: atsScoreResults.matchedKeywords,
+    missing: atsScoreResults.missingKeywords
+  };
+  resume.grammarChecker = aiResults.grammarChecker;
+  resume.readability = aiResults.readability;
+  resume.sectionHealth = atsScoreResults.sectionHealth;
+
+  await resume.save();
+};
+
 // Controller: Upload and analyze
 const uploadAndAnalyzeResume = async (req, res, next) => {
   try {
@@ -242,126 +534,7 @@ const uploadAndAnalyzeResume = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Please upload a PDF or Word document.' });
     }
 
-    const { uploadToCloudinary } = require('../middleware/upload');
-    
-    // 1. Upload raw file to Cloudinary
-    const folderName = 'resumes_hub';
-    const uploadResult = await uploadToCloudinary(req.file.buffer, folderName, 'raw');
-
-    // 2. Extract Text
-    const text = await extractTextFromFile(req.file);
-    if (!text || text.trim().length < 50) {
-      return res.status(400).json({ success: false, message: 'Extracted resume text is too short or file is an un-scanned image.' });
-    }
-
-    // 3. Simple regex-based entity parsing (Fallback for offline model)
-    const emailRegex = /[\w.-]+@[\w.-]+\.\w+/g;
-    const phoneRegex = /(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g;
-    const linkRegex = /(https?:\/\/[^\s]+)/g;
-
-    const emails = text.match(emailRegex) || [];
-    const phones = text.match(phoneRegex) || [];
-    const links = text.match(linkRegex) || [];
-
-    const parsedData = {
-      name: (text.split('\n')[0] || '').trim(),
-      email: emails[0] || '',
-      phone: phones[0] || '',
-      address: '',
-      linkedin: links.find(l => l.includes('linkedin.com')) || '',
-      github: links.find(l => l.includes('github.com')) || '',
-      portfolio: links.find(l => !l.includes('linkedin.com') && !l.includes('github.com')) || '',
-      skills: [],
-      experience: [],
-      education: [],
-      projects: [],
-      summary: ''
-    };
-
-    // Extract skills matching our list
-    parsedData.skills = DICTS.atsKeywords.filter(k => text.toLowerCase().includes(k.toLowerCase()));
-
-    // 4. Score using ATS scoring engine
-    const atsScoreResults = calculateAtsScore(text, parsedData);
-
-    // 5. Query Gemini for AI Analysis
-    const prompt = `
-      You are a professional ATS recruiter & Resume Auditor. Analyze the following resume text.
-      
-      Resume text:
-      """
-      ${text.substring(0, 4000)}
-      """
-
-      Return a JSON object containing the exact structure below. Do not output anything other than JSON.
-      JSON Schema:
-      {
-        "parsedData": {
-          "name": "string",
-          "email": "string",
-          "phone": "string",
-          "address": "string",
-          "linkedin": "string",
-          "github": "string",
-          "portfolio": "string",
-          "skills": ["string"],
-          "technicalSkills": ["string"],
-          "softSkills": ["string"],
-          "summary": "string",
-          "experience": [
-            { "jobTitle": "string", "company": "string", "duration": "string", "description": "string" }
-          ],
-          "education": [
-            { "degree": "string", "school": "string", "year": "string" }
-          ],
-          "projects": [
-            { "title": "string", "techUsed": "string", "description": "string" }
-          ]
-        },
-        "aiAnalysis": {
-          "grammar": "string summary",
-          "sentenceQuality": "string summary",
-          "tone": "string",
-          "projects": "string summary",
-          "experience": "string summary",
-          "education": "string summary",
-          "skills": "string summary",
-          "leadership": "string summary",
-          "achievements": "string summary",
-          "actionVerbs": "string summary",
-          "numbers": "string summary",
-          "impact": "string summary",
-          "missingSections": ["string"],
-          "weakBulletPoints": ["string"],
-          "repeatedWords": ["string"],
-          "passiveVoice": ["string"],
-          "careerLevel": "string"
-        },
-        "aiSuggestions": [
-          { "section": "string", "currentText": "string", "improvedText": "string", "explanation": "string", "atsIncrease": number }
-        ],
-        "readability": {
-          "readingTime": number,
-          "tone": "string",
-          "complexity": "string",
-          "sentenceLength": number,
-          "score": number
-        },
-        "grammarChecker": {
-          "errors": [
-            { "word": "string", "errorType": "string", "suggestion": "string", "context": "string" }
-          ],
-          "passiveVoiceCount": number,
-          "weakWordsCount": number,
-          "repeatedWordsCount": number
-        }
-      }
-    `;
-
-    let aiResults = await queryGeminiAPI(prompt, 'You are an expert recruitment ATS parser. Always return JSON.');
-    if (!aiResults) {
-      aiResults = generateOfflineFallbackAnalysis(parsedData, atsScoreResults);
-    }
+    const resumeReport = await analyzeAndSaveResume(req.file, req.user.id);
 
     // Deduct user credit if user is not admin
     if (req.user.role !== 'Admin') {
@@ -371,30 +544,6 @@ const uploadAndAnalyzeResume = async (req, res, next) => {
         await userDoc.save({ validateBeforeSave: false });
       }
     }
-
-    // Save report in Permanent Collection
-    const resumeReport = await Resume.create({
-      fileUrl: uploadResult.url,
-      publicId: uploadResult.publicId,
-      fileName: req.file.originalname,
-      fileSize: req.file.size,
-      fileType: req.file.originalname.endsWith('.docx') ? 'docx' : req.file.originalname.endsWith('.doc') ? 'doc' : 'pdf',
-      extractedText: text,
-      uploadedBy: req.user.id,
-      parsedData: aiResults.parsedData || parsedData,
-      atsScore: atsScoreResults.overallScore,
-      atsBreakdown: atsScoreResults.atsBreakdown,
-      aiAnalysis: aiResults.aiAnalysis,
-      aiSuggestions: aiResults.aiSuggestions,
-      keywords: {
-        matched: atsScoreResults.matchedKeywords,
-        missing: atsScoreResults.missingKeywords
-      },
-      grammarChecker: aiResults.grammarChecker,
-      readability: aiResults.readability,
-      sectionHealth: atsScoreResults.sectionHealth,
-      status: 'Approved'
-    });
 
     res.status(201).json({
       success: true,
@@ -586,9 +735,13 @@ const deleteAnalysis = async (req, res, next) => {
 const getReportDetails = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const resume = await Resume.findById(id).populate('uploadedBy', 'fullName username avatar role');
+    let resume = await Resume.findById(id).populate('uploadedBy', 'fullName username avatar role');
     if (!resume) {
       return res.status(404).json({ success: false, message: 'Detailed report not found.' });
+    }
+
+    if (!resume.atsScore || !resume.parsedData || !resume.parsedData.skills || resume.parsedData.skills.length === 0) {
+      await analyzeResumeInline(resume);
     }
 
     res.json({
@@ -606,5 +759,6 @@ module.exports = {
   rewriteSection,
   getAnalysisHistory,
   deleteAnalysis,
-  getReportDetails
+  getReportDetails,
+  analyzeAndSaveResume
 };
