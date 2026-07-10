@@ -16,6 +16,7 @@ const Resume = () => {
   const [activeResume, setActiveResume] = useState(null);
   const [previewBlobUrl, setPreviewBlobUrl] = useState('');
   const [isMobile, setIsMobile] = useState(false);
+  const resumePdfUrl = getAbsolutePdfUrl(activeResume?.fileUrl || 'assits/Resume-file.pdf');
 
   useEffect(() => {
     const handleResize = () => {
@@ -76,7 +77,6 @@ const Resume = () => {
     };
   }, [resumePdfUrl, isMobile]);
 
-  const resumePdfUrl = getAbsolutePdfUrl(activeResume?.fileUrl || 'assits/Resume-file.pdf');
   const resumePngUrl = activeResume?.fileUrl ? activeResume.fileUrl.replace(/\.pdf$/i, '.png') : 'assits/Resume-file.png';
 
   const handleViewResume = async (e) => {

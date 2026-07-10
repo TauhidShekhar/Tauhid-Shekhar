@@ -29,6 +29,7 @@ const Resume = () => {
   const [success, setSuccess] = useState('');
   const [previewBlobUrl, setPreviewBlobUrl] = useState('');
   const [isMobile, setIsMobile] = useState(false);
+  const resumePdfUrl = getAbsolutePdfUrl(activeResume?.fileUrl || settings?.resumeUrl || '');
 
   useEffect(() => {
     const handleResize = () => {
@@ -195,7 +196,6 @@ const Resume = () => {
     return 'text-red-500 stroke-red-500';
   };
 
-  const resumePdfUrl = getAbsolutePdfUrl(activeResume?.fileUrl || settings?.resumeUrl || '');
   const atsScore = activeResume?.atsScore || 94;
 
   const breakdownBars = [
