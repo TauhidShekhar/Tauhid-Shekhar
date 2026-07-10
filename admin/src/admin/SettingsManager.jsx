@@ -587,7 +587,7 @@ const SettingsManager = () => {
               <div className="flex flex-col gap-3 p-4 rounded-xl bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-white/5">
                 <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Favicon (.ico/.png)</label>
                 {faviconPreview && (
-                  <img src={faviconPreview} alt="Favicon Preview" className="h-8 w-8 object-contain self-start rounded border border-slate-200 dark:border-white/5 bg-slate-100 dark:bg-slate-955 p-1" />
+                  <img src={faviconPreview} alt="Favicon Preview" className="h-8 w-8 object-contain self-start rounded border border-slate-200 dark:border-white/5 bg-slate-100 dark:bg-slate-950 p-1" />
                 )}
                 <input
                   type="file"
@@ -601,7 +601,7 @@ const SettingsManager = () => {
               <div className="flex flex-col gap-3 p-4 rounded-xl bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-white/5">
                 <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Profile Picture</label>
                 {profilePicturePreview && (
-                  <img src={profilePicturePreview} alt="Profile Preview" className="h-16 w-16 object-cover rounded-full border border-slate-200 dark:border-white/5 bg-slate-100 dark:bg-slate-955" />
+                  <img src={profilePicturePreview} alt="Profile Preview" className="h-16 w-16 object-cover rounded-full border border-slate-200 dark:border-white/5 bg-slate-100 dark:bg-slate-950" />
                 )}
                 <input
                   type="file"
@@ -615,7 +615,7 @@ const SettingsManager = () => {
               <div className="flex flex-col gap-3 p-4 rounded-xl bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-white/5">
                 <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Hero Banner Illustration</label>
                 {heroImagePreview && (
-                  <img src={heroImagePreview} alt="Hero Preview" className="h-16 w-auto object-contain self-start rounded border border-slate-200 dark:border-white/5 bg-slate-100 dark:bg-slate-955 p-1" />
+                  <img src={heroImagePreview} alt="Hero Preview" className="h-16 w-auto object-contain self-start rounded border border-slate-200 dark:border-white/5 bg-slate-100 dark:bg-slate-950 p-1" />
                 )}
                 <input
                   type="file"
@@ -715,7 +715,7 @@ const SettingsManager = () => {
                       value={settings.announcementBanner?.link || ''}
                       onChange={(e) => handleNestedSettingChange('announcementBanner', 'link', e.target.value)}
                       placeholder="e.g. /community or https://linkedin.com..."
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-955 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue"
                     />
                   </div>
                 </div>
@@ -892,7 +892,7 @@ const SettingsManager = () => {
                         <button
                           type="button"
                           onClick={() => handleSetPrimaryLocation(idx)}
-                          className="px-2.5 py-1 bg-purple-650/15 hover:bg-purple-650 text-purple-400 hover:text-white rounded-lg text-[9px] font-black uppercase tracking-wider cursor-pointer transition-all"
+                          className="px-2.5 py-1 bg-purple-500/10 hover:bg-purple-600 text-purple-400 hover:text-white rounded-lg text-[9px] font-black uppercase tracking-wider cursor-pointer transition-all"
                         >
                           Set Active Map
                         </button>
@@ -933,7 +933,7 @@ const SettingsManager = () => {
                       value={newLocation.title}
                       onChange={(e) => setNewLocation(prev => ({ ...prev, title: e.target.value }))}
                       placeholder="e.g. Headquarters / Amritsar Office"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-955 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue bg-slate-100 dark:bg-slate-900 placeholder-slate-400 dark:placeholder-slate-500"
                     />
                   </div>
                   <div className="flex flex-col gap-1">
@@ -943,7 +943,7 @@ const SettingsManager = () => {
                       value={newLocation.address}
                       onChange={(e) => setNewLocation(prev => ({ ...prev, address: e.target.value }))}
                       placeholder="e.g. Delhi, Sangam Vihar, India"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-955 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue bg-slate-100 dark:bg-slate-900 placeholder-slate-400 dark:placeholder-slate-500"
                     />
                   </div>
                 </div>
@@ -955,7 +955,7 @@ const SettingsManager = () => {
                     value={newLocation.mapEmbed}
                     onChange={(e) => setNewLocation(prev => ({ ...prev, mapEmbed: e.target.value }))}
                     placeholder="https://www.google.com/maps/embed?pb=..."
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-955 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue bg-slate-100 dark:bg-slate-900 placeholder-slate-400 dark:placeholder-slate-500"
                   />
                   <span className="text-[9px] text-slate-400 mt-0.5">Go to Google Maps {"→"} Share {"→"} Embed a map {"→"} Copy iframe src link.</span>
                 </div>
@@ -968,7 +968,7 @@ const SettingsManager = () => {
                       value={newLocation.workingHours}
                       onChange={(e) => setNewLocation(prev => ({ ...prev, workingHours: e.target.value }))}
                       placeholder="e.g. Mon - Fri: 9:00 AM - 6:00 PM"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-955 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue bg-slate-100 dark:bg-slate-900 placeholder-slate-400 dark:placeholder-slate-500"
                     />
                   </div>
                   <div className="flex flex-col gap-1">
@@ -978,7 +978,7 @@ const SettingsManager = () => {
                       value={newLocation.email}
                       onChange={(e) => setNewLocation(prev => ({ ...prev, email: e.target.value }))}
                       placeholder="e.g. shekhartauhid@gmail.com"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-955 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue bg-slate-100 dark:bg-slate-900 placeholder-slate-400 dark:placeholder-slate-500"
                     />
                   </div>
                   <div className="flex flex-col gap-1">
@@ -988,7 +988,7 @@ const SettingsManager = () => {
                       value={newLocation.phone}
                       onChange={(e) => setNewLocation(prev => ({ ...prev, phone: e.target.value }))}
                       placeholder="e.g. +91 9142725562"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-955 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue bg-slate-100 dark:bg-slate-900 placeholder-slate-400 dark:placeholder-slate-500"
                     />
                   </div>
                 </div>
@@ -997,7 +997,7 @@ const SettingsManager = () => {
                   <button
                     type="button"
                     onClick={handleAddLocation}
-                    className="px-4 py-2 bg-purple-650 hover:bg-purple-700 text-white text-xs font-bold rounded-lg cursor-pointer transition-colors"
+                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-lg cursor-pointer transition-colors"
                   >
                     {editingLocationId !== null ? 'Save Location' : 'Add Location'}
                   </button>

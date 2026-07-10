@@ -262,7 +262,7 @@ const OrdersManager = () => {
         {filteredOrders.map((order) => (
           <div
             key={order._id}
-            className="glass p-6 rounded-2xl border border-slate-200/60 dark:border-white/5 shadow-sm hover:shadow-md transition-shadow flex flex-col md:flex-row justify-between gap-5 items-start bg-white dark:bg-slate-955"
+            className="glass p-6 rounded-2xl border border-slate-200/60 dark:border-white/5 shadow-sm hover:shadow-md transition-shadow flex flex-col md:flex-row justify-between gap-5 items-start bg-white dark:bg-slate-900"
           >
             {/* Left Content */}
             <div className="flex-1 flex flex-col gap-4">
