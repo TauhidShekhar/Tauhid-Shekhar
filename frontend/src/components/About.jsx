@@ -162,7 +162,7 @@ const About = () => {
             <motion.div variants={childVariants} className="flex gap-4">
               {resumeLink && (
                 <a 
-                  href={resumeLink.startsWith('http') ? `https://docs.google.com/gview?url=${encodeURIComponent(resumeLink)}` : resumeLink} 
+                  href={resumeLink} 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="px-8 py-3.5 bg-primary-blue hover:bg-accent-blue text-white rounded-full font-bold transition-all duration-300 hover:-translate-y-0.5 shadow-lg shadow-primary-blue/20"

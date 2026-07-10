@@ -169,11 +169,32 @@ const Resume = () => {
             >
               <div className="glass p-2.5 rounded-[28px] border border-slate-100 dark:border-white/5 shadow-md w-full aspect-[1/1.41] relative overflow-hidden group bg-white dark:bg-[#121217] flex flex-col items-center justify-center">
                 {resumePdfUrl ? (
-                  <iframe
-                    src={`https://docs.google.com/gview?url=${encodeURIComponent(resumePdfUrl)}&embedded=true`}
-                    className="w-full h-full rounded-2xl border-0 bg-white"
-                    title="Resume Document Preview"
-                  />
+                  <div 
+                    onClick={() => window.open(resumePdfUrl, '_blank')}
+                    className="w-full h-full rounded-2xl flex flex-col items-center justify-center p-6 text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-all group relative border border-dashed border-slate-200 dark:border-white/10"
+                  >
+                    {/* Glowing background gradient on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-primary-blue/5 to-primary-purple/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl" />
+                    
+                    <div className="w-20 h-20 rounded-3xl bg-red-500/10 dark:bg-red-500/15 text-red-500 flex items-center justify-center mb-6 shadow-inner transform group-hover:scale-110 transition-all duration-300 relative z-10">
+                      <FaFilePdf size={40} />
+                    </div>
+                    
+                    <div className="relative z-10">
+                      <h4 className="text-sm font-black text-slate-800 dark:text-white mb-2 truncate max-w-[240px]">
+                        {settings?.siteName ? `${settings.siteName.replace(/\s+/g, '_')}_CV.pdf` : 'Tauhid_Shekhar_CV.pdf'}
+                      </h4>
+                      <p className="text-[11px] text-slate-550 dark:text-slate-400 font-bold uppercase tracking-wider mb-4">
+                        Click to View Document
+                      </p>
+                      
+                      {/* Premium Badge */}
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-[9px] font-black uppercase tracking-wider">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                        Verified PDF
+                      </span>
+                    </div>
+                  </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center p-8 text-center h-full w-full">
                     <div className="w-16 h-16 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center mb-5">
@@ -191,10 +212,10 @@ const Resume = () => {
                 {resumePdfUrl ? (
                   <div className="flex flex-wrap gap-2">
                     <button
-                      onClick={() => setShowFullPreview(true)}
+                      onClick={() => window.open(resumePdfUrl, '_blank')}
                       className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary-blue hover:bg-accent-blue text-white rounded-full font-bold text-[11px] shadow-sm transition-all active:scale-[0.98] cursor-pointer"
                     >
-                      <FaEye /> Preview Full Screen
+                      <FaEye /> View Resume PDF
                     </button>
                     <a
                       href={resumePdfUrl}
@@ -408,27 +429,7 @@ const Resume = () => {
 
       </div>
 
-      {/* Full screen preview Modal */}
-      <AnimatePresence>
-        {showFullPreview && (
-          <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-            <div className="absolute inset-0" onClick={() => setShowFullPreview(false)} />
-            <div className="relative w-full max-w-5xl h-[85vh] bg-[#121217] rounded-3xl border border-white/10 overflow-hidden flex flex-col z-10 animate-in zoom-in-95 duration-200">
-              <div className="p-4 border-b border-white/5 flex justify-between items-center bg-[#171720]">
-                <h3 className="text-sm font-black text-white flex items-center gap-2">
-                  <FaFilePdf className="text-red-500" /> Full Resume Preview
-                </h3>
-                <button onClick={() => setShowFullPreview(false)} className="p-1 hover:bg-white/5 rounded-lg text-slate-400 hover:text-white transition-colors">
-                  <FaTimes size={18} />
-                </button>
-              </div>
-              <div className="flex-1 p-2">
-                <iframe src={`https://docs.google.com/gview?url=${encodeURIComponent(resumePdfUrl)}&embedded=true`} className="w-full h-full border-0 rounded-2xl bg-white" />
-              </div>
-            </div>
-          </div>
-        )}
-      </AnimatePresence>
+      {/* Resume Section Ends */}
 
     </section>
   );
