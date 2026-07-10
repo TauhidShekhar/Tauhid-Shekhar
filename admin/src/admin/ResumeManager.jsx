@@ -292,7 +292,7 @@ const ResumeManager = () => {
                         </button>
                       )}
                       <a
-                        href={r.fileUrl}
+                        href={getAbsolutePdfUrl(r.fileUrl)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="p-2 rounded-lg bg-primary-blue/10 hover:bg-primary-blue/20 text-primary-blue border border-primary-blue/20 cursor-pointer flex items-center justify-center"
@@ -437,7 +437,7 @@ const ResumeManager = () => {
                         <td className="py-4 px-4 text-right">
                           <div className="flex justify-end gap-2">
                             <a
-                              href={item.fileUrl}
+                              href={getAbsolutePdfUrl(item.fileUrl)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="p-2 bg-primary-blue/10 hover:bg-primary-blue/20 text-primary-blue border border-primary-blue/20 rounded-lg flex items-center justify-center"
