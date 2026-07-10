@@ -121,9 +121,13 @@ const Hero = () => {
   const siteName = settings?.siteName || 'Tauhid Shekhar';
   const heroHeading = settings?.heroHeading || 'Hi,';
   const siteDescription = settings?.heroDescription || settings?.siteTagline || 'Results-oriented Full Stack Web Developer with practical experience in building responsive web applications using HTML5, CSS3, JavaScript, React.js, Node.js, Express.js, MongoDB, and MySQL. Experienced in developing REST APIs, authentication systems, dashboards, and responsive user interfaces. Passionate about solving real-world problems, writing clean code, and continuously learning modern technologies.';
-  const heroImg = settings?.heroImage?.url || 'assits/Profile_Pic.png';
+  const heroImg = settings?.heroImage?.url 
+    ? `${settings.heroImage.url}?v=${settings.updatedAt ? new Date(settings.updatedAt).getTime() : Date.now()}` 
+    : 'assits/Profile_Pic.png';
   const resumeLink = activeResume?.fileUrl || settings?.resumeUrl || '';
-  const heroBg = settings?.heroBackground?.url || '';
+  const heroBg = settings?.heroBackground?.url 
+    ? `${settings.heroBackground.url}?v=${settings.updatedAt ? new Date(settings.updatedAt).getTime() : Date.now()}` 
+    : '';
 
   // Social Links
   const githubLink = settings?.socialLinks?.github || 'https://github.com/TauhidShekhar';

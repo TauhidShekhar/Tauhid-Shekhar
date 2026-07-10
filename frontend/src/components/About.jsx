@@ -74,7 +74,9 @@ const About = () => {
 
   const aboutTitle = settings?.aboutTitle || 'About Me';
   const aboutSkillsSummary = settings?.aboutSkillsSummary || 'Full Stack Web Developer & Graphic Designer';
-  const profilePic = settings?.profilePicture?.url || 'assits/Profile-Img.png';
+  const profilePic = settings?.profilePicture?.url 
+    ? `${settings.profilePicture.url}?v=${settings.updatedAt ? new Date(settings.updatedAt).getTime() : Date.now()}` 
+    : 'assits/Profile-Img.png';
   const aboutText = settings?.aboutContent || 'Results-oriented Full Stack Web Developer with practical experience in building responsive web applications using HTML5, CSS3, JavaScript, React.js, Node.js, Express.js, MongoDB, and MySQL. Experienced in developing REST APIs, authentication systems, dashboards, and responsive user interfaces. Passionate about solving real-world problems, writing clean code, and continuously learning modern technologies.';
   const resumeLink = activeResume?.fileUrl || settings?.resumeUrl || '';
   

@@ -34,12 +34,20 @@ const checkResponse = async (response) => {
 const apiRequest = async (endpoint, options = {}) => {
   const headers = {
     'Content-Type': 'application/json',
-    'Cache-Control': 'no-cache',
+    'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
     'Pragma': 'no-cache',
+    'Expires': '0',
     ...options.headers,
   };
 
-  const response = await fetch(`${API_BASE}${endpoint}`, {
+  // Add cache buster query parameter to GET requests
+  let url = `${API_BASE}${endpoint}`;
+  if (!options.method || options.method.toUpperCase() === 'GET') {
+    const separator = url.includes('?') ? '&' : '?';
+    url = `${url}${separator}t=${Date.now()}`;
+  }
+
+  const response = await fetch(url, {
     ...options,
     headers,
     credentials: 'include', // Crucial for HttpOnly cookies on cross-origin requests
