@@ -89,28 +89,47 @@ const Resume = () => {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="lg:col-span-6 flex flex-col items-center gap-6"
           >
-            <div className="glass p-2.5 rounded-[28px] border border-slate-100 dark:border-white/5 shadow-md w-full max-w-[450px] aspect-[1/1.41] relative overflow-hidden group">
-              <object
-                data={resumePdfUrl}
-                type="application/pdf"
-                className="w-full h-full rounded-2xl border border-slate-200/60 dark:border-white/5 shadow-sm"
-              >
-                <div className="flex flex-col items-center justify-center h-full p-6 text-center bg-slate-50 dark:bg-slate-900 rounded-2xl">
-                  <FaFileDownload className="text-primary-blue mb-3 animate-bounce" size={32} />
-                  <p className="text-xs font-bold text-slate-800 dark:text-white font-title">Resume PDF Document</p>
-                  <p className="text-[10px] text-slate-500 mt-1 max-w-[200px]">
-                    PDF preview not loaded natively. You can view or download it directly.
+            <div className="glass p-2.5 rounded-[28px] border border-slate-100 dark:border-white/5 shadow-md w-full max-w-[450px] aspect-[1/1.41] relative overflow-hidden group bg-white dark:bg-[#121217]">
+              {resumePdfUrl ? (
+                <a 
+                  href={resumePdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full h-full rounded-2xl flex flex-col items-center justify-center p-6 text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-all group relative border border-dashed border-slate-200 dark:border-white/10 block"
+                >
+                  {/* Glowing background gradient on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-primary-blue/5 to-primary-purple/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl" />
+                  
+                  <div className="w-20 h-20 rounded-3xl bg-red-500/10 dark:bg-red-500/15 text-red-500 flex items-center justify-center mb-6 shadow-inner transform group-hover:scale-110 transition-all duration-300 relative z-10">
+                    <FaFilePdf size={40} />
+                  </div>
+                  
+                  <div className="relative z-10">
+                    <h4 className="text-sm font-black text-slate-800 dark:text-white mb-2 truncate max-w-[240px]">
+                      {activeResume?.fileName || 'Tauhid_Shekhar_CV.pdf'}
+                    </h4>
+                    <p className="text-[11px] text-slate-550 dark:text-slate-400 font-bold uppercase tracking-wider mb-4">
+                      Click to View Document
+                    </p>
+                    
+                    {/* Premium Badge */}
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-[9px] font-black uppercase tracking-wider">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                      Verified PDF
+                    </span>
+                  </div>
+                </a>
+              ) : (
+                <div className="flex flex-col items-center justify-center p-8 text-center h-full w-full">
+                  <div className="w-16 h-16 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center mb-5">
+                    <FaFilePdf size={32} />
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-white mb-1.5">No Resume Available</h4>
+                  <p className="text-[11px] text-slate-550 dark:text-slate-400 max-w-[220px] leading-relaxed">
+                    Administrator has not uploaded an active resume yet.
                   </p>
-                  <a
-                    href={resumePdfUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-4 px-4 py-2 bg-primary-blue hover:bg-accent-blue text-white text-[10px] font-black rounded-xl shadow-md transition-colors"
-                  >
-                    Open PDF in New Tab
-                  </a>
                 </div>
-              </object>
+              )}
             </div>
 
             <div className="flex gap-4">
