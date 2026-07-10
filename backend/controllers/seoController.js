@@ -9,10 +9,13 @@ const getSEO = async (req, res, next) => {
     if (!seo) {
       seo = await SEO.create({
         siteName: 'Tauhid Shekhar',
-        siteUrl: 'https://tauhidshekhar.com',
+        siteUrl: 'https://tauhidshekhar.vercel.app',
         metaTitle: 'Tauhid Shekhar | Full Stack Web Developer Portfolio',
         metaDescription: 'Portfolio of Tauhid Shekhar - Full Stack Developer specializing in React, Node, Express, MongoDB, and UI/UX design.',
-        metaKeywords: 'Full Stack Developer, MERN Stack, React Developer, Node Developer, Portfolio, Freelancer, India'
+        metaKeywords: 'Full Stack Developer, MERN Stack, React Developer, Node Developer, Portfolio, Freelancer, India',
+        author: 'Tauhid Shekhar',
+        robotsTxt: 'User-agent: *\nAllow: /\nSitemap: https://tauhidshekhar.vercel.app/sitemap.xml',
+        schemaSettings: '{}'
       });
     }
     res.json({ success: true, data: seo });
@@ -29,20 +32,46 @@ const updateSEO = async (req, res, next) => {
     let seo = await SEO.findOne({});
     const updates = { ...req.body };
 
-    let oldImageId = null;
+    const oldImageIds = [];
 
-    // Handle Open Graph image upload
-    if (req.file) {
+    // Handle multiple file fields upload
+    if (req.files) {
       const { uploadToCloudinary } = require('../middleware/upload');
       
-      const uploadResult = await uploadToCloudinary(req.file.buffer, 'seo');
-      updates.ogImage = {
-        url: uploadResult.url,
-        publicId: uploadResult.publicId
-      };
+      if (req.files.ogImage && req.files.ogImage[0]) {
+        const file = req.files.ogImage[0];
+        const uploadResult = await uploadToCloudinary(file.buffer, 'seo');
+        updates.ogImage = {
+          url: uploadResult.url,
+          publicId: uploadResult.publicId
+        };
+        if (seo && seo.ogImage && seo.ogImage.publicId) {
+          oldImageIds.push(seo.ogImage.publicId);
+        }
+      }
 
-      if (seo && seo.ogImage && seo.ogImage.publicId) {
-        oldImageId = seo.ogImage.publicId;
+      if (req.files.favicon && req.files.favicon[0]) {
+        const file = req.files.favicon[0];
+        const uploadResult = await uploadToCloudinary(file.buffer, 'seo');
+        updates.favicon = {
+          url: uploadResult.url,
+          publicId: uploadResult.publicId
+        };
+        if (seo && seo.favicon && seo.favicon.publicId) {
+          oldImageIds.push(seo.favicon.publicId);
+        }
+      }
+
+      if (req.files.logo && req.files.logo[0]) {
+        const file = req.files.logo[0];
+        const uploadResult = await uploadToCloudinary(file.buffer, 'seo');
+        updates.logo = {
+          url: uploadResult.url,
+          publicId: uploadResult.publicId
+        };
+        if (seo && seo.logo && seo.logo.publicId) {
+          oldImageIds.push(seo.logo.publicId);
+        }
       }
     }
 
@@ -55,9 +84,11 @@ const updateSEO = async (req, res, next) => {
       });
     }
 
-    if (oldImageId) {
+    if (oldImageIds.length > 0) {
       const { deleteFromCloudinary } = require('../middleware/upload');
-      await deleteFromCloudinary(oldImageId).catch(err => console.error('Cloudinary delete error:', err.message));
+      for (const publicId of oldImageIds) {
+        await deleteFromCloudinary(publicId).catch(err => console.error('Cloudinary delete error:', err.message));
+      }
     }
 
     res.json({ success: true, data: seo });

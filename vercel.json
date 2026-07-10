@@ -92,6 +92,14 @@
   ],
   "rewrites": [
     {
+      "source": "/sitemap.xml",
+      "destination": "https://tauhid-shekhar-portfolio.onrender.com/sitemap.xml"
+    },
+    {
+      "source": "/robots.txt",
+      "destination": "https://tauhid-shekhar-portfolio.onrender.com/robots.txt"
+    },
+    {
       "source": "/:path*",
       "destination": "/index.html"
     }

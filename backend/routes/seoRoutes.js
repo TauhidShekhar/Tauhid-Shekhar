@@ -6,6 +6,15 @@ const { upload } = require('../middleware/upload');
 
 router.route('/')
   .get(getSEO)
-  .put(requireAuth, requireAdmin, upload.single('ogImage'), updateSEO);
+  .put(
+    requireAuth,
+    requireAdmin,
+    upload.fields([
+      { name: 'ogImage', maxCount: 1 },
+      { name: 'favicon', maxCount: 1 },
+      { name: 'logo', maxCount: 1 }
+    ]),
+    updateSEO
+  );
 
 module.exports = router;

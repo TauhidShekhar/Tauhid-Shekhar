@@ -224,6 +224,89 @@ app.use('/api/community', communityRoutes);
 app.use('/api/features', featureRoutes);
 app.use('/api/cms', cmsRoutes);
 
+// Dynamic Sitemap generator
+app.get('/sitemap.xml', async (req, res, next) => {
+  try {
+    const Blog = require('./models/Blog');
+    const Project = require('./models/Project');
+    const SEO = require('./models/SEO');
+
+    const seo = await SEO.findOne({});
+    const siteUrl = (seo && seo.siteUrl) ? seo.siteUrl.replace(/\/$/, '') : 'https://tauhidshekhar.vercel.app';
+
+    // Static pages
+    const pages = [
+      { url: '', changefreq: 'daily', priority: 1.0 },
+      { url: '/resume', changefreq: 'weekly', priority: 0.8 },
+      { url: '/projects', changefreq: 'weekly', priority: 0.8 },
+      { url: '/blog', changefreq: 'daily', priority: 0.8 },
+      { url: '/community', changefreq: 'daily', priority: 0.9 },
+      { url: '/contact', changefreq: 'monthly', priority: 0.7 }
+    ];
+
+    // Fetch dynamic blogs
+    const blogs = await Blog.find({ status: 'Published' }).select('slug updatedAt');
+    blogs.forEach(b => {
+      pages.push({
+        url: `/blog/${b.slug}`,
+        changefreq: 'weekly',
+        priority: 0.6,
+        lastmod: b.updatedAt.toISOString().split('T')[0]
+      });
+    });
+
+    // Fetch dynamic projects
+    const projects = await Project.find({}).select('_id updatedAt');
+    projects.forEach(p => {
+      pages.push({
+        url: `/projects/${p._id}`,
+        changefreq: 'monthly',
+        priority: 0.6,
+        lastmod: p.updatedAt.toISOString().split('T')[0]
+      });
+    });
+
+    // Build XML content
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+
+    pages.forEach(p => {
+      xml += '  <url>\n';
+      xml += `    <loc>${siteUrl}${p.url}</loc>\n`;
+      if (p.lastmod) {
+        xml += `    <lastmod>${p.lastmod}</lastmod>\n`;
+      } else {
+        xml += `    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>\n`;
+      }
+      xml += `    <changefreq>${p.changefreq}</changefreq>\n`;
+      xml += `    <priority>${p.priority}</priority>\n`;
+      xml += '  </url>\n';
+    });
+
+    xml += '</urlset>';
+
+    res.header('Content-Type', 'application/xml');
+    res.send(xml);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Dynamic Robots.txt generator
+app.get('/robots.txt', async (req, res, next) => {
+  try {
+    const SEO = require('./models/SEO');
+    const seo = await SEO.findOne({});
+    const siteUrl = (seo && seo.siteUrl) ? seo.siteUrl.replace(/\/$/, '') : 'https://tauhidshekhar.vercel.app';
+    const robotsContent = (seo && seo.robotsTxt) ? seo.robotsTxt : `User-agent: *\nAllow: /\nSitemap: ${siteUrl}/sitemap.xml`;
+    
+    res.header('Content-Type', 'text/plain');
+    res.send(robotsContent);
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ success: true, status: 'healthy', timestamp: new Date() });

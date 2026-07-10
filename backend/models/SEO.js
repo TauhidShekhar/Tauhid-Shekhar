@@ -7,6 +7,17 @@ const seoSchema = new mongoose.Schema(
     metaTitle: { type: String },
     metaDescription: { type: String },
     metaKeywords: { type: String },
+    author: { type: String },
+
+    // ── Assets ──────────────────────────────────────────────────────
+    favicon: {
+      url: String,
+      publicId: String
+    },
+    logo: {
+      url: String,
+      publicId: String
+    },
 
     // ── Open Graph ─────────────────────────────────────────────────
     ogTitle: { type: String },
@@ -26,11 +37,19 @@ const seoSchema = new mongoose.Schema(
     // ── Analytics & Search Console ─────────────────────────────────
     googleAnalyticsId: { type: String },
     googleSearchConsoleId: { type: String },
+    microsoftClarityId: { type: String },
+    facebookPixel: { type: String },
 
     // ── Crawling ───────────────────────────────────────────────────
     robotsTxt: {
       type: String,
-      default: 'User-agent: *\nAllow: /'
+      default: 'User-agent: *\nAllow: /\nSitemap: https://tauhidshekhar.vercel.app/sitemap.xml'
+    },
+
+    // ── Structured Data / JSON-LD ─────────────────────────────────
+    schemaSettings: {
+      type: String,
+      default: '{}'
     },
 
     // ── Custom Scripts ─────────────────────────────────────────────

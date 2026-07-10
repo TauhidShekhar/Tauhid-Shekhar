@@ -58,10 +58,13 @@ const ResetPassword = lazy(() => import('./admin/ResetPassword.jsx'));
 const VerifyEmail = lazy(() => import('./admin/VerifyEmail.jsx'));
 const RecoverAccount = lazy(() => import('./admin/RecoverAccount.jsx'));
 
+import DynamicSEOHelper from './components/DynamicSEOHelper.jsx';
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
       <BrowserRouter>
+        <DynamicSEOHelper />
         <FeatureDiscoveryTour />
         <Suspense fallback={<LoadingScreen />}>
           <Routes>

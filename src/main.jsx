@@ -63,10 +63,13 @@ import CommunityCMS from './admin/CommunityCMS.jsx';
 import CommunityProjectDiscussions from './components/CommunityProjectDiscussions.jsx';
 import CommunityDoubts from './components/CommunityDoubts.jsx';
 
+import DynamicSEOHelper from './components/DynamicSEOHelper.jsx';
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
       <BrowserRouter>
+        <DynamicSEOHelper />
         <Routes>
           {/* Main Website Route */}
           <Route path="/" element={<App />} />
