@@ -10,9 +10,6 @@ import { useAuth } from '../contexts/AuthContext';
 const getAbsolutePdfUrl = (url) => {
   if (!url) return '';
   let cleanUrl = url.trim();
-  if (cleanUrl.includes('/raw/upload/') && cleanUrl.toLowerCase().endsWith('.pdf')) {
-    cleanUrl = cleanUrl.replace('/raw/upload/', '/image/upload/');
-  }
   if (/^(f|ht)tps?:\/\//i.test(cleanUrl)) {
     return cleanUrl;
   }
@@ -30,6 +27,17 @@ const Resume = () => {
   const [showFullPreview, setShowFullPreview] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [previewBlobUrl, setPreviewBlobUrl] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const fetchActiveResume = async () => {
     setLoading(true);
@@ -60,6 +68,41 @@ const Resume = () => {
   useEffect(() => {
     fetchActiveResume();
   }, []);
+
+  useEffect(() => {
+    if (!resumePdfUrl || isMobile) {
+      setPreviewBlobUrl('');
+      return;
+    }
+
+    let active = true;
+    const fetchBlob = async () => {
+      try {
+        const response = await fetch(resumePdfUrl);
+        if (!response.ok) throw new Error('Status not ok');
+        const blob = await response.blob();
+        if (active) {
+          const pdfBlob = new Blob([blob], { type: 'application/pdf' });
+          const url = window.URL.createObjectURL(pdfBlob);
+          setPreviewBlobUrl(url);
+        }
+      } catch (err) {
+        console.error('Failed to load PDF preview blob:', err.message);
+        if (active) {
+          setPreviewBlobUrl('');
+        }
+      }
+    };
+
+    fetchBlob();
+
+    return () => {
+      active = false;
+      if (previewBlobUrl) {
+        window.URL.revokeObjectURL(previewBlobUrl);
+      }
+    };
+  }, [resumePdfUrl, isMobile]);
 
   const handleReanalyze = async () => {
     if (!activeResume) return;
@@ -130,6 +173,22 @@ const Resume = () => {
     }
   };
 
+  const handleViewResume = async (e) => {
+    e?.preventDefault();
+    if (!resumePdfUrl) return;
+    try {
+      const response = await fetch(resumePdfUrl);
+      if (!response.ok) throw new Error('Fetch failed');
+      const blob = await response.blob();
+      const pdfBlob = new Blob([blob], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(pdfBlob);
+      window.open(url, '_blank');
+    } catch (err) {
+      console.error('Failed to view resume inline, redirecting to direct url:', err.message);
+      window.open(resumePdfUrl, '_blank');
+    }
+  };
+
   const getScoreColor = (score) => {
     if (score >= 80) return 'text-green-500 stroke-green-500';
     if (score >= 60) return 'text-amber-500 stroke-amber-500';
@@ -188,35 +247,67 @@ const Resume = () => {
             >
               <div className="glass p-2.5 rounded-[28px] border border-slate-100 dark:border-white/5 shadow-md w-full aspect-[1/1.41] relative overflow-hidden bg-white dark:bg-[#121217]">
                 {resumePdfUrl ? (
-                  /* Premium interactive preview card */
-                  <a 
-                    href={resumePdfUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full h-full rounded-2xl flex flex-col items-center justify-center p-6 text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-all group relative border border-dashed border-slate-200 dark:border-white/10 block"
-                  >
-                    {/* Glowing background gradient on hover */}
-                    <div className="absolute inset-0 bg-gradient-to-tr from-primary-blue/5 to-primary-purple/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl" />
-                    
-                    <div className="w-20 h-20 rounded-3xl bg-red-500/10 dark:bg-red-500/15 text-red-500 flex items-center justify-center mb-6 shadow-inner transform group-hover:scale-110 transition-all duration-300 relative z-10">
-                      <FaFilePdf size={40} />
-                    </div>
-                    
-                    <div className="relative z-10">
-                      <h4 className="text-sm font-black text-slate-800 dark:text-white mb-2 truncate max-w-[240px]">
-                        {settings?.siteName ? `${settings.siteName.replace(/\s+/g, '_')}_CV.pdf` : 'Tauhid_Shekhar_CV.pdf'}
-                      </h4>
-                      <p className="text-[11px] text-slate-550 dark:text-slate-400 font-bold uppercase tracking-wider mb-4">
-                        Click to View Document
-                      </p>
+                  !isMobile && previewBlobUrl ? (
+                    /* Natively render PDF pages on desktop using local CORS-safe blob URL */
+                    <object
+                      data={previewBlobUrl}
+                      type="application/pdf"
+                      className="w-full h-full rounded-2xl border-0 bg-white"
+                    >
+                      {/* Fallback card if browser plugin fails to render inline */}
+                      <a 
+                        href={resumePdfUrl}
+                        onClick={handleViewResume}
+                        className="w-full h-full rounded-2xl flex flex-col items-center justify-center p-6 text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-all group relative border border-dashed border-slate-200 dark:border-white/10 block"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-tr from-primary-blue/5 to-primary-purple/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl" />
+                        <div className="w-20 h-20 rounded-3xl bg-red-500/10 dark:bg-red-500/15 text-red-500 flex items-center justify-center mb-6 shadow-inner transform group-hover:scale-110 transition-all duration-300 relative z-10">
+                          <FaFilePdf size={40} />
+                        </div>
+                        <div className="relative z-10">
+                          <h4 className="text-sm font-black text-slate-800 dark:text-white mb-2 truncate max-w-[240px]">
+                            {settings?.siteName ? `${settings.siteName.replace(/\s+/g, '_')}_CV.pdf` : 'Tauhid_Shekhar_CV.pdf'}
+                          </h4>
+                          <p className="text-[11px] text-slate-550 dark:text-slate-400 font-bold uppercase tracking-wider mb-4">
+                            Click to View Document
+                          </p>
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-[9px] font-black uppercase tracking-wider">
+                            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                            Verified PDF
+                          </span>
+                        </div>
+                      </a>
+                    </object>
+                  ) : (
+                    /* Premium interactive card for mobile or during loading fallback */
+                    <a 
+                      href={resumePdfUrl}
+                      onClick={handleViewResume}
+                      className="w-full h-full rounded-2xl flex flex-col items-center justify-center p-6 text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-all group relative border border-dashed border-slate-200 dark:border-white/10 block"
+                    >
+                      {/* Glowing background gradient on hover */}
+                      <div className="absolute inset-0 bg-gradient-to-tr from-primary-blue/5 to-primary-purple/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl" />
                       
-                      {/* Premium Badge */}
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-[9px] font-black uppercase tracking-wider">
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                        Verified PDF
-                      </span>
-                    </div>
-                  </a>
+                      <div className="w-20 h-20 rounded-3xl bg-red-500/10 dark:bg-red-500/15 text-red-500 flex items-center justify-center mb-6 shadow-inner transform group-hover:scale-110 transition-all duration-300 relative z-10">
+                        <FaFilePdf size={40} />
+                      </div>
+                      
+                      <div className="relative z-10">
+                        <h4 className="text-sm font-black text-slate-800 dark:text-white mb-2 truncate max-w-[240px]">
+                          {settings?.siteName ? `${settings.siteName.replace(/\s+/g, '_')}_CV.pdf` : 'Tauhid_Shekhar_CV.pdf'}
+                        </h4>
+                        <p className="text-[11px] text-slate-550 dark:text-slate-400 font-bold uppercase tracking-wider mb-4">
+                          Click to View Document
+                        </p>
+                        
+                        {/* Premium Badge */}
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-[9px] font-black uppercase tracking-wider">
+                          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                          Verified PDF
+                        </span>
+                      </div>
+                    </a>
+                  )
                 ) : (
                   <div className="flex flex-col items-center justify-center p-8 text-center h-full w-full">
                     <div className="w-16 h-16 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center mb-5">
@@ -235,8 +326,7 @@ const Resume = () => {
                   <div className="flex flex-wrap gap-2">
                     <a
                       href={resumePdfUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      onClick={handleViewResume}
                       className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary-blue hover:bg-accent-blue text-white rounded-full font-bold text-[11px] shadow-sm transition-all active:scale-[0.98] cursor-pointer"
                     >
                       <FaEye /> View Resume PDF
