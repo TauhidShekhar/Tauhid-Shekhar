@@ -17,8 +17,15 @@ const {
 // ---------------------------------------------------------------------------
 const requireAuth = async (req, res, next) => {
   try {
-    let decoded = null;
-    const { accessToken, refreshToken } = req.cookies || {};
+    let accessToken = req.cookies?.accessToken;
+    let refreshToken = req.cookies?.refreshToken;
+
+    if (!accessToken && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+      accessToken = req.headers.authorization.split(' ')[1];
+    }
+    if (!refreshToken && req.headers['x-refresh-token']) {
+      refreshToken = req.headers['x-refresh-token'];
+    }
 
     // ---- 1. Try the access token first ----
     if (accessToken) {
@@ -168,7 +175,15 @@ const requireAdmin = (req, res, next) => {
 // ---------------------------------------------------------------------------
 const optionalAuth = async (req, res, next) => {
   try {
-    const { accessToken, refreshToken } = req.cookies || {};
+    let accessToken = req.cookies?.accessToken;
+    let refreshToken = req.cookies?.refreshToken;
+
+    if (!accessToken && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+      accessToken = req.headers.authorization.split(' ')[1];
+    }
+    if (!refreshToken && req.headers['x-refresh-token']) {
+      refreshToken = req.headers['x-refresh-token'];
+    }
     let decoded = null;
 
     if (accessToken) {

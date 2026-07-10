@@ -256,6 +256,8 @@ const login = async (req, res, next) => {
     res.json({
       success: true,
       message: 'Logged in successfully!',
+      accessToken,
+      refreshToken,
       user: {
         id: user._id,
         fullName: user.fullName,
@@ -284,13 +286,16 @@ const login = async (req, res, next) => {
 // @access  Public
 const logout = async (req, res, next) => {
   try {
-    const { refreshToken } = req.cookies;
+    let clientToken = req.cookies?.refreshToken;
+    if (!clientToken && req.headers['x-refresh-token']) {
+      clientToken = req.headers['x-refresh-token'];
+    }
 
-    if (refreshToken) {
+    if (clientToken) {
       // Remove token from database sessions
       await User.updateOne(
-        { 'refreshTokens.token': refreshToken },
-        { $pull: { refreshTokens: { token: refreshToken } } }
+        { 'refreshTokens.token': clientToken },
+        { $pull: { refreshTokens: { token: clientToken } } }
       );
     }
 
@@ -306,7 +311,10 @@ const logout = async (req, res, next) => {
 // @access  Public
 const refreshToken = async (req, res, next) => {
   try {
-    const { refreshToken: clientToken } = req.cookies;
+    let clientToken = req.cookies?.refreshToken;
+    if (!clientToken && req.headers['x-refresh-token']) {
+      clientToken = req.headers['x-refresh-token'];
+    }
 
     if (!clientToken) {
       clearTokenCookies(res);
@@ -353,7 +361,12 @@ const refreshToken = async (req, res, next) => {
     // Set new cookies
     setTokenCookies(res, newAccessToken, newRefreshToken);
 
-    res.json({ success: true, message: 'Session renewed successfully!' });
+    res.json({ 
+      success: true, 
+      message: 'Session renewed successfully!',
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken
+    });
   } catch (error) {
     next(error);
   }
@@ -1033,7 +1046,7 @@ const googleCallback = async (req, res, next) => {
     await user.save({ validateBeforeSave: false });
 
     setTokenCookies(res, accessToken, refreshToken, true);
-    res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/dashboard`);
+    res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/dashboard?accessToken=${accessToken}&refreshToken=${refreshToken}`);
   } catch (error) {
     console.error('Google callback error:', error.message);
     res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/login?error=Google authentication failed`);
@@ -1175,7 +1188,7 @@ const githubCallback = async (req, res, next) => {
     await user.save({ validateBeforeSave: false });
 
     setTokenCookies(res, jwtAccessToken, jwtRefreshToken, true);
-    res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/dashboard`);
+    res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/dashboard?accessToken=${jwtAccessToken}&refreshToken=${jwtRefreshToken}`);
   } catch (error) {
     console.error('GitHub callback error:', error.message);
     res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/login?error=GitHub authentication failed`);
