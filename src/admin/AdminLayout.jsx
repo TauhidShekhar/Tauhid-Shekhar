@@ -291,6 +291,12 @@ const AdminLayout = () => {
           >
             <FaGlobe /> Live Portfolio Web
           </Link>
+          <Link
+            to="/community"
+            className="flex items-center gap-3 px-4 py-2 rounded-xl text-[10px] font-bold text-slate-550 dark:text-slate-400 hover:text-primary-blue transition-colors text-left"
+          >
+            <FaUsers /> DevCommunity Platform
+          </Link>
           <button
             onClick={handleLogout}
             className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-red-500 hover:bg-red-500/10 transition-colors w-full cursor-pointer text-left"
@@ -399,6 +405,13 @@ const AdminLayout = () => {
             className="flex items-center gap-3 px-4 py-2 rounded-xl text-[10px] font-bold text-slate-550 dark:text-slate-400 hover:text-primary-blue text-left"
           >
             <FaGlobe /> Live Website
+          </Link>
+          <Link
+            to="/community"
+            onClick={() => setSidebarOpen(false)}
+            className="flex items-center gap-3 px-4 py-2 rounded-xl text-[10px] font-bold text-slate-550 dark:text-slate-400 hover:text-primary-blue text-left"
+          >
+            <FaUsers /> DevCommunity Platform
           </Link>
           <button
             onClick={handleLogout}

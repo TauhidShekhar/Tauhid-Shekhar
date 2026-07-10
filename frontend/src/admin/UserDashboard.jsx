@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 import { 
   FaUserCircle, FaLock, FaHistory, FaGlobe, FaSignOutAlt, 
-  FaUserEdit, FaShieldAlt, FaHeart, FaShoppingBag, FaExclamationTriangle 
+  FaUserEdit, FaShieldAlt, FaHeart, FaShoppingBag, FaExclamationTriangle, FaUsers 
 } from 'react-icons/fa';
 
 const UserDashboard = () => {
@@ -297,6 +297,12 @@ const UserDashboard = () => {
             className="flex items-center gap-3 px-4 py-2 rounded-xl text-xs font-bold text-slate-550 dark:text-slate-400 hover:text-primary-blue transition-colors text-left"
           >
             <FaGlobe /> Live Portfolio Web
+          </Link>
+          <Link
+            to="/community"
+            className="flex items-center gap-3 px-4 py-2 rounded-xl text-xs font-bold text-slate-550 dark:text-slate-400 hover:text-primary-blue transition-colors text-left"
+          >
+            <FaUsers /> DevCommunity Platform
           </Link>
           <button
             onClick={handleLogout}
