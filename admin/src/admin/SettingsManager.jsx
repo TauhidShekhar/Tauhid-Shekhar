@@ -50,11 +50,17 @@ You retain complete control over your personal profile data. You can inspect, ed
 const extractIframeSrc = (input) => {
   if (!input) return '';
   const trimmed = input.trim();
-  if (trimmed.includes('<iframe') && trimmed.includes('src=')) {
-    const match = trimmed.match(/src=["']([^"']+)["']/);
-    if (match && match[1]) {
-      return match[1];
-    }
+  
+  // If it's already a clean URL, return it directly
+  if (/^(f|ht)tps?:\/\//i.test(trimmed) && !trimmed.includes('<')) {
+    return trimmed;
+  }
+  
+  // Regex to match src attribute inside iframe or HTML string
+  const match = trimmed.match(/src\s*=\s*["']([^"']+)["']/i);
+  if (match && match[1]) {
+    // Decode HTML entities like &amp; to &
+    return match[1].replace(/&amp;/g, '&');
   }
   return trimmed;
 };
