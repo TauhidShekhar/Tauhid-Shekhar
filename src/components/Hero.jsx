@@ -130,6 +130,22 @@ const Hero = () => {
   const resumeLink = getAbsolutePdfUrl(settings?.resumeUrl || 'assits/Resume-file.pdf');
   const heroBg = settings?.heroBackground?.url || '';
 
+  const handleViewResume = async (e) => {
+    e?.preventDefault();
+    if (!resumeLink) return;
+    try {
+      const response = await fetch(resumeLink);
+      if (!response.ok) throw new Error('Fetch failed');
+      const blob = await response.blob();
+      const pdfBlob = new Blob([blob], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(pdfBlob);
+      window.open(url, '_blank');
+    } catch (err) {
+      console.error('Failed to view resume inline from legacy Hero:', err.message);
+      window.open(resumeLink, '_blank');
+    }
+  };
+
   // Social Links
   const githubLink = settings?.socialLinks?.github || 'https://github.com/TauhidShekhar';
   const linkedinLink = settings?.socialLinks?.linkedin || 'https://www.linkedin.com/in/tauhidshekhar/';
@@ -208,8 +224,7 @@ const Hero = () => {
             {showResume && resumeLink && (
               <a
                 href={resumeLink}
-                target="_blank"
-                rel="noopener noreferrer"
+                onClick={handleViewResume}
                 className="flex items-center gap-2 px-8 py-3.5 bg-primary-blue hover:bg-accent-blue text-white rounded-full font-bold transition-all duration-300 hover:-translate-y-0.5 shadow-lg shadow-primary-blue/20"
               >
                 View Resume

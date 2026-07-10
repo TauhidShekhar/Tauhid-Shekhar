@@ -82,6 +82,22 @@ const About = () => {
   const profilePic = settings?.profilePicture?.url || 'assits/Profile-Img.png';
   const aboutText = settings?.aboutContent || 'Results-oriented Full Stack Web Developer with practical experience in building responsive web applications using HTML5, CSS3, JavaScript, React.js, Node.js, Express.js, MongoDB, and MySQL. Experienced in developing REST APIs, authentication systems, dashboards, and responsive user interfaces. Passionate about solving real-world problems, writing clean code, and continuously learning modern technologies.';
   const resumeLink = getAbsolutePdfUrl(settings?.resumeUrl || 'assits/Resume-file.pdf');
+
+  const handleViewResume = async (e) => {
+    e?.preventDefault();
+    if (!resumeLink) return;
+    try {
+      const response = await fetch(resumeLink);
+      if (!response.ok) throw new Error('Fetch failed');
+      const blob = await response.blob();
+      const pdfBlob = new Blob([blob], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(pdfBlob);
+      window.open(url, '_blank');
+    } catch (err) {
+      console.error('Failed to view resume inline from legacy About:', err.message);
+      window.open(resumeLink, '_blank');
+    }
+  };
   
   // Dynamic Personal Info Grids
   const personalInfo = settings?.aboutPersonalInfo || [];
@@ -164,7 +180,7 @@ const About = () => {
 
             <motion.div variants={childVariants} className="flex gap-4">
               {resumeLink && (
-                <a href={resumeLink} target="_blank" rel="noopener noreferrer" className="px-8 py-3.5 bg-primary-blue hover:bg-accent-blue text-white rounded-full font-bold transition-all duration-300 hover:-translate-y-0.5 shadow-lg shadow-primary-blue/20">View Resume</a>
+                <a href={resumeLink} onClick={handleViewResume} className="px-8 py-3.5 bg-primary-blue hover:bg-accent-blue text-white rounded-full font-bold transition-all duration-300 hover:-translate-y-0.5 shadow-lg shadow-primary-blue/20">View Resume</a>
               )}
               <a href="#contact" className="px-8 py-3.5 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 text-slate-800 dark:text-white rounded-full font-bold transition-all">Let's Talk</a>
             </motion.div>
