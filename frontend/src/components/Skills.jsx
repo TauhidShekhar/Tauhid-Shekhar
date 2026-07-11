@@ -7,7 +7,32 @@ import {
   SiPostman, SiNetlify, SiVercel, SiJsonwebtokens
 } from 'react-icons/si';
 import { FaCode, FaLaptopCode, FaServer, FaDatabase, FaTools, FaLightbulb, FaCss3Alt } from 'react-icons/fa';
-
+const defaultSkills = [
+  { name: 'C / C++', percentage: 80, category: 'programming' },
+  { name: 'Python', percentage: 75, category: 'programming' },
+  { name: 'JavaScript (ES6)', percentage: 85, category: 'programming' },
+  { name: 'HTML5', percentage: 95, category: 'frontend' },
+  { name: 'CSS3', percentage: 90, category: 'frontend' },
+  { name: 'React.js', percentage: 82, category: 'frontend' },
+  { name: 'Bootstrap', percentage: 85, category: 'frontend' },
+  { name: 'Responsive Design', percentage: 92, category: 'frontend' },
+  { name: 'Node.js', percentage: 80, category: 'backend' },
+  { name: 'Express.js', percentage: 82, category: 'backend' },
+  { name: 'REST API', percentage: 88, category: 'backend' },
+  { name: 'JWT Authentication', percentage: 85, category: 'backend' },
+  { name: 'MongoDB', percentage: 85, category: 'database' },
+  { name: 'MySQL', percentage: 80, category: 'database' },
+  { name: 'Git', percentage: 85, category: 'tools' },
+  { name: 'GitHub', percentage: 90, category: 'tools' },
+  { name: 'VS Code', percentage: 92, category: 'tools' },
+  { name: 'Postman', percentage: 88, category: 'tools' },
+  { name: 'Netlify', percentage: 85, category: 'tools' },
+  { name: 'Vercel', percentage: 85, category: 'tools' },
+  { name: 'CRUD Operations', percentage: 90, category: 'concepts' },
+  { name: 'MVC Architecture', percentage: 82, category: 'concepts' },
+  { name: 'API Integration', percentage: 88, category: 'concepts' },
+  { name: 'Responsive UI Design', percentage: 92, category: 'concepts' },
+];
 const getIcon = (name, category) => {
   const key = name.toLowerCase();
   if (key.includes('c++') || key.includes('c /')) return <SiCplusplus className="text-[#00599C]" />;
@@ -55,32 +80,7 @@ const Skills = ({ skillsData }) => {
     { id: 'concepts', name: 'Concepts', icon: <FaLightbulb size={13} /> },
   ];
 
-  const defaultSkills = [
-    { name: 'C / C++', percentage: 80, category: 'programming' },
-    { name: 'Python', percentage: 75, category: 'programming' },
-    { name: 'JavaScript (ES6)', percentage: 85, category: 'programming' },
-    { name: 'HTML5', percentage: 95, category: 'frontend' },
-    { name: 'CSS3', percentage: 90, category: 'frontend' },
-    { name: 'React.js', percentage: 82, category: 'frontend' },
-    { name: 'Bootstrap', percentage: 85, category: 'frontend' },
-    { name: 'Responsive Design', percentage: 92, category: 'frontend' },
-    { name: 'Node.js', percentage: 80, category: 'backend' },
-    { name: 'Express.js', percentage: 82, category: 'backend' },
-    { name: 'REST API', percentage: 88, category: 'backend' },
-    { name: 'JWT Authentication', percentage: 85, category: 'backend' },
-    { name: 'MongoDB', percentage: 85, category: 'database' },
-    { name: 'MySQL', percentage: 80, category: 'database' },
-    { name: 'Git', percentage: 85, category: 'tools' },
-    { name: 'GitHub', percentage: 90, category: 'tools' },
-    { name: 'VS Code', percentage: 92, category: 'tools' },
-    { name: 'Postman', percentage: 88, category: 'tools' },
-    { name: 'Netlify', percentage: 85, category: 'tools' },
-    { name: 'Vercel', percentage: 85, category: 'tools' },
-    { name: 'CRUD Operations', percentage: 90, category: 'concepts' },
-    { name: 'MVC Architecture', percentage: 82, category: 'concepts' },
-    { name: 'API Integration', percentage: 88, category: 'concepts' },
-    { name: 'Responsive UI Design', percentage: 92, category: 'concepts' },
-  ];
+
 
 
 
