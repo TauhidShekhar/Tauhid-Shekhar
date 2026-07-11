@@ -45,7 +45,7 @@ const ProjectGallery = ({ mainImage, images }) => {
   );
 };
 
-const Projects = () => {
+const Projects = ({ projectsData }) => {
   const { user } = useAuth();
   const [activeFilter, setActiveFilter] = useState('all');
   const [activeCaseStudy, setActiveCaseStudy] = useState(null);
@@ -216,6 +216,18 @@ const Projects = () => {
   ];
 
   useEffect(() => {
+    if (projectsData && projectsData.length > 0) {
+      setProjectItems(projectsData.map(p => ({
+        ...p,
+        subtitle: p.subtitle || `${p.tag.toUpperCase()} Project`
+      })));
+    } else if (projectsData) {
+      setProjectItems(defaultProjects);
+    }
+  }, [projectsData]);
+
+  useEffect(() => {
+    if (projectsData) return;
     const fetchProjects = async () => {
       try {
         const res = await api.getProjects();
@@ -232,7 +244,7 @@ const Projects = () => {
       }
     };
     fetchProjects();
-  }, []);
+  }, [projectsData]);
 
   const filteredProjects = activeFilter === 'all'
     ? projectItems

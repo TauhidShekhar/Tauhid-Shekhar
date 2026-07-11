@@ -15,11 +15,24 @@ const getAbsolutePdfUrl = (url) => {
   return `https://${cleanUrl}`;
 };
 
-const About = () => {
-  const [settings, setSettings] = useState(null);
-  const [activeResume, setActiveResume] = useState(null);
+const About = ({ aboutData, resumeData }) => {
+  const [settings, setSettings] = useState(aboutData || null);
+  const [activeResume, setActiveResume] = useState(resumeData || null);
 
   useEffect(() => {
+    if (aboutData) {
+      setSettings(aboutData);
+    }
+  }, [aboutData]);
+
+  useEffect(() => {
+    if (resumeData) {
+      setActiveResume(resumeData);
+    }
+  }, [resumeData]);
+
+  useEffect(() => {
+    if (aboutData && resumeData) return;
     const loadSettings = async () => {
       try {
         const [aboutRes, resumeRes] = await Promise.all([
@@ -37,7 +50,7 @@ const About = () => {
       }
     };
     loadSettings();
-  }, []);
+  }, [aboutData, resumeData]);
 
   const defaultStats = [
     { value: '2-3', label: 'Years Experience', icon: <FaBriefcase className="text-primary-blue" size={20} /> },

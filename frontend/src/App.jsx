@@ -23,7 +23,20 @@ import { api } from './services/api';
 
 const App = () => {
   const { user } = useAuth();
-  const [settings, setSettings] = useState(null);
+  const [portfolioData, setPortfolioData] = useState({
+    settings: null,
+    hero: null,
+    about: null,
+    skills: [],
+    projects: [],
+    experiences: [],
+    services: [],
+    activeResume: null,
+    education: [],
+    certificates: [],
+    achievements: []
+  });
+  const settings = portfolioData.settings;
   const [showCookieNotice, setShowCookieNotice] = useState(false);
 
   const [isDark, setIsDark] = useState(() => {
@@ -41,7 +54,6 @@ const App = () => {
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [refreshKey, setRefreshKey] = useState(0);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [drawerExpanded, setDrawerExpanded] = useState(true);
 
@@ -57,34 +69,82 @@ const App = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Listen for real-time content updates
+  const isFetching = React.useRef(false);
+
+  const fetchPortfolioData = async (showLoader = false) => {
+    if (isFetching.current) return;
+    isFetching.current = true;
+    if (showLoader) setLoading(true);
+    try {
+      const [
+        settingsRes,
+        heroRes,
+        aboutRes,
+        skillsRes,
+        projectsRes,
+        experiencesRes,
+        servicesRes,
+        resumeRes,
+        educationRes,
+        certificatesRes,
+        achievementsRes
+      ] = await Promise.all([
+        api.getSettings().catch(() => null),
+        api.getHero().catch(() => null),
+        api.getAbout().catch(() => null),
+        api.getSkills().catch(() => null),
+        api.getProjects().catch(() => null),
+        api.getExperience().catch(() => null),
+        api.getServices().catch(() => null),
+        api.getActiveResume().catch(() => null),
+        api.getEducation().catch(() => null),
+        api.getCertificates().catch(() => null),
+        api.getAchievements().catch(() => null)
+      ]);
+
+      setPortfolioData({
+        settings: settingsRes?.success ? settingsRes.data : null,
+        hero: heroRes?.success ? heroRes.data : null,
+        about: aboutRes?.success ? aboutRes.data : null,
+        skills: skillsRes?.success ? skillsRes.data : [],
+        projects: projectsRes?.success ? projectsRes.data : [],
+        experiences: experiencesRes?.success ? experiencesRes.data : [],
+        services: servicesRes?.success ? servicesRes.data : [],
+        activeResume: resumeRes?.success ? resumeRes.data : null,
+        education: educationRes?.success ? educationRes.data : [],
+        certificates: certificatesRes?.success ? certificatesRes.data : [],
+        achievements: achievementsRes?.success ? achievementsRes.data : []
+      });
+    } catch (err) {
+      console.error('Failed to load portfolio data:', err.message);
+    } finally {
+      isFetching.current = false;
+      setLoading(false);
+    }
+  };
+
+  // Fetch initial data on mount
   useEffect(() => {
+    fetchPortfolioData(true);
+  }, []);
+
+  // Listen for real-time updates and fetch silently in the background
+  useEffect(() => {
+    let timeoutId;
     const handleSyncUpdate = () => {
-      // Re-trigger component updates dynamically by updating refreshKey
-      setRefreshKey(prev => prev + 1);
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        fetchPortfolioData(false);
+      }, 100);
     };
 
     window.addEventListener('cms-content-update', handleSyncUpdate);
 
     return () => {
+      clearTimeout(timeoutId);
       window.removeEventListener('cms-content-update', handleSyncUpdate);
     };
   }, []);
-
-  // Fetch settings dynamically
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const res = await api.getSettings();
-        if (res.success) {
-          setSettings(res.data);
-        }
-      } catch (err) {
-        console.error('Failed to load settings in App:', err.message);
-      }
-    };
-    fetchSettings();
-  }, [refreshKey]);
 
   // Cookie notice check
   useEffect(() => {
@@ -282,24 +342,24 @@ const App = () => {
       )}
 
       {/* Nav */}
-      <Navbar key={`nav-${refreshKey}`} activeSection={activeSection} toggleTheme={toggleTheme} isDark={isDark} />
+      <Navbar settingsData={portfolioData.settings} activeSection={activeSection} toggleTheme={toggleTheme} isDark={isDark} />
 
       {/* Main Content Layout */}
       <main className="relative">
-        <Hero key={`hero-${refreshKey}`} />
-        <About key={`about-${refreshKey}`} />
-        <Skills key={`skills-${refreshKey}`} />
-        <Projects key={`projects-${refreshKey}`} />
-        <Experience key={`experience-${refreshKey}`} />
-        <Services key={`services-${refreshKey}`} />
-        <Resume key={`resume-${refreshKey}`} />
-        <EducationCertificates key={`edu-${refreshKey}`} />
-        <GitHubStats key={`github-${refreshKey}`} />
-        <Contact key={`contact-${refreshKey}`} onShowToast={triggerToast} />
+        <Hero heroData={portfolioData.hero} resumeData={portfolioData.activeResume} />
+        <About aboutData={portfolioData.about} resumeData={portfolioData.activeResume} />
+        <Skills skillsData={portfolioData.skills} />
+        <Projects projectsData={portfolioData.projects} />
+        <Experience experienceData={portfolioData.experiences} />
+        <Services servicesData={portfolioData.services} />
+        <Resume resumeData={portfolioData.activeResume} settingsData={portfolioData.settings} />
+        <EducationCertificates educationData={portfolioData.education} certificatesData={portfolioData.certificates} achievementsData={portfolioData.achievements} />
+        <GitHubStats />
+        <Contact settingsData={portfolioData.settings} aboutData={portfolioData.about} onShowToast={triggerToast} />
       </main>
 
       {/* Footer */}
-      <Footer key={`footer-${refreshKey}`} />
+      <Footer settingsData={portfolioData.settings} heroData={portfolioData.hero} />
 
       {/* Floating Actions Drawer */}
       <div className="fixed bottom-8 right-8 z-[900] flex flex-col gap-4 items-center">

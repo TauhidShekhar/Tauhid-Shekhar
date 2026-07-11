@@ -15,21 +15,34 @@ const formatExternalLink = (url) => {
   return `https://${trimmed}`;
 };
 
-const Footer = () => {
-  const [settings, setSettings] = useState(null);
-  const [heroSettings, setHeroSettings] = useState(null);
+const Footer = ({ settingsData, heroData }) => {
+  const [settings, setSettings] = useState(settingsData || null);
+  const [heroSettings, setHeroSettings] = useState(heroData || null);
 
   useEffect(() => {
+    if (settingsData) {
+      setSettings(settingsData);
+    }
+  }, [settingsData]);
+
+  useEffect(() => {
+    if (heroData) {
+      setHeroSettings(heroData);
+    }
+  }, [heroData]);
+
+  useEffect(() => {
+    if (settingsData && heroData) return;
     const loadAllSettings = async () => {
       try {
         const [settingsRes, heroRes] = await Promise.all([
-          api.getSettings(),
-          api.getHero()
+          api.getSettings().catch(() => null),
+          api.getHero().catch(() => null)
         ]);
-        if (settingsRes.success) {
+        if (settingsRes && settingsRes.success) {
           setSettings(settingsRes.data);
         }
-        if (heroRes.success) {
+        if (heroRes && heroRes.success) {
           setHeroSettings(heroRes.data);
         }
       } catch (err) {
@@ -37,7 +50,7 @@ const Footer = () => {
       }
     };
     loadAllSettings();
-  }, []);
+  }, [settingsData, heroData]);
 
   const handleScrollTo = (e, targetId) => {
     e.preventDefault();

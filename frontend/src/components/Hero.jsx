@@ -18,7 +18,7 @@ const getAbsolutePdfUrl = (url) => {
   return `https://${cleanUrl}`;
 };
 
-const Hero = () => {
+const Hero = ({ heroData, resumeData }) => {
   const defaultRoles = [
     'Full Stack Developer',
     'MERN Stack Developer',
@@ -29,13 +29,26 @@ const Hero = () => {
   const [roleIndex, setRoleIndex] = useState(0);
   const [displayText, setDisplayText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
-  const [settings, setSettings] = useState(null);
-  const [activeResume, setActiveResume] = useState(null);
+  const [settings, setSettings] = useState(heroData || null);
+  const [activeResume, setActiveResume] = useState(resumeData || null);
 
   // Dynamically use roles from DB settings, or fall back to defaults
   const roles = settings?.heroRoles?.length ? settings.heroRoles : defaultRoles;
 
   useEffect(() => {
+    if (heroData) {
+      setSettings(heroData);
+    }
+  }, [heroData]);
+
+  useEffect(() => {
+    if (resumeData) {
+      setActiveResume(resumeData);
+    }
+  }, [resumeData]);
+
+  useEffect(() => {
+    if (heroData && resumeData) return;
     const loadSettings = async () => {
       try {
         const [heroRes, resumeRes] = await Promise.all([
@@ -53,7 +66,7 @@ const Hero = () => {
       }
     };
     loadSettings();
-  }, []);
+  }, [heroData, resumeData]);
 
   useEffect(() => {
     let timer;

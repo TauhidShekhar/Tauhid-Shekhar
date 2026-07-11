@@ -16,12 +16,12 @@ const getAbsolutePdfUrl = (url) => {
   return `https://${cleanUrl}`;
 };
 
-const Resume = () => {
+const Resume = ({ resumeData, settingsData }) => {
   const { user } = useAuth();
   const isAdmin = user?.role === 'Admin';
 
-  const [activeResume, setActiveResume] = useState(null);
-  const [settings, setSettings] = useState(null);
+  const [activeResume, setActiveResume] = useState(resumeData || null);
+  const [settings, setSettings] = useState(settingsData || null);
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
   const [showFullPreview, setShowFullPreview] = useState(false);
@@ -67,8 +67,20 @@ const Resume = () => {
   };
 
   useEffect(() => {
+    if (resumeData) setActiveResume(resumeData);
+  }, [resumeData]);
+
+  useEffect(() => {
+    if (settingsData) setSettings(settingsData);
+  }, [settingsData]);
+
+  useEffect(() => {
+    if (resumeData && settingsData) {
+      setLoading(false);
+      return;
+    }
     fetchActiveResume();
-  }, []);
+  }, [resumeData, settingsData]);
 
   useEffect(() => {
     if (!resumePdfUrl || isMobile) {

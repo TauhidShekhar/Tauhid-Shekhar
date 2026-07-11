@@ -31,7 +31,18 @@ const checkResponse = async (response) => {
   return result;
 };
 
+const inflightRequests = new Map();
+
 const apiRequest = async (endpoint, options = {}) => {
+  const method = options.method ? options.method.toUpperCase() : 'GET';
+  
+  // Deduplicate concurrent GET requests
+  if (method === 'GET') {
+    if (inflightRequests.has(endpoint)) {
+      return inflightRequests.get(endpoint);
+    }
+  }
+
   const headers = {
     'Content-Type': 'application/json',
     'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
@@ -41,19 +52,32 @@ const apiRequest = async (endpoint, options = {}) => {
 
   // Add cache buster query parameter to GET requests
   let url = `${API_BASE}${endpoint}`;
-  if (!options.method || options.method.toUpperCase() === 'GET') {
+  if (method === 'GET') {
     const separator = url.includes('?') ? '&' : '?';
     url = `${url}${separator}t=${Date.now()}`;
   }
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-    credentials: 'include', // Crucial for HttpOnly cookies on cross-origin requests
-    cache: 'no-store', // Disable browser caching for fresh database data
-  });
+  const requestPromise = (async () => {
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers,
+        credentials: 'include', // Crucial for HttpOnly cookies on cross-origin requests
+        cache: 'no-store', // Disable browser caching for fresh database data
+      });
+      return await checkResponse(response);
+    } finally {
+      if (method === 'GET') {
+        inflightRequests.delete(endpoint);
+      }
+    }
+  })();
 
-  return checkResponse(response);
+  if (method === 'GET') {
+    inflightRequests.set(endpoint, requestPromise);
+  }
+
+  return requestPromise;
 };
 
 // Helper for multipart/form-data requests (file uploads)

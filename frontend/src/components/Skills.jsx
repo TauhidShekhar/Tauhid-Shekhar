@@ -8,7 +8,7 @@ import {
 } from 'react-icons/si';
 import { FaCode, FaLaptopCode, FaServer, FaDatabase, FaTools, FaLightbulb, FaCss3Alt } from 'react-icons/fa';
 
-const Skills = () => {
+const Skills = ({ skillsData }) => {
   const [activeFilter, setActiveFilter] = useState('all');
   const [skillItems, setSkillItems] = useState([]);
 
@@ -77,6 +77,21 @@ const Skills = () => {
   };
 
   useEffect(() => {
+    if (skillsData && skillsData.length > 0) {
+      setSkillItems(skillsData.map(skill => ({
+        ...skill,
+        icon: getIcon(skill.name, skill.category)
+      })));
+    } else if (skillsData) {
+      setSkillItems(defaultSkills.map(skill => ({
+        ...skill,
+        icon: getIcon(skill.name, skill.category)
+      })));
+    }
+  }, [skillsData]);
+
+  useEffect(() => {
+    if (skillsData) return;
     const fetchSkills = async () => {
       try {
         const res = await api.getSkills();
@@ -100,7 +115,7 @@ const Skills = () => {
       }
     };
     fetchSkills();
-  }, []);
+  }, [skillsData]);
 
   const filteredSkills = activeFilter === 'all' 
     ? skillItems 

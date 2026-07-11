@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { api } from '../services/api';
 import { FaPaintBrush, FaLaptopCode, FaBriefcase, FaCalendarAlt, FaCheckCircle } from 'react-icons/fa';
 
-const Experience = () => {
+const Experience = ({ experienceData }) => {
   const [experiences, setExperiences] = useState([]);
 
   const defaultExperiences = [
@@ -36,6 +36,15 @@ const Experience = () => {
   ];
 
   useEffect(() => {
+    if (experienceData && experienceData.length > 0) {
+      setExperiences(experienceData);
+    } else if (experienceData) {
+      setExperiences(defaultExperiences);
+    }
+  }, [experienceData]);
+
+  useEffect(() => {
+    if (experienceData) return;
     const fetchExperiences = async () => {
       try {
         const res = await api.getExperience();
@@ -49,7 +58,7 @@ const Experience = () => {
       }
     };
     fetchExperiences();
-  }, []);
+  }, [experienceData]);
 
   const getIcon = (type) => {
     if (type === 'design') return <FaPaintBrush className="text-[#863bfb]" />;

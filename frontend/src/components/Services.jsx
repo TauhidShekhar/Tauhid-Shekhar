@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../services/api';
 import { FaLaptopCode, FaServer, FaReact, FaPaintBrush, FaTimes, FaCheckCircle, FaPaperPlane } from 'react-icons/fa';
 
-const Services = () => {
+const Services = ({ servicesData }) => {
   const defaultServices = [
     {
       title: 'MERN Stack Web Development',
@@ -54,6 +54,17 @@ const Services = () => {
   };
 
   useEffect(() => {
+    if (servicesData && servicesData.length > 0) {
+      setServices(servicesData);
+      setLoading(false);
+    } else if (servicesData) {
+      setServices(defaultServices);
+      setLoading(false);
+    }
+  }, [servicesData]);
+
+  useEffect(() => {
+    if (servicesData) return;
     const fetchServices = async () => {
       try {
         const res = await api.getServices();
@@ -69,7 +80,7 @@ const Services = () => {
       }
     };
     fetchServices();
-  }, []);
+  }, [servicesData]);
 
   // Modal & Form State
   const [isModalOpen, setIsModalOpen] = useState(false);

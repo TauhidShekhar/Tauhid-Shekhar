@@ -33,39 +33,61 @@ const extractIframeSrc = (input) => {
   return trimmed;
 };
 
-const Contact = ({ onShowToast }) => {
+const Contact = ({ settingsData, aboutData, onShowToast }) => {
   const [formData, setFormData] = useState({});
   const [submitting, setSubmitting] = useState(false);
-  const [settings, setSettings] = useState(null);
-  const [aboutSettings, setAboutSettings] = useState(null);
+  const [settings, setSettings] = useState(settingsData || null);
+  const [aboutSettings, setAboutSettings] = useState(aboutData || null);
   const [selectedLocationIdx, setSelectedLocationIdx] = useState(0);
 
+  // Sync props to state
   useEffect(() => {
+    if (settingsData) {
+      setSettings(settingsData);
+    }
+  }, [settingsData]);
+
+  useEffect(() => {
+    if (aboutData) {
+      setAboutSettings(aboutData);
+    }
+  }, [aboutData]);
+
+  // Pre-populate empty form state based on loaded fields
+  useEffect(() => {
+    if (settings) {
+      const defaultFields = [
+        { id: '1', name: 'name', label: 'Your Name', type: 'text', required: true, placeholder: 'Enter your name' },
+        { id: '2', name: 'email', label: 'Email Address', type: 'email', required: true, placeholder: 'Enter your email' },
+        { id: '3', name: 'phone', label: 'Mobile Number', type: 'text', required: false, placeholder: 'Enter mobile number' },
+        { id: '4', name: 'subject', label: 'Subject', type: 'text', required: true, placeholder: 'Enter project/inquiry subject' },
+        { id: '5', name: 'message', label: 'Message', type: 'textarea', required: true, placeholder: 'Type your message here...' }
+      ];
+      const formFields = settings.contactFormFields?.length ? settings.contactFormFields : defaultFields;
+      setFormData(prev => {
+        const initialData = { ...prev };
+        formFields.forEach(f => {
+          if (initialData[f.name] === undefined) {
+            initialData[f.name] = '';
+          }
+        });
+        return initialData;
+      });
+    }
+  }, [settings]);
+
+  useEffect(() => {
+    if (settingsData && aboutData) return;
     const loadSettings = async () => {
       try {
         const [res, aboutRes] = await Promise.all([
-          api.getSettings(),
-          api.getAbout()
+          api.getSettings().catch(() => null),
+          api.getAbout().catch(() => null)
         ]);
-        if (res.success) {
+        if (res?.success) {
           setSettings(res.data);
-          
-          // Pre-populate empty form state based on loaded fields
-          const defaultFields = [
-            { id: '1', name: 'name', label: 'Your Name', type: 'text', required: true, placeholder: 'Enter your name' },
-            { id: '2', name: 'email', label: 'Email Address', type: 'email', required: true, placeholder: 'Enter your email' },
-            { id: '3', name: 'phone', label: 'Mobile Number', type: 'text', required: false, placeholder: 'Enter mobile number' },
-            { id: '4', name: 'subject', label: 'Subject', type: 'text', required: true, placeholder: 'Enter project/inquiry subject' },
-            { id: '5', name: 'message', label: 'Message', type: 'textarea', required: true, placeholder: 'Type your message here...' }
-          ];
-          const formFields = res.data?.contactFormFields?.length ? res.data.contactFormFields : defaultFields;
-          const initialData = {};
-          formFields.forEach(f => {
-            initialData[f.name] = '';
-          });
-          setFormData(initialData);
         }
-        if (aboutRes.success) {
+        if (aboutRes?.success) {
           setAboutSettings(aboutRes.data);
         }
       } catch (err) {
@@ -73,7 +95,7 @@ const Contact = ({ onShowToast }) => {
       }
     };
     loadSettings();
-  }, []);
+  }, [settingsData, aboutData]);
 
   // Resolve active/selected location details
   const activeLocation = settings?.locations?.length > 0 

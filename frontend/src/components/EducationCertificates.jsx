@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../services/api';
 import { FaGraduationCap, FaAward, FaCalendarAlt, FaExternalLinkAlt, FaCheckCircle, FaStar } from 'react-icons/fa';
 
-const EducationCertificates = () => {
+const EducationCertificates = ({ educationData, certificatesData, achievementsData }) => {
   const [activeTab, setActiveTab] = useState('education');
   const [educationList, setEducationList] = useState([]);
   const [certsList, setCertsList] = useState([]);
@@ -69,27 +69,52 @@ const EducationCertificates = () => {
   ];
 
   useEffect(() => {
+    if (educationData && educationData.length > 0) {
+      setEducationList(educationData);
+    } else if (educationData) {
+      setEducationList(defaultEducation);
+    }
+  }, [educationData]);
+
+  useEffect(() => {
+    if (certificatesData && certificatesData.length > 0) {
+      setCertsList(certificatesData);
+    } else if (certificatesData) {
+      setCertsList(defaultCertificates);
+    }
+  }, [certificatesData]);
+
+  useEffect(() => {
+    if (achievementsData && achievementsData.length > 0) {
+      setAchievementsList(achievementsData);
+    } else if (achievementsData) {
+      setAchievementsList(defaultAchievements);
+    }
+  }, [achievementsData]);
+
+  useEffect(() => {
+    if (educationData && certificatesData && achievementsData) return;
     const loadData = async () => {
       try {
         const [eduRes, certRes, achRes] = await Promise.all([
-          api.getEducation(),
-          api.getCertificates(),
-          api.getAchievements()
+          api.getEducation().catch(() => null),
+          api.getCertificates().catch(() => null),
+          api.getAchievements().catch(() => null)
         ]);
 
-        if (eduRes.success && eduRes.data && eduRes.data.length > 0) {
+        if (eduRes?.success && eduRes.data && eduRes.data.length > 0) {
           setEducationList(eduRes.data);
         } else {
           setEducationList(defaultEducation);
         }
 
-        if (certRes.success && certRes.data && certRes.data.length > 0) {
+        if (certRes?.success && certRes.data && certRes.data.length > 0) {
           setCertsList(certRes.data);
         } else {
           setCertsList(defaultCertificates);
         }
 
-        if (achRes.success && achRes.data && achRes.data.length > 0) {
+        if (achRes?.success && achRes.data && achRes.data.length > 0) {
           setAchievementsList(achRes.data);
         } else {
           setAchievementsList(defaultAchievements);
@@ -101,7 +126,7 @@ const EducationCertificates = () => {
       }
     };
     loadData();
-  }, []);
+  }, [educationData, certificatesData, achievementsData]);
 
   const getAchievementIcon = (iconName) => {
     return <FaAward className="text-primary-blue" />;

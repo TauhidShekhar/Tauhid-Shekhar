@@ -8,7 +8,7 @@ import {
   FaGlobe, FaCog
 } from 'react-icons/fa';
 
-const Navbar = ({ activeSection, toggleTheme, isDark }) => {
+const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
   const { user, isAuthenticated, logout } = useAuth();
   const rawAdminUrl = import.meta.env.VITE_ADMIN_URL;
   const VITE_ADMIN_URL = (rawAdminUrl && rawAdminUrl !== 'undefined' && rawAdminUrl !== 'null') 
@@ -18,10 +18,17 @@ const Navbar = ({ activeSection, toggleTheme, isDark }) => {
         : 'https://tauhidshekhar-admin.vercel.app');
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [settings, setSettings] = useState(null);
+  const [settings, setSettings] = useState(settingsData || null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
+    if (settingsData) {
+      setSettings(settingsData);
+    }
+  }, [settingsData]);
+
+  useEffect(() => {
+    if (settingsData) return;
     const loadSettings = async () => {
       try {
         const res = await api.getSettings();
@@ -33,7 +40,7 @@ const Navbar = ({ activeSection, toggleTheme, isDark }) => {
       }
     };
     loadSettings();
-  }, []);
+  }, [settingsData]);
 
   useEffect(() => {
     const handleOutsideClick = (e) => {
