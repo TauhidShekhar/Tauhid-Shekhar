@@ -588,6 +588,9 @@ export const api = {
   getAnalyticsStats: async () => {
     return apiRequest('/analytics/stats');
   },
+  getSystemMetrics: async () => {
+    return apiRequest('/analytics/system-metrics');
+  },
   trackPageView: async (pageData) => {
     return apiRequest('/analytics/track', {
       method: 'POST',

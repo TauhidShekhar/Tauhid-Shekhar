@@ -161,7 +161,24 @@ const getStats = async (req, res, next) => {
   }
 };
 
+// @desc    Get real-time system performance health metrics
+// @route   GET /api/analytics/system-metrics
+// @access  Private/Admin
+const getSystemPerformance = async (req, res, next) => {
+  try {
+    const { getSystemMetrics } = require('../middleware/performanceMiddleware');
+    const data = await getSystemMetrics();
+    res.json({
+      success: true,
+      data
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   trackView,
-  getStats
+  getStats,
+  getSystemPerformance
 };

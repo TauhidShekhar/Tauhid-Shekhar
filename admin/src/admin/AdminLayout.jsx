@@ -282,6 +282,9 @@ const AdminLayout = () => {
                 <Link to="/admin/dashboard/analytics" className={isActive('/admin/dashboard/analytics') ? activeLinkClass : inactiveLinkClass}>
                   <FaChartLine size={12} /> Analytics Dashboard
                 </Link>
+                <Link to="/admin/dashboard/performance" className={isActive('/admin/dashboard/performance') ? activeLinkClass : inactiveLinkClass}>
+                  <FaRocket size={12} /> System Performance
+                </Link>
                 <Link to="/admin/dashboard/backup" className={isActive('/admin/dashboard/backup') ? activeLinkClass : inactiveLinkClass}>
                   <FaDatabase size={12} /> Backup & Restore
                 </Link>

@@ -16,8 +16,12 @@ const compression = require('compression');
 const connectDB = require('./config/db');
 const { errorHandler } = require('./middleware/errorHandler');
 const { apiLimiter } = require('./middleware/rateLimiter');
+const { performanceMiddleware } = require('./middleware/performanceMiddleware');
 
 const app = express();
+
+// Register performance tracker at the very start of request lifecycle
+app.use(performanceMiddleware);
 
 // Enable GZIP compression to reduce payload transfer sizes
 app.use(compression());
@@ -196,30 +200,32 @@ const featureRoutes = require('./routes/featureRoutes');
 const cmsRoutes = require('./routes/cmsRoutes');
 
 // Mount Routes
+const { cacheMiddleware } = require('./middleware/cacheMiddleware');
+
 app.use('/api/auth', authRoutes);
-app.use('/api/skills', skillRoutes);
-app.use('/api/projects', projectRoutes);
+app.use('/api/skills', cacheMiddleware('skills'), skillRoutes);
+app.use('/api/projects', cacheMiddleware('projects'), projectRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/contact', messageRoutes);
-app.use('/api/experience', experienceRoutes);
-app.use('/api/education', educationRoutes);
-app.use('/api/settings', settingsRoutes);
-app.use('/api/blogs', blogRoutes);
-app.use('/api/testimonials', testimonialRoutes);
-app.use('/api/certificates', certificateRoutes);
-app.use('/api/achievements', achievementRoutes);
+app.use('/api/experience', cacheMiddleware('experience'), experienceRoutes);
+app.use('/api/education', cacheMiddleware('education'), educationRoutes);
+app.use('/api/settings', cacheMiddleware('settings'), settingsRoutes);
+app.use('/api/blogs', cacheMiddleware('blogs'), blogRoutes);
+app.use('/api/testimonials', cacheMiddleware('testimonials'), testimonialRoutes);
+app.use('/api/certificates', cacheMiddleware('certificates'), certificateRoutes);
+app.use('/api/achievements', cacheMiddleware('achievements'), achievementRoutes);
 app.use('/api/gallery', galleryRoutes);
-app.use('/api/resume', resumeRoutes);
+app.use('/api/resume', cacheMiddleware('resume'), resumeRoutes);
 app.use('/api/media', mediaRoutes);
 app.use('/api/seo', seoRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/audit-logs', auditRoutes);
 app.use('/api/backup', backupRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/hero', heroRoutes);
-app.use('/api/about', aboutRoutes);
+app.use('/api/hero', cacheMiddleware('hero'), heroRoutes);
+app.use('/api/about', cacheMiddleware('about'), aboutRoutes);
 app.use('/api/orders', orderRoutes);
-app.use('/api/services', serviceRoutes);
+app.use('/api/services', cacheMiddleware('services'), serviceRoutes);
 app.use('/api/community', communityRoutes);
 app.use('/api/features', featureRoutes);
 app.use('/api/cms', cmsRoutes);
@@ -384,7 +390,15 @@ const io = new Server(server, {
 app.set('io', io);
 socketUtil.setIO(io);
 
+global.activeSocketConnections = 0;
+
 io.on('connection', (socket) => {
+  global.activeSocketConnections += 1;
+
+  socket.on('disconnect', () => {
+    global.activeSocketConnections = Math.max(0, global.activeSocketConnections - 1);
+  });
+
   // Join room conversation
   socket.on('join_room', (room) => {
     socket.join(room);

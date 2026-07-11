@@ -16,6 +16,10 @@ const connectDB = () => {
     const options = {
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
+      maxPoolSize: 100,
+      minPoolSize: 10,
+      connectTimeoutMS: 10000,
+      heartbeatFrequencyMS: 30000,
     };
 
     const connectWithRetry = async () => {

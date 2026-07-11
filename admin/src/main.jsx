@@ -52,6 +52,7 @@ const SettingsManager = lazy(() => import('./admin/SettingsManager.jsx'));
 const SEOManager = lazy(() => import('./admin/SEOManager.jsx'));
 const ThemeSettings = lazy(() => import('./admin/ThemeSettings.jsx'));
 const AnalyticsManager = lazy(() => import('./admin/AnalyticsManager.jsx'));
+const PerformanceManager = lazy(() => import('./admin/PerformanceManager.jsx'));
 const BackupManager = lazy(() => import('./admin/BackupManager.jsx'));
 const ProfileManager = lazy(() => import('./admin/ProfileManager.jsx'));
 const SecurityManager = lazy(() => import('./admin/SecurityManager.jsx'));
@@ -108,6 +109,7 @@ createRoot(document.getElementById('root')).render(
               <Route path="seo" element={<SEOManager />} />
               <Route path="theme" element={<ThemeSettings />} />
               <Route path="analytics" element={<AnalyticsManager />} />
+              <Route path="performance" element={<PerformanceManager />} />
               <Route path="backup" element={<BackupManager />} />
               <Route path="profile" element={<ProfileManager />} />
               <Route path="security" element={<SecurityManager />} />

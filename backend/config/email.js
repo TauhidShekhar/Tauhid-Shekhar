@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const backgroundQueue = require('../utils/backgroundQueue');
 
 // ---------------------------------------------------------------------------
 // Nodemailer Transporter — Gmail SMTP
@@ -33,12 +34,19 @@ const sendEmail = async (to, subject, html) => {
     html,
   };
 
-  try {
-    const info = await transporter.sendMail(mailOptions);
-    return info;
-  } catch (error) {
-    throw new Error(`Email sending failed: ${error.message}`);
-  }
+  // Push SMTP send task to background queue for auto-retry and fast non-blocking return
+  backgroundQueue.push(
+    'SMTP_SendEmail',
+    async (options) => {
+      const info = await transporter.sendMail(options);
+      return info;
+    },
+    mailOptions,
+    3 // 3 max retry attempts with exponential backoff
+  );
+
+  // Return immediately to release Express thread
+  return { success: true, status: 'queued' };
 };
 
 module.exports = { transporter, sendEmail };
