@@ -3,37 +3,41 @@ import { motion } from 'framer-motion';
 import { api } from '../services/api';
 import { FaPaintBrush, FaLaptopCode, FaBriefcase, FaCalendarAlt, FaCheckCircle } from 'react-icons/fa';
 
-const Experience = ({ experienceData }) => {
-  const [experiences, setExperiences] = useState([]);
+const defaultExperiences = [
+  {
+    role: 'Lead Graphic Designer & Branding Specialist',
+    company: 'Freelance & Client Collaborations',
+    duration: '2023 - Present',
+    type: 'design',
+    description: 'Produced visual marketing assets and established custom branding identities for international clients and online content creators.',
+    points: [
+      'Designed 300+ viral YouTube Thumbnails, increasing average click-through rates (CTR) by up to 15%.',
+      'Engineered professional logos, brand books, typography guidelines, and complete branding assets.',
+      'Created high-converting marketing creatives for Instagram, Facebook, banners, and posters.',
+      'Managed tight delivery schedules (24-48 hours turnaround) while maintaining client communication.'
+    ]
+  },
+  {
+    role: 'Full Stack & MERN Development Learning',
+    company: 'Self-Directed Projects & Academic Studies',
+    duration: '2023 - Present',
+    type: 'development',
+    description: 'Developed practical expertise in modern web technologies, building full stack projects and studying data structures.',
+    points: [
+      'Built full stack MERN web applications, integrating Node.js REST APIs with React frontends.',
+      'Implemented secure user flows: JWT authentication, private routes, and MongoDB database modeling.',
+      'Coded responsive web interfaces, utilizing semantic HTML5, modern CSS layouts, and UI frameworks.',
+      'Practiced version control using Git & GitHub, deploying applications to Netlify and Vercel.'
+    ]
+  }
+];
 
-  const defaultExperiences = [
-    {
-      role: 'Lead Graphic Designer & Branding Specialist',
-      company: 'Freelance & Client Collaborations',
-      duration: '2023 - Present',
-      type: 'design',
-      description: 'Produced visual marketing assets and established custom branding identities for international clients and online content creators.',
-      points: [
-        'Designed 300+ viral YouTube Thumbnails, increasing average click-through rates (CTR) by up to 15%.',
-        'Engineered professional logos, brand books, typography guidelines, and complete branding assets.',
-        'Created high-converting marketing creatives for Instagram, Facebook, banners, and posters.',
-        'Managed tight delivery schedules (24-48 hours turnaround) while maintaining client communication.'
-      ]
-    },
-    {
-      role: 'Full Stack & MERN Development Learning',
-      company: 'Self-Directed Projects & Academic Studies',
-      duration: '2023 - Present',
-      type: 'development',
-      description: 'Developed practical expertise in modern web technologies, building full stack projects and studying data structures.',
-      points: [
-        'Built full stack MERN web applications, integrating Node.js REST APIs with React frontends.',
-        'Implemented secure user flows: JWT authentication, private routes, and MongoDB database modeling.',
-        'Coded responsive web interfaces, utilizing semantic HTML5, modern CSS layouts, and UI frameworks.',
-        'Practiced version control using Git & GitHub, deploying applications to Netlify and Vercel.'
-      ]
-    }
-  ];
+const Experience = ({ experienceData }) => {
+  const [experiences, setExperiences] = useState(() => {
+    return (experienceData && experienceData.length > 0) ? experienceData : defaultExperiences;
+  });
+
+
 
   useEffect(() => {
     if (experienceData && experienceData.length > 0) {

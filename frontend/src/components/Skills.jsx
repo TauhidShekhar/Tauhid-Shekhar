@@ -8,9 +8,42 @@ import {
 } from 'react-icons/si';
 import { FaCode, FaLaptopCode, FaServer, FaDatabase, FaTools, FaLightbulb, FaCss3Alt } from 'react-icons/fa';
 
+const getIcon = (name, category) => {
+  const key = name.toLowerCase();
+  if (key.includes('c++') || key.includes('c /')) return <SiCplusplus className="text-[#00599C]" />;
+  if (key.includes('python')) return <SiPython className="text-[#3776AB]" />;
+  if (key.includes('javascript')) return <SiJavascript className="text-[#F7DF1E]" />;
+  if (key.includes('html')) return <SiHtml5 className="text-[#E34F26]" />;
+  if (key.includes('css')) return <FaCss3Alt className="text-[#1572B6]" />;
+  if (key.includes('react')) return <SiReact className="text-[#61DAFB]" />;
+  if (key.includes('bootstrap')) return <SiBootstrap className="text-[#7952B3]" />;
+  if (key.includes('node')) return <SiNodedotjs className="text-[#339933]" />;
+  if (key.includes('express')) return <SiExpress className="text-black dark:text-white" />;
+  if (key.includes('mongodb')) return <SiMongodb className="text-[#47A248]" />;
+  if (key.includes('mysql')) return <SiMysql className="text-[#4479A1]" />;
+  if (key.includes('git')) return <SiGit className="text-[#F05032]" />;
+  if (key.includes('github')) return <SiGithub className="text-black dark:text-white" />;
+  if (key.includes('postman')) return <SiPostman className="text-[#FF6C37]" />;
+  if (key.includes('netlify')) return <SiNetlify className="text-[#00C7B7]" />;
+  if (key.includes('vercel')) return <SiVercel className="text-black dark:text-white" />;
+  if (key.includes('jwt')) return <SiJsonwebtokens className="text-[#000000] dark:text-white" />;
+  
+  if (category === 'programming') return <FaCode className="text-primary-blue" />;
+  if (category === 'frontend') return <FaLaptopCode className="text-primary-cyan" />;
+  if (category === 'backend') return <FaServer className="text-primary-purple" />;
+  if (category === 'database') return <FaDatabase className="text-green-500" />;
+  return <FaTools className="text-slate-400" />;
+};
+
 const Skills = ({ skillsData }) => {
   const [activeFilter, setActiveFilter] = useState('all');
-  const [skillItems, setSkillItems] = useState([]);
+  const [skillItems, setSkillItems] = useState(() => {
+    const list = (skillsData && skillsData.length > 0) ? skillsData : defaultSkills;
+    return list.map(skill => ({
+      ...skill,
+      icon: getIcon(skill.name, skill.category)
+    }));
+  });
 
   const categories = [
     { id: 'all', name: 'All' },
@@ -49,32 +82,7 @@ const Skills = ({ skillsData }) => {
     { name: 'Responsive UI Design', percentage: 92, category: 'concepts' },
   ];
 
-  const getIcon = (name, category) => {
-    const key = name.toLowerCase();
-    if (key.includes('c++') || key.includes('c /')) return <SiCplusplus className="text-[#00599C]" />;
-    if (key.includes('python')) return <SiPython className="text-[#3776AB]" />;
-    if (key.includes('javascript')) return <SiJavascript className="text-[#F7DF1E]" />;
-    if (key.includes('html')) return <SiHtml5 className="text-[#E34F26]" />;
-    if (key.includes('css')) return <FaCss3Alt className="text-[#1572B6]" />;
-    if (key.includes('react')) return <SiReact className="text-[#61DAFB]" />;
-    if (key.includes('bootstrap')) return <SiBootstrap className="text-[#7952B3]" />;
-    if (key.includes('node')) return <SiNodedotjs className="text-[#339933]" />;
-    if (key.includes('express')) return <SiExpress className="text-black dark:text-white" />;
-    if (key.includes('mongodb')) return <SiMongodb className="text-[#47A248]" />;
-    if (key.includes('mysql')) return <SiMysql className="text-[#4479A1]" />;
-    if (key.includes('git')) return <SiGit className="text-[#F05032]" />;
-    if (key.includes('github')) return <SiGithub className="text-black dark:text-white" />;
-    if (key.includes('postman')) return <SiPostman className="text-[#FF6C37]" />;
-    if (key.includes('netlify')) return <SiNetlify className="text-[#00C7B7]" />;
-    if (key.includes('vercel')) return <SiVercel className="text-black dark:text-white" />;
-    if (key.includes('jwt')) return <SiJsonwebtokens className="text-[#000000] dark:text-white" />;
-    
-    if (category === 'programming') return <FaCode className="text-primary-blue" />;
-    if (category === 'frontend') return <FaLaptopCode className="text-primary-cyan" />;
-    if (category === 'backend') return <FaServer className="text-primary-purple" />;
-    if (category === 'database') return <FaDatabase className="text-green-500" />;
-    return <FaTools className="text-slate-400" />;
-  };
+
 
   useEffect(() => {
     if (skillsData && skillsData.length > 0) {

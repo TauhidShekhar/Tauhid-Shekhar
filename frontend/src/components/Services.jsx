@@ -3,40 +3,44 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../services/api';
 import { FaLaptopCode, FaServer, FaReact, FaPaintBrush, FaTimes, FaCheckCircle, FaPaperPlane } from 'react-icons/fa';
 
-const Services = ({ servicesData }) => {
-  const defaultServices = [
-    {
-      title: 'MERN Stack Web Development',
-      desc: 'End-to-end full stack web applications integrating React frontends with Node.js/Express.js REST APIs and MongoDB databases.',
-      price: '$149',
-      iconName: 'FaLaptopCode',
-      features: ['Admin & Teacher Dashboards', 'JWT Authentication', 'MongoDB Schema Modeling', 'CRUD Operations']
-    },
-    {
-      title: 'Frontend Development',
-      desc: 'Converting graphic layouts (Figma/Adobe) into clean, semantic HTML5, CSS3, and modern interactive React.js modules.',
-      price: '$99',
-      iconName: 'FaReact',
-      features: ['Responsive UI Layouts', 'Apple Style Animations', 'Speed Optimization', 'Cross-browser Compatibility']
-    },
-    {
-      title: 'REST API & Backend Development',
-      desc: 'Architecting secure backend servers, integrating third-party endpoints, database connections, and session management.',
-      price: '$79',
-      iconName: 'FaServer',
-      features: ['Express.js Routing', 'JWT & Auth Guards', 'MySQL & MongoDB integration', 'Error handling middleware']
-    },
-    {
-      title: 'Thumbnail & Graphic Design',
-      desc: 'Eye-catching, high-converting YouTube thumbnails, banners, posters, and professional brand assets designed to secure clicks.',
-      price: '$15',
-      iconName: 'FaPaintBrush',
-      features: ['YouTube Thumbnail Packages', 'Instagram Ads/Posts', 'Custom Brand Logos', 'Adobe Suite Production']
-    }
-  ];
+const defaultServices = [
+  {
+    title: 'MERN Stack Web Development',
+    desc: 'End-to-end full stack web applications integrating React frontends with Node.js/Express.js REST APIs and MongoDB databases.',
+    price: '$149',
+    iconName: 'FaLaptopCode',
+    features: ['Admin & Teacher Dashboards', 'JWT Authentication', 'MongoDB Schema Modeling', 'CRUD Operations']
+  },
+  {
+    title: 'Frontend Development',
+    desc: 'Converting graphic layouts (Figma/Adobe) into clean, semantic HTML5, CSS3, and modern interactive React.js modules.',
+    price: '$99',
+    iconName: 'FaReact',
+    features: ['Responsive UI Layouts', 'Apple Style Animations', 'Speed Optimization', 'Cross-browser Compatibility']
+  },
+  {
+    title: 'REST API & Backend Development',
+    desc: 'Architecting secure backend servers, integrating third-party endpoints, database connections, and session management.',
+    price: '$79',
+    iconName: 'FaServer',
+    features: ['Express.js Routing', 'JWT & Auth Guards', 'MySQL & MongoDB integration', 'Error handling middleware']
+  },
+  {
+    title: 'Thumbnail & Graphic Design',
+    desc: 'Eye-catching, high-converting YouTube thumbnails, banners, posters, and professional brand assets designed to secure clicks.',
+    price: '$15',
+    iconName: 'FaPaintBrush',
+    features: ['YouTube Thumbnail Packages', 'Instagram Ads/Posts', 'Custom Brand Logos', 'Adobe Suite Production']
+  }
+];
 
-  const [services, setServices] = useState([]);
-  const [loading, setLoading] = useState(true);
+const Services = ({ servicesData }) => {
+  const [services, setServices] = useState(() => {
+    return (servicesData && servicesData.length > 0) ? servicesData : defaultServices;
+  });
+  const [loading, setLoading] = useState(() => {
+    return !(servicesData && servicesData.length > 0);
+  });
 
   const getIcon = (iconName) => {
     switch (iconName) {

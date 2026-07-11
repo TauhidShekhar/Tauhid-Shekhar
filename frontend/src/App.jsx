@@ -311,14 +311,17 @@ const App = () => {
     setTimeout(() => setShowToast(false), 3000);
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#09090c] flex items-center justify-center flex-col gap-4">
+        <div className="w-12 h-12 rounded-full border-4 border-purple-500/20 border-t-purple-500 animate-spin" />
+        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse">Loading Platform...</span>
+      </div>
+    );
+  }
+
   return (
     <>
-      {/* Pre-loader loading screen */}
-      {loading && (
-        <div className="fixed inset-0 bg-slate-50 dark:bg-black z-[10000] flex items-center justify-center">
-          <div className="w-12 h-12 rounded-full border-4 border-slate-200/80 dark:border-white/5 border-t-primary-blue animate-spin" />
-        </div>
-      )}
 
       {/* Mouse Glow Background Effect */}
       <div className="mouse-glow-bg" />

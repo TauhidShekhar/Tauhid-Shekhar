@@ -3,70 +3,76 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../services/api';
 import { FaGraduationCap, FaAward, FaCalendarAlt, FaExternalLinkAlt, FaCheckCircle, FaStar } from 'react-icons/fa';
 
+const defaultEducation = [
+  {
+    degree: 'Bachelor of Computer Applications (BCA)',
+    school: 'Global Group of Institutes, Amritsar',
+    duration: '2023 - 2026',
+    grade: 'CGPA: 8.5 / 10',
+    description: 'Focusing on database architectures, Object Oriented Programming in C++, Frontend Web structures, and Internet applications.'
+  },
+  {
+    degree: 'Class XII (BSEB)',
+    school: 'Bihar School Examination Board, Patna',
+    duration: 'Passing Year: 2023',
+    grade: 'Percentage: 56%',
+    description: 'Completed Higher Secondary schooling with studies in Core Science subjects (Mathematics, Physics, Chemistry).'
+  },
+  {
+    degree: 'Class X (BSEB)',
+    school: 'Bihar School Examination Board, Patna',
+    duration: 'Passing Year: 2021',
+    grade: 'Percentage: 77.8%',
+    description: 'Completed Secondary school matriculation exams with a first division standing.'
+  }
+];
+
+const defaultCertificates = [
+  {
+    title: 'Full Stack MERN Web Development',
+    issuer: 'Online Learning Platform / Udemy',
+    date: 'Dec 2024',
+    credentialUrl: 'https://github.com/TauhidShekhar',
+    image: { url: 'assits/Star_rating_4.5.png' }
+  },
+  {
+    title: 'Advanced Photoshop Core Principles',
+    issuer: 'Creative Design Academy',
+    date: 'Aug 2023',
+    credentialUrl: 'https://github.com/TauhidShekhar',
+    image: { url: 'assits/Star_rating_4.5.png' }
+  }
+];
+
+const defaultAchievements = [
+  {
+    title: 'Full Stack Development Projects',
+    description: 'Built multiple high-performance responsive web applications using MERN technologies.',
+    icon: 'FaAward'
+  },
+  {
+    title: 'Data Structures & Algorithms (DSA)',
+    description: 'Deep interest and active practice in Full Stack Development and Data Structures & Algorithms.',
+    icon: 'FaAward'
+  },
+  {
+    title: 'Technical Content Creator',
+    description: 'Technical content creator on professional networking and video platforms like LinkedIn and YouTube.',
+    icon: 'FaAward'
+  }
+];
+
 const EducationCertificates = ({ educationData, certificatesData, achievementsData }) => {
   const [activeTab, setActiveTab] = useState('education');
-  const [educationList, setEducationList] = useState([]);
-  const [certsList, setCertsList] = useState([]);
-  const [achievementsList, setAchievementsList] = useState([]);
-
-  const defaultEducation = [
-    {
-      degree: 'Bachelor of Computer Applications (BCA)',
-      school: 'Global Group of Institutes, Amritsar',
-      duration: '2023 - 2026',
-      grade: 'CGPA: 8.5 / 10',
-      description: 'Focusing on database architectures, Object Oriented Programming in C++, Frontend Web structures, and Internet applications.'
-    },
-    {
-      degree: 'Class XII (BSEB)',
-      school: 'Bihar School Examination Board, Patna',
-      duration: 'Passing Year: 2023',
-      grade: 'Percentage: 56%',
-      description: 'Completed Higher Secondary schooling with studies in Core Science subjects (Mathematics, Physics, Chemistry).'
-    },
-    {
-      degree: 'Class X (BSEB)',
-      school: 'Bihar School Examination Board, Patna',
-      duration: 'Passing Year: 2021',
-      grade: 'Percentage: 77.8%',
-      description: 'Completed Secondary school matriculation exams with a first division standing.'
-    }
-  ];
-
-  const defaultCertificates = [
-    {
-      title: 'Full Stack MERN Web Development',
-      issuer: 'Online Learning Platform / Udemy',
-      date: 'Dec 2024',
-      credentialUrl: 'https://github.com/TauhidShekhar',
-      image: { url: 'assits/Star_rating_4.5.png' }
-    },
-    {
-      title: 'Advanced Photoshop Core Principles',
-      issuer: 'Creative Design Academy',
-      date: 'Aug 2023',
-      credentialUrl: 'https://github.com/TauhidShekhar',
-      image: { url: 'assits/Star_rating_4.5.png' }
-    }
-  ];
-
-  const defaultAchievements = [
-    {
-      title: 'Full Stack Development Projects',
-      description: 'Built multiple high-performance responsive web applications using MERN technologies.',
-      icon: 'FaAward'
-    },
-    {
-      title: 'Data Structures & Algorithms (DSA)',
-      description: 'Deep interest and active practice in Full Stack Development and Data Structures & Algorithms.',
-      icon: 'FaAward'
-    },
-    {
-      title: 'Technical Content Creator',
-      description: 'Technical content creator on professional networking and video platforms like LinkedIn and YouTube.',
-      icon: 'FaAward'
-    }
-  ];
+  const [educationList, setEducationList] = useState(() => {
+    return (educationData && educationData.length > 0) ? educationData : defaultEducation;
+  });
+  const [certsList, setCertsList] = useState(() => {
+    return (certificatesData && certificatesData.length > 0) ? certificatesData : defaultCertificates;
+  });
+  const [achievementsList, setAchievementsList] = useState(() => {
+    return (achievementsData && achievementsData.length > 0) ? achievementsData : defaultAchievements;
+  });
 
   useEffect(() => {
     if (educationData && educationData.length > 0) {
