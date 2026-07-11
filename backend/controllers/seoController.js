@@ -32,6 +32,13 @@ const updateSEO = async (req, res, next) => {
     let seo = await SEO.findOne({});
     const updates = { ...req.body };
 
+    // Universal sanitizer for FormData object serialization issues
+    for (const key in updates) {
+      if (updates[key] === '[object Object]' || updates[key] === 'undefined' || updates[key] === null) {
+        delete updates[key];
+      }
+    }
+
     const oldImageIds = [];
 
     // Handle multiple file fields upload

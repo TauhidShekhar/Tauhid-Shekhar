@@ -25,6 +25,13 @@ const updateSettings = async (req, res) => {
     
     // Parse nested objects sent as JSON strings or raw objects
     const updates = { ...req.body };
+
+    // Universal sanitizer for FormData object serialization issues
+    for (const key in updates) {
+      if (updates[key] === '[object Object]' || updates[key] === 'undefined' || updates[key] === null) {
+        delete updates[key];
+      }
+    }
     if (typeof updates.socialLinks === 'string') {
       try { updates.socialLinks = JSON.parse(updates.socialLinks); } catch (_) {}
     }
@@ -97,6 +104,25 @@ const updateSettings = async (req, res) => {
         new: true,
         runValidators: true
       });
+    }
+
+    // Sync with SEO model
+    const SEO = require('../models/SEO');
+    let seo = await SEO.findOne({});
+    const seoUpdates = {};
+    if (updates.siteName !== undefined) seoUpdates.siteName = updates.siteName;
+    if (updates.title !== undefined) seoUpdates.metaTitle = updates.title;
+    if (updates.metaDescription !== undefined) seoUpdates.metaDescription = updates.metaDescription;
+    if (updates.keywords !== undefined) seoUpdates.metaKeywords = updates.keywords;
+    if (updates.logo !== undefined) seoUpdates.logo = updates.logo;
+    if (updates.favicon !== undefined) seoUpdates.favicon = updates.favicon;
+
+    if (Object.keys(seoUpdates).length > 0) {
+      if (!seo) {
+        await SEO.create(seoUpdates);
+      } else {
+        await SEO.findByIdAndUpdate(seo._id, seoUpdates);
+      }
     }
 
     // Clean up old images after successful DB save

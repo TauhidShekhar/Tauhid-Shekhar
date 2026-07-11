@@ -5,6 +5,9 @@ const settingSchema = new mongoose.Schema(
     // ── Branding ───────────────────────────────────────────────────
     siteName: { type: String, default: 'Tauhid Shekhar' },
     siteTagline: { type: String },
+    title: { type: String, default: '' },
+    metaDescription: { type: String, default: '' },
+    keywords: { type: String, default: '' },
     logo: { url: String, publicId: String },
     favicon: { url: String, publicId: String },
     heroImage: { url: String, publicId: String },
