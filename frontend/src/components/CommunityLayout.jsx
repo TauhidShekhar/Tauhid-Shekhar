@@ -14,6 +14,21 @@ const CommunityLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('communitySidebarCollapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('communitySidebarCollapsed', sidebarCollapsed ? 'true' : 'false');
+    } catch (err) {
+      console.warn('Failed to save sidebar state to localStorage:', err);
+    }
+  }, [sidebarCollapsed]);
   
   const [notifCount, setNotifCount] = useState(0);
   const [myGroups, setMyGroups] = useState([]);
@@ -265,11 +280,50 @@ const CommunityLayout = () => {
         </div>
       </header>
 
-      {/* Main Grid Wrapper */}
-      <div className="flex-1 max-w-[1400px] w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 pb-24 lg:pb-6 min-h-0">
+      {/* Main Flex Wrapper */}
+      <div className="flex-1 max-w-[1400px] w-full mx-auto flex flex-col lg:flex-row gap-6 p-6 pb-24 lg:pb-6 min-h-0">
         
-        {/* Left Sidebar Navigator (col-span-3) */}
-        <aside className="hidden lg:flex flex-col gap-6 col-span-3 sticky top-[72px] h-[calc(100vh-100px)] overflow-y-auto pr-1 text-left scrollbar-none">
+        {/* Left Sidebar Navigator */}
+        <aside
+          className={`hidden lg:flex flex-col gap-6 shrink-0 sticky top-[72px] h-[calc(100vh-100px)] overflow-y-auto pr-1 text-left scrollbar-none transition-all duration-200 ease-in-out ${
+            sidebarCollapsed ? 'w-[72px]' : 'w-[260px]'
+          }`}
+        >
+          {/* ChatGPT-style Sidebar Collapse Toggle */}
+          <div className={`flex items-center px-1 shrink-0 ${sidebarCollapsed ? 'justify-center' : 'justify-between pl-4'}`}>
+            {!sidebarCollapsed && (
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                Navigation
+              </span>
+            )}
+            <button
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="relative group flex items-center justify-center p-2 rounded-xl bg-[#121217] hover:bg-[#1c1c24] text-slate-400 hover:text-white transition-all border border-white/5 cursor-pointer active:scale-95 shadow-sm"
+              title={sidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            >
+              <svg 
+                stroke="currentColor" 
+                fill="none" 
+                strokeWidth="2" 
+                viewBox="0 0 24 24" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className={`w-4.5 h-4.5 transition-transform duration-300 ${sidebarCollapsed ? 'rotate-180' : ''}`}
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                <line x1="9" y1="3" x2="9" y2="21" />
+                <path d="M14 15l-3-3 3-3" />
+              </svg>
+              
+              {/* Floating Tooltip when collapsed */}
+              {sidebarCollapsed && (
+                <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#121217] border border-white/5 text-[10px] font-black text-white uppercase tracking-wider rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 whitespace-nowrap shadow-xl z-[999] shadow-black/40">
+                  Expand Sidebar
+                </div>
+              )}
+            </button>
+          </div>
+
           {/* Main Menu Links */}
           <div className="bg-[#121217] border border-white/5 p-4 rounded-3xl flex flex-col gap-1 shadow-sm">
             {navItems.map(item => {
@@ -291,7 +345,9 @@ const CommunityLayout = () => {
                   to={item.path}
                   id={tourId}
                   onMouseEnter={item.prefetch}
-                  className={`flex items-center justify-between px-4 py-2.5 rounded-2xl text-xs font-bold transition-all ${
+                  className={`relative group flex items-center rounded-2xl text-xs font-bold transition-all ${
+                    sidebarCollapsed ? 'justify-center p-2.5' : 'justify-between px-4 py-2.5'
+                  } ${
                     active 
                       ? 'bg-purple-600/10 text-purple-400 border border-purple-600/15' 
                       : 'text-slate-400 hover:bg-[#1a1a22] hover:text-white border border-transparent'
@@ -299,12 +355,26 @@ const CommunityLayout = () => {
                 >
                   <div className="flex items-center gap-3">
                     <span className={`text-sm ${active ? 'text-purple-400' : 'text-slate-500'}`}>{item.icon}</span>
-                    <span>{item.name}</span>
+                    {!sidebarCollapsed && <span>{item.name}</span>}
                   </div>
+                  
                   {item.badge > 0 && (
-                    <span className="px-1.5 py-0.5 text-[9px] font-black bg-purple-600 text-white rounded-full leading-none shrink-0">
-                      {item.badge}
-                    </span>
+                    sidebarCollapsed ? (
+                      <span className="absolute top-1 right-1 w-3.5 h-3.5 text-[8px] font-black bg-purple-600 text-white rounded-full flex items-center justify-center border border-[#121217] leading-none scale-90">
+                        {item.badge}
+                      </span>
+                    ) : (
+                      <span className="px-1.5 py-0.5 text-[9px] font-black bg-purple-600 text-white rounded-full leading-none shrink-0">
+                        {item.badge}
+                      </span>
+                    )
+                  )}
+
+                  {/* Floating Tooltip when collapsed */}
+                  {sidebarCollapsed && (
+                    <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#121217] border border-white/5 text-[10px] font-black text-white uppercase tracking-wider rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 whitespace-nowrap shadow-xl z-[999] shadow-black/40">
+                      {item.name} {item.badge > 0 ? `(${item.badge})` : ''}
+                    </div>
                   )}
                 </Link>
               );
@@ -313,18 +383,32 @@ const CommunityLayout = () => {
 
           {/* Groups collapsible list */}
           <div className="bg-[#121217] border border-white/5 p-4 rounded-3xl flex flex-col gap-3 shadow-sm">
-            <div className="flex items-center justify-between border-b border-white/5 pb-2">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                <FaUsers /> Your Groups
-              </span>
-              {user && <Link to="/community/groups" className="text-[9px] text-purple-400 font-black uppercase hover:underline">View All</Link>}
+            <div className={`flex items-center border-b border-white/5 pb-2 ${sidebarCollapsed ? 'justify-center border-none' : 'justify-between'}`}>
+              {sidebarCollapsed ? (
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider" title="Your Groups">
+                  <FaUsers size={16} />
+                </span>
+              ) : (
+                <>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <FaUsers /> Your Groups
+                  </span>
+                  {user && <Link to="/community/groups" className="text-[9px] text-purple-400 font-black uppercase hover:underline">View All</Link>}
+                </>
+              )}
             </div>
 
             <div className="flex flex-col gap-2">
               {user ? (
                 <>
                   {myGroups.slice(0, 4).filter(Boolean).map(group => (
-                    <Link key={group._id} to="/community/groups" className="flex items-center gap-2.5 p-1 rounded-xl hover:bg-white/5 transition-colors group">
+                    <Link
+                      key={group._id}
+                      to="/community/groups"
+                      className={`relative group flex items-center rounded-xl hover:bg-white/5 transition-colors ${
+                        sidebarCollapsed ? 'justify-center p-1' : 'gap-2.5 p-1'
+                      }`}
+                    >
                       <div className="w-8 h-8 rounded-lg overflow-hidden bg-purple-600/10 text-purple-400 border border-purple-500/15 flex items-center justify-center shrink-0 font-black text-xs uppercase">
                         {group.logo?.url ? (
                           <img src={group.logo.url} alt="logo" className="w-full h-full object-cover" loading="lazy" />
@@ -332,66 +416,101 @@ const CommunityLayout = () => {
                           (group.name || '').substring(0, 2)
                         )}
                       </div>
-                      <div className="flex flex-col text-left min-w-0">
-                        <span className="text-[11px] font-bold text-white group-hover:text-purple-400 transition-colors truncate">{group.name || 'Unnamed Group'}</span>
-                        <span className="text-[9px] text-slate-500 mt-0.5">{group.members?.length || 0} members</span>
-                      </div>
+                      {!sidebarCollapsed && (
+                        <div className="flex flex-col text-left min-w-0">
+                          <span className="text-[11px] font-bold text-white group-hover:text-purple-400 transition-colors truncate">{group.name || 'Unnamed Group'}</span>
+                          <span className="text-[9px] text-slate-500 mt-0.5">{group.members?.length || 0} members</span>
+                        </div>
+                      )}
+
+                      {/* Tooltip for Groups when collapsed */}
+                      {sidebarCollapsed && (
+                        <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#121217] border border-white/5 text-[10px] font-black text-white uppercase tracking-wider rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 whitespace-nowrap shadow-xl z-[999] shadow-black/40">
+                          {group.name} ({group.members?.length || 0} members)
+                        </div>
+                      )}
                     </Link>
                   ))}
 
-                  <Link 
-                    to="/community/groups" 
-                    className="mt-2 w-full py-2.5 bg-[#181820] hover:bg-[#20202a] text-slate-300 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 border border-white/5 transition-colors cursor-pointer"
-                  >
-                    <FaPlus size={8} /> Create Group
-                  </Link>
+                  {!sidebarCollapsed && (
+                    <Link 
+                      to="/community/groups" 
+                      className="mt-2 w-full py-2.5 bg-[#181820] hover:bg-[#20202a] text-slate-300 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 border border-white/5 transition-colors cursor-pointer"
+                    >
+                      <FaPlus size={8} /> Create Group
+                    </Link>
+                  )}
                 </>
               ) : (
-                <div className="text-[10px] text-slate-500 py-2 text-center">Log in to view your groups</div>
+                !sidebarCollapsed && <div className="text-[10px] text-slate-500 py-2 text-center">Log in to view your groups</div>
               )}
             </div>
           </div>
 
           {/* Stats XP Dashboard widget */}
           {user ? (
-            <div className="bg-[#121217] border border-white/5 p-4 rounded-3xl flex flex-col gap-2.5 shadow-sm">
-              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block">Developer Status</span>
-              <div className="flex justify-between items-baseline mb-0.5">
-                <h4 className="text-base font-black text-white">{user?.xp || 0} <span className="text-[9px] text-slate-500 font-bold uppercase">XP</span></h4>
-                <span className="text-[10px] text-amber-400 font-black flex items-center gap-1"><FaCoins size={10} /> {user?.coins || 0}</span>
+            sidebarCollapsed ? (
+              <Link
+                to={`/community/profile/${user?.id || user?._id}`}
+                className="relative group bg-[#121217] border border-white/5 p-3 rounded-3xl flex items-center justify-center shadow-sm hover:bg-white/5 transition-colors cursor-pointer"
+              >
+                <FaCrown className="text-amber-400" size={16} />
+                <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#121217] border border-white/5 text-[10px] font-black text-white uppercase tracking-wider rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 whitespace-nowrap shadow-xl z-[999] shadow-black/40">
+                  Level {user?.level || Math.floor((user?.xp || 0) / 100) + 1} ({user?.xp || 0} XP)
+                </div>
+              </Link>
+            ) : (
+              <div className="bg-[#121217] border border-white/5 p-4 rounded-3xl flex flex-col gap-2.5 shadow-sm">
+                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block">Developer Status</span>
+                <div className="flex justify-between items-baseline mb-0.5">
+                  <h4 className="text-base font-black text-white">{user?.xp || 0} <span className="text-[9px] text-slate-500 font-bold uppercase">XP</span></h4>
+                  <span className="text-[10px] text-amber-400 font-black flex items-center gap-1"><FaCoins size={10} /> {user?.coins || 0}</span>
+                </div>
+                <div className="w-full h-1 bg-[#1c1c24] rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-purple-500 to-indigo-500"
+                    style={{ width: `${(user?.xp || 0) % 100}%` }}
+                  />
+                </div>
+                <div className="flex justify-between items-center text-[8px] text-slate-500 mt-0.5 uppercase font-bold tracking-wider">
+                  <span>Level {user?.level || Math.floor((user?.xp || 0) / 100) + 1}</span>
+                  <span>Rep: {user?.reputation || 0}</span>
+                </div>
               </div>
-              <div className="w-full h-1 bg-[#1c1c24] rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-purple-500 to-indigo-500"
-                  style={{ width: `${(user?.xp || 0) % 100}%` }}
-                />
-              </div>
-              <div className="flex justify-between items-center text-[8px] text-slate-500 mt-0.5 uppercase font-bold tracking-wider">
-                <span>Level {user?.level || Math.floor((user?.xp || 0) / 100) + 1}</span>
-                <span>Rep: {user?.reputation || 0}</span>
-              </div>
-            </div>
+            )
           ) : (
-            <div className="bg-[#121217] border border-white/5 p-5 rounded-3xl flex flex-col gap-3 shadow-sm text-center">
-              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block">Developer Status</span>
-              <p className="text-[10px] text-slate-400 leading-relaxed">Join DevCommunity to earn XP, coins, and track your streaks!</p>
+            sidebarCollapsed ? (
               <Link
                 to="/login"
-                className="w-full py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors cursor-pointer text-center"
+                className="relative group bg-[#121217] border border-white/5 p-3 rounded-3xl flex items-center justify-center shadow-sm hover:bg-white/5 transition-colors cursor-pointer"
               >
-                Log In
+                <FaUser className="text-slate-400" size={16} />
+                <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#121217] border border-white/5 text-[10px] font-black text-white uppercase tracking-wider rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 whitespace-nowrap shadow-xl z-[999] shadow-black/40">
+                  Log In to track progress
+                </div>
               </Link>
-            </div>
+            ) : (
+              <div className="bg-[#121217] border border-white/5 p-5 rounded-3xl flex flex-col gap-3 shadow-sm text-center">
+                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block">Developer Status</span>
+                <p className="text-[10px] text-slate-400 leading-relaxed">Join DevCommunity to earn XP, coins, and track your streaks!</p>
+                <Link
+                  to="/login"
+                  className="w-full py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors cursor-pointer text-center"
+                >
+                  Log In
+                </Link>
+              </div>
+            )
           )}
         </aside>
 
-        {/* Center column - Active Outlet View (col-span-6) */}
-        <main className="col-span-12 lg:col-span-9 xl:col-span-6 flex flex-col gap-6 min-h-0">
+        {/* Center column - Active Outlet View */}
+        <main className="flex-1 min-w-0 flex flex-col gap-6">
           <Outlet />
         </main>
 
-        {/* Right Sidebar Navigator (col-span-3) */}
-        <aside className="hidden xl:flex flex-col gap-6 col-span-3 sticky top-[72px] h-[calc(100vh-100px)] overflow-y-auto pl-1 text-left scrollbar-none">
+        {/* Right Sidebar Navigator */}
+        <aside className="hidden xl:flex flex-col gap-6 w-[300px] shrink-0 sticky top-[72px] h-[calc(100vh-100px)] overflow-y-auto pl-1 text-left scrollbar-none">
           
           {/* People You May Know */}
           <div className="bg-[#121217] border border-white/5 p-4 rounded-3xl flex flex-col gap-3.5 shadow-sm">
