@@ -19,6 +19,7 @@ const requireAuth = async (req, res, next) => {
   try {
     let accessToken = req.cookies?.accessToken;
     let refreshToken = req.cookies?.refreshToken;
+    let decoded = null;
 
     if (!accessToken && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
       accessToken = req.headers.authorization.split(' ')[1];
