@@ -161,14 +161,40 @@ const CommunityProfile = () => {
 
   const handleFollow = async () => {
     if (!profile) return;
+    const originalFollowed = followed;
+    const originalProfile = profile;
+    const currentUserId = (currentUser?.id || currentUser?._id)?.toString();
+
+    // Toggle local state optimistically
+    setFollowed(!originalFollowed);
+
+    // Update followers list locally
+    setProfile(prev => {
+      if (!prev) return prev;
+      const list = prev.followers || [];
+      const listIds = list.map(f => (f._id || f).toString());
+      let nextFollowers;
+      if (originalFollowed) {
+        nextFollowers = list.filter(f => (f._id || f).toString() !== currentUserId);
+      } else {
+        nextFollowers = [...list, { _id: currentUserId, fullName: currentUser.fullName, username: currentUser.username, avatar: currentUser.avatar }];
+      }
+      return { ...prev, followers: nextFollowers };
+    });
+
     try {
       const res = await api.toggleFollowUser(profile._id || profile.id);
       if (res.success) {
         setFollowed(res.followed);
-        fetchProfile(); // refresh followers counter
+        fetchProfile(); // sync completely
+      } else {
+        setFollowed(originalFollowed);
+        setProfile(originalProfile);
       }
     } catch (err) {
-      alert(err.message);
+      console.error(err);
+      setFollowed(originalFollowed);
+      setProfile(originalProfile);
     }
   };
 
@@ -274,7 +300,7 @@ const CommunityProfile = () => {
       <div className="bg-[#121217] border border-white/5 rounded-3xl overflow-hidden shadow-sm relative">
         <div className="h-48 bg-gradient-to-r from-purple-900/30 to-indigo-900/30 relative">
           {coverPreview ? (
-            <img src={coverPreview} alt="Cover" className="w-full h-full object-cover" />
+            <img src={coverPreview} alt="Cover" className="w-full h-full object-cover" loading="lazy" />
           ) : (
             <div className="w-full h-full bg-[#181822] flex items-center justify-center text-slate-500 font-black text-[10px] tracking-widest uppercase">
               No cover photo uploaded
@@ -288,7 +314,7 @@ const CommunityProfile = () => {
           {/* Overlapping Avatar */}
           <div className="absolute -top-14 left-6 w-24 h-24 rounded-2xl overflow-hidden bg-[#181822] border-4 border-[#121217] flex items-center justify-center shadow-lg group">
             {avatarPreview ? (
-              <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+              <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" loading="lazy" />
             ) : (
               <span className="font-black text-xl text-purple-400 uppercase">{profile.username?.slice(0, 2)}</span>
             )}
@@ -589,7 +615,7 @@ const CommunityProfile = () => {
               <p className="text-xs sm:text-sm text-slate-200 leading-relaxed whitespace-pre-wrap">{post.content}</p>
               {post.mediaUrl && (
                 <div className="rounded-2xl overflow-hidden border border-white/5 bg-[#181820] max-h-[300px]">
-                  {post.mediaType === 'image' && <img src={post.mediaUrl} alt="post" className="w-full h-full object-cover" />}
+                  {post.mediaType === 'image' && <img src={post.mediaUrl} alt="post" className="w-full h-full object-cover" loading="lazy" />}
                 </div>
               )}
             </div>
@@ -609,7 +635,7 @@ const CommunityProfile = () => {
             <div key={group._id} className="bg-[#121217] border border-white/5 p-4 rounded-3xl flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-purple-600/10 text-purple-400 border border-purple-500/15 flex items-center justify-center shrink-0 font-black text-sm uppercase">
-                  {group.logo?.url ? <img src={group.logo.url} alt="logo" className="w-full h-full object-cover" /> : (group.name || '').slice(0, 2)}
+                  {group.logo?.url ? <img src={group.logo.url} alt="logo" className="w-full h-full object-cover" loading="lazy" /> : (group.name || '').slice(0, 2)}
                 </div>
                 <div className="flex flex-col text-left">
                   <span className="text-xs font-black text-white">{group.name}</span>
@@ -862,7 +888,7 @@ const CommunityProfile = () => {
                 profile.followers.map(f => (
                   <div key={f._id} className="flex items-center gap-3 justify-between p-2 hover:bg-white/5 rounded-xl transition-all">
                     <a href={`/community/profile/${f._id}`} onClick={() => setShowFollowersModal(false)} className="flex items-center gap-2.5 hover:opacity-80">
-                      <img src={f.avatar?.url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80'} className="w-8 h-8 rounded-full border border-white/10" />
+                      <img src={f.avatar?.url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80'} className="w-8 h-8 rounded-full border border-white/10" loading="lazy" />
                       <div className="flex flex-col text-left">
                         <span className="text-[11px] font-bold text-white leading-tight">{f.fullName}</span>
                         <span className="text-[9px] text-slate-500 font-medium">@{f.username}</span>
@@ -891,7 +917,7 @@ const CommunityProfile = () => {
                 profile.following.map(f => (
                   <div key={f._id} className="flex items-center gap-3 justify-between p-2 hover:bg-white/5 rounded-xl transition-all">
                     <a href={`/community/profile/${f._id}`} onClick={() => setShowFollowingModal(false)} className="flex items-center gap-2.5 hover:opacity-80">
-                      <img src={f.avatar?.url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80'} className="w-8 h-8 rounded-full border border-white/10" />
+                      <img src={f.avatar?.url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80'} className="w-8 h-8 rounded-full border border-white/10" loading="lazy" />
                       <div className="flex flex-col text-left">
                         <span className="text-[11px] font-bold text-white leading-tight">{f.fullName}</span>
                         <span className="text-[9px] text-slate-500 font-medium">@{f.username}</span>

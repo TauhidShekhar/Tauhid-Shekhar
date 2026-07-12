@@ -58,6 +58,7 @@ const CommunityGroups = () => {
   const [loadingPosts, setLoadingPosts] = useState(false);
   const [postContent, setPostContent] = useState('');
   const [postMediaUrl, setPostMediaUrl] = useState('');
+  const [localPostPreviewUrl, setLocalPostPreviewUrl] = useState('');
   const [postMediaType, setPostMediaType] = useState('none');
   const [postUploading, setPostUploading] = useState(false);
   const [postAttachedFileName, setPostAttachedFileName] = useState('');
@@ -122,6 +123,16 @@ const CommunityGroups = () => {
   };
 
   const proceedWithGroupPostUpload = async (file) => {
+    const objectUrl = URL.createObjectURL(file);
+    setLocalPostPreviewUrl(objectUrl);
+    setPostAttachedFileName(file.name);
+    if (file.type.startsWith('video/')) {
+      setPostMediaType('video');
+    } else if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+      setPostMediaType('pdf');
+    } else {
+      setPostMediaType('image');
+    }
     setPostUploading(true);
     try {
       const formData = new FormData();
@@ -129,17 +140,15 @@ const CommunityGroups = () => {
       const res = await api.uploadCommunityImage(formData);
       if (res.success) {
         setPostMediaUrl(res.url);
-        setPostAttachedFileName(file.name);
-        if (file.type.startsWith('video/')) {
-          setPostMediaType('video');
-        } else if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
-          setPostMediaType('pdf');
-        } else {
-          setPostMediaType('image');
-        }
+      } else {
+        alert('Media upload failed.');
+        setLocalPostPreviewUrl('');
+        setPostMediaType('none');
       }
     } catch (err) {
       alert('Media upload failed: ' + err.message);
+      setLocalPostPreviewUrl('');
+      setPostMediaType('none');
     } finally {
       setPostUploading(false);
     }
@@ -149,37 +158,105 @@ const CommunityGroups = () => {
     e.preventDefault();
     if (!postContent.trim() || !activeGroup) return;
 
+    const title = postContent.split('\n')[0].substring(0, 80) + '...';
+    const tempId = 'temp-gpost-' + Date.now();
+    const tempPost = {
+      _id: tempId,
+      title,
+      content: postContent,
+      mediaUrl: localPostPreviewUrl || postMediaUrl,
+      mediaType: postMediaType,
+      group: activeGroup._id,
+      category: activeGroup.category || 'General',
+      tags: [],
+      author: {
+        _id: user.id || user._id,
+        fullName: user.fullName,
+        username: user.username,
+        avatar: user.avatar
+      },
+      createdAt: new Date().toISOString(),
+      reactions: [],
+      commentsCount: 0,
+      bookmarks: []
+    };
+
+    const backupContent = postContent;
+    const backupMediaUrl = postMediaUrl;
+    const backupLocalUrl = localPostPreviewUrl;
+    const backupMediaType = postMediaType;
+    const backupFileName = postAttachedFileName;
+
+    // Optimistically insert post
+    setGroupPosts(prev => [tempPost, ...prev]);
+    setPostContent('');
+    setPostMediaUrl('');
+    setLocalPostPreviewUrl('');
+    setPostMediaType('none');
+    setPostAttachedFileName('');
+
     try {
-      const title = postContent.split('\n')[0].substring(0, 80) + '...';
       const res = await api.createCommunityPost({
         title,
-        content: postContent,
-        mediaUrl: postMediaUrl,
-        mediaType: postMediaType,
+        content: backupContent,
+        mediaUrl: backupMediaUrl,
+        mediaType: backupMediaType,
         group: activeGroup._id,
         category: activeGroup.category || 'General',
         tags: []
       });
       if (res.success) {
-        setGroupPosts(prev => [res.data, ...prev]);
-        setPostContent('');
-        setPostMediaUrl('');
-        setPostMediaType('none');
-        setPostAttachedFileName('');
+        setGroupPosts(prev => prev.map(p => p._id === tempId ? res.data : p));
+      } else {
+        setGroupPosts(prev => prev.filter(p => p._id !== tempId));
+        setPostContent(backupContent);
+        setPostMediaUrl(backupMediaUrl);
+        setLocalPostPreviewUrl(backupLocalUrl);
+        setPostMediaType(backupMediaType);
+        setPostAttachedFileName(backupFileName);
       }
     } catch (err) {
-      alert('Failed to submit post: ' + err.message);
+      console.error(err);
+      setGroupPosts(prev => prev.filter(p => p._id !== tempId));
+      setPostContent(backupContent);
+      setPostMediaUrl(backupMediaUrl);
+      setLocalPostPreviewUrl(backupLocalUrl);
+      setPostMediaType(backupMediaType);
+      setPostAttachedFileName(backupFileName);
     }
   };
 
   const handleGroupPostReaction = async (postId) => {
+    const currentUserId = (user?.id || user?._id)?.toString();
+    let originalPosts;
+    setGroupPosts(prev => {
+      originalPosts = prev;
+      return prev.map(p => {
+        if (p._id === postId) {
+          const list = p.reactions || [];
+          const exists = list.some(r => (r.user?._id || r.user || '').toString() === currentUserId.toString());
+          let newReactions;
+          if (exists) {
+            newReactions = list.filter(r => (r.user?._id || r.user || '').toString() !== currentUserId.toString());
+          } else {
+            newReactions = [...list, { user: { _id: currentUserId, fullName: user.fullName, username: user.username, avatar: user.avatar }, type: 'Like' }];
+          }
+          return { ...p, reactions: newReactions };
+        }
+        return p;
+      });
+    });
+
     try {
       const res = await api.reactToCommunityPost(postId, 'Like');
       if (res.success) {
         setGroupPosts(prev => prev.map(p => p._id === postId ? { ...p, reactions: res.data } : p));
+      } else {
+        if (originalPosts) setGroupPosts(originalPosts);
       }
     } catch (err) {
       console.error(err);
+      if (originalPosts) setGroupPosts(originalPosts);
     }
   };
 
@@ -216,17 +293,45 @@ const CommunityGroups = () => {
     const text = groupCommentInputs[postId];
     if (!text || !text.trim()) return;
 
+    const tempId = 'temp-gcomment-' + Date.now();
+    const tempComment = {
+      _id: tempId,
+      content: text.trim(),
+      author: {
+        _id: user.id || user._id,
+        fullName: user.fullName,
+        username: user.username,
+        avatar: user.avatar
+      },
+      createdAt: new Date().toISOString(),
+      replies: []
+    };
+
+    let originalComments;
+    setGroupComments(prev => {
+      originalComments = prev;
+      return {
+        ...prev,
+        [postId]: [...(prev[postId] || []), tempComment]
+      };
+    });
+    setGroupCommentInputs(prev => ({ ...prev, [postId]: '' }));
+
     try {
       const res = await api.addCommunityComment(postId, text.trim());
       if (res.success) {
         setGroupComments(prev => ({
           ...prev,
-          [postId]: [...(prev[postId] || []), res.data]
+          [postId]: (prev[postId] || []).map(c => c._id === tempId ? res.data : c)
         }));
-        setGroupCommentInputs(prev => ({ ...prev, [postId]: '' }));
+      } else {
+        if (originalComments) setGroupComments(originalComments);
+        setGroupCommentInputs(prev => ({ ...prev, [postId]: text }));
       }
     } catch (err) {
       console.error(err);
+      if (originalComments) setGroupComments(originalComments);
+      setGroupCommentInputs(prev => ({ ...prev, [postId]: text }));
     }
   };
 
@@ -683,7 +788,7 @@ const CommunityGroups = () => {
                       {/* Cover Banner */}
                       <div className="h-28 bg-slate-100 dark:bg-slate-950 relative overflow-hidden flex items-center justify-center">
                         {group.coverImage ? (
-                          <img src={group.coverImage} alt="Cover" className="w-full h-full object-cover" />
+                          <img src={group.coverImage} alt="Cover" className="w-full h-full object-cover" loading="lazy" />
                         ) : (
                           <div className="w-full h-full bg-gradient-to-br from-primary-blue/20 to-primary-cyan/20 flex items-center justify-center">
                             <FaUsers className="text-primary-blue/30" size={40} />
@@ -693,7 +798,7 @@ const CommunityGroups = () => {
                         {/* Logo avatar floating */}
                         <div className="absolute bottom-3 left-4 w-12 h-12 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 p-1 shadow-md overflow-hidden flex items-center justify-center">
                           {group.logo?.url ? (
-                            <img src={group.logo.url} alt="Logo" className="w-full h-full object-cover rounded-lg" />
+                            <img src={group.logo.url} alt="Logo" className="w-full h-full object-cover rounded-lg" loading="lazy" />
                           ) : (
                             <FaUsers className="text-slate-400" size={20} />
                           )}
@@ -778,7 +883,7 @@ const CommunityGroups = () => {
           <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-white/5 rounded-3xl overflow-hidden shadow-sm">
             <div className="h-44 bg-slate-100 dark:bg-slate-950 relative overflow-hidden">
               {activeGroup.coverImage ? (
-                <img src={activeGroup.coverImage} alt="Cover" className="w-full h-full object-cover" />
+                <img src={activeGroup.coverImage} alt="Cover" className="w-full h-full object-cover" loading="lazy" />
               ) : (
                 <div className="w-full h-full bg-gradient-to-r from-primary-blue/30 to-primary-cyan/30" />
               )}
@@ -786,7 +891,7 @@ const CommunityGroups = () => {
               {/* Logo avatar */}
               <div className="absolute -bottom-6 left-6 w-20 h-20 rounded-2xl bg-white dark:bg-slate-900 border-2 border-white dark:border-slate-800 shadow-md p-1 overflow-hidden flex items-center justify-center z-10">
                 {activeGroup.logo?.url ? (
-                  <img src={activeGroup.logo.url} alt="Logo" className="w-full h-full object-cover rounded-xl" />
+                  <img src={activeGroup.logo.url} alt="Logo" className="w-full h-full object-cover rounded-xl" loading="lazy" />
                 ) : (
                   <FaUsers size={32} className="text-slate-400" />
                 )}
@@ -871,7 +976,7 @@ const CommunityGroups = () => {
                     <div className="flex gap-3">
                       <div className="w-8 h-8 rounded-lg overflow-hidden bg-[#1c1c24] shrink-0 flex items-center justify-center border border-white/10">
                         {user?.avatar?.url ? (
-                          <img src={user.avatar.url} alt="Profile" className="w-full h-full object-cover" />
+                          <img src={user.avatar.url} alt="Profile" className="w-full h-full object-cover" loading="lazy" />
                         ) : (
                           <span className="text-slate-400 text-xs">👤</span>
                         )}
@@ -886,24 +991,30 @@ const CommunityGroups = () => {
                     </div>
 
                     {/* Media Attach Preview */}
-                    {postMediaUrl && (
-                      <div className="relative rounded-2xl overflow-hidden border border-white/5 bg-[#181820] max-h-[220px]">
-                        <button
-                          onClick={() => { setPostMediaUrl(''); setPostMediaType('none'); setPostAttachedFileName(''); }}
-                          className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-black text-white rounded text-[10px]"
-                        >
-                          ×
-                        </button>
-                        {postMediaType === 'image' && <img src={postMediaUrl} alt="Preview" className="w-full h-full object-contain max-h-[220px]" />}
-                        {postMediaType === 'video' && <video src={postMediaUrl} controls className="w-full h-full max-h-[220px]" />}
-                        {postMediaType === 'pdf' && (
-                          <div className="p-3 flex items-center gap-2 text-xs">
-                            <FaFilePdf size={16} className="text-red-500" />
-                            <span className="font-bold text-white">{postAttachedFileName || 'Attachment.pdf'}</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                    {(localPostPreviewUrl || postMediaUrl) && (
+                        <div className="relative rounded-2xl overflow-hidden border border-white/5 bg-[#181820] max-h-[220px]">
+                          <button
+                            onClick={() => { setPostMediaUrl(''); setLocalPostPreviewUrl(''); setPostMediaType('none'); setPostAttachedFileName(''); }}
+                            className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-black text-white rounded text-[10px] z-10"
+                          >
+                            ×
+                          </button>
+                          {postMediaType === 'image' && <img src={localPostPreviewUrl || postMediaUrl} alt="Preview" className="w-full h-full object-contain max-h-[220px]" loading="lazy" />}
+                          {postMediaType === 'video' && <video src={localPostPreviewUrl || postMediaUrl} controls className="w-full h-full max-h-[220px]" />}
+                          {postMediaType === 'pdf' && (
+                            <div className="p-3 flex items-center gap-2 text-xs">
+                              <FaFilePdf size={16} className="text-red-500" />
+                              <span className="font-bold text-white">{postAttachedFileName || 'Attachment.pdf'}</span>
+                            </div>
+                          )}
+                          {postUploading && (
+                            <div className="absolute inset-0 bg-black/60 flex items-center justify-center flex-col gap-2">
+                              <div className="w-6 h-6 rounded-full border-2 border-purple-500/20 border-t-purple-500 animate-spin" />
+                              <span className="text-[9px] font-black text-white uppercase tracking-widest animate-pulse">Uploading...</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
 
                     <div className="flex justify-between items-center border-t border-slate-100 dark:border-white/5 pt-3">
                       <div className="flex items-center gap-2">
@@ -957,7 +1068,7 @@ const CommunityGroups = () => {
                               <div className="flex items-center gap-2 text-left">
                                 <div className="w-8 h-8 rounded-lg overflow-hidden bg-[#1c1c24] border border-white/5 flex items-center justify-center shrink-0">
                                   {post.author?.avatar?.url ? (
-                                    <img src={post.author.avatar.url} alt="Profile" className="w-full h-full object-cover" />
+                                    <img src={post.author.avatar.url} alt="Profile" className="w-full h-full object-cover" loading="lazy" />
                                   ) : (
                                     <span className="text-slate-400 text-xs">👤</span>
                                   )}
@@ -986,7 +1097,7 @@ const CommunityGroups = () => {
                             {/* Attachment Media if present */}
                             {post.mediaUrl && (
                               <div className="rounded-2xl overflow-hidden border border-slate-100 dark:border-white/5 bg-[#181820] max-h-[300px] w-full flex items-center justify-center">
-                                {post.mediaType === 'image' && <img src={post.mediaUrl} alt="post media" className="w-full h-full object-cover max-h-[300px]" />}
+                                {post.mediaType === 'image' && <img src={post.mediaUrl} alt="post media" className="w-full h-full object-cover max-h-[300px]" loading="lazy" />}
                                 {post.mediaType === 'video' && <video src={post.mediaUrl} controls className="w-full h-full max-h-[300px]" />}
                                 {post.mediaType === 'pdf' && (
                                   <div className="w-full p-4 flex items-center justify-between bg-slate-900/50 rounded-2xl border border-white/5 m-3">
@@ -1056,7 +1167,7 @@ const CommunityGroups = () => {
                                       <div className="flex items-start gap-2 text-left">
                                         <div className="w-6 h-6 rounded-md overflow-hidden bg-[#1c1c24] flex items-center justify-center shrink-0 border border-white/5">
                                           {comment.author?.avatar?.url ? (
-                                            <img src={comment.author.avatar.url} alt="Profile" className="w-full h-full object-cover" />
+                                            <img src={comment.author.avatar.url} alt="Profile" className="w-full h-full object-cover" loading="lazy" />
                                           ) : (
                                             <span className="text-[10px]">👤</span>
                                           )}
@@ -1199,7 +1310,7 @@ const CommunityGroups = () => {
                     <div className="flex justify-between items-center p-3.5 bg-amber-500/5 border border-amber-500/10 rounded-2xl">
                       <div className="flex items-center gap-3">
                         {activeGroup.owner?.avatar?.url ? (
-                          <img src={activeGroup.owner.avatar.url} alt="" className="w-8 h-8 rounded-full object-cover" />
+                          <img src={activeGroup.owner.avatar.url} alt="" className="w-8 h-8 rounded-full object-cover" loading="lazy" />
                         ) : (
                           <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center text-xs font-bold text-amber-500">
                             {activeGroup.owner?.fullName?.charAt(0) || '?'}
@@ -1229,7 +1340,7 @@ const CommunityGroups = () => {
                           <div key={memberId} className="flex justify-between items-center p-3.5 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-transparent">
                             <div className="flex items-center gap-3">
                               {member.avatar?.url ? (
-                                <img src={member.avatar.url} alt="" className="w-8 h-8 rounded-full object-cover" />
+                                <img src={member.avatar.url} alt="" className="w-8 h-8 rounded-full object-cover" loading="lazy" />
                               ) : (
                                 <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-white/10 flex items-center justify-center text-xs font-bold text-slate-400">
                                   {member.fullName?.charAt(0) || member.username?.charAt(0) || '?'}

@@ -25,6 +25,7 @@ const CommunityFeed = () => {
   // Post Creator states
   const [content, setContent] = useState('');
   const [mediaUrl, setMediaUrl] = useState('');
+  const [localPreviewUrl, setLocalPreviewUrl] = useState('');
   const [mediaType, setMediaType] = useState('none');
   const [category, setCategory] = useState('General');
   const [tags, setTags] = useState('');
@@ -145,6 +146,16 @@ const CommunityFeed = () => {
   };
 
   const proceedWithUpload = async (file) => {
+    const objectUrl = URL.createObjectURL(file);
+    setLocalPreviewUrl(objectUrl);
+    setAttachedFileName(file.name);
+    if (file.type.startsWith('video/')) {
+      setMediaType('video');
+    } else if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+      setMediaType('pdf');
+    } else {
+      setMediaType('image');
+    }
     setUploading(true);
     try {
       const formData = new FormData();
@@ -152,17 +163,15 @@ const CommunityFeed = () => {
       const res = await api.uploadCommunityImage(formData);
       if (res.success) {
         setMediaUrl(res.url);
-        setAttachedFileName(file.name);
-        if (file.type.startsWith('video/')) {
-          setMediaType('video');
-        } else if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
-          setMediaType('pdf');
-        } else {
-          setMediaType('image');
-        }
+      } else {
+        alert('Media upload failed.');
+        setLocalPreviewUrl('');
+        setMediaType('none');
       }
     } catch (err) {
       alert('Media upload failed: ' + err.message);
+      setLocalPreviewUrl('');
+      setMediaType('none');
     } finally {
       setUploading(false);
     }
@@ -172,46 +181,105 @@ const CommunityFeed = () => {
     e.preventDefault();
     if (!content.trim()) return;
 
+    const tagsArray = tags.split(',').map(t => t.trim()).filter(Boolean);
+    const generatedTitle = content.split('\n')[0].substring(0, 80) + '...';
+
+    const pollData = showPollCreator && pollQuestion.trim() && pollOptions.filter(o => o.trim()).length >= 2
+      ? {
+          question: pollQuestion.trim(),
+          options: pollOptions.filter(o => o.trim()).map(optText => ({ optionText: optText, votes: [] }))
+        }
+      : null;
+
+    const tempId = 'temp-post-' + Date.now();
+    const tempPost = {
+      _id: tempId,
+      title: generatedTitle,
+      content,
+      mediaUrl: localPreviewUrl || mediaUrl,
+      mediaType,
+      category,
+      tags: tagsArray,
+      postType: pollData ? 'poll' : (mediaType !== 'none' ? mediaType : 'text'),
+      poll: pollData ? {
+        question: pollData.question,
+        options: pollData.options.map((o, idx) => ({ _id: `temp-opt-${idx}`, optionText: o.optionText, votes: [] }))
+      } : null,
+      author: {
+        _id: user.id || user._id,
+        fullName: user.fullName,
+        username: user.username,
+        avatar: user.avatar
+      },
+      createdAt: new Date().toISOString(),
+      reactions: [],
+      commentsCount: 0,
+      bookmarks: []
+    };
+
+    const backupContent = content;
+    const backupTags = tags;
+    const backupMediaUrl = mediaUrl;
+    const backupLocalUrl = localPreviewUrl;
+    const backupMediaType = mediaType;
+    const backupShowPoll = showPollCreator;
+    const backupPollQ = pollQuestion;
+    const backupPollOpts = pollOptions;
+
+    // Optimistically insert tempPost and clear inputs
+    setPosts(prev => [tempPost, ...prev]);
+    setContent('');
+    setMediaUrl('');
+    setLocalPreviewUrl('');
+    setMediaType('none');
+    setTags('');
+    setShowPollCreator(false);
+    setPollQuestion('');
+    setPollOptions(['', '']);
+
     try {
-      const tagsArray = tags.split(',').map(t => t.trim()).filter(Boolean);
-      const generatedTitle = content.split('\n')[0].substring(0, 80) + '...';
+      localStorage.removeItem('portfolio_post_draft');
+    } catch (_) {}
 
-      const pollData = showPollCreator && pollQuestion.trim() && pollOptions.filter(o => o.trim()).length >= 2
-        ? {
-            question: pollQuestion.trim(),
-            options: pollOptions.filter(o => o.trim()).map(optText => ({ optionText: optText, votes: [] }))
-          }
-        : null;
-
+    try {
       const res = await api.createCommunityPost({
         title: generatedTitle,
-        content,
-        mediaUrl,
-        mediaType,
+        content: backupContent,
+        mediaUrl: backupMediaUrl,
+        mediaType: backupMediaType,
         category,
         tags: tagsArray,
-        postType: pollData ? 'poll' : (mediaType !== 'none' ? mediaType : 'text'),
+        postType: tempPost.postType,
         poll: pollData
       });
 
       if (res.success) {
-        setPosts(prev => [res.data, ...prev]);
-        setContent('');
-        setMediaUrl('');
-        setMediaType('none');
-        setTags('');
-
-        // Reset poll builder
-        setShowPollCreator(false);
-        setPollQuestion('');
-        setPollOptions(['', '']);
-
-        // Clear local storage draft
-        try {
-          localStorage.removeItem('portfolio_post_draft');
-        } catch (_) {}
+        // Swap temp post with actual response
+        setPosts(prev => prev.map(p => p._id === tempId ? res.data : p));
+      } else {
+        // Revert
+        setPosts(prev => prev.filter(p => p._id !== tempId));
+        setContent(backupContent);
+        setTags(backupTags);
+        setMediaUrl(backupMediaUrl);
+        setLocalPreviewUrl(backupLocalUrl);
+        setMediaType(backupMediaType);
+        setShowPollCreator(backupShowPoll);
+        setPollQuestion(backupPollQ);
+        setPollOptions(backupPollOpts);
+        alert('Post creation failed.');
       }
     } catch (err) {
+      // Revert
+      setPosts(prev => prev.filter(p => p._id !== tempId));
+      setContent(backupContent);
+      setTags(backupTags);
+      setMediaUrl(backupMediaUrl);
+      setLocalPreviewUrl(backupLocalUrl);
+      setMediaType(backupMediaType);
+      setShowPollCreator(backupShowPoll);
+      setPollQuestion(backupPollQ);
+      setPollOptions(backupPollOpts);
       alert('Post creation failed: ' + err.message);
     }
   };
@@ -236,13 +304,36 @@ const CommunityFeed = () => {
       alert('Please log in to react to posts.');
       return;
     }
+    const currentUserId = user?.id || user?._id;
+    let originalPosts;
+    setPosts(prev => {
+      originalPosts = prev;
+      return prev.map(p => {
+        if (p._id === postId) {
+          const list = p.reactions || [];
+          const exists = list.some(r => (r.user?._id || r.user || '').toString() === currentUserId.toString());
+          let newReactions;
+          if (exists) {
+            newReactions = list.filter(r => (r.user?._id || r.user || '').toString() !== currentUserId.toString());
+          } else {
+            newReactions = [...list, { user: { _id: currentUserId, fullName: user.fullName, username: user.username, avatar: user.avatar }, type }];
+          }
+          return { ...p, reactions: newReactions };
+        }
+        return p;
+      });
+    });
+
     try {
       const res = await api.reactToCommunityPost(postId, type);
       if (res.success) {
         setPosts(prev => prev.map(p => p._id === postId ? { ...p, reactions: res.data } : p));
+      } else {
+        if (originalPosts) setPosts(originalPosts);
       }
     } catch (err) {
       console.error(err);
+      if (originalPosts) setPosts(originalPosts);
     }
   };
 
@@ -251,25 +342,34 @@ const CommunityFeed = () => {
       alert('Please log in to bookmark posts.');
       return;
     }
+    const currentUserId = user?.id || user?._id;
+    let originalPosts;
+    setPosts(prev => {
+      originalPosts = prev;
+      return prev.map(p => {
+        if (p._id === postId) {
+          const list = p.bookmarks || [];
+          const exists = list.indexOf(currentUserId);
+          let newBookmarks;
+          if (exists === -1) {
+            newBookmarks = [...list, currentUserId];
+          } else {
+            newBookmarks = list.filter(id => id !== currentUserId);
+          }
+          return { ...p, bookmarks: newBookmarks };
+        }
+        return p;
+      });
+    });
+
     try {
       const res = await api.bookmarkCommunityPost(postId);
-      if (res.success) {
-        setPosts(prev => prev.map(p => {
-          if (p._id === postId) {
-            const list = p.bookmarks || [];
-            const currentUserId = user?.id || user?._id;
-            const index = list.indexOf(currentUserId);
-            if (index === -1) {
-              return { ...p, bookmarks: [...list, currentUserId] };
-            } else {
-              return { ...p, bookmarks: list.filter(id => id !== currentUserId) };
-            }
-          }
-          return p;
-        }));
+      if (!res.success) {
+        if (originalPosts) setPosts(originalPosts);
       }
     } catch (err) {
       console.error(err);
+      if (originalPosts) setPosts(originalPosts);
     }
   };
 
@@ -311,17 +411,45 @@ const CommunityFeed = () => {
     const text = commentInputs[postId];
     if (!text || !text.trim()) return;
 
+    const tempId = 'temp-' + Date.now();
+    const tempComment = {
+      _id: tempId,
+      content: text.trim(),
+      author: {
+        _id: user.id || user._id,
+        fullName: user.fullName,
+        username: user.username,
+        avatar: user.avatar
+      },
+      createdAt: new Date().toISOString(),
+      replies: []
+    };
+
+    let originalComments;
+    setComments(prev => {
+      originalComments = prev;
+      return {
+        ...prev,
+        [postId]: [...(prev[postId] || []), tempComment]
+      };
+    });
+    setCommentInputs(prev => ({ ...prev, [postId]: '' }));
+
     try {
       const res = await api.addCommunityComment(postId, text.trim());
       if (res.success) {
         setComments(prev => ({
           ...prev,
-          [postId]: [...(prev[postId] || []), res.data]
+          [postId]: (prev[postId] || []).map(c => c._id === tempId ? res.data : c)
         }));
-        setCommentInputs(prev => ({ ...prev, [postId]: '' }));
+      } else {
+        if (originalComments) setComments(originalComments);
+        setCommentInputs(prev => ({ ...prev, [postId]: text }));
       }
     } catch (err) {
       console.error(err);
+      if (originalComments) setComments(originalComments);
+      setCommentInputs(prev => ({ ...prev, [postId]: text }));
     }
   };
 
@@ -472,9 +600,9 @@ const CommunityFeed = () => {
       {user && (
         <div className="bg-[#121217] border border-white/5 p-5 rounded-3xl flex flex-col gap-4 shadow-sm">
           <div className="flex gap-3">
-            <div className="w-10 h-10 rounded-xl overflow-hidden bg-[#1c1c24] border border-white/10 shrink-0 flex items-center justify-center">
+             <div className="w-10 h-10 rounded-xl overflow-hidden bg-[#1c1c24] border border-white/10 shrink-0 flex items-center justify-center">
               {user?.avatar?.url ? (
-                <img src={user.avatar.url} alt="Profile" className="w-full h-full object-cover" />
+                <img src={user.avatar.url} alt="Profile" className="w-full h-full object-cover" loading="lazy" />
               ) : (
                 <FaUser className="text-slate-400" size={14} />
               )}
@@ -489,20 +617,26 @@ const CommunityFeed = () => {
           </div>
 
           {/* Media Attach Preview */}
-          {mediaUrl && (
+          {(localPreviewUrl || mediaUrl) && (
             <div className="relative rounded-2xl overflow-hidden border border-white/5 bg-[#181820] max-h-[300px]">
               <button
-                onClick={() => { setMediaUrl(''); setMediaType('none'); }}
-                className="absolute top-3 right-3 p-1.5 bg-black/60 hover:bg-black text-white rounded-lg text-xs"
+                onClick={() => { setMediaUrl(''); setLocalPreviewUrl(''); setMediaType('none'); setAttachedFileName(''); }}
+                className="absolute top-3 right-3 p-1.5 bg-black/60 hover:bg-black text-white rounded-lg text-xs z-10"
               >
                 ×
               </button>
-              {mediaType === 'image' && <img src={mediaUrl} alt="Preview" className="w-full h-full object-contain" />}
-              {mediaType === 'video' && <video src={mediaUrl} controls className="w-full h-full max-h-[300px]" />}
+              {mediaType === 'image' && <img src={localPreviewUrl || mediaUrl} alt="Preview" className="w-full h-full object-contain" loading="lazy" />}
+              {mediaType === 'video' && <video src={localPreviewUrl || mediaUrl} controls className="w-full h-full max-h-[300px]" />}
               {mediaType === 'pdf' && (
                 <div className="p-4 flex items-center gap-3 text-xs">
                   <FaFilePdf size={20} className="text-red-500" />
                   <span className="font-bold text-white">{attachedFileName || 'Attachment.pdf'}</span>
+                </div>
+              )}
+              {uploading && (
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center flex-col gap-2">
+                  <div className="w-8 h-8 rounded-full border-2 border-purple-500/20 border-t-purple-500 animate-spin" />
+                  <span className="text-[10px] font-black text-white uppercase tracking-widest animate-pulse">Uploading...</span>
                 </div>
               )}
             </div>
@@ -645,7 +779,7 @@ const CommunityFeed = () => {
                           : 'border border-white/10'
                       }`}>
                         {post.author?.avatar?.url ? (
-                          <img src={post.author.avatar.url} alt="Profile" className="w-full h-full object-cover" />
+                          <img src={post.author.avatar.url} alt="Profile" className="w-full h-full object-cover" loading="lazy" />
                         ) : (
                           <span className="font-black text-xs text-slate-455 uppercase">{post.author?.username?.slice(0,2)}</span>
                         )}
@@ -790,7 +924,7 @@ const CommunityFeed = () => {
                   {/* Attachment Media if present */}
                   {post.mediaUrl && (
                     <div className="rounded-2xl overflow-hidden border border-white/5 bg-[#181820] max-h-[360px] w-full flex items-center justify-center">
-                      {post.mediaType === 'image' && <img src={post.mediaUrl} alt="brief" className="w-full h-full object-cover" />}
+                      {post.mediaType === 'image' && <img src={post.mediaUrl} alt="brief" className="w-full h-full object-cover" loading="lazy" />}
                       {post.mediaType === 'video' && <video src={post.mediaUrl} controls className="w-full h-full max-h-[360px]" />}
                       {post.mediaType === 'pdf' && (
                         <div className="w-full p-4 flex items-center justify-between bg-slate-900/50 rounded-2xl border border-white/5 m-3">
@@ -860,7 +994,7 @@ const CommunityFeed = () => {
                     <form onSubmit={(e) => handleAddComment(e, post._id)} className="flex gap-3">
                       <div className="w-8 h-8 rounded-lg overflow-hidden bg-[#1c1c24] border border-white/10 flex items-center justify-center shrink-0">
                         {user?.avatar?.url ? (
-                          <img src={user.avatar.url} alt="Profile" className="w-full h-full object-cover" />
+                          <img src={user.avatar.url} alt="Profile" className="w-full h-full object-cover" loading="lazy" />
                         ) : (
                           <FaUser className="text-slate-400" size={12} />
                         )}
@@ -893,7 +1027,7 @@ const CommunityFeed = () => {
                               <div className="flex gap-2.5 items-start">
                                 <div className="w-7.5 h-7.5 rounded-lg overflow-hidden bg-[#1c1c24] border border-white/10 flex items-center justify-center shrink-0">
                                   {comment.author?.avatar?.url ? (
-                                    <img src={comment.author.avatar.url} alt="Avatar" className="w-full h-full object-cover" />
+                                    <img src={comment.author.avatar.url} alt="Avatar" className="w-full h-full object-cover" loading="lazy" />
                                   ) : (
                                     <FaUser className="text-slate-500" size={10} />
                                   )}
@@ -972,7 +1106,7 @@ const CommunityFeed = () => {
                                 <div key={reply._id} className="flex gap-2.5 items-start pl-8">
                                   <div className="w-6.5 h-6.5 rounded-lg overflow-hidden bg-[#1c1c24] border border-white/10 flex items-center justify-center shrink-0">
                                     {reply.author?.avatar?.url ? (
-                                      <img src={reply.author.avatar.url} alt="Avatar" className="w-full h-full object-cover" />
+                                      <img src={reply.author.avatar.url} alt="Avatar" className="w-full h-full object-cover" loading="lazy" />
                                     ) : (
                                       <FaUser className="text-slate-500" size={8} />
                                     )}

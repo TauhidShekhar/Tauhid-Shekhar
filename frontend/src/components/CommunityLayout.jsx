@@ -86,7 +86,11 @@ const CommunityLayout = () => {
   useEffect(() => {
     fetchData();
     if (user) {
-      const interval = setInterval(fetchData, 15000);
+      const interval = setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          fetchData();
+        }
+      }, 15000);
       return () => clearInterval(interval);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -97,27 +101,33 @@ const CommunityLayout = () => {
       alert('Please log in to perform this action.');
       return;
     }
+    const currentUserId = (user?.id || user?._id)?.toString();
+    let originalDevs;
+    setSuggestedDevs(prev => {
+      originalDevs = prev;
+      return prev.map(d => {
+        if (d._id === userId) {
+          const list = (d.followers || []).filter(Boolean).map(id => id.toString());
+          const isFollowingNow = list.includes(currentUserId);
+          return {
+            ...d,
+            followers: isFollowingNow 
+              ? list.filter(id => id !== currentUserId) 
+              : [...list, currentUserId]
+          };
+        }
+        return d;
+      });
+    });
+
     try {
       const res = await api.toggleFollowUser(userId);
-      if (res.success) {
-        // Toggle follow status in state
-        setSuggestedDevs(prev => prev.map(d => {
-          if (d._id === userId) {
-            const list = (d.followers || []).filter(Boolean).map(id => id.toString());
-            const currentUserId = (user?.id || user?._id)?.toString();
-            const isFollowingNow = list.includes(currentUserId);
-            return {
-              ...d,
-              followers: isFollowingNow 
-                ? list.filter(id => id !== currentUserId) 
-                : [...list, currentUserId]
-            };
-          }
-          return d;
-        }));
+      if (!res.success) {
+        if (originalDevs) setSuggestedDevs(originalDevs);
       }
     } catch (err) {
       console.error(err);
+      if (originalDevs) setSuggestedDevs(originalDevs);
     }
   };
 
@@ -145,20 +155,20 @@ const CommunityLayout = () => {
   };
 
   const navItems = [
-    { name: 'Home', path: '/community', icon: <FaHome /> },
-    { name: 'Explore', path: '/community/projects', icon: <FaCompass /> },
-    { name: 'Communities', path: '/community/doubts', icon: <FaQuestionCircle /> },
-    { name: 'Groups', path: '/community/groups', icon: <FaUsers /> },
-    { name: 'Resources', path: '/community/resources', icon: <FaFolderOpen /> },
-    { name: 'Messages', path: '/community/chat', icon: <FaComments /> },
-    { name: 'Notifications', path: '/community/notifications', icon: <FaBell />, badge: notifCount },
-    { name: 'Profile', path: user ? `/community/profile/${user?.id || user?._id}` : '/login', icon: <FaUser /> },
-    { name: 'Rewards Hub', path: '/community/rewards', icon: <FaTasks /> },
-    { name: 'Daily Arena', path: '/community/challenges', icon: <FaCode /> },
-    { name: 'Ecosystem Shop', path: '/community/store', icon: <FaGift /> },
-    { name: 'AI Consultant', path: '/community/ai-assistant', icon: <FaBrain /> },
-    { name: 'Career Hub', path: '/community/career-hub', icon: <FaBriefcase /> },
-    { name: 'Settings', path: user ? `/user/dashboard` : '/login', icon: <FaCog /> }
+    { name: 'Home', path: '/community', icon: <FaHome />, prefetch: () => import('./CommunityFeed') },
+    { name: 'Explore', path: '/community/projects', icon: <FaCompass />, prefetch: () => import('./CommunityProjectDiscussions') },
+    { name: 'Communities', path: '/community/doubts', icon: <FaQuestionCircle />, prefetch: () => import('./CommunityDoubts') },
+    { name: 'Groups', path: '/community/groups', icon: <FaUsers />, prefetch: () => import('./CommunityGroups') },
+    { name: 'Resources', path: '/community/resources', icon: <FaFolderOpen />, prefetch: () => import('./CommunityResources') },
+    { name: 'Messages', path: '/community/chat', icon: <FaComments />, prefetch: () => import('./CommunityChat') },
+    { name: 'Notifications', path: '/community/notifications', icon: <FaBell />, badge: notifCount, prefetch: () => import('./CommunityNotifications') },
+    { name: 'Profile', path: user ? `/community/profile/${user?.id || user?._id}` : '/login', icon: <FaUser />, prefetch: () => import('./CommunityProfile') },
+    { name: 'Rewards Hub', path: '/community/rewards', icon: <FaTasks />, prefetch: () => import('./RewardsDashboard') },
+    { name: 'Daily Arena', path: '/community/challenges', icon: <FaCode />, prefetch: () => import('./CodingChallenges') },
+    { name: 'Ecosystem Shop', path: '/community/store', icon: <FaGift />, prefetch: () => import('./CommunityStore') },
+    { name: 'AI Consultant', path: '/community/ai-assistant', icon: <FaBrain />, prefetch: () => import('./AIConsultant') },
+    { name: 'Career Hub', path: '/community/career-hub', icon: <FaBriefcase />, prefetch: () => import('./CareerHub') },
+    { name: 'Settings', path: user ? `/user/dashboard` : '/login', icon: <FaCog />, prefetch: () => import('../admin/UserDashboard') }
   ];
 
   return (
@@ -224,7 +234,7 @@ const CommunityLayout = () => {
             <Link to={`/community/profile/${user?.id || user?._id}`} className="flex items-center gap-1.5 sm:gap-2.5">
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl overflow-hidden bg-[#1e1e24] border border-white/10 flex items-center justify-center shrink-0">
                 {user?.avatar?.url ? (
-                  <img src={user.avatar.url} alt="Profile" className="w-full h-full object-cover" />
+                  <img src={user.avatar.url} alt="Profile" className="w-full h-full object-cover" loading="lazy" />
                 ) : (
                   <FaUser className="text-slate-400" size={12} />
                 )}
@@ -280,6 +290,7 @@ const CommunityLayout = () => {
                   key={item.name}
                   to={item.path}
                   id={tourId}
+                  onMouseEnter={item.prefetch}
                   className={`flex items-center justify-between px-4 py-2.5 rounded-2xl text-xs font-bold transition-all ${
                     active 
                       ? 'bg-purple-600/10 text-purple-400 border border-purple-600/15' 
@@ -316,7 +327,7 @@ const CommunityLayout = () => {
                     <Link key={group._id} to="/community/groups" className="flex items-center gap-2.5 p-1 rounded-xl hover:bg-white/5 transition-colors group">
                       <div className="w-8 h-8 rounded-lg overflow-hidden bg-purple-600/10 text-purple-400 border border-purple-500/15 flex items-center justify-center shrink-0 font-black text-xs uppercase">
                         {group.logo?.url ? (
-                          <img src={group.logo.url} alt="logo" className="w-full h-full object-cover" />
+                          <img src={group.logo.url} alt="logo" className="w-full h-full object-cover" loading="lazy" />
                         ) : (
                           (group.name || '').substring(0, 2)
                         )}
@@ -401,7 +412,7 @@ const CommunityLayout = () => {
                       <Link to={`/community/profile/${dev._id}`} className="flex items-center gap-2 min-w-0">
                         <div className="w-8.5 h-8.5 rounded-xl overflow-hidden bg-[#1e1e24] border border-white/10 shrink-0 flex items-center justify-center">
                           {dev.avatar?.url ? (
-                            <img src={dev.avatar.url} alt="Profile" className="w-full h-full object-cover" />
+                            <img src={dev.avatar.url} alt="Profile" className="w-full h-full object-cover" loading="lazy" />
                           ) : (
                             <FaUser className="text-slate-500" size={12} />
                           )}
@@ -472,16 +483,16 @@ const CommunityLayout = () => {
       </div>
 
       {/* Mobile Drawer Overlay */}
-      {mobileMenuOpen && (
-        <div
-          className="fixed inset-0 z-[999] bg-black/60 backdrop-blur-sm lg:hidden"
-          onClick={() => setMobileMenuOpen(false)}
-        />
-      )}
+      <div
+        className={`fixed inset-0 z-[999] bg-black/60 backdrop-blur-sm lg:hidden transition-opacity duration-200 ${
+          mobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setMobileMenuOpen(false)}
+      />
 
       {/* Mobile Sidebar Drawer */}
       <aside
-        className={`fixed top-0 left-0 w-64 h-screen bg-[#121217] z-[1000] border-r border-white/5 flex flex-col transition-transform duration-300 lg:hidden overflow-y-auto ${
+        className={`fixed top-0 left-0 w-64 h-screen bg-[#121217] z-[1000] border-r border-white/5 flex flex-col transition-transform duration-200 ease-out lg:hidden overflow-y-auto ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -511,6 +522,7 @@ const CommunityLayout = () => {
                 to={item.path}
                 id={tourId}
                 onClick={() => setMobileMenuOpen(false)}
+                onMouseEnter={item.prefetch}
                 className={`flex items-center gap-3 px-4.5 py-3 rounded-2xl text-xs font-bold transition-all ${
                   active 
                     ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md' 
@@ -528,17 +540,19 @@ const CommunityLayout = () => {
       {/* Mobile Bottom Navigation Bar */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[99] bg-[#121217]/95 backdrop-blur-lg border-t border-white/5 py-2 px-4 flex items-center justify-around shadow-2xl">
         {[
-          { name: 'Feed', path: '/community', icon: <FaHome size={16} /> },
-          { name: 'Doubts', path: '/community/doubts', icon: <FaQuestionCircle size={16} /> },
-          { name: 'Projects', path: '/community/projects', icon: <FaCompass size={16} /> },
-          { name: 'Careers', path: '/community/career-hub', icon: <FaBriefcase size={16} /> },
-          { name: 'Ecosystem', path: '/community/store', icon: <FaGift size={16} /> }
+          { name: 'Feed', path: '/community', icon: <FaHome size={16} />, prefetch: () => import('./CommunityFeed') },
+          { name: 'Doubts', path: '/community/doubts', icon: <FaQuestionCircle size={16} />, prefetch: () => import('./CommunityDoubts') },
+          { name: 'Projects', path: '/community/projects', icon: <FaCompass size={16} />, prefetch: () => import('./CommunityProjectDiscussions') },
+          { name: 'Careers', path: '/community/career-hub', icon: <FaBriefcase size={16} />, prefetch: () => import('./CareerHub') },
+          { name: 'Ecosystem', path: '/community/store', icon: <FaGift size={16} />, prefetch: () => import('./CommunityStore') }
         ].map(item => {
           const active = location.pathname === item.path;
           return (
             <Link
               key={item.name}
               to={item.path}
+              onMouseEnter={item.prefetch}
+              onTouchStart={item.prefetch}
               className={`flex flex-col items-center justify-center gap-1 py-1 px-3.5 rounded-xl transition-all ${
                 active 
                   ? 'text-purple-400 font-black' 
