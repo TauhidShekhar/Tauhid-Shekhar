@@ -62,14 +62,6 @@ const getIcon = (name, category) => {
 
 const Skills = ({ skillsData }) => {
   const [activeFilter, setActiveFilter] = useState('all');
-  const [skillItems, setSkillItems] = useState(() => {
-    const list = (skillsData && skillsData.length > 0) ? skillsData : defaultSkills;
-    return list.map(skill => ({
-      ...skill,
-      icon: getIcon(skill.name, skill.category)
-    }));
-  });
-
   const categories = [
     { id: 'all', name: 'All' },
     { id: 'programming', name: 'Programming', icon: <FaCode size={13} /> },
@@ -80,9 +72,31 @@ const Skills = ({ skillsData }) => {
     { id: 'concepts', name: 'Concepts', icon: <FaLightbulb size={13} /> },
   ];
 
+  const [skillItems, setSkillItems] = useState(() => {
+    const list = (skillsData && skillsData.length > 0) ? skillsData : [];
+    return list.map(skill => ({
+      ...skill,
+      icon: getIcon(skill.name, skill.category)
+    }));
+  });
 
-
-
+  if (skillsData === null) {
+    return (
+      <section id="skills" className="py-24 bg-slate-50 dark:bg-slate-950/20 relative">
+        <div className="max-w-[960px] mx-auto px-6 md:px-12">
+          <div className="text-center mb-16 animate-pulse">
+            <div className="h-4 w-24 bg-purple-500/20 rounded mx-auto mb-2" />
+            <div className="h-10 w-48 bg-slate-200 dark:bg-white/10 rounded mx-auto" />
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
+              <div key={n} className="h-20 bg-white dark:bg-slate-900 rounded-2xl border border-slate-250/50 dark:border-white/5 animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   useEffect(() => {
     if (skillsData && skillsData.length > 0) {
@@ -90,39 +104,9 @@ const Skills = ({ skillsData }) => {
         ...skill,
         icon: getIcon(skill.name, skill.category)
       })));
-    } else if (skillsData) {
-      setSkillItems(defaultSkills.map(skill => ({
-        ...skill,
-        icon: getIcon(skill.name, skill.category)
-      })));
+    } else {
+      setSkillItems([]);
     }
-  }, [skillsData]);
-
-  useEffect(() => {
-    if (skillsData) return;
-    const fetchSkills = async () => {
-      try {
-        const res = await api.getSkills();
-        if (res.success && res.data.length > 0) {
-          setSkillItems(res.data.map(skill => ({
-            ...skill,
-            icon: getIcon(skill.name, skill.category)
-          })));
-        } else {
-          setSkillItems(defaultSkills.map(skill => ({
-            ...skill,
-            icon: getIcon(skill.name, skill.category)
-          })));
-        }
-      } catch (err) {
-        // Safe local fallback if backend is offline
-        setSkillItems(defaultSkills.map(skill => ({
-          ...skill,
-          icon: getIcon(skill.name, skill.category)
-        })));
-      }
-    };
-    fetchSkills();
   }, [skillsData]);
 
   const filteredSkills = activeFilter === 'all' 

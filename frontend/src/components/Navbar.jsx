@@ -2,11 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
+import { getCacheBustedUrl } from '../utils/cacheBuster';
 import { 
   FaBars, FaTimes, FaSun, FaMoon, FaDownload, 
   FaUserCircle, FaSignOutAlt, FaTachometerAlt, FaChevronDown,
   FaGlobe, FaCog
 } from 'react-icons/fa';
+
+// ... (rest of imports or code remains unchanged)
+
 
 const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -104,7 +108,7 @@ const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
         <div className="text-lg md:text-xl font-black font-title tracking-wider text-black dark:text-white shrink-0">
           <a href="#home" onClick={(e) => handleNavClick(e, '#home')} className="hover:text-primary-blue transition-colors flex items-center gap-2">
             {settings?.logo?.url && (
-              <img src={settings.logo.url} alt={settings?.siteName || 'Logo'} className="h-8 w-auto object-contain" />
+              <img src={getCacheBustedUrl(settings.logo.url, settings.updatedAt)} alt={settings?.siteName || 'Logo'} className="h-8 w-auto object-contain" />
             )}
             <span className="uppercase">{settings?.siteName || 'TAUHID SHEKHAR'}</span>
           </a>

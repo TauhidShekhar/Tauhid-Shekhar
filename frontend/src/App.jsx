@@ -27,14 +27,14 @@ const App = () => {
     settings: null,
     hero: null,
     about: null,
-    skills: [],
-    projects: [],
-    experiences: [],
-    services: [],
+    skills: null,
+    projects: null,
+    experiences: null,
+    services: null,
     activeResume: null,
-    education: [],
-    certificates: [],
-    achievements: []
+    education: null,
+    certificates: null,
+    achievements: null
   });
   const settings = portfolioData.settings;
   const [showCookieNotice, setShowCookieNotice] = useState(false);
@@ -248,12 +248,7 @@ const App = () => {
     }
   }
 
-  // 1. Theme Configuration
-  useEffect(() => {
-    // End loading screen
-    const loadTimer = setTimeout(() => setLoading(false), 500);
-    return () => clearTimeout(loadTimer);
-  }, []);
+
 
   const toggleTheme = () => {
     const newTheme = !isDark;

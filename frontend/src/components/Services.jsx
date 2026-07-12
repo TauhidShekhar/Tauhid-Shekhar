@@ -36,10 +36,7 @@ const defaultServices = [
 
 const Services = ({ servicesData }) => {
   const [services, setServices] = useState(() => {
-    return (servicesData && servicesData.length > 0) ? servicesData : defaultServices;
-  });
-  const [loading, setLoading] = useState(() => {
-    return !(servicesData && servicesData.length > 0);
+    return (servicesData && servicesData.length > 0) ? servicesData : [];
   });
 
   const getIcon = (iconName) => {
@@ -57,33 +54,30 @@ const Services = ({ servicesData }) => {
     }
   };
 
+  if (servicesData === null) {
+    return (
+      <section id="services" className="py-24 bg-slate-50 dark:bg-slate-950/20 relative animate-pulse">
+        <div className="max-w-[1140px] mx-auto px-6 md:px-12">
+          <div className="text-center mb-16">
+            <div className="h-4 w-24 bg-purple-500/20 rounded mx-auto mb-2" />
+            <div className="h-10 w-48 bg-slate-200 dark:bg-white/10 rounded mx-auto" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map(n => (
+              <div key={n} className="h-48 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-white/5 p-6 flex flex-col gap-3" />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   useEffect(() => {
     if (servicesData && servicesData.length > 0) {
       setServices(servicesData);
-      setLoading(false);
-    } else if (servicesData) {
-      setServices(defaultServices);
-      setLoading(false);
+    } else {
+      setServices([]);
     }
-  }, [servicesData]);
-
-  useEffect(() => {
-    if (servicesData) return;
-    const fetchServices = async () => {
-      try {
-        const res = await api.getServices();
-        if (res.success && res.data && res.data.length > 0) {
-          setServices(res.data);
-        } else {
-          setServices(defaultServices);
-        }
-      } catch (err) {
-        setServices(defaultServices);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchServices();
   }, [servicesData]);
 
   // Modal & Form State

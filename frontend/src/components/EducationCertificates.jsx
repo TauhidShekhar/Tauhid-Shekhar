@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../services/api';
 import { FaGraduationCap, FaAward, FaCalendarAlt, FaExternalLinkAlt, FaCheckCircle, FaStar } from 'react-icons/fa';
+import { getCacheBustedUrl } from '../utils/cacheBuster';
 
 const defaultEducation = [
   {
@@ -65,74 +66,53 @@ const defaultAchievements = [
 const EducationCertificates = ({ educationData, certificatesData, achievementsData }) => {
   const [activeTab, setActiveTab] = useState('education');
   const [educationList, setEducationList] = useState(() => {
-    return (educationData && educationData.length > 0) ? educationData : defaultEducation;
+    return (educationData && educationData.length > 0) ? educationData : [];
   });
   const [certsList, setCertsList] = useState(() => {
-    return (certificatesData && certificatesData.length > 0) ? certificatesData : defaultCertificates;
+    return (certificatesData && certificatesData.length > 0) ? certificatesData : [];
   });
   const [achievementsList, setAchievementsList] = useState(() => {
-    return (achievementsData && achievementsData.length > 0) ? achievementsData : defaultAchievements;
+    return (achievementsData && achievementsData.length > 0) ? achievementsData : [];
   });
+
+  if (educationData === null && certificatesData === null) {
+    return (
+      <section id="education" className="py-24 bg-white dark:bg-slate-900/40 relative animate-pulse">
+        <div className="max-w-[960px] mx-auto px-6 md:px-12">
+          <div className="h-10 w-64 bg-slate-200 dark:bg-white/10 rounded mx-auto mb-16 animate-pulse" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {[1, 2].map(n => (
+              <div key={n} className="h-48 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-white/5 animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   useEffect(() => {
     if (educationData && educationData.length > 0) {
       setEducationList(educationData);
-    } else if (educationData) {
-      setEducationList(defaultEducation);
+    } else {
+      setEducationList([]);
     }
   }, [educationData]);
 
   useEffect(() => {
     if (certificatesData && certificatesData.length > 0) {
       setCertsList(certificatesData);
-    } else if (certificatesData) {
-      setCertsList(defaultCertificates);
+    } else {
+      setCertsList([]);
     }
   }, [certificatesData]);
 
   useEffect(() => {
     if (achievementsData && achievementsData.length > 0) {
       setAchievementsList(achievementsData);
-    } else if (achievementsData) {
-      setAchievementsList(defaultAchievements);
+    } else {
+      setAchievementsList([]);
     }
   }, [achievementsData]);
-
-  useEffect(() => {
-    if (educationData && certificatesData && achievementsData) return;
-    const loadData = async () => {
-      try {
-        const [eduRes, certRes, achRes] = await Promise.all([
-          api.getEducation().catch(() => null),
-          api.getCertificates().catch(() => null),
-          api.getAchievements().catch(() => null)
-        ]);
-
-        if (eduRes?.success && eduRes.data && eduRes.data.length > 0) {
-          setEducationList(eduRes.data);
-        } else {
-          setEducationList(defaultEducation);
-        }
-
-        if (certRes?.success && certRes.data && certRes.data.length > 0) {
-          setCertsList(certRes.data);
-        } else {
-          setCertsList(defaultCertificates);
-        }
-
-        if (achRes?.success && achRes.data && achRes.data.length > 0) {
-          setAchievementsList(achRes.data);
-        } else {
-          setAchievementsList(defaultAchievements);
-        }
-      } catch (err) {
-        setEducationList(defaultEducation);
-        setCertsList(defaultCertificates);
-        setAchievementsList(defaultAchievements);
-      }
-    };
-    loadData();
-  }, [educationData, certificatesData, achievementsData]);
 
   const getAchievementIcon = (iconName) => {
     return <FaAward className="text-primary-blue" />;
@@ -297,7 +277,7 @@ const EducationCertificates = ({ educationData, certificatesData, achievementsDa
                       <div>
                         {/* Rating decoration logo */}
                         <div className="aspect-[4/1] w-32 overflow-hidden mb-6 filter dark:invert">
-                          <img src={cert.image?.url || 'assits/Star_rating_4.5.png'} alt="Certificate Badge" className="w-full h-full object-contain" />
+                          <img src={getCacheBustedUrl(cert.image?.url || 'assits/Star_rating_4.5.png', cert.updatedAt)} alt="Certificate Badge" className="w-full h-full object-contain" />
                         </div>
                         <h3 className="text-lg md:text-xl font-black font-title text-black dark:text-white mb-2 leading-tight">
                           {cert.title || cert.name}

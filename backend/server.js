@@ -163,11 +163,28 @@ app.use(xss());
 // Apply general API rate limiter
 app.use('/api', apiLimiter);
 
-// Disable caching for all API responses to ensure fresh DB sync on every request
+// Disable caching for all API responses and register Socket.io content update broadcast
 app.use('/api', (req, res, next) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
+
+  // Intercept json responses to broadcast mutation updates in real-time
+  const originalJson = res.json;
+  res.json = function (data) {
+    originalJson.apply(this, arguments);
+
+    if (['POST', 'PUT', 'DELETE'].includes(req.method) && res.statusCode >= 200 && res.statusCode < 300) {
+      const io = req.app.get('io');
+      if (io) {
+        io.emit('content_update', {
+          path: req.originalUrl,
+          method: req.method
+        });
+      }
+    }
+  };
+
   next();
 });
 

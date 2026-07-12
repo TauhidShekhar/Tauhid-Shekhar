@@ -4,8 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { FaGithub, FaExternalLinkAlt, FaBookOpen, FaTimes, FaCheck, FaHeart, FaRegHeart } from 'react-icons/fa';
+import { getCacheBustedUrl } from '../utils/cacheBuster';
 
-const ProjectGallery = ({ mainImage, images }) => {
+const ProjectGallery = ({ mainImage, images, updatedAt }) => {
   const [activeImg, setActiveImg] = useState(mainImage);
   const allImages = [mainImage, ...(images || [])].filter(Boolean);
 
@@ -16,7 +17,7 @@ const ProjectGallery = ({ mainImage, images }) => {
   if (allImages.length <= 1) {
     return (
       <div className="w-full aspect-[16/9] rounded-2xl overflow-hidden border border-slate-200 dark:border-white/5 mb-8">
-        <img src={mainImage} alt="Project main" className="w-full h-full object-cover" />
+        <img src={getCacheBustedUrl(mainImage, updatedAt)} alt="Project main" className="w-full h-full object-cover" />
       </div>
     );
   }
@@ -24,7 +25,7 @@ const ProjectGallery = ({ mainImage, images }) => {
   return (
     <div className="flex flex-col gap-3 mb-8 w-full">
       <div className="w-full aspect-[16/9] rounded-2xl overflow-hidden border border-slate-200/60 dark:border-white/5 shadow-inner bg-slate-100 dark:bg-slate-900 flex items-center justify-center">
-        <img src={activeImg} alt="Showcase active" className="w-full h-full object-cover transition-all duration-300" />
+        <img src={getCacheBustedUrl(activeImg, updatedAt)} alt="Showcase active" className="w-full h-full object-cover transition-all duration-300" />
       </div>
       
       {/* Thumbnails Row */}
@@ -37,7 +38,7 @@ const ProjectGallery = ({ mainImage, images }) => {
               activeImg === img ? 'border-primary-blue scale-95 shadow-sm' : 'border-slate-200/50 dark:border-white/5 hover:border-slate-400'
             }`}
           >
-            <img src={img} alt="Thumbnail preview" className="w-full h-full object-cover" />
+            <img src={getCacheBustedUrl(img, updatedAt)} alt="Thumbnail preview" className="w-full h-full object-cover" />
           </button>
         ))}
       </div>
@@ -138,13 +139,41 @@ const Projects = ({ projectsData }) => {
   const { user } = useAuth();
   const [activeFilter, setActiveFilter] = useState('all');
   const [activeCaseStudy, setActiveCaseStudy] = useState(null);
+
   const [projectItems, setProjectItems] = useState(() => {
-    const list = (projectsData && projectsData.length > 0) ? projectsData : defaultProjects;
+    const list = (projectsData && projectsData.length > 0) ? projectsData : [];
     return list.map(p => ({
       ...p,
       subtitle: p.subtitle || `${p.tag.toUpperCase()} Project`
     }));
   });
+
+  if (projectsData === null) {
+    return (
+      <section id="projects" className="py-24 bg-slate-50 dark:bg-slate-900/20 relative">
+        <div className="max-w-[1140px] mx-auto px-6 md:px-12">
+          <div className="text-center mb-16">
+            <div className="h-4 w-28 bg-purple-500/20 animate-pulse rounded mx-auto mb-2.5" />
+            <div className="h-10 w-64 bg-slate-200 dark:bg-white/10 animate-pulse rounded mx-auto" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {[1, 2, 3, 4].map(n => (
+              <div key={n} className="rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden bg-white dark:bg-slate-950 p-6 flex flex-col gap-4">
+                <div className="w-full aspect-[16/9] bg-slate-100 dark:bg-white/5 animate-pulse rounded-xl" />
+                <div className="h-6 w-3/4 bg-slate-200 dark:bg-white/10 animate-pulse rounded" />
+                <div className="h-4 w-1/2 bg-slate-150 dark:bg-white/5 animate-pulse rounded" />
+                <div className="flex gap-2">
+                  <div className="h-5 w-16 bg-slate-150 dark:bg-white/5 animate-pulse rounded-lg" />
+                  <div className="h-5 w-16 bg-slate-150 dark:bg-white/5 animate-pulse rounded-lg" />
+                  <div className="h-5 w-16 bg-slate-150 dark:bg-white/5 animate-pulse rounded-lg" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
   const [savedIds, setSavedIds] = useState([]);
   const [newCommentText, setNewCommentText] = useState('');
 
@@ -229,29 +258,9 @@ const Projects = ({ projectsData }) => {
         ...p,
         subtitle: p.subtitle || `${p.tag.toUpperCase()} Project`
       })));
-    } else if (projectsData) {
-      setProjectItems(defaultProjects);
+    } else {
+      setProjectItems([]);
     }
-  }, [projectsData]);
-
-  useEffect(() => {
-    if (projectsData) return;
-    const fetchProjects = async () => {
-      try {
-        const res = await api.getProjects();
-        if (res.success && res.data.length > 0) {
-          setProjectItems(res.data.map(p => ({
-            ...p,
-            subtitle: p.subtitle || `${p.tag.toUpperCase()} Project`
-          })));
-        } else {
-          setProjectItems(defaultProjects);
-        }
-      } catch (err) {
-        setProjectItems(defaultProjects);
-      }
-    };
-    fetchProjects();
   }, [projectsData]);
 
   const filteredProjects = activeFilter === 'all'
@@ -304,7 +313,7 @@ const Projects = ({ projectsData }) => {
                 {/* Image & Overlay */}
                 <div className="relative aspect-[16/9] overflow-hidden group">
                   <img
-                    src={project.image}
+                    src={getCacheBustedUrl(project.image, project.updatedAt)}
                     alt={project.title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
@@ -418,7 +427,7 @@ const Projects = ({ projectsData }) => {
 
                 <div className="overflow-y-auto p-6 md:p-10 text-left">
                   {/* Dynamic Project Showcase Gallery */}
-                  <ProjectGallery mainImage={activeCaseStudy.image} images={activeCaseStudy.images} />
+                  <ProjectGallery mainImage={activeCaseStudy.image} images={activeCaseStudy.images} updatedAt={activeCaseStudy.updatedAt} />
 
                   <span className="text-xs font-bold text-primary-blue uppercase tracking-wider block mb-1">
                     {activeCaseStudy.subtitle}
