@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {
+  checkUsername,
   register,
   verifyEmail,
   login,
@@ -50,6 +51,7 @@ router.get('/verify-email/:token', verifyEmail);
 router.post('/login', loginLimiter, validate(loginSchema), login);
 router.post('/logout', logout);
 router.post('/refresh-token', refreshToken);
+router.get('/check-username', checkUsername);
 router.post('/forgot-password', forgotPasswordLimiter, validate(forgotPasswordSchema), forgotPassword);
 router.post('/verify-reset-token', recoveryLimiter, verifyResetToken);
 router.post('/reset-password/:token', validate(resetPasswordSchema), resetPassword);

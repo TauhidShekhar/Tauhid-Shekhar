@@ -16,6 +16,10 @@ const communityPostSchema = new mongoose.Schema(
       type: String,
       default: ''
     },
+    mediaUrls: {
+      type: [String],
+      default: []
+    },
     mediaType: {
       type: String,
       enum: ['image', 'video', 'pdf', 'document', 'none'],

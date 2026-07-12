@@ -42,11 +42,21 @@ const register = async (req, res, next) => {
     }
 
     let finalUsername = username;
-    if (!finalUsername && email) {
-      finalUsername = email.split('@')[0];
-    }
     if (finalUsername) {
-      finalUsername = finalUsername.trim().toLowerCase().replace(/[^a-zA-Z0-9_]/g, '_');
+      const usernameRegex = /^[a-z][a-z0-9_.]{2,19}$/;
+      if (!usernameRegex.test(finalUsername.trim().toLowerCase())) {
+        return res.status(400).json({
+          success: false,
+          message: 'Username must start with a letter, be between 3 and 20 characters, and contain only lowercase letters, numbers, underscores, and dots.'
+        });
+      }
+      finalUsername = finalUsername.trim().toLowerCase();
+    } else if (email) {
+      finalUsername = email.split('@')[0].trim().toLowerCase().replace(/[^a-z0-9_.]/g, '_');
+      if (!/^[a-z]/.test(finalUsername)) {
+        finalUsername = 'u_' + finalUsername;
+      }
+      finalUsername = finalUsername.substring(0, 20);
       if (finalUsername.length < 3) {
         finalUsername = (finalUsername + '___').substring(0, 3);
       }
@@ -738,6 +748,13 @@ const updateProfile = async (req, res, next) => {
 
     // Validate and update username
     if (username && username.toLowerCase() !== user.username) {
+      const usernameRegex = /^[a-z][a-z0-9_.]{2,19}$/;
+      if (!usernameRegex.test(username.toLowerCase())) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Username must start with a letter, be between 3 and 20 characters, and contain only lowercase letters, numbers, underscores, and dots.' 
+        });
+      }
       const exists = await User.findOne({ username: username.toLowerCase() });
       if (exists) {
         return res.status(400).json({ success: false, message: 'Username is already taken' });
@@ -1199,7 +1216,31 @@ const githubCallback = async (req, res, next) => {
   }
 };
 
+const checkUsername = async (req, res) => {
+  try {
+    const { username, excludeUserId } = req.query;
+    if (!username) {
+      return res.status(400).json({ success: false, message: 'Username is required' });
+    }
+
+    const cleanUsername = username.trim().toLowerCase();
+    const existingUser = await User.findOne({ username: cleanUsername });
+
+    if (existingUser) {
+      if (excludeUserId && existingUser._id.toString() === excludeUserId) {
+        return res.status(200).json({ success: true, available: true });
+      }
+      return res.status(200).json({ success: true, available: false });
+    }
+
+    return res.status(200).json({ success: true, available: true });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Error checking username', error: error.message });
+  }
+};
+
 module.exports = {
+  checkUsername,
   register,
   verifyEmail,
   login,

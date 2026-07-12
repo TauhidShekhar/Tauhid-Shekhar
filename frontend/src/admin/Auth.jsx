@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 import { PasswordStrength } from '../components/ui/PasswordStrength';
 import { FaUserShield, FaLock, FaUser, FaEnvelope, FaEye, FaEyeSlash, FaArrowLeft, FaUserPlus, FaGoogle, FaGithub } from 'react-icons/fa';
+import { useUsernameValidator } from '../hooks/useUsernameValidator';
 
 const Auth = () => {
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -20,6 +21,13 @@ const Auth = () => {
   // Register fields
   const [regFullName, setRegFullName] = useState('');
   const [regEmail, setRegEmail] = useState('');
+  const {
+    username: regUsername,
+    setUsername: setRegUsername,
+    error: usernameError,
+    isValid: isUsernameValid,
+    isChecking: isCheckingUsername
+  } = useUsernameValidator('');
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
   const [showRegPassword, setShowRegPassword] = useState(false);
@@ -111,16 +119,16 @@ const Auth = () => {
       return setError('Passwords do not match');
     }
 
+    if (!isUsernameValid) {
+      return setError(usernameError || 'Please choose a valid and unique username.');
+    }
+
     setLoading(true);
     try {
-      let generatedUsername = regEmail.split('@')[0].trim().toLowerCase().replace(/[^a-zA-Z0-9_]/g, '_');
-      if (generatedUsername.length < 3) {
-        generatedUsername = (generatedUsername + '___').substring(0, 3);
-      }
       const payload = {
         fullName: regFullName,
         email: regEmail,
-        username: generatedUsername,
+        username: regUsername,
         password: regPassword,
         confirmPassword: regConfirmPassword
       };
@@ -130,6 +138,7 @@ const Auth = () => {
         setSuccess('Registration successful! Redirecting to login...');
         setRegFullName('');
         setRegEmail('');
+        setRegUsername('');
         setRegPassword('');
         setRegConfirmPassword('');
         setTimeout(() => {
@@ -311,6 +320,33 @@ const Auth = () => {
             </div>
 
             <div className="flex flex-col gap-1.5">
+              <label htmlFor="regUsername" className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Username</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                  <FaUser size={12} />
+                </span>
+                <input
+                  type="text"
+                  id="regUsername"
+                  value={regUsername}
+                  onChange={(e) => setRegUsername(e.target.value)}
+                  required
+                  placeholder="e.g. tauhid_shekhar"
+                  className={`w-full pl-11 pr-5 py-3 rounded-xl border bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none text-xs transition-colors ${
+                    regUsername && usernameError ? 'border-red-500 focus:border-red-500' : regUsername && isUsernameValid ? 'border-green-500 focus:border-green-500' : 'border-slate-200 dark:border-white/5 focus:border-primary-blue'
+                  }`}
+                />
+              </div>
+              {regUsername && (
+                <div className="text-[10px] font-medium leading-tight mt-0.5 px-1">
+                  {isCheckingUsername && <span className="text-slate-400 animate-pulse">Checking availability...</span>}
+                  {!isCheckingUsername && usernameError && <span className="text-red-500">{usernameError}</span>}
+                  {!isCheckingUsername && !usernameError && isUsernameValid && <span className="text-green-500">Username is available!</span>}
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-1.5">
               <label htmlFor="regEmail" className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Email Address</label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
@@ -384,8 +420,8 @@ const Auth = () => {
 
             <button
               type="submit"
-              disabled={loading}
-              className="w-full py-3.5 bg-primary-blue hover:bg-accent-blue text-white rounded-xl font-bold text-sm shadow-lg shadow-primary-blue/15 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
+              disabled={loading || !isUsernameValid || isCheckingUsername}
+              className="w-full py-3.5 bg-primary-blue hover:bg-accent-blue disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-bold text-sm shadow-lg shadow-primary-blue/15 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />

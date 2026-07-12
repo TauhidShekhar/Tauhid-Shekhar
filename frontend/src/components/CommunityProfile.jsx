@@ -9,6 +9,7 @@ import {
   FaGraduationCap, FaFilePdf, FaCheckCircle, FaUserTag, FaBookmark, FaSave,
   FaMapPin, FaGlobe, FaChevronRight, FaTimes, FaUserCheck, FaCoins
 } from 'react-icons/fa';
+import { useUsernameValidator } from '../hooks/useUsernameValidator';
 
 const getAbsolutePdfUrl = (url) => {
   if (!url) return '';
@@ -28,6 +29,13 @@ const CommunityProfile = () => {
   
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const {
+    username: valUsername,
+    setUsername: setValUsername,
+    error: usernameError,
+    isValid: isUsernameValid,
+    isChecking: isCheckingUsername
+  } = useUsernameValidator('', id || '');
   const [followed, setFollowed] = useState(false);
   const [activeTab, setActiveTab] = useState('overview'); // overview, posts, groups, about, edit, settings
   const [userPosts, setUserPosts] = useState([]);
@@ -117,6 +125,7 @@ const CommunityProfile = () => {
             interests: finalProfile.interests || [],
             hobbies: finalProfile.hobbies || []
           });
+          setValUsername(finalProfile.username || '');
           setAvatarPreview(finalProfile.avatar?.url || '');
           setCoverPreview(finalProfile.coverPhoto?.url || '');
         }
@@ -672,10 +681,23 @@ const CommunityProfile = () => {
               <input 
                 type="text" 
                 value={editData.username} 
-                onChange={e => setEditData({...editData, username: e.target.value})} 
-                className="w-full text-xs text-white border border-white/5 bg-[#1e1e24] p-3 rounded-xl focus:outline-none focus:border-purple-500"
+                onChange={e => {
+                  const val = e.target.value;
+                  setEditData({...editData, username: val});
+                  setValUsername(val);
+                }} 
+                className={`w-full text-xs text-white border bg-[#1e1e24] p-3 rounded-xl focus:outline-none transition-colors ${
+                  editData.username !== profile?.username && usernameError ? 'border-red-500 focus:border-red-500' : editData.username !== profile?.username && isUsernameValid ? 'border-green-500 focus:border-green-500' : 'border-white/5 focus:border-purple-500'
+                }`}
                 required
               />
+              {editData.username !== profile?.username && editData.username && (
+                <div className="text-[10px] font-medium leading-tight mt-0.5 px-1">
+                  {isCheckingUsername && <span className="text-slate-400 animate-pulse">Checking availability...</span>}
+                  {!isCheckingUsername && usernameError && <span className="text-red-500">{usernameError}</span>}
+                  {!isCheckingUsername && !usernameError && isUsernameValid && <span className="text-green-500">Username is available!</span>}
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col gap-2 sm:col-span-2">
@@ -764,10 +786,10 @@ const CommunityProfile = () => {
             >
               Cancel
             </button>
-            <button
+             <button
               type="submit"
-              disabled={saving}
-              className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider cursor-pointer shadow-md shadow-purple-600/10 flex items-center justify-center gap-1.5 transition-colors"
+              disabled={saving || (editData.username !== profile?.username && (!isUsernameValid || isCheckingUsername))}
+              className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-[10px] font-black uppercase tracking-wider cursor-pointer shadow-md shadow-purple-600/10 flex items-center justify-center gap-1.5 transition-colors"
             >
               {saving ? 'Saving...' : <><FaSave /> Save Changes</>}
             </button>

@@ -6,6 +6,7 @@ import {
   FaUserCircle, FaLock, FaHistory, FaGlobe, FaSignOutAlt, 
   FaUserEdit, FaShieldAlt, FaHeart, FaShoppingBag, FaExclamationTriangle, FaUsers 
 } from 'react-icons/fa';
+import { useUsernameValidator } from '../hooks/useUsernameValidator';
 
 const UserDashboard = () => {
   const { user, logout, updateProfile, isAuthenticated, isLoading } = useAuth();
@@ -16,7 +17,13 @@ const UserDashboard = () => {
   // Profile state
   const [fullName, setFullName] = useState(user?.fullName || '');
   const [phone, setPhone] = useState(user?.phone || '');
-  const [username, setUsername] = useState(user?.username || '');
+  const {
+    username,
+    setUsername,
+    error: usernameError,
+    isValid: isUsernameValid,
+    isChecking: isCheckingUsername
+  } = useUsernameValidator(user?.username || '', user?._id || '');
   const [email, setEmail] = useState(user?.email || '');
   const [avatar, setAvatar] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(user?.avatar?.url || '');
@@ -405,8 +412,17 @@ const UserDashboard = () => {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-primary-blue text-sm transition-colors"
+                    className={`w-full px-4 py-3 rounded-xl border bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none text-sm transition-colors ${
+                      username !== user?.username && usernameError ? 'border-red-500 focus:border-red-500' : username !== user?.username && isUsernameValid ? 'border-green-500 focus:border-green-500' : 'border-slate-200 dark:border-white/5 focus:border-primary-blue'
+                    }`}
                   />
+                  {username !== user?.username && username && (
+                    <div className="text-[10px] font-medium leading-tight mt-0.5 px-1">
+                      {isCheckingUsername && <span className="text-slate-400 animate-pulse">Checking availability...</span>}
+                      {!isCheckingUsername && usernameError && <span className="text-red-500">{usernameError}</span>}
+                      {!isCheckingUsername && !usernameError && isUsernameValid && <span className="text-green-500">Username is available!</span>}
+                    </div>
+                  )}
                 </div>
                 <div className="flex flex-col gap-2">
                   <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Email Address</label>
@@ -420,10 +436,10 @@ const UserDashboard = () => {
                 </div>
               </div>
 
-              <button
+               <button
                 type="submit"
-                disabled={loading}
-                className="w-fit px-8 py-3 bg-primary-blue hover:bg-accent-blue text-white rounded-xl font-bold text-sm transition-all shadow-md cursor-pointer"
+                disabled={loading || (username !== user?.username && (!isUsernameValid || isCheckingUsername))}
+                className="w-fit px-8 py-3 bg-primary-blue hover:bg-accent-blue disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-bold text-sm transition-all shadow-md cursor-pointer"
               >
                 {loading ? 'Saving Changes...' : 'Save Profile Details'}
               </button>

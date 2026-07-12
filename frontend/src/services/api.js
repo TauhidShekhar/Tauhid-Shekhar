@@ -112,6 +112,9 @@ export const api = {
   verifyEmail: async (token) => {
     return apiRequest(`/auth/verify-email/${token}`);
   },
+  checkUsernameAvailability: async (username, excludeUserId = '') => {
+    return apiRequest(`/auth/check-username?username=${encodeURIComponent(username)}&excludeUserId=${excludeUserId}`);
+  },
   login: async (identifier, password, rememberMe = false) => {
     return apiRequest('/auth/login', {
       method: 'POST',
