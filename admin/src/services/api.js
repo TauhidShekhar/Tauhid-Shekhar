@@ -189,6 +189,12 @@ export const api = {
   deleteSkill: async (id) => {
     return apiRequest(`/skills/${id}`, { method: 'DELETE' });
   },
+  reorderSkills: async (orders) => {
+    return apiRequest('/skills/reorder', {
+      method: 'POST',
+      body: JSON.stringify({ orders })
+    });
+  },
 
   // Projects
   getProjects: async () => {
@@ -208,6 +214,12 @@ export const api = {
   },
   deleteProject: async (id) => {
     return apiRequest(`/projects/${id}`, { method: 'DELETE' });
+  },
+  reorderProjects: async (orders) => {
+    return apiRequest('/projects/reorder', {
+      method: 'POST',
+      body: JSON.stringify({ orders })
+    });
   },
   addProjectComment: async (projectId, content) => {
     return apiRequest(`/projects/${projectId}/comments`, {

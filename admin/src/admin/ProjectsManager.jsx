@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
-import { FaTrash, FaEdit, FaPlusCircle, FaTimes, FaCheck, FaGlobe, FaGithub, FaCloudUploadAlt, FaSearch } from 'react-icons/fa';
+import { 
+  FaTrash, FaEdit, FaPlusCircle, FaTimes, FaCheck, FaGlobe, FaGithub, FaCloudUploadAlt, FaSearch,
+  FaChevronUp, FaChevronDown, FaArrowUp, FaArrowDown, FaGripVertical
+} from 'react-icons/fa';
 
 const ProjectsManager = () => {
   const [projects, setProjects] = useState([]);
@@ -17,6 +20,13 @@ const ProjectsManager = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
+  // Reordering, Sorting & Bulk Selection states
+  const [sortBy, setSortBy] = useState('displayOrder');
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [bulkPositionInput, setBulkPositionInput] = useState('');
+  const [draggedIndex, setDraggedIndex] = useState(null);
+  const [dragOverIndex, setDragOverIndex] = useState(null);
+
   // Form states
   const [isEditing, setIsEditing] = useState(false);
   const [currentId, setCurrentId] = useState(null);
@@ -30,7 +40,8 @@ const ProjectsManager = () => {
     description: '',
     techInput: '',
     featuresInput: '',
-    images: []
+    images: [],
+    displayOrder: 0
   });
 
   const [showcaseUploading, setShowcaseUploading] = useState(false);
@@ -198,7 +209,8 @@ const ProjectsManager = () => {
       description: formData.description,
       tech,
       features,
-      images: formData.images || []
+      images: formData.images || [],
+      displayOrder: formData.displayOrder ? Number(formData.displayOrder) : 0
     };
 
     try {
@@ -234,7 +246,8 @@ const ProjectsManager = () => {
       description: '',
       techInput: '',
       featuresInput: '',
-      images: []
+      images: [],
+      displayOrder: 0
     });
   };
 
@@ -251,7 +264,8 @@ const ProjectsManager = () => {
       description: project.description || '',
       techInput: (project.tech || []).join(', '),
       featuresInput: (project.features || []).join('\n'),
-      images: project.images || []
+      images: project.images || [],
+      displayOrder: project.displayOrder || 0
     });
   };
 
@@ -275,6 +289,146 @@ const ProjectsManager = () => {
     resetForm();
   };
 
+  // Save new order to backend
+  const saveNewOrders = async (orderedList) => {
+    try {
+      const orders = orderedList.map((p, index) => ({
+        id: p._id,
+        displayOrder: index + 1
+      }));
+      const res = await api.reorderProjects(orders);
+      if (res.success) {
+        fetchProjects();
+      } else {
+        alert(res.message || 'Failed to save new project order');
+      }
+    } catch (err) {
+      console.error('Reorder request error:', err);
+      alert('Error updating project sorting order');
+    }
+  };
+
+  // Drag and drop handlers for rows
+  const handleRowDragStart = (e, index) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleRowDragOver = (e, index) => {
+    e.preventDefault();
+    if (draggedIndex === index) return;
+    setDragOverIndex(index);
+  };
+
+  const handleRowDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleRowDrop = (e, targetIndex) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === targetIndex) return;
+
+    const list = [...sortedProjects];
+    const draggedItem = list[draggedIndex];
+    list.splice(draggedIndex, 1);
+    list.splice(targetIndex, 0, draggedItem);
+
+    saveNewOrders(list);
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  // Quick Move handlers
+  const moveProjectToTop = (index) => {
+    const list = [...sortedProjects];
+    const item = list[index];
+    list.splice(index, 1);
+    list.unshift(item);
+    saveNewOrders(list);
+  };
+
+  const moveProjectUp = (index) => {
+    if (index === 0) return;
+    const list = [...sortedProjects];
+    const item = list[index];
+    list[index] = list[index - 1];
+    list[index - 1] = item;
+    saveNewOrders(list);
+  };
+
+  const moveProjectDown = (index) => {
+    if (index === sortedProjects.length - 1) return;
+    const list = [...sortedProjects];
+    const item = list[index];
+    list[index] = list[index + 1];
+    list[index + 1] = item;
+    saveNewOrders(list);
+  };
+
+  const moveProjectToBottom = (index) => {
+    const list = [...sortedProjects];
+    const item = list[index];
+    list.splice(index, 1);
+    list.push(item);
+    saveNewOrders(list);
+  };
+
+  // Bulk Selection handlers
+  const toggleProjectSelect = (id) => {
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const toggleProjectSelectAll = () => {
+    const displayedIds = displayedProjects.map(p => p._id);
+    const allSelected = displayedIds.every(id => selectedIds.includes(id));
+    if (allSelected) {
+      setSelectedIds(prev => prev.filter(id => !displayedIds.includes(id)));
+    } else {
+      setSelectedIds(prev => [...new Set([...prev, ...displayedIds])]);
+    }
+  };
+
+  const moveSelectedProjectsToTop = () => {
+    if (selectedIds.length === 0) return;
+    const selected = sortedProjects.filter(p => selectedIds.includes(p._id));
+    const unselected = sortedProjects.filter(p => !selectedIds.includes(p._id));
+    const newList = [...selected, ...unselected];
+    saveNewOrders(newList);
+    setSelectedIds([]);
+  };
+
+  const moveSelectedProjectsToBottom = () => {
+    if (selectedIds.length === 0) return;
+    const selected = sortedProjects.filter(p => selectedIds.includes(p._id));
+    const unselected = sortedProjects.filter(p => !selectedIds.includes(p._id));
+    const newList = [...unselected, ...selected];
+    saveNewOrders(newList);
+    setSelectedIds([]);
+  };
+
+  const assignSelectedProjectsPosition = () => {
+    const targetPos = parseInt(bulkPositionInput, 10);
+    if (isNaN(targetPos) || targetPos < 1 || targetPos > sortedProjects.length) {
+      alert(`Please enter a valid position between 1 and ${sortedProjects.length}`);
+      return;
+    }
+    if (selectedIds.length === 0) return;
+
+    const selected = sortedProjects.filter(p => selectedIds.includes(p._id));
+    const unselected = sortedProjects.filter(p => !selectedIds.includes(p._id));
+
+    const targetIdx = targetPos - 1;
+    const newList = [...unselected];
+    newList.splice(targetIdx, 0, ...selected);
+
+    saveNewOrders(newList);
+    setSelectedIds([]);
+    setBulkPositionInput('');
+  };
+
   // Search & Filter computation
   const filteredProjects = projects.filter(p => {
     const matchesSearch = p.title.toLowerCase().includes(search.toLowerCase()) || 
@@ -283,12 +437,34 @@ const ProjectsManager = () => {
     return matchesSearch && matchesFilter;
   });
 
+  // Sorting calculation
+  const getSortedProjects = () => {
+    const list = [...filteredProjects];
+    if (sortBy === 'displayOrder') {
+      return list.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+    }
+    if (sortBy === 'latest') {
+      return list.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    }
+    if (sortBy === 'oldest') {
+      return list.sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+    }
+    if (sortBy === 'alpha-asc') {
+      return list.sort((a, b) => a.title.localeCompare(b.title));
+    }
+    if (sortBy === 'alpha-desc') {
+      return list.sort((a, b) => b.title.localeCompare(a.title));
+    }
+    return list;
+  };
+  const sortedProjects = getSortedProjects();
+
   // Pagination calculation
-  const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
-  const displayedProjects = filteredProjects.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const disablePagination = sortBy === 'displayOrder';
+  const totalPages = disablePagination ? 1 : Math.ceil(sortedProjects.length / itemsPerPage);
+  const displayedProjects = disablePagination 
+    ? sortedProjects 
+    : sortedProjects.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   if (loading && projects.length === 0) {
     return (
@@ -543,6 +719,21 @@ const ProjectsManager = () => {
               />
             </div>
 
+            {/* Display Order */}
+            <div className="flex flex-col gap-2">
+              <label htmlFor="displayOrder" className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Display Order</label>
+              <input
+                type="number"
+                id="displayOrder"
+                name="displayOrder"
+                value={formData.displayOrder || 0}
+                onChange={handleInputChange}
+                min="0"
+                placeholder="0"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-primary-blue dark:focus:border-primary-blue text-sm transition-colors"
+              />
+            </div>
+
             {/* Features */}
             <div className="flex flex-col gap-2">
               <label htmlFor="featuresInput" className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Key Features (one per line)</label>
@@ -584,10 +775,19 @@ const ProjectsManager = () => {
           <div className="glass p-6 rounded-2xl border border-slate-200/60 dark:border-white/5 shadow-sm">
             
             {/* Header + Search/Filter block */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-              <h3 className="text-lg font-bold font-title text-black dark:text-white">Projects Directory</h3>
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={displayedProjects.length > 0 && displayedProjects.every(p => selectedIds.includes(p._id))}
+                  onChange={toggleProjectSelectAll}
+                  className="rounded border-slate-350 dark:border-white/10 text-primary-blue focus:ring-primary-blue cursor-pointer"
+                  title="Select all on this page"
+                />
+                <h3 className="text-lg font-bold font-title text-black dark:text-white">Projects Directory</h3>
+              </div>
               
-              <div className="flex flex-wrap md:flex-nowrap gap-2 w-full md:w-auto">
+              <div className="flex flex-wrap md:flex-nowrap gap-2 w-full xl:w-auto">
                 {/* Search */}
                 <div className="relative flex-1 md:flex-initial">
                   <input
@@ -595,7 +795,7 @@ const ProjectsManager = () => {
                     value={search}
                     onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
                     placeholder="Search projects..."
-                    className="w-full md:w-44 pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-primary-blue text-xs"
+                    className="w-full md:w-36 pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-primary-blue text-xs"
                   />
                   <FaSearch className="absolute left-3 top-2.5 text-slate-400" size={10} />
                 </div>
@@ -611,8 +811,61 @@ const ProjectsManager = () => {
                     <option key={cat.id} value={cat.id}>{cat.name}</option>
                   ))}
                 </select>
+
+                {/* Sort By Selector */}
+                <select
+                  value={sortBy}
+                  onChange={(e) => { setSortBy(e.target.value); setCurrentPage(1); }}
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-primary-blue text-xs cursor-pointer"
+                >
+                  <option value="displayOrder">Order (Drag & Drop)</option>
+                  <option value="latest">Latest Created</option>
+                  <option value="oldest">Oldest Created</option>
+                  <option value="alpha-asc">Alphabetical (A-Z)</option>
+                  <option value="alpha-desc">Alphabetical (Z-A)</option>
+                </select>
               </div>
             </div>
+
+            {/* Bulk Actions Panel */}
+            {selectedIds.length > 0 && (
+              <div className="flex flex-wrap items-center justify-between gap-3 p-3 mb-6 rounded-xl bg-primary-blue/5 border border-primary-blue/20">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-primary-blue dark:text-blue-400">{selectedIds.length} Selected</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={moveSelectedProjectsToTop}
+                    className="px-2.5 py-1.5 rounded-lg bg-primary-blue hover:bg-accent-blue text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
+                    title="Move selected to top"
+                  >
+                    <FaArrowUp size={10} /> Top
+                  </button>
+                  <button
+                    onClick={moveSelectedProjectsToBottom}
+                    className="px-2.5 py-1.5 rounded-lg bg-primary-blue hover:bg-accent-blue text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
+                    title="Move selected to bottom"
+                  >
+                    <FaArrowDown size={10} /> Bottom
+                  </button>
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      value={bulkPositionInput}
+                      onChange={(e) => setBulkPositionInput(e.target.value)}
+                      placeholder="Pos"
+                      className="w-14 px-2 py-1 rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue"
+                    />
+                    <button
+                      onClick={assignSelectedProjectsPosition}
+                      className="px-2.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-all cursor-pointer"
+                    >
+                      Go
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {displayedProjects.length === 0 ? (
               <div className="py-20 text-center text-sm text-slate-450 dark:text-slate-400">
@@ -620,68 +873,151 @@ const ProjectsManager = () => {
               </div>
             ) : (
               <div className="flex flex-col gap-4">
-                {displayedProjects.map((proj) => (
-                  <div
-                    key={proj._id}
-                    className="p-4 rounded-xl border border-slate-200/40 dark:border-white/5 bg-slate-50/50 dark:bg-white/5 flex items-start gap-4 hover:scale-[1.01] transition-transform duration-300 text-left"
-                  >
-                    <img
-                      src={proj.image || 'assits/Project2.jpg'}
-                      alt={proj.title}
-                      className="w-20 aspect-[16/9] rounded-lg object-cover border border-slate-200 dark:border-white/5 shrink-0"
-                    />
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start gap-2">
-                        <div>
-                          <h4 className="text-sm font-bold text-black dark:text-white leading-tight truncate">{proj.title}</h4>
-                          <span className="inline-block mt-1 px-2 py-0.5 rounded bg-slate-100 dark:bg-white/10 text-[10px] font-bold text-slate-550 dark:text-slate-400 uppercase tracking-wide">
-                            {proj.tag}
-                          </span>
+                {displayedProjects.map((proj, idx) => {
+                  const isSelected = selectedIds.includes(proj._id);
+                  const isDragOverThis = dragOverIndex === idx;
+                  return (
+                    <div
+                      key={proj._id}
+                      draggable={sortBy === 'displayOrder'}
+                      onDragStart={(e) => handleRowDragStart(e, idx)}
+                      onDragOver={(e) => handleRowDragOver(e, idx)}
+                      onDragEnd={handleRowDragEnd}
+                      onDrop={(e) => handleRowDrop(e, idx)}
+                      className={`p-4 rounded-xl border flex items-start gap-4 transition-all duration-350 text-left relative ${
+                        isDragOverThis 
+                          ? 'border-primary-blue bg-primary-blue/5 scale-[1.01] shadow-md shadow-primary-blue/5' 
+                          : isSelected 
+                            ? 'border-primary-blue/30 bg-primary-blue/5'
+                            : 'border-slate-200/40 dark:border-white/5 bg-slate-50/50 dark:bg-white/5 hover:scale-[1.01]'
+                      }`}
+                    >
+                      {/* Checkbox for selection */}
+                      <div className="flex items-center self-center shrink-0">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleProjectSelect(proj._id)}
+                          className="rounded border-slate-350 dark:border-white/10 text-primary-blue focus:ring-primary-blue cursor-pointer"
+                        />
+                      </div>
+
+                      {/* Drag handle */}
+                      {sortBy === 'displayOrder' && (
+                        <div className="text-slate-400 dark:text-slate-650 self-center cursor-grab active:cursor-grabbing p-1 hover:text-slate-600 dark:hover:text-slate-400 shrink-0">
+                          <FaGripVertical size={14} />
+                        </div>
+                      )}
+
+                      {/* Project Thumbnail Image */}
+                      <img
+                        src={proj.image || 'assits/Project2.jpg'}
+                        alt={proj.title}
+                        className="w-20 aspect-[16/9] rounded-lg object-cover border border-slate-200 dark:border-white/5 shrink-0"
+                      />
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start gap-2">
+                          <div>
+                            <h4 className="text-sm font-bold text-black dark:text-white leading-tight truncate">{proj.title}</h4>
+                            <div className="flex gap-1.5 items-center mt-1">
+                              <span className="inline-block px-2 py-0.5 rounded bg-slate-100 dark:bg-white/10 text-[10px] font-bold text-slate-550 dark:text-slate-400 uppercase tracking-wide">
+                                {proj.tag}
+                              </span>
+                              <span className="inline-block px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900/35 text-[10px] font-bold text-blue-650 dark:text-blue-400 uppercase tracking-wide">
+                                Order: {proj.displayOrder || 0}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {/* Quick Move Buttons (Only if sort is by displayOrder) */}
+                            {sortBy === 'displayOrder' && (
+                              <div className="flex gap-0.5 mr-1 bg-slate-150 dark:bg-white/5 p-0.5 rounded-lg border border-slate-200/50 dark:border-white/5">
+                                <button
+                                  type="button"
+                                  onClick={() => moveProjectToTop(idx)}
+                                  disabled={idx === 0}
+                                  className="p-1 rounded text-slate-500 hover:text-primary-blue hover:bg-slate-200 dark:hover:bg-white/5 disabled:opacity-30 cursor-pointer"
+                                  title="Move to top"
+                                >
+                                  <FaChevronUp size={9} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => moveProjectUp(idx)}
+                                  disabled={idx === 0}
+                                  className="p-1 rounded text-slate-500 hover:text-primary-blue hover:bg-slate-200 dark:hover:bg-white/5 disabled:opacity-30 cursor-pointer"
+                                  title="Move up"
+                                >
+                                  <FaArrowUp size={9} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => moveProjectDown(idx)}
+                                  disabled={idx === displayedProjects.length - 1}
+                                  className="p-1 rounded text-slate-500 hover:text-primary-blue hover:bg-slate-200 dark:hover:bg-white/5 disabled:opacity-30 cursor-pointer"
+                                  title="Move down"
+                                >
+                                  <FaArrowDown size={9} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => moveProjectToBottom(idx)}
+                                  disabled={idx === displayedProjects.length - 1}
+                                  className="p-1 rounded text-slate-500 hover:text-primary-blue hover:bg-slate-200 dark:hover:bg-white/5 disabled:opacity-30 cursor-pointer"
+                                  title="Move to bottom"
+                                >
+                                  <FaChevronDown size={9} />
+                                </button>
+                              </div>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() => handleEditClick(proj)}
+                              className="p-2 rounded-lg bg-primary-blue/10 hover:bg-primary-blue/20 text-primary-blue border border-primary-blue/20 cursor-pointer"
+                              title="Edit"
+                            >
+                              <FaEdit size={11} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteClick(proj._id)}
+                              className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 cursor-pointer"
+                              title="Delete"
+                            >
+                              <FaTrash size={11} />
+                            </button>
+                          </div>
                         </div>
                         
-                        <div className="flex gap-1.5 shrink-0">
-                          <button
-                            onClick={() => handleEditClick(proj)}
-                            className="p-2 rounded-lg bg-primary-blue/10 hover:bg-primary-blue/20 text-primary-blue border border-primary-blue/20 cursor-pointer"
-                            title="Edit"
-                          >
-                            <FaEdit size={11} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteClick(proj._id)}
-                            className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 cursor-pointer"
-                            title="Delete"
-                          >
-                            <FaTrash size={11} />
-                          </button>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-2 leading-relaxed">
+                          {proj.description}
+                        </p>
+
+                        <div className="flex items-center gap-3.5 mt-3 pt-3 border-t border-slate-200/40 dark:border-white/5">
+                          {proj.github && (
+                            <a href={proj.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-slate-500 hover:text-primary-blue">
+                              <FaGithub size={11} /> Source
+                            </a>
+                          )}
+                          {proj.demo && (
+                            <a href={proj.demo} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-slate-500 hover:text-primary-blue">
+                              <FaGlobe size={11} /> Demo
+                            </a>
+                          )}
                         </div>
                       </div>
-                      
-                      <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-2 leading-relaxed">
-                        {proj.description}
-                      </p>
-
-                      <div className="flex items-center gap-3.5 mt-3 pt-3 border-t border-slate-200/40 dark:border-white/5">
-                        {proj.github && (
-                          <a href={proj.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-slate-500 hover:text-primary-blue">
-                            <FaGithub size={11} /> Source
-                          </a>
-                        )}
-                        {proj.demo && (
-                          <a href={proj.demo} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-slate-500 hover:text-primary-blue">
-                            <FaGlobe size={11} /> Demo
-                          </a>
-                        )}
-                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
 
                 {/* Pagination Controls */}
                 {totalPages > 1 && (
                   <div className="flex justify-center items-center gap-2 mt-6">
                     <button
+                      type="button"
                       onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                       disabled={currentPage === 1}
                       className="px-3 py-1 rounded bg-slate-100 dark:bg-white/5 text-xs text-slate-600 dark:text-slate-400 disabled:opacity-50 cursor-pointer"
@@ -692,6 +1028,7 @@ const ProjectsManager = () => {
                       Page {currentPage} of {totalPages}
                     </span>
                     <button
+                      type="button"
                       onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                       disabled={currentPage === totalPages}
                       className="px-3 py-1 rounded bg-slate-100 dark:bg-white/5 text-xs text-slate-600 dark:text-slate-400 disabled:opacity-50 cursor-pointer"

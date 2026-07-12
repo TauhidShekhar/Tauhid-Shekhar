@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
-import { FaTrash, FaEdit, FaPlusCircle, FaTimes, FaCheck } from 'react-icons/fa';
+import { 
+  FaTrash, FaEdit, FaPlusCircle, FaTimes, FaCheck,
+  FaArrowUp, FaArrowDown, FaChevronUp, FaChevronDown, FaGripVertical 
+} from 'react-icons/fa';
 
 const SkillsManager = () => {
   const [skills, setSkills] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Form states
   const [isEditing, setIsEditing] = useState(false);
   const [currentId, setCurrentId] = useState(null);
@@ -16,13 +19,18 @@ const SkillsManager = () => {
     displayOrder: 0
   });
 
+  // Sorting, Drag & Drop & Bulk Selection states
+  const [sortBy, setSortBy] = useState('displayOrder');
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [bulkPositionInput, setBulkPositionInput] = useState('');
+  const [draggedIndex, setDraggedIndex] = useState(null);
+  const [dragOverIndex, setDragOverIndex] = useState(null);
+
   const categories = [
-    { id: 'programming', name: 'Programming' },
     { id: 'frontend', name: 'Frontend' },
     { id: 'backend', name: 'Backend' },
-    { id: 'database', name: 'Database' },
-    { id: 'tools', name: 'Tools' },
-    { id: 'concepts', name: 'Concepts' }
+    { id: 'database', name: 'Database / DevOps' },
+    { id: 'other', name: 'Others' }
   ];
 
   const fetchSkills = async () => {
@@ -107,6 +115,164 @@ const SkillsManager = () => {
     setFormData({ name: '', percentage: 80, category: 'frontend', displayOrder: 0 });
   };
 
+  // Sorting calculations
+  const getSortedSkills = () => {
+    const list = [...skills];
+    if (sortBy === 'displayOrder') {
+      return list.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+    }
+    if (sortBy === 'latest') {
+      return list.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    }
+    if (sortBy === 'oldest') {
+      return list.sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+    }
+    if (sortBy === 'alpha-asc') {
+      return list.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    if (sortBy === 'alpha-desc') {
+      return list.sort((a, b) => b.name.localeCompare(a.name));
+    }
+    return list;
+  };
+  const sortedSkills = getSortedSkills();
+
+  // Save new orders
+  const saveNewOrders = async (newList) => {
+    const updatedWithOrders = newList.map((item, idx) => ({
+      ...item,
+      displayOrder: idx + 1
+    }));
+    setSkills(updatedWithOrders);
+    try {
+      const orders = updatedWithOrders.map(item => ({
+        id: item._id,
+        displayOrder: item.displayOrder
+      }));
+      await api.reorderSkills(orders);
+    } catch (err) {
+      alert('Error updating orders: ' + err.message);
+    }
+  };
+
+  // Drag & Drop
+  const handleDragStart = (e, index) => {
+    if (sortBy !== 'displayOrder') return;
+    setDraggedIndex(index);
+    e.dataTransfer.setData('text/plain', index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e, index) => {
+    if (sortBy !== 'displayOrder') return;
+    e.preventDefault();
+    if (dragOverIndex !== index) {
+      setDragOverIndex(index);
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = async (e, targetIndex) => {
+    if (sortBy !== 'displayOrder') return;
+    e.preventDefault();
+    const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
+    if (isNaN(sourceIndex) || sourceIndex === targetIndex) {
+      setDragOverIndex(null);
+      return;
+    }
+
+    const reordered = [...sortedSkills];
+    const [moved] = reordered.splice(sourceIndex, 1);
+    reordered.splice(targetIndex, 0, moved);
+
+    await saveNewOrders(reordered);
+    setDragOverIndex(null);
+  };
+
+  // Quick Move
+  const moveSkillToTop = async (index) => {
+    const reordered = [...sortedSkills];
+    const [moved] = reordered.splice(index, 1);
+    reordered.unshift(moved);
+    await saveNewOrders(reordered);
+  };
+
+  const moveSkillUp = async (index) => {
+    if (index === 0) return;
+    const reordered = [...sortedSkills];
+    const temp = reordered[index];
+    reordered[index] = reordered[index - 1];
+    reordered[index - 1] = temp;
+    await saveNewOrders(reordered);
+  };
+
+  const moveSkillDown = async (index) => {
+    if (index === sortedSkills.length - 1) return;
+    const reordered = [...sortedSkills];
+    const temp = reordered[index];
+    reordered[index] = reordered[index + 1];
+    reordered[index + 1] = temp;
+    await saveNewOrders(reordered);
+  };
+
+  const moveSkillToBottom = async (index) => {
+    const reordered = [...sortedSkills];
+    const [moved] = reordered.splice(index, 1);
+    reordered.push(moved);
+    await saveNewOrders(reordered);
+  };
+
+  // Bulk selection functions
+  const toggleSelect = (id) => {
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === sortedSkills.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(sortedSkills.map(s => s._id));
+    }
+  };
+
+  const moveSelectedToTop = async () => {
+    const selected = sortedSkills.filter(s => selectedIds.includes(s._id));
+    const unselected = sortedSkills.filter(s => !selectedIds.includes(s._id));
+    const reordered = [...selected, ...unselected];
+    await saveNewOrders(reordered);
+    setSelectedIds([]);
+  };
+
+  const moveSelectedToBottom = async () => {
+    const selected = sortedSkills.filter(s => selectedIds.includes(s._id));
+    const unselected = sortedSkills.filter(s => !selectedIds.includes(s._id));
+    const reordered = [...unselected, ...selected];
+    await saveNewOrders(reordered);
+    setSelectedIds([]);
+  };
+
+  const assignSelectedPosition = async () => {
+    const pos = parseInt(bulkPositionInput, 10);
+    if (isNaN(pos) || pos < 1 || pos > skills.length) {
+      alert(`Please enter a valid position between 1 and ${skills.length}`);
+      return;
+    }
+    const selected = sortedSkills.filter(s => selectedIds.includes(s._id));
+    const unselected = sortedSkills.filter(s => !selectedIds.includes(s._id));
+    
+    const reordered = [...unselected];
+    reordered.splice(pos - 1, 0, ...selected);
+    await saveNewOrders(reordered);
+    setSelectedIds([]);
+    setBulkPositionInput('');
+  };
+
   if (loading && skills.length === 0) {
     return (
       <div className="flex items-center justify-center h-[50vh]">
@@ -116,23 +282,25 @@ const SkillsManager = () => {
   }
 
   return (
-    <div className="flex flex-col gap-8 text-left">
-      {/* Title */}
-      <div>
-        <h2 className="text-2xl md:text-3xl font-black font-title tracking-tight text-black dark:text-white">Skills Manager</h2>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Add, update, or remove portfolio technical skills.</p>
+    <div className="p-4 md:p-6 max-w-7xl mx-auto flex flex-col gap-6">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 dark:border-white/5 pb-5">
+        <div>
+          <h2 className="text-2xl font-black font-title text-black dark:text-white tracking-tight">Skills Manager</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Configure and reorder skills shown on the homepage</p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left: Input Form */}
-        <div className="lg:col-span-4 glass p-6 rounded-2xl border border-slate-200/60 dark:border-white/5 shadow-sm">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Form: Add / Edit Skill */}
+        <div className="lg:col-span-4 glass p-6 rounded-2xl border border-slate-200/60 dark:border-white/5 shadow-sm h-fit">
           <h3 className="text-lg font-bold font-title text-black dark:text-white mb-6 flex items-center gap-2">
-            {isEditing ? <FaEdit className="text-primary-purple" /> : <FaPlusCircle className="text-primary-blue" />}
-            {isEditing ? 'Edit Technical Skill' : 'Create New Skill'}
+            <FaPlusCircle className="text-primary-blue" />
+            {isEditing ? 'Modify Skill' : 'Publish New Skill'}
           </h3>
 
-          <form onSubmit={handleFormSubmit} className="flex flex-col gap-4">
-            {/* Skill Name */}
+          <form onSubmit={handleFormSubmit} className="flex flex-col gap-5 text-left">
+            {/* Name */}
             <div className="flex flex-col gap-2">
               <label htmlFor="name" className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Skill Name</label>
               <input
@@ -142,7 +310,7 @@ const SkillsManager = () => {
                 value={formData.name}
                 onChange={handleInputChange}
                 required
-                placeholder="e.g. React.js, Express.js"
+                placeholder="e.g. React.js"
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-primary-blue dark:focus:border-primary-blue text-sm transition-colors"
               />
             </div>
@@ -218,7 +386,80 @@ const SkillsManager = () => {
 
         {/* Right: Skills List */}
         <div className="lg:col-span-8 glass p-6 rounded-2xl border border-slate-200/60 dark:border-white/5 shadow-sm">
-          <h3 className="text-lg font-bold font-title text-black dark:text-white mb-6">Skills Directory</h3>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <h3 className="text-lg font-bold font-title text-black dark:text-white">Skills Directory</h3>
+            
+            {/* Sort Filter Selector */}
+            <div className="flex items-center gap-2">
+              <label htmlFor="sortBy" className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Sort By:</label>
+              <select
+                id="sortBy"
+                value={sortBy}
+                onChange={(e) => { setSortBy(e.target.value); setSelectedIds([]); }}
+                className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-primary-blue text-xs cursor-pointer"
+              >
+                <option value="displayOrder">Display Order</option>
+                <option value="latest">Latest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="alpha-asc">Alphabetical (A-Z)</option>
+                <option value="alpha-desc">Alphabetical (Z-A)</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Bulk Action Controls Bar */}
+          {selectedIds.length > 0 && (
+            <div className="mb-6 p-4 rounded-xl border border-primary-blue/20 bg-primary-blue/5 flex flex-wrap items-center justify-between gap-4 animate-fadeIn">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black bg-primary-blue text-white px-2 py-0.5 rounded-full">{selectedIds.length}</span>
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Skills Selected</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={moveSelectedToTop}
+                  className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 text-xs font-bold text-slate-700 dark:text-white border border-slate-200 dark:border-white/5 cursor-pointer flex items-center gap-1"
+                >
+                  <FaChevronUp size={10} /> Top
+                </button>
+                <button
+                  onClick={moveSelectedToBottom}
+                  className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 text-xs font-bold text-slate-700 dark:text-white border border-slate-200 dark:border-white/5 cursor-pointer flex items-center gap-1"
+                >
+                  <FaChevronDown size={10} /> Bottom
+                </button>
+                <div className="flex items-center gap-1">
+                  <input
+                    type="number"
+                    min="1"
+                    max={skills.length}
+                    placeholder="Pos"
+                    value={bulkPositionInput}
+                    onChange={(e) => setBulkPositionInput(e.target.value)}
+                    className="w-14 px-2 py-1 border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 rounded text-center text-xs text-slate-900 dark:text-slate-100"
+                  />
+                  <button
+                    onClick={assignSelectedPosition}
+                    className="px-3 py-1.5 rounded-lg bg-primary-blue text-white text-xs font-bold cursor-pointer"
+                  >
+                    Set
+                  </button>
+                </div>
+                <button
+                  onClick={() => setSelectedIds([])}
+                  className="px-3 py-1.5 text-xs text-red-500 hover:underline cursor-pointer"
+                >
+                  Deselect
+                </button>
+              </div>
+            </div>
+          )}
+
+          {sortBy === 'displayOrder' && (
+            <div className="mb-4 text-left p-3 rounded-lg bg-blue-500/5 border border-blue-500/10 text-xs text-blue-500 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse shrink-0" />
+              Drag the grip icon <FaGripVertical className="inline mx-0.5" /> or click the arrows to adjust display positioning instantly.
+            </div>
+          )}
 
           {skills.length === 0 ? (
             <div className="py-20 text-center text-sm text-slate-450 dark:text-slate-400">
@@ -229,7 +470,16 @@ const SkillsManager = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-slate-250 dark:border-white/5 text-slate-500 dark:text-slate-450 text-xs font-bold uppercase tracking-wider">
-                    <th className="pb-3 pr-4">Order</th>
+                    <th className="pb-3 pr-2 w-8">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.length === sortedSkills.length && sortedSkills.length > 0}
+                        onChange={toggleSelectAll}
+                        className="rounded border-slate-300 text-primary-blue focus:ring-primary-blue cursor-pointer"
+                      />
+                    </th>
+                    {sortBy === 'displayOrder' && <th className="pb-3 pr-2 w-8">Grip</th>}
+                    <th className="pb-3 pr-4 w-12 text-center">Order</th>
                     <th className="pb-3">Name</th>
                     <th className="pb-3">Category</th>
                     <th className="pb-3">Percentage</th>
@@ -237,43 +487,123 @@ const SkillsManager = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-150 dark:divide-white/5 text-sm">
-                  {skills.map((skill) => (
-                    <tr key={skill._id} className="hover:bg-slate-50/40 dark:hover:bg-white/5 transition-colors">
-                      <td className="py-4 font-bold text-slate-400">{skill.displayOrder || 0}</td>
-                      <td className="py-4 font-bold text-black dark:text-white">{skill.name}</td>
-                      <td className="py-4">
-                        <span className="inline-flex px-2.5 py-1 rounded-md bg-slate-50 dark:bg-white/5 border border-slate-200/50 dark:border-white/5 text-xs font-bold text-slate-550 dark:text-slate-400 uppercase tracking-wide">
-                          {skill.category}
-                        </span>
-                      </td>
-                      <td className="py-4">
-                        <div className="flex items-center gap-3 w-32">
-                          <span className="font-extrabold text-primary-blue shrink-0 w-8">{skill.percentage}%</span>
-                          <div className="h-1.5 w-full bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden">
-                            <div className="h-full bg-primary-blue" style={{ width: `${skill.percentage}%` }} />
+                  {sortedSkills.map((skill, index) => {
+                    const isDragged = draggedIndex === index;
+                    const isDragOver = dragOverIndex === index;
+                    return (
+                      <tr 
+                        key={skill._id} 
+                        draggable={sortBy === 'displayOrder'}
+                        onDragStart={(e) => handleDragStart(e, index)}
+                        onDragOver={(e) => handleDragOver(e, index)}
+                        onDragEnd={handleDragEnd}
+                        onDrop={(e) => handleDrop(e, index)}
+                        className={`hover:bg-slate-50/40 dark:hover:bg-white/5 transition-colors duration-150 ${isDragged ? 'opacity-40 bg-slate-100 dark:bg-white/5' : ''} ${isDragOver ? 'border-t-2 border-primary-blue' : ''}`}
+                      >
+                        {/* Checkbox column */}
+                        <td className="py-4 pr-2">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.includes(skill._id)}
+                            onChange={() => toggleSelect(skill._id)}
+                            className="rounded border-slate-300 text-primary-blue focus:ring-primary-blue cursor-pointer"
+                          />
+                        </td>
+
+                        {/* Grip Column */}
+                        {sortBy === 'displayOrder' && (
+                          <td className="py-4 pr-2 text-slate-400 cursor-grab active:cursor-grabbing hover:text-primary-blue transition-colors">
+                            <FaGripVertical size={13} />
+                          </td>
+                        )}
+
+                        {/* Order Column */}
+                        <td className="py-4 pr-4 font-bold text-center text-slate-400">
+                          {skill.displayOrder || 0}
+                        </td>
+
+                        {/* Name Column */}
+                        <td className="py-4 font-bold text-black dark:text-white">
+                          {skill.name}
+                        </td>
+
+                        {/* Category Column */}
+                        <td className="py-4">
+                          <span className="inline-flex px-2.5 py-1 rounded-md bg-slate-50 dark:bg-white/5 border border-slate-200/50 dark:border-white/5 text-xs font-bold text-slate-550 dark:text-slate-400 uppercase tracking-wide">
+                            {skill.category}
+                          </span>
+                        </td>
+
+                        {/* Percentage Column */}
+                        <td className="py-4">
+                          <div className="flex items-center gap-3 w-32">
+                            <span className="font-extrabold text-primary-blue shrink-0 w-8">{skill.percentage}%</span>
+                            <div className="h-1.5 w-full bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden">
+                              <div className="h-full bg-primary-blue" style={{ width: `${skill.percentage}%` }} />
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="py-4 text-right">
-                        <div className="inline-flex gap-2">
-                          <button
-                            onClick={() => handleEditClick(skill)}
-                            className="p-2 rounded-lg bg-primary-blue/10 hover:bg-primary-blue/20 text-primary-blue border border-primary-blue/20 cursor-pointer"
-                            title="Edit"
-                          >
-                            <FaEdit size={12} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteClick(skill._id)}
-                            className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 cursor-pointer"
-                            title="Delete"
-                          >
-                            <FaTrash size={12} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+
+                        {/* Actions Column */}
+                        <td className="py-4 text-right">
+                          <div className="inline-flex items-center gap-2">
+                            {/* Quick Move Buttons Group */}
+                            {sortBy === 'displayOrder' && (
+                              <div className="flex items-center bg-slate-100 dark:bg-white/5 rounded-lg p-0.5 border border-slate-200/55 dark:border-white/5 mr-1">
+                                <button
+                                  onClick={() => moveSkillToTop(index)}
+                                  disabled={index === 0}
+                                  className="p-1.5 rounded-md hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 hover:text-black dark:hover:text-white disabled:opacity-30 cursor-pointer"
+                                  title="Move to Top"
+                                >
+                                  <FaChevronUp size={9} className="stroke-[1.5]" />
+                                </button>
+                                <button
+                                  onClick={() => moveSkillUp(index)}
+                                  disabled={index === 0}
+                                  className="p-1.5 rounded-md hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 hover:text-black dark:hover:text-white disabled:opacity-30 cursor-pointer"
+                                  title="Move Up"
+                                >
+                                  <FaArrowUp size={9} />
+                                </button>
+                                <button
+                                  onClick={() => moveSkillDown(index)}
+                                  disabled={index === sortedSkills.length - 1}
+                                  className="p-1.5 rounded-md hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 hover:text-black dark:hover:text-white disabled:opacity-30 cursor-pointer"
+                                  title="Move Down"
+                                >
+                                  <FaArrowDown size={9} />
+                                </button>
+                                <button
+                                  onClick={() => moveSkillToBottom(index)}
+                                  disabled={index === sortedSkills.length - 1}
+                                  className="p-1.5 rounded-md hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 hover:text-black dark:hover:text-white disabled:opacity-30 cursor-pointer"
+                                  title="Move to Bottom"
+                                >
+                                  <FaChevronDown size={9} className="stroke-[1.5]" />
+                                </button>
+                              </div>
+                            )}
+
+                            <button
+                              onClick={() => handleEditClick(skill)}
+                              className="p-2 rounded-lg bg-primary-blue/10 hover:bg-primary-blue/20 text-primary-blue border border-primary-blue/20 cursor-pointer"
+                              title="Edit"
+                            >
+                              <FaEdit size={12} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteClick(skill._id)}
+                              className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 cursor-pointer"
+                              title="Delete"
+                            >
+                              <FaTrash size={12} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

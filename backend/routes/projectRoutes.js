@@ -6,13 +6,16 @@ const {
   updateProject, 
   deleteProject,
   addProjectComment,
-  deleteProjectComment
+  deleteProjectComment,
+  reorderProjects
 } = require('../controllers/projectController');
 const { protect } = require('../middleware/authMiddleware');
 
 router.route('/')
   .get(getProjects)
   .post(protect, createProject);
+
+router.post('/reorder', protect, reorderProjects);
 
 router.route('/:id')
   .put(protect, updateProject)
