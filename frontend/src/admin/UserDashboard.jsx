@@ -25,8 +25,11 @@ const UserDashboard = () => {
     isChecking: isCheckingUsername
   } = useUsernameValidator(user?.username || '', user?._id || '');
   const [email, setEmail] = useState(user?.email || '');
+  const [location, setLocation] = useState(user?.location || '');
+  const [bio, setBio] = useState(user?.bio || '');
   const [avatar, setAvatar] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(user?.avatar?.url || '');
+  const [activeSessionsCount, setActiveSessionsCount] = useState(1);
   
   // Password state
   const [oldPassword, setOldPassword] = useState('');
@@ -73,6 +76,12 @@ const UserDashboard = () => {
         const res = await api.getProfile();
         if (res.success && res.user) {
           setHistory(res.user.loginHistory || []);
+          setFullName(res.user.fullName || '');
+          setPhone(res.user.phone || '');
+          setEmail(res.user.email || '');
+          setLocation(res.user.location || '');
+          setBio(res.user.bio || '');
+          setActiveSessionsCount(res.user.activeSessionsCount || 1);
         }
       } catch (err) {
         console.error('Failed to load profile history:', err.message);
@@ -136,6 +145,8 @@ const UserDashboard = () => {
       formData.append('phone', phone);
       formData.append('username', username);
       formData.append('email', email);
+      formData.append('location', location);
+      formData.append('bio', bio);
       if (avatar) {
         formData.append('avatar', avatar);
       }
@@ -148,6 +159,39 @@ const UserDashboard = () => {
       setError(err.message || 'Profile update failed.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLogoutAllDevices = async () => {
+    if (!window.confirm('Are you sure you want to log out from all devices? You will be logged out of this session as well.')) return;
+    try {
+      const res = await api.logoutAllDevices();
+      if (res.success) {
+        alert('Successfully logged out of all devices.');
+        logout();
+        navigate('/login');
+      }
+    } catch (err) {
+      setError(err.message || 'Logout from all devices failed.');
+    }
+  };
+
+  const handleDownloadData = async () => {
+    setError('');
+    setSuccess('');
+    try {
+      const data = await api.downloadPersonalData();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `personal_data_${user.username || 'archive'}.json`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setSuccess('Personal data archive compiled and downloaded successfully!');
+    } catch (err) {
+      setError(err.message || 'Failed to download personal data.');
     }
   };
 
@@ -436,6 +480,43 @@ const UserDashboard = () => {
                 </div>
               </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Address / Location</label>
+                  <input
+                    type="text"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="e.g. San Francisco, CA"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-primary-blue text-sm transition-colors"
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Short Bio</label>
+                  <textarea
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="Write a brief bio about yourself..."
+                    rows={3}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-primary-blue text-sm transition-colors resize-none"
+                  />
+                </div>
+              </div>
+
+              <div className="border-t border-slate-200/60 dark:border-white/5 pt-5 mt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-left">
+                <div>
+                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Download Personal Archive</h4>
+                  <p className="text-[10px] text-slate-500 mt-1">Get a copy of all information associated with your account.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleDownloadData}
+                  className="px-4 py-2 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 text-slate-800 dark:text-white border border-slate-200 dark:border-white/5 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                >
+                  Download Data (JSON)
+                </button>
+              </div>
+
                <button
                 type="submit"
                 disabled={loading || (username !== user?.username && (!isUsernameValid || isCheckingUsername))}
@@ -610,10 +691,28 @@ const UserDashboard = () => {
 
           {/* TAB: HISTORY */}
           {activeTab === 'history' && (
-            <div className="flex flex-col gap-4">
-              <p className="text-xs font-semibold text-slate-500 leading-relaxed">
-                Review your recent active account login sessions and devices.
-              </p>
+            <div className="flex flex-col gap-6">
+              <div className="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-2xl border border-slate-200/60 dark:border-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-left">
+                <div>
+                  <h4 className="text-sm font-bold text-black dark:text-white">Active Sessions</h4>
+                  <p className="text-xs text-slate-500 mt-1">
+                    You currently have <span className="font-extrabold text-primary-blue">{activeSessionsCount}</span> active session{activeSessionsCount > 1 ? 's' : ''} on all devices.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleLogoutAllDevices}
+                  className="px-4.5 py-2.5 bg-red-500/10 hover:bg-red-500/25 border border-red-500/20 text-red-500 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer"
+                >
+                  Log out of all devices
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-4">
+                <p className="text-xs font-semibold text-slate-500 leading-relaxed">
+                  Review your recent active account login sessions and devices.
+                </p>
+              </div>
               
               <div className="border border-slate-200/60 dark:border-white/5 rounded-2xl overflow-hidden bg-white dark:bg-slate-900">
                 <div className="overflow-x-auto">

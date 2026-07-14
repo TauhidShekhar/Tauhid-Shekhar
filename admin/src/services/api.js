@@ -542,6 +542,12 @@ export const api = {
   deleteUser: async (id) => {
     return apiRequest(`/users/${id}`, { method: 'DELETE' });
   },
+  adminUpdateUser: async (id, payload) => {
+    return apiRequest(`/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    });
+  },
 
   // Hero CMS Endpoints
   getHero: async () => {

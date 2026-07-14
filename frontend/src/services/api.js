@@ -140,6 +140,18 @@ export const api = {
       body: JSON.stringify({ oldPassword, newPassword, confirmPassword })
     });
   },
+  logoutAllDevices: async () => {
+    return apiRequest('/auth/logout-all', { method: 'POST' });
+  },
+  downloadPersonalData: async () => {
+    // Return the raw response or fetch directly
+    const response = await fetch(`${API_BASE}/auth/download-data`, {
+      method: 'GET',
+      credentials: 'include'
+    });
+    if (!response.ok) throw new Error('Failed to download personal data');
+    return response.json();
+  },
   forgotPassword: async (email) => {
     return apiRequest('/auth/forgot-password', {
       method: 'POST',

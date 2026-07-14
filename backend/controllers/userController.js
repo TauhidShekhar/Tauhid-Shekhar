@@ -104,10 +104,95 @@ const updateUserGamification = async (req, res, next) => {
   }
 };
 
+// @desc    Admin update user details (username, email, phone, status, role, email/phone verification, password reset, force password change)
+// @route   PUT /api/users/:id
+// @access  Private/Admin
+const adminUpdateUser = async (req, res, next) => {
+  try {
+    const bcrypt = require('bcryptjs');
+    const { 
+      fullName, username, email, phone, role, status, 
+      isEmailVerified, isPhoneVerified, password, forcePasswordReset 
+    } = req.body;
+
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    // Protect from changing own role/status/deactivation
+    const isSelf = user._id.toString() === req.user.id;
+    if (isSelf) {
+      if (role && role !== user.role) {
+        return res.status(400).json({ success: false, message: 'You cannot change your own role' });
+      }
+      if (status && status !== user.status) {
+        return res.status(400).json({ success: false, message: 'You cannot change your own status' });
+      }
+    }
+
+    if (fullName !== undefined) user.fullName = fullName;
+    if (phone !== undefined) user.phone = phone;
+    if (role !== undefined) user.role = role;
+    if (status !== undefined) user.status = status;
+    if (isEmailVerified !== undefined) user.isEmailVerified = Boolean(isEmailVerified);
+    if (isPhoneVerified !== undefined) user.isPhoneVerified = Boolean(isPhoneVerified);
+    if (forcePasswordReset !== undefined) user.mustChangePassword = Boolean(forcePasswordReset);
+
+    // Sync active flag with status
+    if (status === 'Active') {
+      user.isActive = true;
+    } else if (status === 'Suspended' || status === 'Banned') {
+      user.isActive = false;
+    }
+
+    // Update username with uniqueness check
+    if (username && username.toLowerCase() !== user.username) {
+      const exists = await User.findOne({ username: username.toLowerCase() });
+      if (exists) return res.status(400).json({ success: false, message: 'Username is already taken' });
+      user.username = username.toLowerCase();
+    }
+
+    // Update email with uniqueness check
+    if (email && email.toLowerCase() !== user.email) {
+      const exists = await User.findOne({ email: email.toLowerCase() });
+      if (exists) return res.status(400).json({ success: false, message: 'Email address is already taken' });
+      user.email = email.toLowerCase();
+    }
+
+    // Password Update
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
+    }
+
+    await user.save({ validateBeforeSave: false });
+
+    // Log admin action to Audit Log
+    try {
+      const AuditLog = require('../models/AuditLog');
+      await AuditLog.create({
+        user: req.user.id,
+        action: 'UPDATE',
+        resource: 'User',
+        resourceId: user._id,
+        details: `Admin ${req.user.username} updated user ${user.username}. Fields: ${Object.keys(req.body).filter(k => req.body[k] !== undefined && k !== 'password').join(', ')}`,
+        ip: req.ip,
+        userAgent: req.headers['user-agent']
+      });
+    } catch (auditErr) {
+      console.error('Failed to log admin action:', auditErr.message);
+    }
+
+    res.json({ success: true, message: 'User updated successfully by administrator', data: user });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getUsers,
   updateUserRole,
   toggleUserStatus,
   deleteUser,
-  updateUserGamification
+  updateUserGamification,
+  adminUpdateUser
 };

@@ -200,6 +200,14 @@ const login = async (req, res, next) => {
       return res.status(401).json({ success: false, message: 'Invalid email/username or password.' });
     }
 
+    // Check if account status is Suspended or Banned
+    if (user.status === 'Suspended' || user.status === 'Banned') {
+      return res.status(403).json({
+        success: false,
+        message: `Your account has been ${user.status.toLowerCase()}. Please contact support.`
+      });
+    }
+
     // Check if email is verified
     if (!user.isEmailVerified) {
       const userMail = process.env.SMTP_USER;
@@ -684,13 +692,18 @@ const getProfile = async (req, res, next) => {
         xp: req.user.xp,
         reputation: req.user.reputation,
         badges: req.user.badges,
-        coins: req.user.coins || 0,
+         coins: req.user.coins || 0,
         level: req.user.level || 1,
         rank: req.user.rank || 'Bronze Starter',
         aiCredits: req.user.aiCredits || 10,
         avatarBorder: req.user.avatarBorder || 'none',
         profileTheme: req.user.profileTheme || 'default',
-        createdAt: req.user.createdAt
+        createdAt: req.user.createdAt,
+        isPhoneVerified: req.user.isPhoneVerified || false,
+        mustChangePassword: req.user.mustChangePassword || false,
+        status: req.user.status || 'Active',
+        activeSessionsCount: req.user.refreshTokens ? req.user.refreshTokens.length : 1,
+        loginHistory: req.user.loginHistory || []
       }
     });
   } catch (error) {
@@ -1239,6 +1252,40 @@ const checkUsername = async (req, res) => {
   }
 };
 
+// @desc    Logout from all devices (clear all sessions)
+// @route   POST /api/auth/logout-all
+// @access  Private
+const logoutAll = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    
+    user.refreshTokens = [];
+    await user.save({ validateBeforeSave: false });
+    
+    clearTokenCookies(res);
+    res.json({ success: true, message: 'Logged out from all devices successfully!' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Download personal data
+// @route   GET /api/auth/download-data
+// @access  Private
+const downloadPersonalData = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id).select('-refreshTokens -password');
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename=user_profile_${user.username}.json`);
+    res.send(JSON.stringify(user, null, 2));
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   checkUsername,
   register,
@@ -1263,5 +1310,7 @@ module.exports = {
   googleLogin,
   googleCallback,
   githubLogin,
-  githubCallback
+  githubCallback,
+  logoutAll,
+  downloadPersonalData
 };

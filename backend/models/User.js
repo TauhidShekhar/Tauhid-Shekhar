@@ -73,12 +73,14 @@ const userSchema = new mongoose.Schema(
 
     // ── Email Verification ─────────────────────────────────────────
     isEmailVerified: { type: Boolean, default: false },
+    isPhoneVerified: { type: Boolean, default: false },
     emailVerificationToken: String,
     emailVerificationExpires: Date,
 
     // ── Password Reset ─────────────────────────────────────────────
     resetPasswordToken: String,
     resetPasswordExpires: Date,
+    mustChangePassword: { type: Boolean, default: false },
 
     // ── OTP ────────────────────────────────────────────────────────
     otp: String,
@@ -94,6 +96,7 @@ const userSchema = new mongoose.Schema(
 
     // ── Status ─────────────────────────────────────────────────────
     isActive: { type: Boolean, default: true },
+    status: { type: String, enum: ['Active', 'Suspended', 'Banned'], default: 'Active' },
     lastLogin: Date,
     lastActive: { type: Date, default: Date.now },
     savedProjects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Project' }],

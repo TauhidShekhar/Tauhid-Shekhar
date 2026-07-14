@@ -24,7 +24,9 @@ const {
   googleLogin,
   googleCallback,
   githubLogin,
-  githubCallback
+  githubCallback,
+  logoutAll,
+  downloadPersonalData
 } = require('../controllers/authController');
 const { requireAuth } = require('../middleware/authMiddleware');
 const {
@@ -74,5 +76,7 @@ router.post('/saved-projects/:projectId', requireAuth, toggleSaveProject);
 router.get('/saved-projects', requireAuth, getSavedProjects);
 router.delete('/delete-account', requireAuth, deleteAccount);
 router.get('/my-orders', requireAuth, getUserOrders);
+router.post('/logout-all', requireAuth, logoutAll);
+router.get('/download-data', requireAuth, downloadPersonalData);
 
 module.exports = router;
