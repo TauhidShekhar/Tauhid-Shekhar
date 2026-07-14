@@ -4,10 +4,11 @@ import CustomCursor from './components/CustomCursor';
 import Hero from './components/Hero';
 import { FaWhatsapp, FaChevronUp, FaCircleCheck } from 'react-icons/fa6';
 import { FaBrain, FaComments, FaPlus } from 'react-icons/fa';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import socket from './services/socket';
 import { useAuth } from './contexts/AuthContext';
 import { api } from './services/api';
+import { useLoading } from './contexts/LoadingContext';
 
 // Lazy load below-the-fold components
 const ParticlesBackground = lazy(() => import('./components/ParticlesBackground'));
@@ -31,6 +32,8 @@ const SectionSkeleton = () => (
     <div className="h-40 bg-slate-200 dark:bg-white/5 rounded-3xl w-full" />
   </div>
 );
+
+let isInitialFetchStarted = false;
 
 const App = () => {
   const { user } = useAuth();
@@ -60,6 +63,25 @@ const App = () => {
     }
   });
   const navigate = useNavigate();
+  const location = useLocation();
+  const { showLoader, hideLoader } = useLoading();
+  const isInitialMount = React.useRef(true);
+
+  useEffect(() => {
+    // Skip showing the loader transition on the very first mount/startup of the SPA
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    // Show premium loader transition on subsequent route changes (between main site & community/etc)
+    showLoader();
+    const timer = setTimeout(() => {
+      hideLoader();
+    }, 700); // Premium short transition duration (700ms)
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
+
   const [activeSection, setActiveSection] = useState('home');
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -153,12 +175,22 @@ const App = () => {
     } finally {
       isFetching.current = false;
       setLoading(false);
+      // Flag app as loaded after a short delay to permit smooth startup transition
+      setTimeout(() => {
+        window.isAppLoaded = true;
+      }, 100);
     }
   };
 
   // Fetch initial data on mount
   useEffect(() => {
-    fetchPortfolioData(true);
+    if (!isInitialFetchStarted) {
+      isInitialFetchStarted = true;
+      fetchPortfolioData(true);
+    } else {
+      // If already started in another strict mode mount, ensure spinner turns off
+      setLoading(false);
+    }
   }, []);
 
   // Listen for real-time updates and fetch silently in the background

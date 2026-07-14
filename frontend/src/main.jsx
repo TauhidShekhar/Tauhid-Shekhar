@@ -64,14 +64,18 @@ const RecoverAccount = lazy(() => import('./admin/RecoverAccount.jsx'));
 
 import DynamicSEOHelper from './components/DynamicSEOHelper.jsx';
 
+import { LoadingProvider } from './contexts/LoadingContext.jsx';
+import GlobalLoader from './components/ui/GlobalLoader.jsx';
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
-      <BrowserRouter>
-        <DynamicSEOHelper />
-        <FeatureDiscoveryTour />
-        <Suspense fallback={<LoadingScreen />}>
-          <Routes>
+      <LoadingProvider>
+        <BrowserRouter>
+          <DynamicSEOHelper />
+          <FeatureDiscoveryTour />
+          <Suspense fallback={<LoadingScreen />}>
+            <Routes>
             {/* Main Website Route */}
             <Route path="/" element={<App />} />
             <Route path="/features" element={<FeaturesPage />} />
@@ -208,6 +212,7 @@ createRoot(document.getElementById('root')).render(
           </Routes>
         </Suspense>
       </BrowserRouter>
+      </LoadingProvider>
     </AuthProvider>
   </StrictMode>
 );

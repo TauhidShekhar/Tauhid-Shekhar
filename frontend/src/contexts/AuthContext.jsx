@@ -53,6 +53,8 @@ const readPersistedUser = () => {
   }
 };
 
+let isInitialAuthCheckStarted = false;
+
 export const AuthProvider = ({ children }) => {
   // Initialise from localStorage so the UI is instantly correct on refresh
   const persistedUser = readPersistedUser();
@@ -143,7 +145,14 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(false);
       persistUser(null);
     });
-    checkAuthStatus();
+
+    if (!isInitialAuthCheckStarted) {
+      isInitialAuthCheckStarted = true;
+      checkAuthStatus();
+    } else {
+      // If already started in another strict mode mount, ensure loading state settles
+      setIsLoading(false);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

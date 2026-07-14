@@ -44,14 +44,33 @@ try {
   }
 } catch (_) {}
 
-// Intercept all native fetch calls globally to inject fallback Bearer / Refresh Token headers
+// Intercept all native fetch calls globally to inject headers and monitor performance
 (function() {
   const originalFetch = window.fetch;
+  let activeSlowRequests = 0;
+  const pendingTimeouts = new Map();
+  let requestIdCounter = 0;
+
   window.fetch = async function(url, options) {
     const urlString = typeof url === 'string' ? url : (url && url.url ? url.url : '');
-    const isApiRequest = urlString && (urlString.includes('/api/') || urlString.includes(':5000/api'));
+    const isApiRequest = urlString && (urlString.includes('/api/') || urlString.includes(':5000/api')) && !urlString.includes('/api/health');
+    const reqId = requestIdCounter++;
+    
+    const shouldSkipLoader = !window.isAppLoaded;
     
     if (isApiRequest) {
+      // Monitor request duration: if takes > 150ms, trigger loading spinner (skip during initial app loading/startup)
+      const timeout = setTimeout(() => {
+        if (!shouldSkipLoader) {
+          activeSlowRequests++;
+          if (activeSlowRequests === 1) {
+            window.dispatchEvent(new CustomEvent('global-loading-show'));
+          }
+        }
+        pendingTimeouts.delete(reqId);
+      }, 150);
+      pendingTimeouts.set(reqId, timeout);
+
       options = options || {};
       options.headers = options.headers || {};
       
@@ -84,32 +103,48 @@ try {
       options.credentials = 'include';
     }
     
-    const response = await originalFetch(url, options);
-    
-    if (isApiRequest) {
-      try {
-        const clonedResponse = response.clone();
-        const json = await clonedResponse.json();
-        if (json && json.success) {
-          if (json.accessToken) {
-            safeStorage.setItem('accessToken', json.accessToken);
+    try {
+      const response = await originalFetch(url, options);
+      
+      if (isApiRequest) {
+        try {
+          const clonedResponse = response.clone();
+          const json = await clonedResponse.json();
+          if (json && json.success) {
+            if (json.accessToken) {
+              safeStorage.setItem('accessToken', json.accessToken);
+            }
+            if (json.refreshToken) {
+              safeStorage.setItem('refreshToken', json.refreshToken);
+            }
           }
-          if (json.refreshToken) {
-            safeStorage.setItem('refreshToken', json.refreshToken);
-          }
+        } catch (_) {
+          // Response clone reading failure - skip silently
         }
-      } catch (_) {
-        // Response clone reading failure - skip silently
+        
+        // Clear token store on explicit 401 Unauthorized token failures
+        if (response.status === 401) {
+          safeStorage.removeItem('accessToken');
+          safeStorage.removeItem('refreshToken');
+        }
       }
       
-      // Clear token store on explicit 401 Unauthorized token failures
-      if (response.status === 401) {
-        safeStorage.removeItem('accessToken');
-        safeStorage.removeItem('refreshToken');
+      return response;
+    } finally {
+      if (isApiRequest) {
+        if (pendingTimeouts.has(reqId)) {
+          clearTimeout(pendingTimeouts.get(reqId));
+          pendingTimeouts.delete(reqId);
+        } else {
+          if (!shouldSkipLoader) {
+            activeSlowRequests = Math.max(0, activeSlowRequests - 1);
+            if (activeSlowRequests === 0) {
+              window.dispatchEvent(new CustomEvent('global-loading-hide'));
+            }
+          }
+        }
       }
     }
-    
-    return response;
   };
 })();
 

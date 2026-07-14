@@ -284,6 +284,15 @@
       (function() {
         var splash = document.getElementById('premium-splash-wrapper');
         if (!splash) return;
+
+        // Skip if splash has already played in this browser session
+        try {
+          if (sessionStorage.getItem('splash-played') === 'true') {
+            splash.style.display = 'none';
+            splash.remove();
+            return;
+          }
+        } catch (_) {}
         
         var minDuration = 800; // 800ms min duration (fast and premium feel)
         var startTime = Date.now();
@@ -296,6 +305,9 @@
 
           setTimeout(function() {
             splash.classList.add('splash-fade-out');
+            try {
+              sessionStorage.setItem('splash-played', 'true');
+            } catch (_) {}
             setTimeout(function() {
               splash.remove();
             }, 300);
@@ -328,12 +340,33 @@
     <div id="root">
     <script type="module" src="/src/main.jsx"></script>
     <script>
+      // Purge any previously active Service Workers & trigger a single self-healing reload if controlled
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then((reg) => console.log('ServiceWorker registered successfully:', reg.scope))
-            .catch((err) => console.error('ServiceWorker registration failed:', err));
-        });
+        if (navigator.serviceWorker.controller) {
+          console.warn('Cached ServiceWorker detected. Purging cache and reloading once...');
+          navigator.serviceWorker.getRegistrations().then((registrations) => {
+            for (let registration of registrations) {
+              registration.unregister();
+            }
+          }).then(() => {
+            if ('caches' in window) {
+              caches.keys().then((names) => {
+                Promise.all(names.map(name => caches.delete(name))).then(() => {
+                  window.location.reload();
+                });
+              });
+            } else {
+              window.location.reload();
+            }
+          });
+        } else {
+          // Keep background unregistration active to clean up any inactive workers
+          navigator.serviceWorker.getRegistrations().then((registrations) => {
+            for (let registration of registrations) {
+              registration.unregister();
+            }
+          });
+        }
       }
     </script>
   </body>
