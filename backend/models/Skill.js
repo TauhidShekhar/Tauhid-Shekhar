@@ -17,8 +17,21 @@ const skillSchema = new mongoose.Schema(
     category: {
       type: String,
       required: [true, 'Category is required'],
-      enum: ['programming', 'frontend', 'backend', 'database', 'tools', 'concepts'],
-      default: 'frontend'
+      enum: ['Programming', 'Frontend', 'Backend', 'Database', 'Tools', 'Concepts', 'All', 'programming', 'frontend', 'backend', 'database', 'tools', 'concepts'],
+      default: 'Frontend'
+    },
+    logoType: {
+      type: String,
+      enum: ['auto', 'custom'],
+      default: 'auto'
+    },
+    logoUrl: {
+      type: String,
+      default: ''
+    },
+    isActive: {
+      type: Boolean,
+      default: true
     },
     iconName: {
       type: String,

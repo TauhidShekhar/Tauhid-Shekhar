@@ -5,9 +5,101 @@ import {
   FaArrowUp, FaArrowDown, FaChevronUp, FaChevronDown, FaGripVertical 
 } from 'react-icons/fa';
 
+const getAutoLogoUrl = (skillName) => {
+  const name = skillName.toLowerCase().trim();
+  const mapping = {
+    'html': { icon: 'html5', version: 'original' },
+    'html5': { icon: 'html5', version: 'original' },
+    'css': { icon: 'css3', version: 'original' },
+    'css3': { icon: 'css3', version: 'original' },
+    'javascript': { icon: 'javascript', version: 'original' },
+    'js': { icon: 'javascript', version: 'original' },
+    'javascript (es6)': { icon: 'javascript', version: 'original' },
+    'typescript': { icon: 'typescript', version: 'original' },
+    'ts': { icon: 'typescript', version: 'original' },
+    'react': { icon: 'react', version: 'original' },
+    'react.js': { icon: 'react', version: 'original' },
+    'reactjs': { icon: 'react', version: 'original' },
+    'next.js': { icon: 'nextjs', version: 'original' },
+    'nextjs': { icon: 'nextjs', version: 'original' },
+    'node.js': { icon: 'nodejs', version: 'original' },
+    'nodejs': { icon: 'nodejs', version: 'original' },
+    'express.js': { icon: 'express', version: 'original' },
+    'expressjs': { icon: 'express', version: 'original' },
+    'express': { icon: 'express', version: 'original' },
+    'mongodb': { icon: 'mongodb', version: 'original' },
+    'mongo': { icon: 'mongodb', version: 'original' },
+    'mysql': { icon: 'mysql', version: 'original' },
+    'postgresql': { icon: 'postgresql', version: 'original' },
+    'postgres': { icon: 'postgresql', version: 'original' },
+    'firebase': { icon: 'firebase', version: 'original' },
+    'git': { icon: 'git', version: 'original' },
+    'github': { icon: 'github', version: 'original' },
+    'docker': { icon: 'docker', version: 'original' },
+    'vs code': { icon: 'vscode', version: 'original' },
+    'vscode': { icon: 'vscode', version: 'original' },
+    'visual studio code': { icon: 'vscode', version: 'original' },
+    'tailwind css': { icon: 'tailwindcss', version: 'original' },
+    'tailwind': { icon: 'tailwindcss', version: 'original' },
+    'tailwindcss': { icon: 'tailwindcss', version: 'original' },
+    'bootstrap': { icon: 'bootstrap', version: 'original' },
+    'python': { icon: 'python', version: 'original' },
+    'java': { icon: 'java', version: 'original' },
+    'c': { icon: 'c', version: 'original' },
+    'c++': { icon: 'cplusplus', version: 'original' },
+    'c / c++': { icon: 'cplusplus', version: 'original' },
+    'cpp': { icon: 'cplusplus', version: 'original' },
+    'php': { icon: 'php', version: 'original' },
+    'laravel': { icon: 'laravel', version: 'original' },
+    'angular': { icon: 'angular', version: 'original' },
+    'vue.js': { icon: 'vuejs', version: 'original' },
+    'vuejs': { icon: 'vuejs', version: 'original' },
+    'vue': { icon: 'vuejs', version: 'original' },
+    'redux': { icon: 'redux', version: 'original' },
+    'linux': { icon: 'linux', version: 'original' },
+    'figma': { icon: 'figma', version: 'original' },
+    'canva': { icon: 'canva', version: 'original' },
+    'adobe photoshop': { icon: 'photoshop', version: 'original' },
+    'photoshop': { icon: 'photoshop', version: 'original' },
+    'adobe illustrator': { icon: 'illustrator', version: 'original' },
+    'illustrator': { icon: 'illustrator', version: 'original' },
+    'go': { icon: 'go', version: 'original-wordmark' },
+    'golang': { icon: 'go', version: 'original-wordmark' },
+    'graphql': { icon: 'graphql', version: 'plain' },
+    'kubernetes': { icon: 'kubernetes', version: 'plain' },
+    'k8s': { icon: 'kubernetes', version: 'plain' },
+    'aws': { icon: 'amazonwebservices', version: 'original' },
+    'amazon web services': { icon: 'amazonwebservices', version: 'original' },
+    'sass': { icon: 'sass', version: 'original' },
+    'scss': { icon: 'sass', version: 'original' },
+    'jquery': { icon: 'jquery', version: 'original' },
+    'webpack': { icon: 'webpack', version: 'original' },
+    'npm': { icon: 'npm', version: 'original-wordmark' },
+    'yarn': { icon: 'yarn', version: 'original' },
+    'rust': { icon: 'rust', version: 'original' },
+    'sqlite': { icon: 'sqlite', version: 'original' },
+    'redis': { icon: 'redis', version: 'original' },
+    'django': { icon: 'django', version: 'plain' },
+    'flask': { icon: 'flask', version: 'original' },
+    'spring': { icon: 'spring', version: 'original' },
+    'spring boot': { icon: 'spring', version: 'original' }
+  };
+
+  const match = mapping[name];
+  if (match) {
+    return `https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/${match.icon}/${match.icon}-${match.version}.svg`;
+  }
+  const alphanumericName = name.replace(/[^a-z0-9]/g, '');
+  if (alphanumericName && alphanumericName.length > 1) {
+    return `https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/${alphanumericName}/${alphanumericName}-original.svg`;
+  }
+  return '';
+};
+
 const SkillsManager = () => {
   const [skills, setSkills] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
 
   // Form states
   const [isEditing, setIsEditing] = useState(false);
@@ -15,7 +107,10 @@ const SkillsManager = () => {
   const [formData, setFormData] = useState({
     name: '',
     percentage: 80,
-    category: 'frontend',
+    category: 'Frontend',
+    logoType: 'auto',
+    logoUrl: '',
+    isActive: true,
     displayOrder: 0
   });
 
@@ -27,10 +122,12 @@ const SkillsManager = () => {
   const [dragOverIndex, setDragOverIndex] = useState(null);
 
   const categories = [
-    { id: 'frontend', name: 'Frontend' },
-    { id: 'backend', name: 'Backend' },
-    { id: 'database', name: 'Database / DevOps' },
-    { id: 'other', name: 'Others' }
+    { id: 'Programming', name: 'Programming' },
+    { id: 'Frontend', name: 'Frontend' },
+    { id: 'Backend', name: 'Backend' },
+    { id: 'Database', name: 'Database' },
+    { id: 'Tools', name: 'Tools' },
+    { id: 'Concepts', name: 'Concepts' }
   ];
 
   const fetchSkills = async () => {
@@ -50,6 +147,35 @@ const SkillsManager = () => {
     fetchSkills();
   }, []);
 
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // validate type
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      alert('Invalid file format. Only PNG, SVG, JPG, JPEG, and WEBP are supported.');
+      return;
+    }
+
+    const uploadData = new FormData();
+    uploadData.append('file', file);
+    
+    setUploading(true);
+    try {
+      const res = await api.uploadMedia(uploadData);
+      if (res.success) {
+        setFormData(prev => ({ ...prev, logoUrl: res.data.fileUrl }));
+      } else {
+        alert(res.message || 'Upload failed');
+      }
+    } catch (err) {
+      alert(err.message || 'Upload error');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -68,13 +194,13 @@ const SkillsManager = () => {
         if (res.success) {
           setIsEditing(false);
           setCurrentId(null);
-          setFormData({ name: '', percentage: 80, category: 'frontend', displayOrder: 0 });
+          setFormData({ name: '', percentage: 80, category: 'Frontend', logoType: 'auto', logoUrl: '', isActive: true, displayOrder: 0 });
           fetchSkills();
         }
       } else {
         const res = await api.createSkill(formData);
         if (res.success) {
-          setFormData({ name: '', percentage: 80, category: 'frontend', displayOrder: 0 });
+          setFormData({ name: '', percentage: 80, category: 'Frontend', logoType: 'auto', logoUrl: '', isActive: true, displayOrder: 0 });
           fetchSkills();
         }
       }
@@ -90,7 +216,10 @@ const SkillsManager = () => {
     setFormData({
       name: skill.name,
       percentage: skill.percentage,
-      category: skill.category,
+      category: skill.category || 'Frontend',
+      logoType: skill.logoType || 'auto',
+      logoUrl: skill.logoUrl || '',
+      isActive: skill.isActive !== false,
       displayOrder: skill.displayOrder || 0
     });
   };
@@ -112,7 +241,7 @@ const SkillsManager = () => {
   const handleCancelEdit = () => {
     setIsEditing(false);
     setCurrentId(null);
-    setFormData({ name: '', percentage: 80, category: 'frontend', displayOrder: 0 });
+    setFormData({ name: '', percentage: 80, category: 'Frontend', logoType: 'auto', logoUrl: '', isActive: true, displayOrder: 0 });
   };
 
   // Sorting calculations
@@ -331,6 +460,69 @@ const SkillsManager = () => {
               </select>
             </div>
 
+            {/* Logo Type */}
+            <div className="flex flex-col gap-2">
+              <label htmlFor="logoType" className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Logo Mode</label>
+              <select
+                id="logoType"
+                name="logoType"
+                value={formData.logoType}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-primary-blue dark:focus:border-primary-blue text-sm transition-colors cursor-pointer"
+              >
+                <option value="auto">Automatic (Official Technology Logo)</option>
+                <option value="custom">Custom Upload (Upload Logo Asset)</option>
+              </select>
+            </div>
+
+            {/* Custom Logo File Uploader */}
+            {formData.logoType === 'custom' && (
+              <div className="flex flex-col gap-2 p-3 bg-slate-100/50 dark:bg-white/5 rounded-xl border border-slate-250/50 dark:border-white/5">
+                <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Upload Logo</label>
+                <div className="flex items-center gap-4">
+                  <div className="relative w-12 h-12 flex items-center justify-center bg-slate-100 dark:bg-slate-950 rounded-xl overflow-hidden border border-slate-200 dark:border-white/5 shrink-0">
+                    {formData.logoUrl ? (
+                      <img src={formData.logoUrl} alt="Logo" className="w-10 h-10 object-contain" />
+                    ) : (
+                      <span className="text-[10px] text-slate-400">No image</span>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      disabled={uploading}
+                      className="hidden"
+                      id="logoFilePicker"
+                    />
+                    <label
+                      htmlFor="logoFilePicker"
+                      className={`inline-block px-4 py-2 bg-slate-200 dark:bg-white/10 hover:bg-slate-350 dark:hover:bg-white/15 text-slate-800 dark:text-white rounded-lg text-xs font-bold transition-all cursor-pointer ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      {uploading ? 'Uploading...' : 'Choose File'}
+                    </label>
+                    <p className="text-[10px] text-slate-400 mt-1">Supports PNG, SVG, JPG, WEBP</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Active Visibility Checkbox */}
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="isActive"
+                name="isActive"
+                checked={formData.isActive}
+                onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
+                className="rounded border-slate-300 text-primary-blue focus:ring-primary-blue cursor-pointer"
+              />
+              <label htmlFor="isActive" className="text-xs font-bold text-slate-550 dark:text-slate-400 uppercase tracking-wider cursor-pointer">
+                Active / Show on Portfolio
+              </label>
+            </div>
+
             {/* Percentage */}
             <div className="flex flex-col gap-2">
               <div className="flex justify-between items-center">
@@ -524,7 +716,33 @@ const SkillsManager = () => {
 
                         {/* Name Column */}
                         <td className="py-4 font-bold text-black dark:text-white">
-                          {skill.name}
+                          <div className="flex items-center gap-2.5">
+                            <div className="relative w-8 h-8 flex items-center justify-center shrink-0 bg-slate-100 dark:bg-slate-950 rounded-lg overflow-hidden border border-slate-200 dark:border-white/5">
+                              {(() => {
+                                const logoSrc = skill.logoType === 'custom' && skill.logoUrl ? skill.logoUrl : getAutoLogoUrl(skill.name);
+                                return logoSrc ? (
+                                  <img 
+                                    src={logoSrc} 
+                                    alt="" 
+                                    className="w-5 h-5 object-contain select-none absolute z-10" 
+                                    loading="lazy"
+                                    onError={(e) => {
+                                      e.target.style.display = 'none';
+                                    }}
+                                  />
+                                ) : null;
+                              })()}
+                              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500/10 to-indigo-500/10 text-purple-400 border border-purple-500/10 flex items-center justify-center font-extrabold text-[10px] select-none">
+                                {skill.name.charAt(0).toUpperCase()}
+                              </div>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="leading-tight">{skill.name}</span>
+                              {skill.isActive === false && (
+                                <span className="text-[8px] text-red-500 uppercase tracking-widest font-black mt-0.5">Hidden</span>
+                              )}
+                            </div>
+                          </div>
                         </td>
 
                         {/* Category Column */}
