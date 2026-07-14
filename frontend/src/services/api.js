@@ -50,12 +50,7 @@ const apiRequest = async (endpoint, options = {}) => {
     ...options.headers,
   };
 
-  // Add cache buster query parameter to GET requests
   let url = `${API_BASE}${endpoint}`;
-  if (method === 'GET') {
-    const separator = url.includes('?') ? '&' : '?';
-    url = `${url}${separator}t=${Date.now()}`;
-  }
 
   const requestPromise = (async () => {
     try {
@@ -487,6 +482,10 @@ export const api = {
     const result = await response.json();
     if (!response.ok) throw new Error(result.message || 'SEO update failed');
     return result;
+  },
+
+  getPortfolioAll: async () => {
+    return apiRequest('/portfolio/all');
   },
 
   // Website Settings

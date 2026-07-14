@@ -127,7 +127,7 @@ const getPosts = async (req, res, next) => {
 
 const createPost = async (req, res, next) => {
   try {
-    const { title, content, mediaUrl, mediaType, group, category, tags, postType, link, codeSnippet, poll } = req.body;
+    const { title, content, mediaUrl, mediaUrls, mediaType, group, category, tags, postType, link, codeSnippet, poll } = req.body;
 
     // Check group membership permissions
     if (group) {
@@ -155,6 +155,7 @@ const createPost = async (req, res, next) => {
       title,
       content,
       mediaUrl: mediaUrl || '',
+      mediaUrls: mediaUrls || [],
       mediaType: mediaType || 'none',
       group: group || null,
       category: category || 'General',
@@ -198,10 +199,11 @@ const updatePost = async (req, res, next) => {
       return res.status(403).json({ success: false, message: 'Unauthorized action' });
     }
 
-    const { title, content, mediaUrl, mediaType, category, tags } = req.body;
+    const { title, content, mediaUrl, mediaUrls, mediaType, category, tags } = req.body;
     post.title = title || post.title;
     post.content = content || post.content;
     post.mediaUrl = mediaUrl !== undefined ? mediaUrl : post.mediaUrl;
+    post.mediaUrls = mediaUrls !== undefined ? mediaUrls : post.mediaUrls;
     post.mediaType = mediaType !== undefined ? mediaType : post.mediaType;
     post.category = category || post.category;
     post.tags = tags || post.tags;

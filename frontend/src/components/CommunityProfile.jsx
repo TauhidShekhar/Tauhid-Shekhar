@@ -10,6 +10,7 @@ import {
   FaMapPin, FaGlobe, FaChevronRight, FaTimes, FaUserCheck, FaCoins
 } from 'react-icons/fa';
 import { useUsernameValidator } from '../hooks/useUsernameValidator';
+import { ImageGallery } from './ImageGallery';
 
 const getAbsolutePdfUrl = (url) => {
   if (!url) return '';
@@ -613,11 +614,15 @@ const CommunityProfile = () => {
                 </div>
               </div>
               <p className="text-xs sm:text-sm text-slate-200 leading-relaxed whitespace-pre-wrap">{post.content}</p>
-              {post.mediaUrl && (
-                <div className="rounded-2xl overflow-hidden border border-white/5 bg-[#181820] max-h-[300px]">
-                  {post.mediaType === 'image' && <img src={post.mediaUrl} alt="post" className="w-full h-full object-cover" loading="lazy" />}
+              {((post.mediaUrls && post.mediaUrls.length > 0) || (post.mediaUrl && post.mediaType === 'image')) ? (
+                <div className="my-2 text-center w-full">
+                  <ImageGallery images={post.mediaUrls && post.mediaUrls.length > 0 ? post.mediaUrls : [post.mediaUrl]} />
                 </div>
-              )}
+              ) : post.mediaUrl ? (
+                <div className="rounded-2xl overflow-hidden border border-white/5 bg-[#181820] max-h-[300px]">
+                  {post.mediaType === 'video' && <video src={post.mediaUrl} controls className="w-full h-full max-h-[300px]" />}
+                </div>
+              ) : null}
             </div>
           ))}
           {userPosts.length === 0 && (

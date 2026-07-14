@@ -215,11 +215,13 @@ const serviceRoutes = require('./routes/serviceRoutes');
 const communityRoutes = require('./routes/communityRoutes');
 const featureRoutes = require('./routes/featureRoutes');
 const cmsRoutes = require('./routes/cmsRoutes');
+const portfolioRoutes = require('./routes/portfolioRoutes');
 
 // Mount Routes
 const { cacheMiddleware } = require('./middleware/cacheMiddleware');
 
 app.use('/api/auth', authRoutes);
+app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/skills', cacheMiddleware('skills'), skillRoutes);
 app.use('/api/projects', cacheMiddleware('projects'), projectRoutes);
 app.use('/api/messages', messageRoutes);

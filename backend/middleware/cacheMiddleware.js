@@ -32,7 +32,14 @@ const cacheMiddleware = (keyPrefix) => {
       return next();
     }
 
-    const key = `${keyPrefix}:${req.originalUrl || req.url}`;
+    let urlForCache = req.originalUrl || req.url;
+    try {
+      const parsedUrl = new URL(urlForCache, 'http://localhost');
+      parsedUrl.searchParams.delete('t');
+      urlForCache = parsedUrl.pathname + parsedUrl.search;
+    } catch (_) {}
+
+    const key = `${keyPrefix}:${urlForCache}`;
     const cached = cacheStorage.get(key);
 
     // If cache hit and not expired, return immediately

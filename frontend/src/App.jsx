@@ -1,25 +1,36 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import Navbar from './components/Navbar';
-import ParticlesBackground from './components/ParticlesBackground';
 import CustomCursor from './components/CustomCursor';
 import Hero from './components/Hero';
-import About from './components/About';
-import Skills from './components/Skills';
-import Projects from './components/Projects';
-import Experience from './components/Experience';
-import Services from './components/Services';
-import Resume from './components/Resume';
-import EducationCertificates from './components/EducationCertificates';
-import GitHubStats from './components/GitHubStats';
-import Contact from './components/Contact';
-import Footer from './components/Footer';
 import { FaWhatsapp, FaChevronUp, FaCircleCheck } from 'react-icons/fa6';
 import { FaBrain, FaComments, FaPlus } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
-import CommandPalette from './components/CommandPalette';
 import socket from './services/socket';
 import { useAuth } from './contexts/AuthContext';
 import { api } from './services/api';
+
+// Lazy load below-the-fold components
+const ParticlesBackground = lazy(() => import('./components/ParticlesBackground'));
+const About = lazy(() => import('./components/About'));
+const Skills = lazy(() => import('./components/Skills'));
+const Projects = lazy(() => import('./components/Projects'));
+const Experience = lazy(() => import('./components/Experience'));
+const Services = lazy(() => import('./components/Services'));
+const Resume = lazy(() => import('./components/Resume'));
+const EducationCertificates = lazy(() => import('./components/EducationCertificates'));
+const GitHubStats = lazy(() => import('./components/GitHubStats'));
+const Contact = lazy(() => import('./components/Contact'));
+const Footer = lazy(() => import('./components/Footer'));
+const CommandPalette = lazy(() => import('./components/CommandPalette'));
+
+// Skeleton Loader for progressive section mounting
+const SectionSkeleton = () => (
+  <div className="py-20 px-6 max-w-[1280px] mx-auto w-full flex flex-col gap-6 animate-pulse">
+    <div className="h-6 w-32 bg-slate-200 dark:bg-white/10 rounded-full" />
+    <div className="h-10 w-64 bg-slate-200 dark:bg-white/10 rounded-full mb-8" />
+    <div className="h-40 bg-slate-200 dark:bg-white/5 rounded-3xl w-full" />
+  </div>
+);
 
 const App = () => {
   const { user } = useAuth();
@@ -76,45 +87,23 @@ const App = () => {
     isFetching.current = true;
     if (showLoader) setLoading(true);
     try {
-      const [
-        settingsRes,
-        heroRes,
-        aboutRes,
-        skillsRes,
-        projectsRes,
-        experiencesRes,
-        servicesRes,
-        resumeRes,
-        educationRes,
-        certificatesRes,
-        achievementsRes
-      ] = await Promise.all([
-        api.getSettings().catch(() => null),
-        api.getHero().catch(() => null),
-        api.getAbout().catch(() => null),
-        api.getSkills().catch(() => null),
-        api.getProjects().catch(() => null),
-        api.getExperience().catch(() => null),
-        api.getServices().catch(() => null),
-        api.getActiveResume().catch(() => null),
-        api.getEducation().catch(() => null),
-        api.getCertificates().catch(() => null),
-        api.getAchievements().catch(() => null)
-      ]);
-
-      setPortfolioData({
-        settings: settingsRes?.success ? settingsRes.data : null,
-        hero: heroRes?.success ? heroRes.data : null,
-        about: aboutRes?.success ? aboutRes.data : null,
-        skills: skillsRes?.success ? skillsRes.data : [],
-        projects: projectsRes?.success ? projectsRes.data : [],
-        experiences: experiencesRes?.success ? experiencesRes.data : [],
-        services: servicesRes?.success ? servicesRes.data : [],
-        activeResume: resumeRes?.success ? resumeRes.data : null,
-        education: educationRes?.success ? educationRes.data : [],
-        certificates: certificatesRes?.success ? certificatesRes.data : [],
-        achievements: achievementsRes?.success ? achievementsRes.data : []
-      });
+      const res = await api.getPortfolioAll();
+      if (res && res.success) {
+        const d = res.data;
+        setPortfolioData({
+          settings: d.settings || null,
+          hero: d.hero || null,
+          about: d.about || null,
+          skills: d.skills || [],
+          projects: d.projects || [],
+          experiences: d.experiences || [],
+          services: d.services || [],
+          activeResume: d.activeResume || null,
+          education: d.education || [],
+          certificates: d.certificates || [],
+          achievements: d.achievements || []
+        });
+      }
     } catch (err) {
       console.error('Failed to load portfolio data:', err.message);
     } finally {
@@ -325,7 +314,9 @@ const App = () => {
       <CustomCursor />
 
       {/* Interactive Node Background */}
-      <ParticlesBackground />
+      <Suspense fallback={null}>
+        <ParticlesBackground />
+      </Suspense>
 
       {/* Announcement Banner */}
       {settings?.announcementBanner?.show && settings?.announcementBanner?.text && (
@@ -345,19 +336,48 @@ const App = () => {
       {/* Main Content Layout */}
       <main className="relative">
         <Hero heroData={portfolioData.hero} resumeData={portfolioData.activeResume} />
-        <About aboutData={portfolioData.about} resumeData={portfolioData.activeResume} />
-        <Skills skillsData={portfolioData.skills} />
-        <Projects projectsData={portfolioData.projects} />
-        <Experience experienceData={portfolioData.experiences} />
-        <Services servicesData={portfolioData.services} />
-        <Resume resumeData={portfolioData.activeResume} settingsData={portfolioData.settings} />
-        <EducationCertificates educationData={portfolioData.education} certificatesData={portfolioData.certificates} achievementsData={portfolioData.achievements} />
-        <GitHubStats />
-        <Contact settingsData={portfolioData.settings} aboutData={portfolioData.about} onShowToast={triggerToast} />
+        
+        <Suspense fallback={<SectionSkeleton />}>
+          <About aboutData={portfolioData.about} resumeData={portfolioData.activeResume} />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <Skills skillsData={portfolioData.skills} />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <Projects projectsData={portfolioData.projects} />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <Experience experienceData={portfolioData.experiences} />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <Services servicesData={portfolioData.services} />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <Resume resumeData={portfolioData.activeResume} settingsData={portfolioData.settings} />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <EducationCertificates educationData={portfolioData.education} certificatesData={portfolioData.certificates} achievementsData={portfolioData.achievements} />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <GitHubStats />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <Contact settingsData={portfolioData.settings} aboutData={portfolioData.about} onShowToast={triggerToast} />
+        </Suspense>
       </main>
 
       {/* Footer */}
-      <Footer settingsData={portfolioData.settings} heroData={portfolioData.hero} />
+      <Suspense fallback={null}>
+        <Footer settingsData={portfolioData.settings} heroData={portfolioData.hero} />
+      </Suspense>
 
       {/* Floating Actions Drawer */}
       <div className="fixed bottom-8 right-8 z-[900] flex flex-col gap-4 items-center">
@@ -428,12 +448,14 @@ const App = () => {
       </div>
 
       {/* Global Command Palette */}
-      <CommandPalette 
-        isOpen={commandPaletteOpen} 
-        onClose={() => setCommandPaletteOpen(false)} 
-        isDark={isDark} 
-        toggleTheme={toggleTheme} 
-      />
+      <Suspense fallback={null}>
+        <CommandPalette 
+          isOpen={commandPaletteOpen} 
+          onClose={() => setCommandPaletteOpen(false)} 
+          isDark={isDark} 
+          toggleTheme={toggleTheme} 
+        />
+      </Suspense>
 
       {/* Toast Notifications */}
       <div

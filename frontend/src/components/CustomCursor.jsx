@@ -27,28 +27,18 @@ const CustomCursor = () => {
       cursor.style.top = `${mouseY}px`;
     };
 
-    const handleMouseEnter = () => {
-      outline.classList.add('scale-[1.4]', 'bg-primary-blue/5', 'border-primary-cyan');
-    };
-
-    const handleMouseLeave = () => {
-      outline.classList.remove('scale-[1.4]', 'bg-primary-blue/5', 'border-primary-cyan');
-    };
-
-    const updateListeners = () => {
-      const elements = document.querySelectorAll('a, button, input[type="submit"], [role="button"]');
-      elements.forEach((el) => {
-        el.addEventListener('mouseenter', handleMouseEnter);
-        el.addEventListener('mouseleave', handleMouseLeave);
-      });
+    // Use event delegation for mouse over state (highly performant, removes mutation observer)
+    const onMouseOver = (e) => {
+      const target = e.target.closest('a, button, input[type="submit"], [role="button"]');
+      if (target) {
+        outline.classList.add('scale-[1.4]', 'bg-primary-blue/5', 'border-primary-cyan');
+      } else {
+        outline.classList.remove('scale-[1.4]', 'bg-primary-blue/5', 'border-primary-cyan');
+      }
     };
 
     window.addEventListener('mousemove', onMouseMove);
-    updateListeners();
-
-    // Observe changes to bind hover to new dynamic components
-    const observer = new MutationObserver(updateListeners);
-    observer.observe(document.body, { childList: true, subtree: true });
+    window.addEventListener('mouseover', onMouseOver);
 
     // Smooth outline movement loop
     let animFrame;
@@ -65,15 +55,8 @@ const CustomCursor = () => {
 
     return () => {
       window.removeEventListener('mousemove', onMouseMove);
-      observer.disconnect();
+      window.removeEventListener('mouseover', onMouseOver);
       cancelAnimationFrame(animFrame);
-      
-      // Clean up hover listeners
-      const elements = document.querySelectorAll('a, button, input[type="submit"], [role="button"]');
-      elements.forEach((el) => {
-        el.removeEventListener('mouseenter', handleMouseEnter);
-        el.removeEventListener('mouseleave', handleMouseLeave);
-      });
     };
   }, []);
 

@@ -9,6 +9,7 @@ import {
   FaLockOpen, FaBookOpen, FaUserMinus, FaUserPlus, FaHashtag, FaListAlt,
   FaImage, FaVideo, FaComment, FaBookmark, FaRegBookmark, FaRegHeart, FaHeart, FaPaperPlane, FaSpinner
 } from 'react-icons/fa';
+import { ImageGallery } from './ImageGallery';
 
 const CATEGORIES = ['General', 'React', 'Node.js', 'Design', 'Web3', 'AI/ML', 'DevOps', 'Mobile'];
 
@@ -65,6 +66,7 @@ const CommunityGroups = () => {
   const [groupCommentInputs, setGroupCommentInputs] = useState({});
   const [groupComments, setGroupComments] = useState({});
   const [groupShowComments, setGroupShowComments] = useState({});
+  const [selectedImages, setSelectedImages] = useState([]); // [{ id, file, previewUrl, remoteUrl, uploading, progress }]
 
   const fetchGroups = async () => {
     setLoading(true);
@@ -99,27 +101,113 @@ const CommunityGroups = () => {
     }
   };
 
-  const handleGroupPostMediaUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const validateImage = (file) => {
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type.toLowerCase()) && 
+        !file.name.toLowerCase().endsWith('.jpg') && 
+        !file.name.toLowerCase().endsWith('.jpeg') && 
+        !file.name.toLowerCase().endsWith('.png') && 
+        !file.name.toLowerCase().endsWith('.webp')) {
+      return 'Supported formats: JPG, JPEG, PNG, WebP';
+    }
+    const maxBytes = 10 * 1024 * 1024; // 10 MB
+    if (file.size > maxBytes) {
+      return 'File size exceeds the 10MB limit.';
+    }
+    return null;
+  };
 
-    if (file.type.startsWith('video/')) {
-      const videoElement = document.createElement('video');
-      videoElement.preload = 'metadata';
-      videoElement.src = URL.createObjectURL(file);
-      videoElement.onloadedmetadata = async () => {
-        URL.revokeObjectURL(videoElement.src);
-        if (videoElement.duration > 60) {
-          alert('Video duration must be under 1 minute.');
-          e.target.value = '';
-          return;
-        }
-        await proceedWithGroupPostUpload(file);
-      };
+  const handleGroupPostMediaUpload = async (e) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    if (files.length === 1 && (files[0].type.startsWith('video/') || files[0].type === 'application/pdf' || files[0].name.endsWith('.pdf'))) {
+      const file = files[0];
+      setSelectedImages([]);
+      if (file.type.startsWith('video/')) {
+        const videoElement = document.createElement('video');
+        videoElement.preload = 'metadata';
+        videoElement.src = URL.createObjectURL(file);
+        videoElement.onloadedmetadata = async () => {
+          URL.revokeObjectURL(videoElement.src);
+          if (videoElement.duration > 60) {
+            alert('Video duration must be under 1 minute.');
+            e.target.value = '';
+            return;
+          }
+          await proceedWithGroupPostUpload(file);
+        };
+        return;
+      }
+      await proceedWithGroupPostUpload(file);
       return;
     }
 
-    await proceedWithGroupPostUpload(file);
+    const imageFiles = Array.from(files).filter(f => f.type.startsWith('image/') || f.name.toLowerCase().match(/\.(jpg|jpeg|png|webp)$/));
+    if (imageFiles.length === 0) {
+      alert('Only images (JPG, JPEG, PNG, WebP), videos, or PDFs are supported.');
+      return;
+    }
+
+    const validImages = [];
+    for (const f of imageFiles) {
+      const error = validateImage(f);
+      if (error) {
+        alert(`${f.name}: ${error}`);
+        return;
+      }
+      validImages.push(f);
+    }
+
+    setPostMediaType('image');
+    setPostMediaUrl('');
+    setLocalPostPreviewUrl('');
+    setPostAttachedFileName('');
+
+    const newItems = validImages.map(file => ({
+      id: 'img-' + Date.now() + '-' + Math.round(Math.random() * 1e5),
+      file,
+      previewUrl: URL.createObjectURL(file),
+      remoteUrl: '',
+      uploading: true,
+      progress: 0
+    }));
+
+    setSelectedImages(prev => [...prev, ...newItems]);
+
+    newItems.forEach(async (item) => {
+      try {
+        const formData = new FormData();
+        formData.append('image', item.file);
+
+        const timer = setInterval(() => {
+          setSelectedImages(prev => prev.map(img => 
+            img.id === item.id 
+              ? { ...img, progress: Math.min(img.progress + 15, 90) } 
+              : img
+          ));
+        }, 150);
+
+        const res = await api.uploadCommunityImage(formData);
+        clearInterval(timer);
+
+        if (res.success) {
+          setSelectedImages(prev => prev.map(img => 
+            img.id === item.id 
+              ? { ...img, remoteUrl: res.url, uploading: false, progress: 100 } 
+              : img
+          ));
+        } else {
+          setSelectedImages(prev => prev.filter(img => img.id !== item.id));
+          alert(`Failed to upload ${item.file.name}`);
+        }
+      } catch (err) {
+        setSelectedImages(prev => prev.filter(img => img.id !== item.id));
+        alert(`Failed to upload ${item.file.name}: ${err.message}`);
+      }
+    });
+
+    e.target.value = '';
   };
 
   const proceedWithGroupPostUpload = async (file) => {
@@ -158,14 +246,25 @@ const CommunityGroups = () => {
     e.preventDefault();
     if (!postContent.trim() || !activeGroup) return;
 
+    if (selectedImages.some(img => img.uploading)) {
+      alert('Please wait for all images to finish uploading.');
+      return;
+    }
+
     const title = postContent.split('\n')[0].substring(0, 80) + '...';
     const tempId = 'temp-gpost-' + Date.now();
+
+    const uploadedUrls = selectedImages.map(img => img.remoteUrl).filter(Boolean);
+    const finalMediaUrl = uploadedUrls.length > 0 ? uploadedUrls[0] : (localPostPreviewUrl || postMediaUrl);
+    const finalMediaType = uploadedUrls.length > 0 ? 'image' : postMediaType;
+
     const tempPost = {
       _id: tempId,
       title,
       content: postContent,
-      mediaUrl: localPostPreviewUrl || postMediaUrl,
-      mediaType: postMediaType,
+      mediaUrl: finalMediaUrl,
+      mediaUrls: uploadedUrls,
+      mediaType: finalMediaType,
       group: activeGroup._id,
       category: activeGroup.category || 'General',
       tags: [],
@@ -186,6 +285,7 @@ const CommunityGroups = () => {
     const backupLocalUrl = localPostPreviewUrl;
     const backupMediaType = postMediaType;
     const backupFileName = postAttachedFileName;
+    const backupSelectedImages = selectedImages;
 
     // Optimistically insert post
     setGroupPosts(prev => [tempPost, ...prev]);
@@ -194,13 +294,15 @@ const CommunityGroups = () => {
     setLocalPostPreviewUrl('');
     setPostMediaType('none');
     setPostAttachedFileName('');
+    setSelectedImages([]);
 
     try {
       const res = await api.createCommunityPost({
         title,
         content: backupContent,
-        mediaUrl: backupMediaUrl,
-        mediaType: backupMediaType,
+        mediaUrl: backupMediaUrl || (uploadedUrls.length > 0 ? uploadedUrls[0] : ''),
+        mediaUrls: uploadedUrls,
+        mediaType: finalMediaType,
         group: activeGroup._id,
         category: activeGroup.category || 'General',
         tags: []
@@ -214,6 +316,7 @@ const CommunityGroups = () => {
         setLocalPostPreviewUrl(backupLocalUrl);
         setPostMediaType(backupMediaType);
         setPostAttachedFileName(backupFileName);
+        setSelectedImages(backupSelectedImages);
       }
     } catch (err) {
       console.error(err);
@@ -223,6 +326,7 @@ const CommunityGroups = () => {
       setLocalPostPreviewUrl(backupLocalUrl);
       setPostMediaType(backupMediaType);
       setPostAttachedFileName(backupFileName);
+      setSelectedImages(backupSelectedImages);
     }
   };
 
@@ -991,9 +1095,77 @@ const CommunityGroups = () => {
                     </div>
 
                     {/* Media Attach Preview */}
+                    {selectedImages.length > 0 && (
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-2.5 bg-slate-100/50 dark:bg-[#181820]/40 border border-slate-200 dark:border-white/5 rounded-2xl my-2">
+                        {selectedImages.map((img, idx) => (
+                          <div key={img.id} className="relative aspect-square rounded-xl overflow-hidden bg-slate-200 dark:bg-[#181820] border border-slate-300 dark:border-white/5 group">
+                            <img src={img.previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                            
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedImages(prev => prev.filter(item => item.id !== img.id));
+                              }}
+                              className="absolute top-1.5 right-1.5 p-1 bg-black/75 hover:bg-red-650 text-white rounded-full text-[10px] cursor-pointer transition-colors z-10"
+                              title="Remove Image"
+                            >
+                              <FaTimes size={8} />
+                            </button>
+
+                            <div className="absolute bottom-1.5 left-0 right-0 flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 py-0.5 z-10">
+                              {idx > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedImages(prev => {
+                                      const copy = [...prev];
+                                      const temp = copy[idx];
+                                      copy[idx] = copy[idx - 1];
+                                      copy[idx - 1] = temp;
+                                      return copy;
+                                    });
+                                  }}
+                                  className="text-white hover:text-purple-400 p-0.5 cursor-pointer text-[10px]"
+                                  title="Move Left"
+                                >
+                                  ←
+                                </button>
+                              )}
+                              {idx < selectedImages.length - 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedImages(prev => {
+                                      const copy = [...prev];
+                                      const temp = copy[idx];
+                                      copy[idx] = copy[idx + 1];
+                                      copy[idx + 1] = temp;
+                                      return copy;
+                                    });
+                                  }}
+                                  className="text-white hover:text-purple-400 p-0.5 cursor-pointer text-[10px]"
+                                  title="Move Right"
+                                >
+                                  →
+                                </button>
+                              )}
+                            </div>
+
+                            {img.uploading && (
+                              <div className="absolute inset-0 bg-black/70 flex items-center justify-center flex-col gap-1">
+                                <div className="w-5 h-5 rounded-full border border-purple-500/20 border-t-purple-500 animate-spin" />
+                                <span className="text-[8px] font-black text-white">{img.progress}%</span>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
                     {(localPostPreviewUrl || postMediaUrl) && (
                         <div className="relative rounded-2xl overflow-hidden border border-white/5 bg-[#181820] max-h-[220px]">
                           <button
+                            type="button"
                             onClick={() => { setPostMediaUrl(''); setLocalPostPreviewUrl(''); setPostMediaType('none'); setPostAttachedFileName(''); }}
                             className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-black text-white rounded text-[10px] z-10"
                           >
@@ -1020,7 +1192,7 @@ const CommunityGroups = () => {
                       <div className="flex items-center gap-2">
                         <label className="p-2 bg-slate-50 dark:bg-[#1c1c24] hover:bg-slate-100 dark:hover:bg-[#252530] text-purple-400 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider border border-slate-100 dark:border-white/5">
                           <FaImage size={10} /> Image
-                          <input type="file" accept="image/*" onChange={handleGroupPostMediaUpload} className="hidden" />
+                          <input type="file" accept="image/*" multiple onChange={handleGroupPostMediaUpload} className="hidden" />
                         </label>
                         <label className="p-2 bg-slate-50 dark:bg-[#1c1c24] hover:bg-slate-100 dark:hover:bg-[#252530] text-purple-400 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider border border-slate-100 dark:border-white/5">
                           <FaVideo size={10} /> Video
@@ -1095,9 +1267,12 @@ const CommunityGroups = () => {
                             </p>
 
                             {/* Attachment Media if present */}
-                            {post.mediaUrl && (
+                            {((post.mediaUrls && post.mediaUrls.length > 0) || (post.mediaUrl && post.mediaType === 'image')) ? (
+                              <div className="my-2 text-center w-full">
+                                <ImageGallery images={post.mediaUrls && post.mediaUrls.length > 0 ? post.mediaUrls : [post.mediaUrl]} />
+                              </div>
+                            ) : post.mediaUrl ? (
                               <div className="rounded-2xl overflow-hidden border border-slate-100 dark:border-white/5 bg-[#181820] max-h-[300px] w-full flex items-center justify-center">
-                                {post.mediaType === 'image' && <img src={post.mediaUrl} alt="post media" className="w-full h-full object-cover max-h-[300px]" loading="lazy" />}
                                 {post.mediaType === 'video' && <video src={post.mediaUrl} controls className="w-full h-full max-h-[300px]" />}
                                 {post.mediaType === 'pdf' && (
                                   <div className="w-full p-4 flex items-center justify-between bg-slate-900/50 rounded-2xl border border-white/5 m-3">
@@ -1119,7 +1294,7 @@ const CommunityGroups = () => {
                                   </div>
                                 )}
                               </div>
-                            )}
+                            ) : null}
 
                             {/* Counters */}
                             <div className="flex justify-between items-center text-[10px] text-slate-500 font-bold border-t border-slate-100 dark:border-white/5 pt-2">
