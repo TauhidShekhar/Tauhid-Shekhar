@@ -1,0 +1,404 @@
+/* ImageCropperModal CSS Styling */
+
+:root {
+  --modal-bg: rgba(10, 10, 14, 0.85);
+  --card-bg: #121217;
+  --accent-cyan: #00f3ff;
+  --accent-cyan-rgb: 0, 243, 255;
+  --accent-blue: #0071e3;
+  --border-glow: rgba(0, 243, 255, 0.15);
+  --text-white: #ffffff;
+  --text-slate: #a1a1a6;
+  --text-slate-muted: #6e6e73;
+}
+
+/* Base Modal Overlay with fade-in */
+.crop-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999999;
+  padding: 16px;
+  animation: crop-fade-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Card container with slide-in & bounce scale */
+.crop-modal-card {
+  background-color: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
+              0 0 20px 2px var(--border-glow);
+  overflow: hidden;
+  max-height: 90vh;
+  transform: scale(0.95);
+  opacity: 0;
+  animation: crop-scale-up 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Header */
+.crop-modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.crop-modal-title {
+  color: var(--text-white);
+  font-size: 16px;
+  font-weight: 700;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.crop-modal-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-slate);
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.crop-modal-close-btn:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: var(--text-white);
+}
+
+/* Body Area */
+.crop-modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+/* Viewport Container (react-easy-crop requires relative + height) */
+.crop-viewport-container {
+  position: relative;
+  width: 100%;
+  height: 320px;
+  background-color: #08080a;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* Adjustments Panel styling */
+.crop-controls-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.crop-control-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.crop-control-label {
+  font-size: 12px;
+  color: var(--text-slate);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.crop-control-label .icon {
+  color: var(--accent-cyan);
+}
+
+.crop-slider-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 8px 12px;
+  border-radius: 10px;
+}
+
+.crop-step-btn {
+  background: none;
+  border: none;
+  color: var(--text-slate);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.crop-step-btn:hover {
+  color: var(--text-white);
+}
+
+.crop-range-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  outline: none;
+  cursor: pointer;
+}
+
+.crop-range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  box-shadow: 0 0 8px var(--accent-cyan);
+  transition: transform 0.1s ease;
+}
+
+.crop-range-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* Option Groups & Presets */
+.crop-options-group {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 520px) {
+  .crop-options-group {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.crop-option-subgroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.crop-subgroup-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-slate-muted);
+}
+
+.crop-btn-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.crop-preset-btn {
+  flex: 1;
+  min-width: 60px;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text-slate);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.crop-preset-btn:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: var(--text-white);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.crop-preset-btn.active {
+  background-color: rgba(0, 243, 255, 0.1);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  text-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+}
+
+/* Footer & Buttons */
+.crop-modal-footer {
+  padding: 14px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.crop-modal-btn {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.crop-modal-btn-secondary {
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--text-slate);
+}
+
+.crop-modal-btn-secondary:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--text-white);
+}
+
+.crop-modal-btn-primary {
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+  border: none;
+  color: var(--text-white);
+  box-shadow: 0 4px 15px -3px rgba(0, 243, 255, 0.3);
+}
+
+.crop-modal-btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px -3px rgba(0, 243, 255, 0.45);
+}
+
+.crop-modal-btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.crop-modal-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Loading & Spinners */
+.crop-modal-loader-container,
+.crop-modal-error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 280px;
+  gap: 16px;
+}
+
+.crop-modal-spinner {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid rgba(0, 243, 255, 0.1);
+  border-top-color: var(--accent-cyan);
+  animation: crop-spin 1s linear infinite;
+}
+
+.crop-modal-loader-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-slate);
+}
+
+.crop-modal-error-text {
+  font-size: 13px;
+  color: #ff453a;
+  font-weight: 500;
+  text-align: center;
+  max-width: 320px;
+  line-height: 1.5;
+}
+
+/* Button Spinners */
+.crop-btn-spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: var(--text-white);
+  animation: crop-spin 0.8s linear infinite;
+}
+
+/* Animations */
+@keyframes crop-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes crop-scale-up {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes crop-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments for smaller screens or short viewports */
+@media (max-width: 640px) {
+  .crop-modal-card {
+    max-height: calc(100vh - 20px);
+    border-radius: 16px;
+  }
+  .crop-modal-body {
+    padding: 12px;
+    gap: 12px;
+  }
+  .crop-viewport-container {
+    height: 240px;
+  }
+  .crop-options-group {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .crop-preset-btn {
+    padding: 6px 8px;
+    font-size: 10px;
+  }
+}
+
+@media (max-height: 720px) {
+  .crop-viewport-container {
+    height: 200px;
+  }
+  .crop-modal-body {
+    padding: 12px;
+    gap: 10px;
+  }
+  .crop-controls-panel {
+    gap: 10px;
+  }
+}

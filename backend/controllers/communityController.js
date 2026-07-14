@@ -1980,6 +1980,20 @@ const votePollOption = async (req, res, next) => {
   }
 };
 
+const deleteCommunityImageController = async (req, res, next) => {
+  try {
+    const { publicId } = req.body;
+    if (!publicId) {
+      return res.status(400).json({ success: false, message: 'publicId is required' });
+    }
+    const { deleteFromCloudinary } = require('../middleware/upload');
+    await deleteFromCloudinary(publicId, 'image');
+    res.status(200).json({ success: true, message: 'Image deleted successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   awardXP,
   getPosts,
@@ -2047,5 +2061,7 @@ module.exports = {
   getReports,
   actionReport,
   autoModerateText,
-  votePollOption
+  votePollOption,
+  deleteCommunityImageController
 };
+

@@ -4,6 +4,7 @@ import {
   FaTrash, FaEdit, FaPlusCircle, FaTimes, FaCheck, FaGlobe, FaGithub, FaCloudUploadAlt, FaSearch,
   FaChevronUp, FaChevronDown, FaArrowUp, FaArrowDown, FaGripVertical
 } from 'react-icons/fa';
+import ImageCropperModal from '../components/ui/ImageCropperModal';
 
 const ProjectsManager = () => {
   const [projects, setProjects] = useState([]);
@@ -19,6 +20,13 @@ const ProjectsManager = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
+
+  // Image Cropping States
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [cropFile, setCropFile] = useState(null);
+  const [cropAspect, setCropAspect] = useState(16/9);
+  const [cropTitle, setCropTitle] = useState('Edit Image');
+  const [cropCallback, setCropCallback] = useState(null);
 
   // Reordering, Sorting & Bulk Selection states
   const [sortBy, setSortBy] = useState('displayOrder');
@@ -85,30 +93,39 @@ const ProjectsManager = () => {
     setIsDraggingOver(false);
     const file = e.dataTransfer.files[0];
     if (file) {
-      handleFileUpload(file);
+      onThumbnailSelect(file);
     }
   };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      handleFileUpload(file);
+      onThumbnailSelect(file);
     }
   };
 
-  const handleFileUpload = async (file) => {
-    // Validate format
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'];
-    if (!allowedTypes.includes(file.type)) {
-      alert('Supported formats: JPG, JPEG, PNG, WEBP, SVG');
+  const onThumbnailSelect = (file) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/heic', 'image/heif'];
+    const fileName = file.name || '';
+    const isHEIC = fileName.toLowerCase().endsWith('.heic') || fileName.toLowerCase().endsWith('.heif');
+    
+    if (!allowedTypes.includes(file.type) && !isHEIC) {
+      alert('Supported formats: JPG, JPEG, PNG, WEBP, HEIC, SVG');
       return;
     }
-    // Limit to 5MB
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Image size must be less than 5MB');
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Thumbnail size must be less than 10MB');
       return;
     }
 
+    setCropFile(file);
+    setCropAspect(16/9);
+    setCropTitle('Crop Project Thumbnail (16:9)');
+    setCropCallback(() => handleFileUpload);
+    setCropModalOpen(true);
+  };
+
+  const handleFileUpload = async (file) => {
     setUploading(true);
     setUploadProgress(15);
 
@@ -1042,6 +1059,14 @@ const ProjectsManager = () => {
           </div>
         </div>
       </div>
+      <ImageCropperModal
+        isOpen={cropModalOpen}
+        file={cropFile}
+        aspectRatio={cropAspect}
+        onClose={() => setCropModalOpen(false)}
+        onCropComplete={cropCallback}
+        title={cropTitle}
+      />
     </div>
   );
 };

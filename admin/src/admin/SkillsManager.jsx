@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { 
-  FaTrash, FaEdit, FaPlusCircle, FaTimes, FaCheck,
-  FaArrowUp, FaArrowDown, FaChevronUp, FaChevronDown, FaGripVertical 
+  FaTrash, FaEdit, FaPlusCircle, FaTimes, FaCheck, FaGlobe, FaGithub, FaCloudUploadAlt, FaSearch,
+  FaChevronUp, FaChevronDown, FaArrowUp, FaArrowDown, FaGripVertical 
 } from 'react-icons/fa';
+import ImageCropperModal from '../components/ui/ImageCropperModal';
 
 const getAutoLogoUrl = (skillName) => {
   const name = skillName.toLowerCase().trim();
@@ -183,6 +184,10 @@ const SkillsManager = () => {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
 
+  // Image Cropping States
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [cropFile, setCropFile] = useState(null);
+
   // Form states
   const [isEditing, setIsEditing] = useState(false);
   const [currentId, setCurrentId] = useState(null);
@@ -232,17 +237,28 @@ const SkillsManager = () => {
     fetchSkills();
   }, []);
 
-  const handleLogoUpload = async (e) => {
+  const onLogoSelect = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/heic', 'image/heif'];
+    const fileName = file.name || '';
+    const isHEIC = fileName.toLowerCase().endsWith('.heic') || fileName.toLowerCase().endsWith('.heif');
     
-    // validate type
-    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml', 'image/webp'];
-    if (!validTypes.includes(file.type)) {
-      alert('Invalid file format. Only PNG, SVG, JPG, JPEG, and WEBP are supported.');
+    if (!allowedTypes.includes(file.type) && !isHEIC) {
+      alert('Unsupported format. Supported: JPG, PNG, WEBP, HEIC, SVG');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Logo must be less than 10MB');
       return;
     }
 
+    setCropFile(file);
+    setCropModalOpen(true);
+  };
+
+  const handleLogoUpload = async (file) => {
     const uploadData = new FormData();
     uploadData.append('file', file);
     
@@ -686,7 +702,7 @@ const SkillsManager = () => {
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={handleLogoUpload}
+                      onChange={onLogoSelect}
                       disabled={uploading}
                       className="hidden"
                       id="logoFilePicker"
@@ -1082,6 +1098,14 @@ const SkillsManager = () => {
           )}
         </div>
       </div>
+      <ImageCropperModal
+        isOpen={cropModalOpen}
+        file={cropFile}
+        aspectRatio={1}
+        onClose={() => setCropModalOpen(false)}
+        onCropComplete={handleLogoUpload}
+        title="Crop Skill Badge/Logo"
+      />
     </div>
   );
 };

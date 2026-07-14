@@ -5,6 +5,7 @@ import {
   FaUser, FaCheckCircle, FaLanguage, FaGripVertical, FaBan, FaInfoCircle, FaEnvelope, FaPhone, FaMapMarkerAlt,
   FaLink, FaImage
 } from 'react-icons/fa';
+import ImageCropperModal from '../components/ui/ImageCropperModal';
 
 const AboutManager = () => {
   const [loading, setLoading] = useState(true);
@@ -19,6 +20,10 @@ const AboutManager = () => {
   const [uploadingProfilePic, setUploadingProfilePic] = useState(false);
   const [profilePicProgress, setProfilePicProgress] = useState(0);
   const [dragOverProfilePic, setDragOverProfilePic] = useState(false);
+
+  // Image Cropping States
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [cropFile, setCropFile] = useState(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -148,15 +153,18 @@ const AboutManager = () => {
     });
   };
 
-  // Image Upload handler
-  const handleProfilePicUpload = async (file) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'];
-    if (!allowedTypes.includes(file.type)) {
-      setErrorMsg('Unsupported format. Supported: JPG, PNG, WEBP, SVG');
+  // Intercept file selection and open cropper
+  const onProfilePicSelect = (file) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/heic', 'image/heif'];
+    const fileName = file.name || '';
+    const isHEIC = fileName.toLowerCase().endsWith('.heic') || fileName.toLowerCase().endsWith('.heif');
+    
+    if (!allowedTypes.includes(file.type) && !isHEIC) {
+      setErrorMsg('Unsupported format. Supported: JPG, PNG, WEBP, HEIC, SVG');
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      setErrorMsg('Profile photo must be less than 5MB');
+    if (file.size > 10 * 1024 * 1024) {
+      setErrorMsg('Profile photo must be less than 10MB');
       return;
     }
 
@@ -164,6 +172,12 @@ const AboutManager = () => {
       return;
     }
 
+    setCropFile(file);
+    setCropModalOpen(true);
+  };
+
+  // Image Upload handler (receives cropped file)
+  const handleProfilePicUpload = async (file) => {
     setUploadingProfilePic(true);
     setProfilePicProgress(20);
 
@@ -371,7 +385,7 @@ const AboutManager = () => {
             <div
               onDragOver={(e) => { e.preventDefault(); setDragOverProfilePic(true); }}
               onDragLeave={() => setDragOverProfilePic(false)}
-              onDrop={(e) => { e.preventDefault(); setDragOverProfilePic(false); const f = e.dataTransfer.files[0]; if (f) handleProfilePicUpload(f); }}
+              onDrop={(e) => { e.preventDefault(); setDragOverProfilePic(false); const f = e.dataTransfer.files[0]; if (f) onProfilePicSelect(f); }}
               className={`border-2 border-dashed rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer transition-all ${
                 dragOverProfilePic ? 'border-primary-purple bg-primary-purple/5' : 'border-slate-250 dark:border-white/10 hover:border-primary-purple/60'
               }`}
@@ -391,9 +405,18 @@ const AboutManager = () => {
                   <label htmlFor="profile-upload" className="px-3 py-1.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-[10px] font-black rounded-lg cursor-pointer hover:bg-slate-200">Browse Device</label>
                 </div>
               )}
-              <input type="file" id="profile-upload" accept="image/*" onChange={(e) => { const f = e.target.files[0]; if (f) handleProfilePicUpload(f); }} className="hidden" />
-              <input type="file" id="replace-profile" accept="image/*" onChange={(e) => { const f = e.target.files[0]; if (f) handleProfilePicUpload(f); }} className="hidden" />
+              <input type="file" id="profile-upload" accept="image/*" onChange={(e) => { const f = e.target.files[0]; if (f) onProfilePicSelect(f); }} className="hidden" />
+              <input type="file" id="replace-profile" accept="image/*" onChange={(e) => { const f = e.target.files[0]; if (f) onProfilePicSelect(f); }} className="hidden" />
             </div>
+
+            <ImageCropperModal
+              isOpen={cropModalOpen}
+              file={cropFile}
+              aspectRatio={1}
+              onClose={() => setCropModalOpen(false)}
+              onCropComplete={handleProfilePicUpload}
+              title="Crop Profile Photo"
+            />
 
             {uploadingProfilePic && (
               <div className="w-full bg-slate-100 dark:bg-white/5 h-1.5 rounded-full overflow-hidden mt-3">

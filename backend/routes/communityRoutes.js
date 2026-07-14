@@ -63,6 +63,7 @@ const {
   likeProject,
   commentOnProject,
   uploadImageController,
+  deleteCommunityImageController,
   getEvents,
   createEvent,
   rsvpEvent,
@@ -225,6 +226,7 @@ router.route('/reports')
 router.post('/reports/:id/action', actionReport);
 
 router.post('/upload-image', upload.fields([{ name: 'image', maxCount: 1 }]), uploadImageController);
+router.post('/delete-image', protect, deleteCommunityImageController);
 
 // Gamification / Rewards & Ecosystem Routes
 router.get('/rewards/dashboard', getRewardsDashboard);

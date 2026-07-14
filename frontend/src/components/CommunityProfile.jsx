@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 import { Toast } from './ui/Toast';
+import ImageCropperModal from './ui/ImageCropperModal';
 import { 
   FaUserCircle, FaMapMarkerAlt, FaLink, FaGithub, FaLinkedin, FaAward, 
   FaUserPlus, FaUserMinus, FaTwitter, FaInstagram, FaFacebook, FaYoutube, 
@@ -86,6 +87,13 @@ const CommunityProfile = () => {
 
   const [avatarPreview, setAvatarPreview] = useState('');
   const [coverPreview, setCoverPreview] = useState('');
+
+  // Image Cropping States
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [cropFile, setCropFile] = useState(null);
+  const [cropAspect, setCropAspect] = useState(1);
+  const [cropTitle, setCropTitle] = useState('Edit Image');
+  const [cropCallback, setCropCallback] = useState(null);
 
   // Password Settings States
   const [oldPassword, setOldPassword] = useState('');
@@ -229,6 +237,60 @@ const CommunityProfile = () => {
     } finally {
       setFollowLoading(false);
     }
+  };
+
+  const onAvatarSelect = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/heic', 'image/heif'];
+    const fileName = file.name || '';
+    const isHEIC = fileName.toLowerCase().endsWith('.heic') || fileName.toLowerCase().endsWith('.heif');
+    
+    if (!allowedTypes.includes(file.type) && !isHEIC) {
+      alert('Unsupported format. Supported: JPG, PNG, WEBP, HEIC, SVG');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Avatar must be less than 10MB');
+      return;
+    }
+
+    setCropFile(file);
+    setCropAspect(1);
+    setCropTitle('Crop Profile Avatar (1:1)');
+    setCropCallback(() => (croppedFile) => {
+      setAvatarFile(croppedFile);
+      setAvatarPreview(URL.createObjectURL(croppedFile));
+    });
+    setCropModalOpen(true);
+  };
+
+  const onCoverSelect = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/heic', 'image/heif'];
+    const fileName = file.name || '';
+    const isHEIC = fileName.toLowerCase().endsWith('.heic') || fileName.toLowerCase().endsWith('.heif');
+    
+    if (!allowedTypes.includes(file.type) && !isHEIC) {
+      alert('Unsupported format. Supported: JPG, PNG, WEBP, HEIC, SVG');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Cover photo must be less than 10MB');
+      return;
+    }
+
+    setCropFile(file);
+    setCropAspect(16/9);
+    setCropTitle('Crop Cover Photo (16:9)');
+    setCropCallback(() => (croppedFile) => {
+      setCoverFile(croppedFile);
+      setCoverPreview(URL.createObjectURL(croppedFile));
+    });
+    setCropModalOpen(true);
   };
 
   const handleProfileSave = async (e) => {
@@ -715,7 +777,7 @@ const CommunityProfile = () => {
               <input 
                 type="file" 
                 accept="image/*" 
-                onChange={(e) => { setAvatarFile(e.target.files[0]); setAvatarPreview(URL.createObjectURL(e.target.files[0])); }} 
+                onChange={onAvatarSelect} 
                 className="w-full text-xs text-slate-450 border border-white/5 p-2 rounded-xl"
               />
             </div>
@@ -725,7 +787,7 @@ const CommunityProfile = () => {
               <input 
                 type="file" 
                 accept="image/*" 
-                onChange={(e) => { setCoverFile(e.target.files[0]); setCoverPreview(URL.createObjectURL(e.target.files[0])); }} 
+                onChange={onCoverSelect} 
                 className="w-full text-xs text-slate-450 border border-white/5 p-2 rounded-xl"
               />
             </div>
@@ -979,6 +1041,14 @@ const CommunityProfile = () => {
         />
       )}
 
+      <ImageCropperModal
+        isOpen={cropModalOpen}
+        file={cropFile}
+        aspectRatio={cropAspect}
+        onClose={() => setCropModalOpen(false)}
+        onCropComplete={cropCallback}
+        title={cropTitle}
+      />
     </div>
   );
 };

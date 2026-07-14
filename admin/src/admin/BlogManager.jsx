@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { FaBook, FaPlusCircle, FaEdit, FaTrash, FaCheck, FaTimes, FaGlobe } from 'react-icons/fa';
+import ImageCropperModal from '../components/ui/ImageCropperModal';
 
 const BlogManager = () => {
   const [blogs, setBlogs] = useState([]);
@@ -20,6 +21,10 @@ const BlogManager = () => {
   });
 
   const [coverImageFile, setCoverImageFile] = useState(null);
+
+  // Image Cropping States
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [cropFile, setCropFile] = useState(null);
 
   const fetchBlogs = async () => {
     try {
@@ -44,7 +49,24 @@ const BlogManager = () => {
   };
 
   const handleFileChange = (e) => {
-    setCoverImageFile(e.target.files[0]);
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/heic', 'image/heif'];
+    const fileName = file.name || '';
+    const isHEIC = fileName.toLowerCase().endsWith('.heic') || fileName.toLowerCase().endsWith('.heif');
+    
+    if (!allowedTypes.includes(file.type) && !isHEIC) {
+      alert('Unsupported format. Supported: JPG, PNG, WEBP, HEIC, SVG');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Cover image must be less than 10MB');
+      return;
+    }
+
+    setCropFile(file);
+    setCropModalOpen(true);
   };
 
   const handleFormSubmit = async (e) => {
@@ -300,6 +322,14 @@ const BlogManager = () => {
           )}
         </div>
       </div>
+      <ImageCropperModal
+        isOpen={cropModalOpen}
+        file={cropFile}
+        aspectRatio={16/9}
+        onClose={() => setCropModalOpen(false)}
+        onCropComplete={setCoverImageFile}
+        title="Crop Blog Cover Image"
+      />
     </div>
   );
 };

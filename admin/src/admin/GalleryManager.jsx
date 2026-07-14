@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { FaImages, FaPlusCircle, FaTrash, FaCheck, FaTimes } from 'react-icons/fa';
+import ImageCropperModal from '../components/ui/ImageCropperModal';
 
 const GalleryManager = () => {
   const [gallery, setGallery] = useState([]);
@@ -16,6 +17,10 @@ const GalleryManager = () => {
   });
 
   const [imageFile, setImageFile] = useState(null);
+
+  // Image Cropping States
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [cropFile, setCropFile] = useState(null);
 
   const fetchGallery = async () => {
     try {
@@ -43,7 +48,24 @@ const GalleryManager = () => {
   };
 
   const handleFileChange = (e) => {
-    setImageFile(e.target.files[0]);
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/heic', 'image/heif'];
+    const fileName = file.name || '';
+    const isHEIC = fileName.toLowerCase().endsWith('.heic') || fileName.toLowerCase().endsWith('.heif');
+    
+    if (!allowedTypes.includes(file.type) && !isHEIC) {
+      alert('Unsupported format. Supported: JPG, PNG, WEBP, HEIC, SVG');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Gallery image must be less than 10MB');
+      return;
+    }
+
+    setCropFile(file);
+    setCropModalOpen(true);
   };
 
   const handleFormSubmit = async (e) => {
@@ -222,6 +244,14 @@ const GalleryManager = () => {
           )}
         </div>
       </div>
+      <ImageCropperModal
+        isOpen={cropModalOpen}
+        file={cropFile}
+        aspectRatio={null}
+        onClose={() => setCropModalOpen(false)}
+        onCropComplete={setImageFile}
+        title="Crop Gallery Image"
+      />
     </div>
   );
 };

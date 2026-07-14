@@ -5,6 +5,7 @@ import {
   FaGithub, FaLinkedin, FaEnvelope, FaLink, FaHome, FaUndo,
   FaInstagram, FaTwitter, FaYoutube, FaFacebook, FaImage, FaBan
 } from 'react-icons/fa';
+import ImageCropperModal from '../components/ui/ImageCropperModal';
 
 const HeroManager = () => {
   const [loading, setLoading] = useState(true);
@@ -24,6 +25,13 @@ const HeroManager = () => {
   const [uploadingBg, setUploadingBg] = useState(false);
   const [bgImgProgress, setBgImgProgress] = useState(0);
   const [dragOverBg, setDragOverBg] = useState(false);
+
+  // Image Cropping States
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [cropFile, setCropFile] = useState(null);
+  const [cropAspect, setCropAspect] = useState(1);
+  const [cropTitle, setCropTitle] = useState('Edit Image');
+  const [cropCallback, setCropCallback] = useState(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -123,21 +131,66 @@ const HeroManager = () => {
     return file; // Native upload. Server or Cloudinary compresses automatically
   };
 
-  // Hero Image Upload
+  // Interceptors for cropping
+  const onHeroImageSelect = (file) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/heic', 'image/heif'];
+    const fileName = file.name || '';
+    const isHEIC = fileName.toLowerCase().endsWith('.heic') || fileName.toLowerCase().endsWith('.heif');
+    
+    if (!allowedTypes.includes(file.type) && !isHEIC) {
+      setErrorMsg('Unsupported format. Supported: JPG, PNG, WEBP, HEIC, SVG');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setErrorMsg('Hero photo must be less than 10MB');
+      return;
+    }
+
+    if (formData.heroImageUrl && !window.confirm('Are you sure you want to replace the current hero image?')) {
+      return;
+    }
+
+    setCropFile(file);
+    setCropAspect(4/3); // 4:3 for Hero Photo
+    setCropTitle('Crop Hero Image (4:3)');
+    setCropCallback(() => handleHeroImageUpload);
+    setCropModalOpen(true);
+  };
+
+  const onBgImageSelect = (file) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/heic', 'image/heif'];
+    const fileName = file.name || '';
+    const isHEIC = fileName.toLowerCase().endsWith('.heic') || fileName.toLowerCase().endsWith('.heif');
+    
+    if (!allowedTypes.includes(file.type) && !isHEIC) {
+      setErrorMsg('Unsupported format. Supported: JPG, PNG, WEBP, HEIC, SVG');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setErrorMsg('Background image must be less than 10MB');
+      return;
+    }
+
+    if (formData.heroBgUrl && !window.confirm('Are you sure you want to replace the current background banner?')) {
+      return;
+    }
+
+    setCropFile(file);
+    setCropAspect(16/9); // 16:9 for Wide Banner
+    setCropTitle('Crop Background Banner (16:9)');
+    setCropCallback(() => handleBgImageUpload);
+    setCropModalOpen(true);
+  };
+
+  // Hero Image Upload (receives cropped file)
   const handleHeroImageUpload = async (file) => {
     try {
       setErrorMsg('');
-      const validFile = await validateAndCompressImage(file);
-      
-      if (formData.heroImageUrl && !window.confirm('Are you sure you want to replace the current hero image?')) {
-        return;
-      }
-
       setUploadingHero(true);
       setHeroImgProgress(20);
 
       const formPayload = new FormData();
-      formPayload.append('file', validFile);
+      formPayload.append('file', file);
 
       const interval = setInterval(() => {
         setHeroImgProgress(prev => (prev >= 90 ? 90 : prev + 10));
@@ -161,21 +214,15 @@ const HeroManager = () => {
     }
   };
 
-  // Background Banner Upload
+  // Background Banner Upload (receives cropped file)
   const handleBgImageUpload = async (file) => {
     try {
       setErrorMsg('');
-      const validFile = await validateAndCompressImage(file);
-
-      if (formData.heroBgUrl && !window.confirm('Are you sure you want to replace the current background banner?')) {
-        return;
-      }
-
       setUploadingBg(true);
       setBgImgProgress(20);
 
       const formPayload = new FormData();
-      formPayload.append('file', validFile);
+      formPayload.append('file', file);
 
       const interval = setInterval(() => {
         setBgImgProgress(prev => (prev >= 90 ? 90 : prev + 10));
@@ -345,7 +392,7 @@ const HeroManager = () => {
             <div
               onDragOver={(e) => { e.preventDefault(); setDragOverHero(true); }}
               onDragLeave={() => setDragOverHero(false)}
-              onDrop={(e) => { e.preventDefault(); setDragOverHero(false); const f = e.dataTransfer.files[0]; if (f) handleHeroImageUpload(f); }}
+              onDrop={(e) => { e.preventDefault(); setDragOverHero(false); const f = e.dataTransfer.files[0]; if (f) onHeroImageSelect(f); }}
               className={`border-2 border-dashed rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer transition-all ${
                 dragOverHero ? 'border-primary-blue bg-primary-blue/5' : 'border-slate-250 dark:border-white/10 hover:border-primary-blue/60'
               }`}
@@ -365,8 +412,8 @@ const HeroManager = () => {
                   <label htmlFor="hero-upload" className="px-3 py-1.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-[10px] font-black rounded-lg cursor-pointer hover:bg-slate-200">Browse Device</label>
                 </div>
               )}
-              <input type="file" id="hero-upload" accept="image/*" onChange={(e) => { const f = e.target.files[0]; if (f) handleHeroImageUpload(f); }} className="hidden" />
-              <input type="file" id="replace-hero" accept="image/*" onChange={(e) => { const f = e.target.files[0]; if (f) handleHeroImageUpload(f); }} className="hidden" />
+              <input type="file" id="hero-upload" accept="image/*" onChange={(e) => { const f = e.target.files[0]; if (f) onHeroImageSelect(f); }} className="hidden" />
+              <input type="file" id="replace-hero" accept="image/*" onChange={(e) => { const f = e.target.files[0]; if (f) onHeroImageSelect(f); }} className="hidden" />
             </div>
 
             {uploadingHero && (
@@ -385,7 +432,7 @@ const HeroManager = () => {
             <div
               onDragOver={(e) => { e.preventDefault(); setDragOverBg(true); }}
               onDragLeave={() => setDragOverBg(false)}
-              onDrop={(e) => { e.preventDefault(); setDragOverBg(false); const f = e.dataTransfer.files[0]; if (f) handleBgImageUpload(f); }}
+              onDrop={(e) => { e.preventDefault(); setDragOverBg(false); const f = e.dataTransfer.files[0]; if (f) onBgImageSelect(f); }}
               className={`border-2 border-dashed rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer transition-all ${
                 dragOverBg ? 'border-primary-purple bg-primary-purple/5' : 'border-slate-250 dark:border-white/10 hover:border-primary-purple/60'
               }`}
@@ -405,8 +452,8 @@ const HeroManager = () => {
                   <label htmlFor="bg-upload" className="px-3 py-1.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-[10px] font-black rounded-lg cursor-pointer hover:bg-slate-200">Browse Device</label>
                 </div>
               )}
-              <input type="file" id="bg-upload" accept="image/*" onChange={(e) => { const f = e.target.files[0]; if (f) handleBgImageUpload(f); }} className="hidden" />
-              <input type="file" id="replace-bg" accept="image/*" onChange={(e) => { const f = e.target.files[0]; if (f) handleBgImageUpload(f); }} className="hidden" />
+              <input type="file" id="bg-upload" accept="image/*" onChange={(e) => { const f = e.target.files[0]; if (f) onBgImageSelect(f); }} className="hidden" />
+              <input type="file" id="replace-bg" accept="image/*" onChange={(e) => { const f = e.target.files[0]; if (f) onBgImageSelect(f); }} className="hidden" />
             </div>
 
             {uploadingBg && (
@@ -415,6 +462,15 @@ const HeroManager = () => {
               </div>
             )}
           </div>
+
+          <ImageCropperModal
+            isOpen={cropModalOpen}
+            file={cropFile}
+            aspectRatio={cropAspect}
+            onClose={() => setCropModalOpen(false)}
+            onCropComplete={cropCallback}
+            title={cropTitle}
+          />
 
           {/* Social connections Card */}
           <div className="glass p-6 rounded-2xl border border-slate-200/60 dark:border-white/5 shadow-sm">

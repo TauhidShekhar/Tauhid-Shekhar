@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { FaUserCircle, FaSave } from 'react-icons/fa';
+import ImageCropperModal from '../components/ui/ImageCropperModal';
 
 const ProfileManager = () => {
   const { user, updateProfile } = useAuth();
@@ -8,11 +9,32 @@ const ProfileManager = () => {
   const [phone, setPhone] = useState(user?.phone || '');
   const [avatarFile, setAvatarFile] = useState(null);
   
+  // Image Cropping States
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [cropFile, setCropFile] = useState(null);
+
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
 
   const handleFileChange = (e) => {
-    setAvatarFile(e.target.files[0]);
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/heic', 'image/heif'];
+    const fileName = file.name || '';
+    const isHEIC = fileName.toLowerCase().endsWith('.heic') || fileName.toLowerCase().endsWith('.heif');
+    
+    if (!allowedTypes.includes(file.type) && !isHEIC) {
+      alert('Unsupported format. Supported: JPG, PNG, WEBP, HEIC, SVG');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Avatar must be less than 10MB');
+      return;
+    }
+
+    setCropFile(file);
+    setCropModalOpen(true);
   };
 
   const handleSubmit = async (e) => {
@@ -104,6 +126,14 @@ const ProfileManager = () => {
           </button>
         </form>
       </div>
+      <ImageCropperModal
+        isOpen={cropModalOpen}
+        file={cropFile}
+        aspectRatio={1}
+        onClose={() => setCropModalOpen(false)}
+        onCropComplete={setAvatarFile}
+        title="Crop Profile Avatar"
+      />
     </div>
   );
 };

@@ -132,10 +132,7 @@ const uploadToCloudinary = (buffer, folder, resourceType = 'auto', originalName 
       resource_type: resourceType,
     };
 
-    if (resourceType === 'image' || resourceType === 'auto') {
-      options.format = 'auto';
-      options.quality = 'auto';
-    }
+
 
     if (originalName) {
       const cleanName = path.parse(originalName).name

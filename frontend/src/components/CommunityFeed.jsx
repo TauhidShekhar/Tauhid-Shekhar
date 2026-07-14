@@ -3,11 +3,12 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 import socket from '../services/socket';
+import ImageCropperModal from './ui/ImageCropperModal';
 import { 
   FaRegHeart, FaHeart, FaComment, FaBookmark, FaRegBookmark, 
   FaShareAlt, FaPlus, FaImage, FaPaperclip, FaTags, FaFilter, 
   FaRegSmile, FaCheckCircle, FaThumbtack, FaTrash, FaPlusCircle,
-  FaFilePdf, FaVideo, FaPoll, FaRegComments, FaGlobe, FaChevronRight, FaGithub, FaPaperPlane, FaEdit, FaUser, FaTimes
+  FaFilePdf, FaVideo, FaPoll, FaRegComments, FaGlobe, FaChevronRight, FaGithub, FaPaperPlane, FaEdit, FaUser, FaTimes, FaCrop
 } from 'react-icons/fa';
 import { ImageGallery } from './ImageGallery';
 
@@ -32,7 +33,13 @@ const CommunityFeed = () => {
   const [tags, setTags] = useState('');
   const [uploading, setUploading] = useState(false);
   const [selectedImages, setSelectedImages] = useState([]); // Array of { id, file, previewUrl, remoteUrl, uploading, progress }
-  
+
+  // Sequential Image Cropping States
+  const [cropQueue, setCropQueue] = useState([]);
+  const [currentCropIndex, setCurrentCropIndex] = useState(0);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [cropCallback, setCropCallback] = useState(null);
+
   // Post Draft States & Effects
   useEffect(() => {
     try {
@@ -168,9 +175,9 @@ const CommunityFeed = () => {
     }
 
     // Multiple image upload
-    const imageFiles = Array.from(files).filter(f => f.type.startsWith('image/') || f.name.toLowerCase().match(/\.(jpg|jpeg|png|webp)$/));
+    const imageFiles = Array.from(files).filter(f => f.type.startsWith('image/') || f.name.toLowerCase().match(/\.(jpg|jpeg|png|webp|heic|heif)$/));
     if (imageFiles.length === 0) {
-      alert('Only images (JPG, JPEG, PNG, WebP), videos, or PDFs are supported.');
+      alert('Only images (JPG, JPEG, PNG, WebP, HEIC), videos, or PDFs are supported.');
       return;
     }
 
@@ -185,57 +192,92 @@ const CommunityFeed = () => {
       validImages.push(f);
     }
 
-    setMediaType('image');
-    setMediaUrl('');
-    setLocalPreviewUrl('');
-    setAttachedFileName('');
+    // Track starting offset index in selectedImages before adding new files
+    const startIdx = selectedImages.length;
 
     const newItems = validImages.map(file => ({
       id: 'img-' + Date.now() + '-' + Math.round(Math.random() * 1e5),
       file,
       previewUrl: URL.createObjectURL(file),
       remoteUrl: '',
-      uploading: true,
-      progress: 0
+      publicId: '',
+      uploading: false,
+      progress: 0,
+      error: null
     }));
 
     setSelectedImages(prev => [...prev, ...newItems]);
 
-    // Concurrent uploads
-    newItems.forEach(async (item) => {
-      try {
-        const formData = new FormData();
-        formData.append('image', item.file);
-
-        // Upload progress simulator
-        const timer = setInterval(() => {
-          setSelectedImages(prev => prev.map(img => 
-            img.id === item.id 
-              ? { ...img, progress: Math.min(img.progress + 15, 90) } 
-              : img
-          ));
-        }, 150);
-
-        const res = await api.uploadCommunityImage(formData);
-        clearInterval(timer);
-
-        if (res.success) {
-          setSelectedImages(prev => prev.map(img => 
-            img.id === item.id 
-              ? { ...img, remoteUrl: res.url, uploading: false, progress: 100 } 
-              : img
-          ));
-        } else {
-          setSelectedImages(prev => prev.filter(img => img.id !== item.id));
-          alert(`Failed to upload ${item.file.name}`);
+    // Setup crop modal for the selected files list
+    setCropQueue(validImages);
+    setCropCallback(() => (croppedFile, cropIndex) => {
+      setSelectedImages(prev => {
+        const updated = [...prev];
+        const targetIdx = startIdx + cropIndex;
+        if (updated[targetIdx]) {
+          updated[targetIdx].file = croppedFile;
+          updated[targetIdx].previewUrl = URL.createObjectURL(croppedFile);
         }
-      } catch (err) {
-        setSelectedImages(prev => prev.filter(img => img.id !== item.id));
-        alert(`Failed to upload ${item.file.name}: ${err.message}`);
-      }
+        return updated;
+      });
     });
-
+    setCropModalOpen(true);
     e.target.value = ''; // Reset input
+  };
+
+  const handleRecropImage = (img, idx) => {
+    setCropQueue([img.file]);
+    setCurrentCropIndex(0);
+    setCropCallback(() => (croppedFile) => {
+      setSelectedImages(prev => prev.map(item => 
+        item.id === img.id 
+          ? { ...item, file: croppedFile, previewUrl: URL.createObjectURL(croppedFile), remoteUrl: '', progress: 0 }
+          : item
+      ));
+    });
+    setCropModalOpen(true);
+  };
+
+  const uploadSingleFeedImage = async (item) => {
+    try {
+      const formData = new FormData();
+      formData.append('image', item.file);
+
+      // Upload progress simulator
+      const timer = setInterval(() => {
+        setSelectedImages(prev => prev.map(img => 
+          img.id === item.id 
+            ? { ...img, progress: Math.min(img.progress + 15, 90) } 
+            : img
+        ));
+      }, 150);
+
+      const res = await api.uploadCommunityImage(formData);
+      clearInterval(timer);
+
+      if (res.success) {
+        setSelectedImages(prev => prev.map(img => 
+          img.id === item.id 
+            ? { ...img, remoteUrl: res.url, publicId: res.publicId, uploading: false, progress: 100 } 
+            : img
+        ));
+        return res.url;
+      } else {
+        setSelectedImages(prev => prev.map(img => 
+          img.id === item.id 
+            ? { ...img, uploading: false, error: 'Failed' } 
+            : img
+        ));
+        throw new Error(`Failed to upload ${item.file.name}`);
+      }
+    } catch (err) {
+      setSelectedImages(prev => prev.map(img => 
+        img.id === item.id 
+          ? { ...img, uploading: false, error: err.message } 
+          : img
+      ));
+      throw err;
+    }
   };
 
   const proceedWithUpload = async (file) => {
@@ -256,24 +298,18 @@ const CommunityFeed = () => {
       const res = await api.uploadCommunityImage(formData);
       if (res.success) {
         setMediaUrl(res.url);
-      } else {
-        alert('Media upload failed.');
-        setLocalPreviewUrl('');
-        setMediaType('none');
       }
     } catch (err) {
-      alert('Media upload failed: ' + err.message);
-      setLocalPreviewUrl('');
-      setMediaType('none');
+      alert(err.message || 'Upload failed');
     } finally {
       setUploading(false);
     }
   };
 
-  const handleAddEditPostImage = async (e) => {
+  const handleAddEditPostImage = (e) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-    const allowed = Array.from(files).filter(f => f.type.startsWith('image/') || f.name.toLowerCase().match(/\.(jpg|jpeg|png|webp)$/));
+    const allowed = Array.from(files).filter(f => f.type.startsWith('image/') || f.name.toLowerCase().match(/\.(jpg|jpeg|png|webp|heic|heif)$/));
     
     for (const file of allowed) {
       const error = validateImage(file);
@@ -283,36 +319,103 @@ const CommunityFeed = () => {
       }
     }
 
-    allowed.forEach(async (file) => {
-      const tempId = 'edit-img-' + Date.now() + '-' + Math.round(Math.random() * 1e5);
-      setEditPostImages(prev => [...prev, { id: tempId, url: '', previewUrl: URL.createObjectURL(file), uploading: true }]);
-      
-      try {
-        const formData = new FormData();
-        formData.append('image', file);
-        const res = await api.uploadCommunityImage(formData);
-        if (res.success) {
-          setEditPostImages(prev => prev.map(img => 
-            img.id === tempId ? res.url : img
-          ));
-        } else {
-          setEditPostImages(prev => prev.filter(img => img.id !== tempId));
-          alert('Upload failed.');
-        }
-      } catch (err) {
+    setCropQueue(allowed);
+    setCurrentCropIndex(0);
+    setCropCallback(() => handleEditImageCropped);
+    setCropModalOpen(true);
+    e.target.value = '';
+  };
+
+  const handleEditImageCropped = (croppedFile) => {
+    const tempId = 'edit-img-' + Date.now() + '-' + Math.round(Math.random() * 1e5);
+    setEditPostImages(prev => [...prev, { id: tempId, url: '', previewUrl: URL.createObjectURL(croppedFile), uploading: true }]);
+    uploadSingleEditImage(croppedFile, tempId);
+  };
+
+  const uploadSingleEditImage = async (file, tempId) => {
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      const res = await api.uploadCommunityImage(formData);
+      if (res.success) {
+        setEditPostImages(prev => prev.map(img => 
+          img.id === tempId ? res.url : img
+        ));
+      } else {
         setEditPostImages(prev => prev.filter(img => img.id !== tempId));
-        alert('Upload failed: ' + err.message);
+        alert('Upload failed.');
       }
-    });
+    } catch (err) {
+      setEditPostImages(prev => prev.filter(img => img.id !== tempId));
+      alert('Upload failed: ' + err.message);
+    }
   };
 
   const handlePostSubmit = async (e) => {
     e.preventDefault();
     if (!content.trim()) return;
 
-    if (selectedImages.some(img => img.uploading)) {
-      alert('Please wait for all images to finish uploading.');
-      return;
+    // Check if we need to upload any cropped images first
+    const imagesToUpload = selectedImages.filter(img => !img.remoteUrl);
+
+    let finalUrls = selectedImages.map(img => img.remoteUrl).filter(Boolean);
+    const newlyUploadedPublicIds = [];
+
+    if (imagesToUpload.length > 0) {
+      setUploading(true);
+      try {
+        // Set all target images to uploading state
+        setSelectedImages(prev => prev.map(img => 
+          !img.remoteUrl ? { ...img, uploading: true, error: null, progress: 10 } : img
+        ));
+
+        // Upload concurrently
+        const uploadPromises = imagesToUpload.map(async (item) => {
+          const formData = new FormData();
+          formData.append('image', item.file);
+
+          const progressTimer = setInterval(() => {
+            setSelectedImages(prev => prev.map(img => 
+              img.id === item.id 
+                ? { ...img, progress: Math.min(img.progress + 15, 90) } 
+                : img
+            ));
+          }, 150);
+
+          try {
+            const res = await api.uploadCommunityImage(formData);
+            clearInterval(progressTimer);
+            if (res.success) {
+              setSelectedImages(prev => prev.map(img => 
+                img.id === item.id 
+                  ? { ...img, remoteUrl: res.url, publicId: res.publicId, uploading: false, progress: 100 } 
+                  : img
+              ));
+              newlyUploadedPublicIds.push(res.publicId);
+              return res.url;
+            } else {
+              throw new Error(`Failed to upload ${item.file.name}`);
+            }
+          } catch (err) {
+            clearInterval(progressTimer);
+            setSelectedImages(prev => prev.map(img => 
+              img.id === item.id 
+                ? { ...img, uploading: false, error: err.message || 'Upload failed' } 
+                : img
+            ));
+            throw err;
+          }
+        });
+
+        const newUrls = await Promise.all(uploadPromises);
+        finalUrls = [...finalUrls, ...newUrls.filter(Boolean)];
+      } catch (err) {
+        alert('Some uploads failed. Please retry only the failed ones or remove them.');
+        setUploading(false);
+        return;
+      } finally {
+        setUploading(false);
+      }
     }
 
     const tagsArray = tags.split(',').map(t => t.trim()).filter(Boolean);
@@ -325,9 +428,8 @@ const CommunityFeed = () => {
         }
       : null;
 
-    const uploadedUrls = selectedImages.map(img => img.remoteUrl).filter(Boolean);
-    const finalMediaUrl = uploadedUrls.length > 0 ? uploadedUrls[0] : (localPreviewUrl || mediaUrl);
-    const finalMediaType = uploadedUrls.length > 0 ? 'image' : mediaType;
+    const finalMediaUrl = finalUrls.length > 0 ? finalUrls[0] : (localPreviewUrl || mediaUrl);
+    const finalMediaType = finalUrls.length > 0 ? 'image' : mediaType;
 
     const tempId = 'temp-post-' + Date.now();
     const tempPost = {
@@ -335,7 +437,7 @@ const CommunityFeed = () => {
       title: generatedTitle,
       content,
       mediaUrl: finalMediaUrl,
-      mediaUrls: uploadedUrls,
+      mediaUrls: finalUrls,
       mediaType: finalMediaType,
       category,
       tags: tagsArray,
@@ -386,8 +488,8 @@ const CommunityFeed = () => {
       const res = await api.createCommunityPost({
         title: generatedTitle,
         content: backupContent,
-        mediaUrl: backupMediaUrl || (uploadedUrls.length > 0 ? uploadedUrls[0] : ''),
-        mediaUrls: uploadedUrls,
+        mediaUrl: backupMediaUrl || (finalUrls.length > 0 ? finalUrls[0] : ''),
+        mediaUrls: finalUrls,
         mediaType: finalMediaType,
         category,
         tags: tagsArray,
@@ -399,20 +501,21 @@ const CommunityFeed = () => {
         // Swap temp post with actual response
         setPosts(prev => prev.map(p => p._id === tempId ? res.data : p));
       } else {
-        // Revert
-        setPosts(prev => prev.filter(p => p._id !== tempId));
-        setContent(backupContent);
-        setTags(backupTags);
-        setMediaUrl(backupMediaUrl);
-        setLocalPreviewUrl(backupLocalUrl);
-        setMediaType(backupMediaType);
-        setShowPollCreator(backupShowPoll);
-        setPollQuestion(backupPollQ);
-        setPollOptions(backupPollOpts);
-        setSelectedImages(backupSelectedImages);
-        alert('Post creation failed.');
+        throw new Error('Server returned failure code');
       }
     } catch (err) {
+      console.warn('Post creation failed, executing Cloudinary file cleanup:', err);
+      // Clean up uploaded files automatically if post creation fails
+      if (newlyUploadedPublicIds.length > 0) {
+        newlyUploadedPublicIds.forEach(async (pubId) => {
+          try {
+            await api.deleteCommunityImage(pubId);
+          } catch (delErr) {
+            console.error('Failed to clean up image with publicId:', pubId, delErr);
+          }
+        });
+      }
+
       // Revert
       setPosts(prev => prev.filter(p => p._id !== tempId));
       setContent(backupContent);
@@ -424,7 +527,7 @@ const CommunityFeed = () => {
       setPollQuestion(backupPollQ);
       setPollOptions(backupPollOpts);
       setSelectedImages(backupSelectedImages);
-      alert('Post creation failed: ' + err.message);
+      alert('Post creation failed. Cloudinary files cleaned up. Error: ' + err.message);
     }
   };
 
@@ -784,18 +887,34 @@ const CommunityFeed = () => {
           {selectedImages.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-2.5 bg-[#181820]/40 border border-white/5 rounded-2xl">
               {selectedImages.map((img, idx) => (
-                <div key={img.id} className="relative aspect-square rounded-xl overflow-hidden bg-[#181820] border border-white/5 group">
+                <div 
+                  key={img.id} 
+                  className={`relative aspect-square rounded-xl overflow-hidden bg-[#181820] border ${
+                    img.error ? 'border-red-500' : img.remoteUrl ? 'border-emerald-500/50' : 'border-white/5'
+                  } group`}
+                >
                   <img src={img.previewUrl} alt="Preview" className="w-full h-full object-cover" />
                   
+                  {/* Remove Button */}
                   <button
                     type="button"
                     onClick={() => {
                       setSelectedImages(prev => prev.filter(item => item.id !== img.id));
                     }}
-                    className="absolute top-1.5 right-1.5 p-1 bg-black/75 hover:bg-red-650 text-white rounded-full text-[10px] cursor-pointer transition-colors z-10"
+                    className="absolute top-1.5 right-1.5 p-1 bg-black/75 hover:bg-red-600 text-white rounded-full text-[10px] cursor-pointer transition-colors z-10"
                     title="Remove Image"
                   >
                     <FaTimes size={8} />
+                  </button>
+
+                  {/* Recrop button - Overlay on hover */}
+                  <button
+                    type="button"
+                    onClick={() => handleRecropImage(img, idx)}
+                    className="absolute top-1.5 left-1.5 p-1 bg-black/75 hover:bg-cyan-550 text-white rounded-full text-[10px] cursor-pointer transition-colors z-10 opacity-0 group-hover:opacity-100"
+                    title="Recrop Image"
+                  >
+                    <FaCrop size={8} />
                   </button>
 
                   <div className="absolute bottom-1.5 left-0 right-0 flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 py-0.5 z-10">
@@ -838,9 +957,33 @@ const CommunityFeed = () => {
                   </div>
 
                   {img.uploading && (
-                    <div className="absolute inset-0 bg-black/70 flex items-center justify-center flex-col gap-1">
+                    <div className="absolute inset-0 bg-black/70 flex items-center justify-center flex-col gap-1 z-20">
                       <div className="w-5 h-5 rounded-full border border-purple-500/20 border-t-purple-500 animate-spin" />
                       <span className="text-[8px] font-black text-white">{img.progress}%</span>
+                    </div>
+                  )}
+
+                  {img.error && (
+                    <div className="absolute inset-0 bg-black/85 flex items-center justify-center flex-col gap-1 p-1 z-20 text-center">
+                      <span className="text-[7px] text-red-500 font-bold">Failed</span>
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          setSelectedImages(prev => prev.map(item => 
+                            item.id === img.id ? { ...item, uploading: true, error: null, progress: 10 } : item
+                          ));
+                          uploadSingleFeedImage(img);
+                        }}
+                        className="px-1.5 py-0.5 bg-red-600 hover:bg-red-750 text-white rounded text-[8px] font-bold mt-1 cursor-pointer"
+                      >
+                        Retry
+                      </button>
+                    </div>
+                  )}
+
+                  {img.remoteUrl && !img.uploading && (
+                    <div className="absolute top-1.5 right-1.5 p-0.5 bg-emerald-500 text-white rounded-full text-[6px] z-10 pointer-events-none">
+                      ✓
                     </div>
                   )}
                 </div>
@@ -1479,6 +1622,13 @@ const CommunityFeed = () => {
         )}
       </div>
 
+      <ImageCropperModal
+        isOpen={cropModalOpen}
+        files={cropQueue}
+        aspectRatio={null}
+        onClose={() => { setCropQueue([]); setCropModalOpen(false); }}
+        onCropComplete={cropCallback}
+      />
     </div>
   );
 };

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
+import ImageCropperModal from './ui/ImageCropperModal';
 import { 
   FaUsers, FaPlus, FaLock, FaGlobe, FaArrowLeft, FaFileAlt, 
   FaFileImage, FaFileVideo, FaFilePdf, FaFileArchive, FaFileCode, 
@@ -47,6 +48,13 @@ const CommunityGroups = () => {
   const [editTags, setEditTags] = useState('');
   const [editRules, setEditRules] = useState('');
   const [editIsPrivate, setEditIsPrivate] = useState(false);
+
+  // Image Cropping States
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [cropFile, setCropFile] = useState(null);
+  const [cropAspect, setCropAspect] = useState(1);
+  const [cropTitle, setCropTitle] = useState('Edit Image');
+  const [cropCallback, setCropCallback] = useState(null);
   const [updatingGroup, setUpdatingGroup] = useState(false);
 
   // File Upload states
@@ -537,9 +545,34 @@ const CommunityGroups = () => {
     }
   };
 
-  const handleLogoUpload = async (e, isEdit = false) => {
+  const onLogoSelect = (e, isEdit = false) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/heic', 'image/heif'];
+    const fileName = file.name || '';
+    const isHEIC = fileName.toLowerCase().endsWith('.heic') || fileName.toLowerCase().endsWith('.heif');
+    
+    if (!allowedTypes.includes(file.type) && !isHEIC) {
+      alert('Unsupported format. Supported: JPG, PNG, WEBP, HEIC, SVG');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Logo image must be less than 10MB');
+      return;
+    }
+
+    setCropFile(file);
+    setCropAspect(1);
+    setCropTitle('Crop Group Logo (1:1)');
+    setCropCallback(() => (croppedFile) => {
+      proceedLogoUpload(croppedFile, isEdit);
+    });
+    setCropModalOpen(true);
+    e.target.value = '';
+  };
+
+  const proceedLogoUpload = async (file, isEdit) => {
     try {
       const formData = new FormData();
       formData.append('image', file);
@@ -556,9 +589,34 @@ const CommunityGroups = () => {
     }
   };
 
-  const handleCoverUpload = async (e, isEdit = false) => {
+  const onCoverSelect = (e, isEdit = false) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/heic', 'image/heif'];
+    const fileName = file.name || '';
+    const isHEIC = fileName.toLowerCase().endsWith('.heic') || fileName.toLowerCase().endsWith('.heif');
+    
+    if (!allowedTypes.includes(file.type) && !isHEIC) {
+      alert('Unsupported format. Supported: JPG, PNG, WEBP, HEIC, SVG');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Cover image must be less than 10MB');
+      return;
+    }
+
+    setCropFile(file);
+    setCropAspect(16/9);
+    setCropTitle('Crop Group Cover Banner (16:9)');
+    setCropCallback(() => (croppedFile) => {
+      proceedCoverUpload(croppedFile, isEdit);
+    });
+    setCropModalOpen(true);
+    e.target.value = '';
+  };
+
+  const proceedCoverUpload = async (file, isEdit) => {
     try {
       const formData = new FormData();
       formData.append('image', file);
@@ -734,7 +792,7 @@ const CommunityGroups = () => {
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={(e) => handleLogoUpload(e, false)}
+                    onChange={(e) => onLogoSelect(e, false)}
                     className="w-full text-xs text-slate-500 border border-slate-250 dark:border-white/5 p-2 rounded-xl"
                   />
                   {logoUrl && (
@@ -746,7 +804,7 @@ const CommunityGroups = () => {
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={(e) => handleCoverUpload(e, false)}
+                    onChange={(e) => onCoverSelect(e, false)}
                     className="w-full text-xs text-slate-500 border border-slate-250 dark:border-white/5 p-2 rounded-xl"
                   />
                   {coverImage && (
@@ -1594,7 +1652,7 @@ const CommunityGroups = () => {
                       <input
                         type="file"
                         accept="image/*"
-                        onChange={(e) => handleLogoUpload(e, true)}
+                        onChange={(e) => onLogoSelect(e, true)}
                         className="w-full text-xs text-slate-500 border border-slate-250 dark:border-white/5 p-2 rounded-xl"
                       />
                       {editLogoUrl && (
@@ -1606,7 +1664,7 @@ const CommunityGroups = () => {
                       <input
                         type="file"
                         accept="image/*"
-                        onChange={(e) => handleCoverUpload(e, true)}
+                        onChange={(e) => onCoverSelect(e, true)}
                         className="w-full text-xs text-slate-500 border border-slate-250 dark:border-white/5 p-2 rounded-xl"
                       />
                       {editCoverImage && (
@@ -1685,6 +1743,14 @@ const CommunityGroups = () => {
         </div>
       )}
 
+      <ImageCropperModal
+        isOpen={cropModalOpen}
+        file={cropFile}
+        aspectRatio={cropAspect}
+        onClose={() => setCropModalOpen(false)}
+        onCropComplete={cropCallback}
+        title={cropTitle}
+      />
     </div>
   );
 };

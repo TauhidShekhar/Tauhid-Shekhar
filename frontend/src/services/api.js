@@ -901,6 +901,19 @@ export const api = {
     if (!response.ok) throw new Error(result.message || 'Image upload failed');
     return result;
   },
+  deleteCommunityImage: async (publicId) => {
+    const response = await fetch(`${API_BASE}/community/delete-image`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ publicId }),
+      credentials: 'include'
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || 'Image deletion failed');
+    return result;
+  },
   // Events API
   getCommunityEvents: async (groupId) => {
     return apiRequest(`/community/events${groupId ? `?groupId=${groupId}` : ''}`);
