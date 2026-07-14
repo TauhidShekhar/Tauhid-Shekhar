@@ -192,7 +192,7 @@ const CommunityChat = () => {
                   className="w-full p-2 hover:bg-white dark:hover:bg-white/5 rounded-xl flex items-center gap-2.5 text-left text-xs font-bold text-slate-750 dark:text-slate-300 cursor-pointer"
                 >
                   <div className="w-6 h-6 rounded-lg overflow-hidden bg-slate-200 flex items-center justify-center shrink-0">
-                    {u.avatar?.url ? <img src={u.avatar.url} alt="User" className="w-full h-full object-cover" /> : <FaUserCircle className="text-slate-400" />}
+                    {u.avatar?.url ? <img src={u.avatar.url} alt="User" className="w-full h-full object-cover" loading="lazy" decoding="async" /> : <FaUserCircle className="text-slate-400" />}
                   </div>
                   @{u.username}
                 </button>
@@ -218,7 +218,7 @@ const CommunityChat = () => {
               >
                 <div className="w-9 h-9 rounded-xl overflow-hidden bg-slate-200 border border-slate-350/50 flex items-center justify-center shrink-0">
                   {partner.avatar?.url ? (
-                    <img src={partner.avatar.url} alt="Partner" className="w-full h-full object-cover" />
+                    <img src={partner.avatar.url} alt="Partner" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                   ) : (
                     <FaUserCircle className="text-slate-400" size={24} />
                   )}

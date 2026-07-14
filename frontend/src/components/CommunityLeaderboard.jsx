@@ -58,7 +58,7 @@ const CommunityLeaderboard = () => {
                   {/* Avatar wrapper */}
                   <div className="w-8.5 h-8.5 rounded-xl overflow-hidden bg-slate-200 flex items-center justify-center shrink-0">
                     {leader.avatar?.url ? (
-                      <img src={leader.avatar.url} alt="Leader" className="w-full h-full object-cover" />
+                      <img src={leader.avatar.url} alt="Leader" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                     ) : (
                       <FaRegSmile className="text-slate-400" size={18} />
                     )}

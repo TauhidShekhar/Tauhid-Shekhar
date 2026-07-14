@@ -139,7 +139,7 @@ const About = ({ aboutData, resumeData }) => {
           {/* Left Column: Image & Stats */}
           <div className="lg:col-span-5 flex flex-col items-center gap-8">
             <motion.div variants={childVariants} className="relative w-full max-w-[360px] aspect-[4/5] rounded-[30px] overflow-hidden border border-slate-200 dark:border-white/5 shadow-xl select-none">
-              <img src={profilePic} alt="Profile photo" className="w-full h-full object-cover" />
+              <img src={profilePic} alt="Profile photo" className="w-full h-full object-cover" loading="lazy" decoding="async" />
             </motion.div>
             {/* Stats Cards */}
             <motion.div variants={childVariants} className="grid grid-cols-3 gap-4 w-full">

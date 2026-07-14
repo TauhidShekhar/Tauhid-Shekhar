@@ -17,7 +17,7 @@ const ProjectGallery = ({ mainImage, images, updatedAt }) => {
   if (allImages.length <= 1) {
     return (
       <div className="w-full aspect-[16/9] rounded-2xl overflow-hidden border border-slate-200 dark:border-white/5 mb-8">
-        <img src={getCacheBustedUrl(mainImage, updatedAt)} alt="Project main" className="w-full h-full object-cover" />
+        <img src={getCacheBustedUrl(mainImage, updatedAt)} alt="Project main" className="w-full h-full object-cover" loading="lazy" decoding="async" />
       </div>
     );
   }
@@ -25,7 +25,7 @@ const ProjectGallery = ({ mainImage, images, updatedAt }) => {
   return (
     <div className="flex flex-col gap-3 mb-8 w-full">
       <div className="w-full aspect-[16/9] rounded-2xl overflow-hidden border border-slate-200/60 dark:border-white/5 shadow-inner bg-slate-100 dark:bg-slate-900 flex items-center justify-center">
-        <img src={getCacheBustedUrl(activeImg, updatedAt)} alt="Showcase active" className="w-full h-full object-cover transition-all duration-300" />
+        <img src={getCacheBustedUrl(activeImg, updatedAt)} alt="Showcase active" className="w-full h-full object-cover transition-all duration-300" loading="lazy" decoding="async" />
       </div>
       
       {/* Thumbnails Row */}
@@ -38,7 +38,7 @@ const ProjectGallery = ({ mainImage, images, updatedAt }) => {
               activeImg === img ? 'border-primary-blue scale-95 shadow-sm' : 'border-slate-200/50 dark:border-white/5 hover:border-slate-400'
             }`}
           >
-            <img src={getCacheBustedUrl(img, updatedAt)} alt="Thumbnail preview" className="w-full h-full object-cover" />
+            <img src={getCacheBustedUrl(img, updatedAt)} alt="Thumbnail preview" className="w-full h-full object-cover" loading="lazy" decoding="async" />
           </button>
         ))}
       </div>
@@ -316,6 +316,8 @@ const Projects = ({ projectsData }) => {
                     src={getCacheBustedUrl(project.image, project.updatedAt)}
                     alt={project.title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    loading="lazy"
+                    decoding="async"
                   />
                   
                   {/* Heart Bookmark Overlay Button */}
@@ -472,7 +474,7 @@ const Projects = ({ projectsData }) => {
                         <div key={comm._id} className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200/50 dark:border-white/5 flex gap-3 text-left items-start">
                           <div className="w-8.5 h-8.5 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-900 shrink-0 border border-slate-200 dark:border-white/5 flex items-center justify-center">
                             {comm.userAvatar ? (
-                              <img src={comm.userAvatar} alt="Commenter Avatar" className="w-full h-full object-cover" />
+                              <img src={comm.userAvatar} alt="Commenter Avatar" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                             ) : (
                               <FaUserCircle className="text-slate-400 dark:text-slate-500 w-full h-full" size={24} />
                             )}

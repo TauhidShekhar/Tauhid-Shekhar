@@ -227,6 +227,8 @@ const CommunityProjectDiscussions = () => {
                           src={project.author.avatar.url} 
                           alt="" 
                           className="w-5 h-5 rounded-full object-cover border border-slate-200 dark:border-white/10" 
+                          loading="lazy"
+                          decoding="async"
                         />
                       ) : (
                         <div className="w-5 h-5 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center">
@@ -257,7 +259,7 @@ const CommunityProjectDiscussions = () => {
                 {/* Project Screenshot Banner */}
                 {project.screenshots && project.screenshots[0] && (
                   <div className="h-40 bg-slate-100 dark:bg-slate-950 rounded-2xl overflow-hidden mb-4 border border-slate-100 dark:border-white/5">
-                    <img src={project.screenshots[0]} alt="Screenshot" className="w-full h-full object-cover" />
+                    <img src={project.screenshots[0]} alt="Screenshot" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                   </div>
                 )}
 
@@ -396,7 +398,7 @@ const CommunityProjectDiscussions = () => {
                   className="w-full text-xs text-slate-500 border border-slate-200 dark:border-white/5 p-2 rounded-xl"
                 />
                 {screenshotUrl && (
-                  <img src={screenshotUrl} alt="Preview" className="w-40 h-20 object-cover rounded-xl border border-slate-250 mt-1" />
+                  <img src={screenshotUrl} alt="Preview" className="w-40 h-20 object-cover rounded-xl border border-slate-250 mt-1" loading="lazy" decoding="async" />
                 )}
               </div>
 
@@ -514,6 +516,8 @@ const CommunityProjectDiscussions = () => {
                             src={c.author.avatar.url} 
                             alt="" 
                             className="w-4 h-4 rounded-full object-cover" 
+                            loading="lazy"
+                            decoding="async"
                           />
                         ) : (
                           <div className="w-4 h-4 rounded-full bg-slate-250 flex items-center justify-center text-[8px] text-slate-500 font-bold">

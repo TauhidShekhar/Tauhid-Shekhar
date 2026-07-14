@@ -441,7 +441,7 @@ const CommunityDoubts = () => {
                 <div className="flex items-center gap-3 mt-3 text-[10px] text-slate-450 font-bold">
                   <div className="flex items-center gap-1">
                     {q.author?.avatar?.url ? (
-                      <img src={q.author.avatar.url} alt="" className="w-4 h-4 rounded-full object-cover" />
+                      <img src={q.author.avatar.url} alt="" className="w-4 h-4 rounded-full object-cover" loading="lazy" decoding="async" />
                     ) : (
                       <FaUser size={10} />
                     )}
@@ -566,7 +566,7 @@ const CommunityDoubts = () => {
                   <div className="grid grid-cols-4 gap-2 mt-2">
                     {uploadedQuestionImages.map((img, idx) => (
                       <div key={idx} className="relative w-full h-16 bg-[#1a1a24] rounded-xl overflow-hidden border border-slate-200 dark:border-white/5 group">
-                        <img src={img.url} alt="" className="w-full h-full object-cover" />
+                        <img src={img.url} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                         <button
                           type="button"
                           onClick={(e) => {
@@ -709,7 +709,7 @@ const CommunityDoubts = () => {
                       <div className="grid grid-cols-4 gap-2 mt-2">
                         {editQuestionImages.map((img, idx) => (
                           <div key={idx} className="relative w-full h-16 bg-[#1a1a24] rounded-xl overflow-hidden border border-slate-200 dark:border-white/5 group">
-                            <img src={img.url} alt="" className="w-full h-full object-cover" />
+                            <img src={img.url} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                             <button
                               type="button"
                               onClick={(e) => {
@@ -758,7 +758,7 @@ const CommunityDoubts = () => {
                           onClick={() => openLightbox(selectedQuestion.images, idx)}
                           className="relative w-full h-28 bg-slate-100 dark:bg-slate-950 rounded-xl overflow-hidden border border-slate-200 dark:border-white/5 hover:opacity-90 transition-all cursor-zoom-in animate-in fade-in duration-200"
                         >
-                          <img src={img.url} alt="" className="w-full h-full object-cover" />
+                          <img src={img.url} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                         </div>
                       ))}
                     </div>
@@ -833,7 +833,7 @@ const CommunityDoubts = () => {
                         >
                           <div className="flex items-center gap-2 mb-2">
                             {ans.author?.avatar?.url ? (
-                              <img src={ans.author.avatar.url} alt="" className="w-5 h-5 rounded-full object-cover" />
+                              <img src={ans.author.avatar.url} alt="" className="w-5 h-5 rounded-full object-cover" loading="lazy" decoding="async" />
                             ) : (
                               <FaUser size={10} className="text-slate-400" />
                             )}
@@ -877,7 +877,7 @@ const CommunityDoubts = () => {
                                   <div className="grid grid-cols-6 gap-1.5 mt-1.5">
                                     {editAnswerImages.map((img, idx) => (
                                       <div key={idx} className="relative w-full h-10 bg-[#1a1a24] rounded-lg overflow-hidden border border-white/5 group">
-                                        <img src={img.url} alt="" className="w-full h-full object-cover" />
+                                        <img src={img.url} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                                         <button
                                           type="button"
                                           onClick={() => setEditAnswerImages(prev => prev.filter((_, i) => i !== idx))}
@@ -921,7 +921,7 @@ const CommunityDoubts = () => {
                                       onClick={() => openLightbox(ans.images, idx)}
                                       className="relative w-full h-16 bg-slate-100 dark:bg-slate-950 rounded-lg overflow-hidden border border-slate-200 dark:border-white/5 hover:opacity-90 transition-all cursor-zoom-in animate-in fade-in duration-200"
                                     >
-                                      <img src={img.url} alt="" className="w-full h-full object-cover" />
+                                      <img src={img.url} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                                     </div>
                                   ))}
                                 </div>
@@ -1008,7 +1008,7 @@ const CommunityDoubts = () => {
                   <div className="grid grid-cols-6 gap-2">
                     {uploadedAnswerImages.map((img, idx) => (
                       <div key={idx} className="relative w-full h-12 bg-[#1a1a24] rounded-lg overflow-hidden border border-white/5 group">
-                        <img src={img.url} alt="" className="w-full h-full object-cover" />
+                        <img src={img.url} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                         <button
                           type="button"
                           onClick={() => setUploadedAnswerImages(prev => prev.filter((_, i) => i !== idx))}
@@ -1104,7 +1104,7 @@ const CommunityDoubts = () => {
 
           {/* Image Container */}
           <div className="max-w-[85vw] max-h-[80vh] overflow-hidden flex items-center justify-center transition-transform duration-200" style={{ transform: `scale(${lightboxZoom})` }}>
-            <img src={lightboxImages[lightboxIndex]?.url} alt="" className="max-w-full max-h-full object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-200" />
+            <img src={lightboxImages[lightboxIndex]?.url} alt="" className="max-w-full max-h-full object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-200" loading="lazy" decoding="async" />
           </div>
 
           {/* Navigation Right */}

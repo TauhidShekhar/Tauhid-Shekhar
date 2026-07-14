@@ -45,8 +45,6 @@ const apiRequest = async (endpoint, options = {}) => {
 
   const headers = {
     'Content-Type': 'application/json',
-    'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-    'Pragma': 'no-cache',
     ...options.headers,
   };
 

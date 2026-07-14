@@ -24,7 +24,14 @@ const app = express();
 app.use(performanceMiddleware);
 
 // Enable GZIP compression to reduce payload transfer sizes
-app.use(compression());
+app.use(compression({
+  level: 6,
+  threshold: 1024,
+  filter: (req, res) => {
+    if (req.headers['x-no-compression']) return false;
+    return compression.filter(req, res);
+  }
+}));
 
 // Middleware to ensure DB connection and admin seeder on Serverless hosts (Vercel)
 app.use(async (req, res, next) => {
@@ -79,7 +86,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // Serve static uploads locally
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), { maxAge: '7d' }));
 
 // Security Middleware
 app.use(
@@ -371,7 +378,7 @@ const frontendDistExists = fs.existsSync(path.join(__dirname, '../frontend/dist'
 
 if (adminDistExists) {
   // Serve admin static files at /admin path
-  app.use('/admin', express.static(path.join(__dirname, '../admin/dist')));
+  app.use('/admin', express.static(path.join(__dirname, '../admin/dist'), { maxAge: '1y', immutable: true }));
   
   // Route admin SPA routes to admin/index.html
   app.get('/admin/*', (req, res) => {
@@ -381,7 +388,7 @@ if (adminDistExists) {
 
 if (frontendDistExists) {
   // Serve frontend static files at root path
-  app.use(express.static(path.join(__dirname, '../frontend/dist')));
+  app.use(express.static(path.join(__dirname, '../frontend/dist'), { maxAge: '1y', immutable: true }));
 
   // Route all other pages (except API) to frontend/index.html
   app.get(/^(?!\/api).*/, (req, res) => {

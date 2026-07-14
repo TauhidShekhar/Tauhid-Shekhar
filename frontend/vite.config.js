@@ -10,5 +10,24 @@ export default defineConfig({
   ],
   server: {
     port: 5173
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/')) {
+            return 'vendor';
+          }
+          if (id.includes('node_modules/framer-motion')) {
+            return 'motion';
+          }
+          if (id.includes('node_modules/react-icons')) {
+            return 'icons';
+          }
+        }
+      }
+    },
+    cssCodeSplit: true,
+    sourcemap: false
   }
 })
