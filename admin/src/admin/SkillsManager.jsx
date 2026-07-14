@@ -96,6 +96,56 @@ const getAutoLogoUrl = (skillName) => {
   return '';
 };
 
+const guessRecommendedCategories = (skillName) => {
+  const name = skillName.toLowerCase().trim();
+  if (name.includes('javascript') || name === 'js' || name.includes('es6')) {
+    return ['Programming', 'Frontend', 'Backend'];
+  }
+  if (name.includes('typescript') || name === 'ts') {
+    return ['Programming', 'Frontend', 'Backend'];
+  }
+  if (name.includes('react') || name === 'reactjs') {
+    return ['Programming', 'Frontend'];
+  }
+  if (name.includes('next.js') || name.includes('nextjs')) {
+    return ['Programming', 'Frontend', 'Backend'];
+  }
+  if (name.includes('node') || name.includes('nodejs')) {
+    return ['Programming', 'Backend'];
+  }
+  if (name.includes('express') || name.includes('expressjs')) {
+    return ['Backend'];
+  }
+  if (name.includes('mongodb') || name === 'mongo') {
+    return ['Database', 'Backend'];
+  }
+  if (name.includes('mysql') || name.includes('postgresql') || name.includes('postgres') || name.includes('sqlite') || name.includes('redis')) {
+    return ['Database'];
+  }
+  if (name.includes('git') || name.includes('github') || name.includes('docker') || name.includes('vscode') || name.includes('vs code') || name.includes('visual studio code') || name.includes('postman') || name.includes('netlify') || name.includes('vercel') || name.includes('npm') || name.includes('yarn')) {
+    return ['Tools', 'Programming'];
+  }
+  if (name.includes('python') || name.includes('java') || name === 'c' || name.includes('c++') || name === 'cpp' || name.includes('php') || name.includes('go') || name.includes('golang') || name.includes('rust')) {
+    return ['Programming'];
+  }
+  if (name.includes('html') || name.includes('css') || name.includes('tailwind') || name.includes('bootstrap') || name.includes('responsive design') || name === 'sass' || name === 'scss') {
+    return ['Frontend'];
+  }
+  if (name.includes('laravel') || name.includes('django') || name.includes('flask') || name.includes('spring')) {
+    return ['Programming', 'Backend'];
+  }
+  if (name.includes('figma') || name.includes('canva') || name.includes('photoshop') || name.includes('illustrator')) {
+    return ['Tools'];
+  }
+  if (name.includes('crud') || name.includes('mvc') || name.includes('api') || name.includes('design pattern') || name.includes('algorithm') || name.includes('data structure')) {
+    return ['Concepts'];
+  }
+  if (name.includes('api') || name.includes('rest') || name.includes('jwt') || name.includes('auth')) {
+    return ['Backend', 'Concepts'];
+  }
+  return ['Frontend']; // fallback default
+};
+
 const SkillsManager = () => {
   const [skills, setSkills] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -179,10 +229,23 @@ const SkillsManager = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === 'percentage' || name === 'displayOrder' ? Number(value) : value
-    }));
+    setFormData(prev => {
+      const updated = {
+        ...prev,
+        [name]: name === 'percentage' || name === 'displayOrder' ? Number(value) : value
+      };
+      
+      // Auto-suggest categories only on name change when creating a new skill
+      if (name === 'name' && value.trim() && !isEditing) {
+        const suggested = guessRecommendedCategories(value);
+        if (suggested && suggested.length > 0) {
+          updated.categories = suggested;
+          updated.category = suggested[0] || 'Frontend';
+        }
+      }
+      
+      return updated;
+    });
   };
 
   const handleFormSubmit = async (e) => {

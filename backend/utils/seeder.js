@@ -122,6 +122,55 @@ const seedEcosystem = async () => {
       ]);
       console.log('Ecosystem XP Config parameters seeded successfully.');
     }
+
+    // 4. Migrate and normalize existing Technical Skills categories array
+    const Skill = require('../models/Skill');
+    const skillsList = await Skill.find({});
+    for (const skill of skillsList) {
+      if (!skill.categories || skill.categories.length <= 1) {
+        let guessed = [];
+        const name = skill.name.toLowerCase().trim();
+        if (name.includes('javascript') || name === 'js' || name.includes('es6')) {
+          guessed = ['Programming', 'Frontend', 'Backend'];
+        } else if (name.includes('typescript') || name === 'ts') {
+          guessed = ['Programming', 'Frontend', 'Backend'];
+        } else if (name.includes('react') || name === 'reactjs') {
+          guessed = ['Programming', 'Frontend'];
+        } else if (name.includes('next.js') || name.includes('nextjs')) {
+          guessed = ['Programming', 'Frontend', 'Backend'];
+        } else if (name.includes('node') || name.includes('nodejs')) {
+          guessed = ['Programming', 'Backend'];
+        } else if (name.includes('express') || name.includes('expressjs')) {
+          guessed = ['Backend'];
+        } else if (name.includes('mongodb') || name === 'mongo') {
+          guessed = ['Database', 'Backend'];
+        } else if (name.includes('mysql') || name.includes('postgresql') || name.includes('postgres') || name.includes('sqlite') || name.includes('redis')) {
+          guessed = ['Database'];
+        } else if (name.includes('git') || name.includes('github') || name.includes('docker') || name.includes('vscode') || name.includes('vs code') || name.includes('visual studio code') || name.includes('postman') || name.includes('netlify') || name.includes('vercel') || name.includes('npm') || name.includes('yarn')) {
+          guessed = ['Tools', 'Programming'];
+        } else if (name.includes('python') || name.includes('java') || name === 'c' || name.includes('c++') || name === 'cpp' || name.includes('php') || name.includes('go') || name.includes('golang') || name.includes('rust')) {
+          guessed = ['Programming'];
+        } else if (name.includes('html') || name.includes('css') || name.includes('tailwind') || name.includes('bootstrap') || name.includes('responsive design') || name === 'sass' || name === 'scss') {
+          guessed = ['Frontend'];
+        } else if (name.includes('laravel') || name.includes('django') || name.includes('flask') || name.includes('spring')) {
+          guessed = ['Programming', 'Backend'];
+        } else if (name.includes('figma') || name.includes('canva') || name.includes('photoshop') || name.includes('illustrator')) {
+          guessed = ['Tools'];
+        } else if (name.includes('crud') || name.includes('mvc') || name.includes('api') || name.includes('design pattern') || name.includes('algorithm') || name.includes('data structure')) {
+          guessed = ['Concepts'];
+        } else if (name.includes('api') || name.includes('rest') || name.includes('jwt') || name.includes('auth')) {
+          guessed = ['Backend', 'Concepts'];
+        } else {
+          if (skill.category) {
+            guessed = [skill.category.charAt(0).toUpperCase() + skill.category.slice(1)];
+          } else {
+            guessed = ['Frontend'];
+          }
+        }
+        skill.categories = guessed;
+        await skill.save();
+      }
+    }
   } catch (err) {
     console.error('Ecosystem Seeding failed:', err);
   }
