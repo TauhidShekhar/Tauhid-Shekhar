@@ -473,6 +473,14 @@ if (!process.env.VERCEL) {
       const PORT = process.env.PORT || 5000;
       server.listen(PORT, () => {
         console.log(`Server running in ${process.env.NODE_ENV || 'production'} mode on port ${PORT}`);
+        
+        // Start self-ping keep-alive routine to prevent sleeping
+        try {
+          const startKeepAlive = require('./utils/keepAlive');
+          startKeepAlive();
+        } catch (err) {
+          console.warn('Failed to start keep-alive routine:', err.message);
+        }
       });
     })
     .catch((err) => {

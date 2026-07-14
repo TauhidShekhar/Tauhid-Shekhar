@@ -36,7 +36,8 @@ const getBlogs = async (req, res, next) => {
       .populate('author', 'fullName username avatar')
       .sort({ publishedAt: -1, createdAt: -1 })
       .skip(skip)
-      .limit(Number(limit));
+      .limit(Number(limit))
+      .lean();
 
     res.json({
       success: true,

@@ -186,3 +186,13 @@ body.career-hub-maximized .max-w-\[1400px\] {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* ── Progressive Off-screen Rendering Optimizations ── */
+section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 600px;
+}
+
+section#home {
+  content-visibility: visible;
+}

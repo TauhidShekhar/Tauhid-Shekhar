@@ -30,17 +30,17 @@ router.get('/all', cacheMiddleware('portfolio_all'), async (req, res, next) => {
       achievements,
       admins
     ] = await Promise.all([
-      Setting.findOne({}),
-      Hero.findOne({}),
-      About.findOne({}),
-      Skill.find({}).sort({ displayOrder: 1 }),
-      Project.find({}).sort({ displayOrder: 1, createdAt: -1 }),
-      Experience.find({}).sort({ createdAt: -1 }),
-      Service.find({}).sort({ displayOrder: 1, createdAt: -1 }),
-      Education.find({}).sort({ createdAt: -1 }),
-      Certificate.find({}).sort({ displayOrder: 1, date: -1 }),
-      Achievement.find({}).sort({ displayOrder: 1, date: -1 }),
-      User.find({ role: 'Admin' }).select('_id')
+      Setting.findOne({}).lean(),
+      Hero.findOne({}).lean(),
+      About.findOne({}).lean(),
+      Skill.find({}).sort({ displayOrder: 1 }).lean(),
+      Project.find({}).sort({ displayOrder: 1, createdAt: -1 }).lean(),
+      Experience.find({}).sort({ createdAt: -1 }).lean(),
+      Service.find({}).sort({ displayOrder: 1, createdAt: -1 }).lean(),
+      Education.find({}).sort({ createdAt: -1 }).lean(),
+      Certificate.find({}).sort({ displayOrder: 1, date: -1 }).lean(),
+      Achievement.find({}).sort({ displayOrder: 1, date: -1 }).lean(),
+      User.find({ role: 'Admin' }).select('_id').lean()
     ]);
 
     // Handle initial document seeds if empty
@@ -60,7 +60,7 @@ router.get('/all', cacheMiddleware('portfolio_all'), async (req, res, next) => {
     }
 
     const adminIds = admins.map(a => a._id);
-    const activeResume = await Resume.findOne({ uploadedBy: { $in: adminIds }, isActive: true }).sort({ createdAt: -1 });
+    const activeResume = await Resume.findOne({ uploadedBy: { $in: adminIds }, isActive: true }).sort({ createdAt: -1 }).lean();
 
     res.json({
       success: true,

@@ -172,6 +172,8 @@ const userSchema = new mongoose.Schema(
   { timestamps: true, optimisticConcurrency: true }
 );
 
+userSchema.index({ role: 1 });
+
 userSchema.pre('save', async function (next) {
   if (!this.password || !this.isModified('password')) return next();
   try {

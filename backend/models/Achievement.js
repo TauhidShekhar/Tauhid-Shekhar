@@ -16,4 +16,6 @@ const achievementSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+achievementSchema.index({ displayOrder: 1, date: -1 });
+
 module.exports = mongoose.model('Achievement', achievementSchema);

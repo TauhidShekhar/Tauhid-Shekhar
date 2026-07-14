@@ -30,4 +30,6 @@ const certificateSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+certificateSchema.index({ displayOrder: 1, date: -1 });
+
 module.exports = mongoose.model('Certificate', certificateSchema);

@@ -24,4 +24,6 @@ const communityConversationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+communityConversationSchema.index({ participants: 1 });
+
 module.exports = mongoose.model('CommunityConversation', communityConversationSchema);

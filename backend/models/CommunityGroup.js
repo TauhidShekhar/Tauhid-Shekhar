@@ -106,4 +106,6 @@ const communityGroupSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+communityGroupSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model('CommunityGroup', communityGroupSchema);

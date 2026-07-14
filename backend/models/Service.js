@@ -29,4 +29,6 @@ const serviceSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+serviceSchema.index({ displayOrder: 1, createdAt: -1 });
+
 module.exports = mongoose.model('Service', serviceSchema);

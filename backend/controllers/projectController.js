@@ -28,7 +28,7 @@ const adjustDisplayOrders = async (Model, currentId, targetOrder) => {
 // @access  Public
 const getProjects = async (req, res) => {
   try {
-    const projects = await Project.find({}).sort({ displayOrder: 1, createdAt: -1 });
+    const projects = await Project.find({}).sort({ displayOrder: 1, createdAt: -1 }).lean();
     res.json({ success: true, count: projects.length, data: projects });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

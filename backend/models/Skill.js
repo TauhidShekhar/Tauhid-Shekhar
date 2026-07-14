@@ -55,6 +55,8 @@ const skillSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+skillSchema.index({ displayOrder: 1 });
+
 // Pre-save hook to normalize category (string) to categories (array)
 skillSchema.pre('save', function(next) {
   if (this.category && (!this.categories || this.categories.length === 0)) {

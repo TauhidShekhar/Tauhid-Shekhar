@@ -177,4 +177,6 @@ const resumeSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+resumeSchema.index({ uploadedBy: 1, isActive: 1 });
+
 module.exports = mongoose.model('Resume', resumeSchema);

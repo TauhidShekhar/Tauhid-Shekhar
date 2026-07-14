@@ -35,4 +35,6 @@ const experienceSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+experienceSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model('Experience', experienceSchema);

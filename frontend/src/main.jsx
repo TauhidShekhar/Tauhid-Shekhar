@@ -4,6 +4,10 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import './index.css';
 import App from './App.jsx';
+import monitorWebVitals from './utils/webVitals';
+
+// Initialize Core Web Vitals performance tracker
+monitorWebVitals();
 
 // Auth context and protection wrappers
 import { AuthProvider } from './contexts/AuthContext.jsx';

@@ -80,6 +80,50 @@ const App = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Prefetch remaining lazy-loaded chunks after home loads to make navigation instant
+  useEffect(() => {
+    const prefetchChunks = () => {
+      const chunks = [
+        () => import('./components/About'),
+        () => import('./components/Skills'),
+        () => import('./components/Projects'),
+        () => import('./components/Experience'),
+        () => import('./components/Services'),
+        () => import('./components/Resume'),
+        () => import('./components/EducationCertificates'),
+        () => import('./components/GitHubStats'),
+        () => import('./components/Contact'),
+        () => import('./components/Footer')
+      ];
+
+      if ('requestIdleCallback' in window) {
+        let index = 0;
+        const scheduleNext = () => {
+          if (index < chunks.length) {
+            window.requestIdleCallback(() => {
+              chunks[index]().catch(() => {});
+              index++;
+              setTimeout(scheduleNext, 500); // Stagger chunk imports
+            });
+          }
+        };
+        scheduleNext();
+      } else {
+        // Fallback for Safari / other browsers
+        setTimeout(() => {
+          Promise.all(chunks.map(c => c().catch(() => {})));
+        }, 3000);
+      }
+    };
+
+    if (document.readyState === 'complete') {
+      prefetchChunks();
+    } else {
+      window.addEventListener('load', prefetchChunks);
+      return () => window.removeEventListener('load', prefetchChunks);
+    }
+  }, []);
+
   const isFetching = React.useRef(false);
 
   const fetchPortfolioData = async (showLoader = false) => {

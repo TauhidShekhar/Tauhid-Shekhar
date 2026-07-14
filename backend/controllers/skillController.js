@@ -28,7 +28,7 @@ const adjustDisplayOrders = async (Model, currentId, targetOrder) => {
 // @access  Public
 const getSkills = async (req, res) => {
   try {
-    const skills = await Skill.find({}).sort({ displayOrder: 1 });
+    const skills = await Skill.find({}).sort({ displayOrder: 1 }).lean();
     res.json({ success: true, count: skills.length, data: skills });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
