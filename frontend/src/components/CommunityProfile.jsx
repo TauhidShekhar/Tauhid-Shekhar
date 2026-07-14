@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
+import { Toast } from './ui/Toast';
 import { 
   FaUserCircle, FaMapMarkerAlt, FaLink, FaGithub, FaLinkedin, FaAward, 
   FaUserPlus, FaUserMinus, FaTwitter, FaInstagram, FaFacebook, FaYoutube, 
@@ -38,6 +39,8 @@ const CommunityProfile = () => {
     isChecking: isCheckingUsername
   } = useUsernameValidator('', id || '');
   const [followed, setFollowed] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+  const [toast, setToast] = useState(null);
   const [activeTab, setActiveTab] = useState('overview'); // overview, posts, groups, about, edit, settings
   const [userPosts, setUserPosts] = useState([]);
   const [userGroups, setUserGroups] = useState([]);
@@ -89,15 +92,19 @@ const CommunityProfile = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const fetchProfile = async () => {
-    setLoading(true);
+  const fetchProfile = async (showSpinner = true) => {
+    if (showSpinner) setLoading(true);
     try {
       const res = await api.getCommunityUserProfile(id);
       if (res.success) {
         const finalProfile = res.data;
         setProfile(finalProfile);
         if (finalProfile) {
-          setFollowed((finalProfile.followers || []).includes(currentUser?.id || currentUser?._id));
+          const currentUserIdStr = (currentUser?.id || currentUser?._id)?.toString();
+          const isFollowed = (finalProfile.followers || []).some(
+            f => (f && (f._id || f).toString() === currentUserIdStr)
+          );
+          setFollowed(isFollowed);
           
           // Populate form
           setEditData({
@@ -156,15 +163,33 @@ const CommunityProfile = () => {
 
   useEffect(() => {
     if (id) {
-      fetchProfile();
+      fetchProfile(true);
     }
   }, [id, currentUser]);
 
+  useEffect(() => {
+    const handleCmsUpdate = () => {
+      fetchProfile(false);
+    };
+    window.addEventListener('cms-content-update', handleCmsUpdate);
+    return () => {
+      window.removeEventListener('cms-content-update', handleCmsUpdate);
+    };
+  }, [id, currentUser]);
+
   const handleFollow = async () => {
-    if (!profile) return;
+    if (!currentUser) {
+      alert('Please log in to follow users.');
+      window.location.href = '/login';
+      return;
+    }
+    if (!profile || followLoading) return;
+
     const originalFollowed = followed;
     const originalProfile = profile;
     const currentUserId = (currentUser?.id || currentUser?._id)?.toString();
+
+    setFollowLoading(true);
 
     // Toggle local state optimistically
     setFollowed(!originalFollowed);
@@ -173,7 +198,6 @@ const CommunityProfile = () => {
     setProfile(prev => {
       if (!prev) return prev;
       const list = prev.followers || [];
-      const listIds = list.map(f => (f._id || f).toString());
       let nextFollowers;
       if (originalFollowed) {
         nextFollowers = list.filter(f => (f._id || f).toString() !== currentUserId);
@@ -187,15 +211,23 @@ const CommunityProfile = () => {
       const res = await api.toggleFollowUser(profile._id || profile.id);
       if (res.success) {
         setFollowed(res.followed);
-        fetchProfile(); // sync completely
+        setToast({ 
+          message: res.followed ? `Successfully followed ${profile.fullName}!` : `Unfollowed ${profile.fullName}.`, 
+          type: 'success' 
+        });
+        await fetchProfile(false); // sync completely in background without page refresh spinner
       } else {
         setFollowed(originalFollowed);
         setProfile(originalProfile);
+        setToast({ message: res.message || 'Operation failed. Please try again.', type: 'error' });
       }
     } catch (err) {
       console.error(err);
       setFollowed(originalFollowed);
       setProfile(originalProfile);
+      setToast({ message: err.message || 'An error occurred. Please try again.', type: 'error' });
+    } finally {
+      setFollowLoading(false);
     }
   };
 
@@ -394,12 +426,14 @@ const CommunityProfile = () => {
               <>
                 <button
                   onClick={handleFollow}
-                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border cursor-pointer ${
+                  disabled={followLoading}
+                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border cursor-pointer flex items-center gap-1.5 ${
                     followed 
                       ? 'bg-transparent border-slate-700 text-slate-400' 
-                      : 'bg-purple-600 hover:bg-purple-700 border-purple-500/10 text-white shadow-md'
-                  }`}
+                      : 'bg-purple-600 hover:bg-purple-750 border-purple-500/10 text-white shadow-md'
+                  } ${followLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
                 >
+                  {followLoading && <div className="w-2.5 h-2.5 rounded-full border border-white/20 border-t-white animate-spin shrink-0" />}
                   {followed ? 'Following' : 'Follow'}
                 </button>
                 <Link
@@ -892,13 +926,13 @@ const CommunityProfile = () => {
               ) : (
                 profile.followers.map(f => (
                   <div key={f._id} className="flex items-center gap-3 justify-between p-2 hover:bg-white/5 rounded-xl transition-all">
-                    <a href={`/community/profile/${f._id}`} onClick={() => setShowFollowersModal(false)} className="flex items-center gap-2.5 hover:opacity-80">
+                    <Link to={`/community/profile/${f._id}`} onClick={() => setShowFollowersModal(false)} className="flex items-center gap-2.5 hover:opacity-80">
                       <img src={f.avatar?.url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80'} className="w-8 h-8 rounded-full border border-white/10" loading="lazy" />
                       <div className="flex flex-col text-left">
                         <span className="text-[11px] font-bold text-white leading-tight">{f.fullName}</span>
                         <span className="text-[9px] text-slate-500 font-medium">@{f.username}</span>
                       </div>
-                    </a>
+                    </Link>
                     <span className="text-[8px] bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded font-black uppercase tracking-wider">{f.xp || 0} XP</span>
                   </div>
                 ))
@@ -921,13 +955,13 @@ const CommunityProfile = () => {
               ) : (
                 profile.following.map(f => (
                   <div key={f._id} className="flex items-center gap-3 justify-between p-2 hover:bg-white/5 rounded-xl transition-all">
-                    <a href={`/community/profile/${f._id}`} onClick={() => setShowFollowingModal(false)} className="flex items-center gap-2.5 hover:opacity-80">
+                    <Link to={`/community/profile/${f._id}`} onClick={() => setShowFollowingModal(false)} className="flex items-center gap-2.5 hover:opacity-80">
                       <img src={f.avatar?.url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80'} className="w-8 h-8 rounded-full border border-white/10" loading="lazy" />
                       <div className="flex flex-col text-left">
                         <span className="text-[11px] font-bold text-white leading-tight">{f.fullName}</span>
                         <span className="text-[9px] text-slate-500 font-medium">@{f.username}</span>
                       </div>
-                    </a>
+                    </Link>
                     <span className="text-[8px] bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded font-black uppercase tracking-wider">{f.xp || 0} XP</span>
                   </div>
                 ))
@@ -935,6 +969,14 @@ const CommunityProfile = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
       )}
 
     </div>

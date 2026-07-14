@@ -46,6 +46,7 @@ const ServicesManager = lazy(() => import('./admin/ServicesManager.jsx'));
 
 // Utility & System Configuration Panels (Lazy Loaded)
 const MediaLibrary = lazy(() => import('./admin/MediaLibrary.jsx'));
+const DoubtsManager = lazy(() => import('./admin/DoubtsManager.jsx'));
 const UsersManager = lazy(() => import('./admin/UsersManager.jsx'));
 const AuditLogs = lazy(() => import('./admin/AuditLogs.jsx'));
 const SettingsManager = lazy(() => import('./admin/SettingsManager.jsx'));
@@ -103,6 +104,7 @@ createRoot(document.getElementById('root')).render(
               <Route path="orders" element={<OrdersManager />} />
               <Route path="services" element={<ServicesManager />} />
               <Route path="media" element={<MediaLibrary />} />
+              <Route path="doubts" element={<DoubtsManager />} />
               <Route path="users" element={<UsersManager />} />
               <Route path="audit-logs" element={<AuditLogs />} />
               <Route path="settings" element={<SettingsManager />} />

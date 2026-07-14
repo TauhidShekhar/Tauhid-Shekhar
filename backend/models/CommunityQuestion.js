@@ -22,6 +22,7 @@ const communityQuestionSchema = new mongoose.Schema(
       required: [true, 'Please select a language/topic category'],
       default: 'Other'
     },
+    images: [{ url: String, publicId: String }],
     tags: [{ type: String }],
     upvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     downvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],

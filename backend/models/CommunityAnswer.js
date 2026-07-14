@@ -16,6 +16,7 @@ const communityAnswerSchema = new mongoose.Schema(
       ref: 'User',
       required: true
     },
+    images: [{ url: String, publicId: String }],
     upvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     downvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     isAccepted: {

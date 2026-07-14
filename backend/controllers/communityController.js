@@ -1146,7 +1146,7 @@ const getQuestions = async (req, res, next) => {
 
 const createQuestion = async (req, res, next) => {
   try {
-    const { title, content, category, tags } = req.body;
+    const { title, content, category, tags, images } = req.body;
     const tagsArray = Array.isArray(tags) ? tags : (tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : []);
 
     const question = await CommunityQuestion.create({
@@ -1154,6 +1154,7 @@ const createQuestion = async (req, res, next) => {
       content,
       category: category || 'Other',
       tags: tagsArray,
+      images: images || [],
       author: req.user.id
     });
 
@@ -1268,13 +1269,14 @@ const bookmarkQuestion = async (req, res, next) => {
 
 const createAnswer = async (req, res, next) => {
   try {
-    const { content } = req.body;
+    const { content, images } = req.body;
     const question = await CommunityQuestion.findById(req.params.id);
     if (!question) return res.status(404).json({ success: false, message: 'Question not found' });
 
     const answer = await CommunityAnswer.create({
       question: question._id,
       content,
+      images: images || [],
       author: req.user.id
     });
 
@@ -1766,7 +1768,7 @@ const updateComment = async (req, res, next) => {
 const updateQuestion = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { title, content, category, tags } = req.body;
+    const { title, content, category, tags, images } = req.body;
     const question = await CommunityQuestion.findById(id);
     if (!question) return res.status(404).json({ success: false, message: 'Question not found' });
 
@@ -1780,6 +1782,9 @@ const updateQuestion = async (req, res, next) => {
     if (tags) {
       question.tags = Array.isArray(tags) ? tags : tags.split(',').map(t => t.trim()).filter(Boolean);
     }
+    if (images) {
+      question.images = images;
+    }
 
     await question.save();
     const populated = await CommunityQuestion.findById(question._id).populate('author', 'fullName username avatar role xp reputation');
@@ -1792,7 +1797,7 @@ const updateQuestion = async (req, res, next) => {
 const updateAnswer = async (req, res, next) => {
   try {
     const { answerId } = req.params;
-    const { content } = req.body;
+    const { content, images } = req.body;
     const answer = await CommunityAnswer.findById(answerId);
     if (!answer) return res.status(404).json({ success: false, message: 'Answer not found' });
 
@@ -1800,7 +1805,10 @@ const updateAnswer = async (req, res, next) => {
       return res.status(403).json({ success: false, message: 'Unauthorized action' });
     }
 
-    answer.content = content;
+    answer.content = content || answer.content;
+    if (images) {
+      answer.images = images;
+    }
     await answer.save();
     const populated = await CommunityAnswer.findById(answer._id).populate('author', 'fullName username avatar role xp reputation');
     res.json({ success: true, data: populated });

@@ -768,10 +768,10 @@ export const api = {
   bookmarkCommunityQuestion: async (id) => {
     return apiRequest(`/community/questions/${id}/bookmark`, { method: 'POST' });
   },
-  createCommunityAnswer: async (questionId, content) => {
+  createCommunityAnswer: async (questionId, payload) => {
     return apiRequest(`/community/questions/${questionId}/answers`, {
       method: 'POST',
-      body: JSON.stringify({ content })
+      body: JSON.stringify(typeof payload === 'string' ? { content: payload } : payload)
     });
   },
   voteCommunityAnswer: async (answerId, voteType) => {
@@ -786,10 +786,10 @@ export const api = {
   deleteCommunityAnswer: async (answerId) => {
     return apiRequest(`/community/answers/${answerId}`, { method: 'DELETE' });
   },
-  updateCommunityAnswer: async (answerId, content) => {
+  updateCommunityAnswer: async (answerId, payload) => {
     return apiRequest(`/community/answers/${answerId}`, {
       method: 'PUT',
-      body: JSON.stringify({ content })
+      body: JSON.stringify(typeof payload === 'string' ? { content: payload } : payload)
     });
   },
 

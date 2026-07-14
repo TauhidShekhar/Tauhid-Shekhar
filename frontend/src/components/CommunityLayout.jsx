@@ -36,6 +36,7 @@ const CommunityLayout = () => {
   const [suggestedDevs, setSuggestedDevs] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [followDeveloperLoading, setFollowDeveloperLoading] = useState({});
   const [leaderboardTimeframe, setLeaderboardTimeframe] = useState('weekly');
   const [mobileSectionsExpanded, setMobileSectionsExpanded] = useState({
     actions: true,
@@ -167,12 +168,14 @@ const CommunityLayout = () => {
 
                     <button
                       onClick={() => handleFollowDeveloper(dev._id)}
-                      className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider border cursor-pointer transition-all duration-200 shrink-0 ${
+                      disabled={followDeveloperLoading[dev._id]}
+                      className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider border cursor-pointer transition-all duration-200 shrink-0 flex items-center gap-1 ${
                         isFollowing 
                           ? 'bg-transparent border-slate-700 text-slate-400' 
                           : 'bg-gradient-to-r from-purple-500/20 to-indigo-500/20 hover:from-purple-600 hover:to-indigo-600 border-purple-500/30 hover:border-transparent text-purple-300 hover:text-white shadow-md active:scale-95'
-                      }`}
+                      } ${followDeveloperLoading[dev._id] ? 'opacity-60 cursor-not-allowed' : ''}`}
                     >
+                      {followDeveloperLoading[dev._id] && <div className="w-2 h-2 rounded-full border border-white/20 border-t-white animate-spin shrink-0" />}
                       {isFollowing ? 'Following' : 'Follow'}
                     </button>
                   </div>
@@ -590,9 +593,14 @@ const CommunityLayout = () => {
 
   const handleFollowDeveloper = async (userId) => {
     if (!user) {
-      alert('Please log in to perform this action.');
+      alert('Please log in to follow developers.');
+      window.location.href = '/login';
       return;
     }
+    if (followDeveloperLoading[userId]) return;
+
+    setFollowDeveloperLoading(prev => ({ ...prev, [userId]: true }));
+
     const currentUserId = (user?.id || user?._id)?.toString();
     let originalDevs;
     setSuggestedDevs(prev => {
@@ -620,6 +628,8 @@ const CommunityLayout = () => {
     } catch (err) {
       console.error(err);
       if (originalDevs) setSuggestedDevs(originalDevs);
+    } finally {
+      setFollowDeveloperLoading(prev => ({ ...prev, [userId]: false }));
     }
   };
 

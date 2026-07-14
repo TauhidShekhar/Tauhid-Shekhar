@@ -7,7 +7,7 @@ import {
   FaBars, FaTimes, FaGlobe, FaChevronDown, FaChevronUp, FaBook, FaQuoteLeft, 
   FaImages, FaFileAlt, FaCertificate, FaAward, FaHistory, FaDatabase, FaShieldAlt, 
   FaUserCog, FaChartLine, FaMoon, FaSun, FaUserCircle, FaHome, FaShoppingBag, FaLaptopCode, FaUsers,
-  FaRocket
+  FaRocket, FaQuestionCircle
 } from 'react-icons/fa';
 
 const AdminLayout = () => {
@@ -225,6 +225,9 @@ const AdminLayout = () => {
               </Link>
               <Link to="/admin/dashboard/users" onClick={handleLinkClick} className={isActive('/admin/dashboard/users') ? activeLinkClass : inactiveLinkClass}>
                 <FaUserCog size={12} /> Users Directory
+              </Link>
+              <Link to="/admin/dashboard/doubts" onClick={handleLinkClick} className={isActive('/admin/dashboard/doubts') ? activeLinkClass : inactiveLinkClass}>
+                <FaQuestionCircle size={12} /> Doubts Lounge
               </Link>
               <Link to="/admin/dashboard/audit-logs" onClick={handleLinkClick} className={isActive('/admin/dashboard/audit-logs') ? activeLinkClass : inactiveLinkClass}>
                 <FaHistory size={12} /> System Audit Logs
