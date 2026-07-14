@@ -123,7 +123,7 @@ export const ImageGallery = ({ images = [] }) => {
 
     if (count === 2) {
       return (
-        <div className="grid grid-cols-2 gap-2 w-full h-[220px] rounded-2xl overflow-hidden">
+        <div className="grid grid-cols-2 gap-2 w-full h-[220px] sm:h-[320px] md:h-[400px] lg:h-[450px] rounded-2xl overflow-hidden">
           {images.map((img, idx) => (
             <div key={idx} onClick={() => openLightbox(idx)} className="relative overflow-hidden cursor-pointer bg-[#181820] border border-white/5 flex items-center justify-center group">
               <img src={img} alt="media" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
@@ -135,7 +135,7 @@ export const ImageGallery = ({ images = [] }) => {
 
     if (count === 3) {
       return (
-        <div className="grid grid-cols-3 grid-rows-2 gap-2 w-full h-[280px] rounded-2xl overflow-hidden">
+        <div className="grid grid-cols-3 grid-rows-2 gap-2 w-full h-[280px] sm:h-[380px] md:h-[460px] lg:h-[520px] rounded-2xl overflow-hidden">
           <div onClick={() => openLightbox(0)} className="col-span-2 row-span-2 relative overflow-hidden cursor-pointer bg-[#181820] border border-white/5 flex items-center justify-center group">
             <img src={images[0]} alt="media" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
           </div>
@@ -150,7 +150,7 @@ export const ImageGallery = ({ images = [] }) => {
 
     if (count === 4) {
       return (
-        <div className="grid grid-cols-2 grid-rows-2 gap-2 w-full h-[280px] rounded-2xl overflow-hidden">
+        <div className="grid grid-cols-2 grid-rows-2 gap-2 w-full h-[280px] sm:h-[380px] md:h-[460px] lg:h-[520px] rounded-2xl overflow-hidden">
           {images.slice(0, 4).map((img, idx) => (
             <div key={idx} onClick={() => openLightbox(idx)} className="relative overflow-hidden cursor-pointer bg-[#181820] border border-white/5 flex items-center justify-center group">
               <img src={img} alt="media" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
@@ -162,7 +162,7 @@ export const ImageGallery = ({ images = [] }) => {
 
     // 5 or more images
     return (
-      <div className="grid grid-cols-3 grid-rows-2 gap-2 w-full h-[280px] rounded-2xl overflow-hidden">
+      <div className="grid grid-cols-3 grid-rows-2 gap-2 w-full h-[280px] sm:h-[380px] md:h-[460px] lg:h-[520px] rounded-2xl overflow-hidden">
         <div onClick={() => openLightbox(0)} className="col-span-2 row-span-1 relative overflow-hidden cursor-pointer bg-[#181820] border border-white/5 flex items-center justify-center group">
           <img src={images[0]} alt="media" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
         </div>
