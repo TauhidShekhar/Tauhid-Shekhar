@@ -108,6 +108,7 @@ const SkillsManager = () => {
     name: '',
     percentage: 80,
     category: 'Frontend',
+    categories: ['Frontend'],
     logoType: 'auto',
     logoUrl: '',
     isActive: true,
@@ -186,6 +187,10 @@ const SkillsManager = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.categories || formData.categories.length === 0) {
+      alert('Please select at least one category');
+      return;
+    }
     setLoading(true);
 
     try {
@@ -194,13 +199,13 @@ const SkillsManager = () => {
         if (res.success) {
           setIsEditing(false);
           setCurrentId(null);
-          setFormData({ name: '', percentage: 80, category: 'Frontend', logoType: 'auto', logoUrl: '', isActive: true, displayOrder: 0 });
+          setFormData({ name: '', percentage: 80, category: 'Frontend', categories: ['Frontend'], logoType: 'auto', logoUrl: '', isActive: true, displayOrder: 0 });
           fetchSkills();
         }
       } else {
         const res = await api.createSkill(formData);
         if (res.success) {
-          setFormData({ name: '', percentage: 80, category: 'Frontend', logoType: 'auto', logoUrl: '', isActive: true, displayOrder: 0 });
+          setFormData({ name: '', percentage: 80, category: 'Frontend', categories: ['Frontend'], logoType: 'auto', logoUrl: '', isActive: true, displayOrder: 0 });
           fetchSkills();
         }
       }
@@ -213,10 +218,19 @@ const SkillsManager = () => {
   const handleEditClick = (skill) => {
     setIsEditing(true);
     setCurrentId(skill._id);
+    let cats = [];
+    if (skill.categories && Array.isArray(skill.categories) && skill.categories.length > 0) {
+      cats = skill.categories;
+    } else if (skill.category) {
+      cats = [skill.category];
+    } else {
+      cats = ['Frontend'];
+    }
     setFormData({
       name: skill.name,
       percentage: skill.percentage,
-      category: skill.category || 'Frontend',
+      category: skill.category || cats[0],
+      categories: cats,
       logoType: skill.logoType || 'auto',
       logoUrl: skill.logoUrl || '',
       isActive: skill.isActive !== false,
@@ -241,7 +255,7 @@ const SkillsManager = () => {
   const handleCancelEdit = () => {
     setIsEditing(false);
     setCurrentId(null);
-    setFormData({ name: '', percentage: 80, category: 'Frontend', logoType: 'auto', logoUrl: '', isActive: true, displayOrder: 0 });
+    setFormData({ name: '', percentage: 80, category: 'Frontend', categories: ['Frontend'], logoType: 'auto', logoUrl: '', isActive: true, displayOrder: 0 });
   };
 
   // Sorting calculations
@@ -444,20 +458,59 @@ const SkillsManager = () => {
               />
             </div>
 
-            {/* Category */}
+            {/* Category Multi-Checklist */}
             <div className="flex flex-col gap-2">
-              <label htmlFor="category" className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Category</label>
-              <select
-                id="category"
-                name="category"
-                value={formData.category}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-primary-blue dark:focus:border-primary-blue text-sm transition-colors cursor-pointer"
-              >
-                {categories.map(cat => (
-                  <option key={cat.id} value={cat.id}>{cat.name}</option>
-                ))}
-              </select>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Categories</label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const allCatIds = categories.map(c => c.id);
+                    const isAllSelected = formData.categories.length === allCatIds.length;
+                    setFormData(prev => ({
+                      ...prev,
+                      categories: isAllSelected ? [] : allCatIds,
+                      category: isAllSelected ? '' : allCatIds[0] || ''
+                    }));
+                  }}
+                  className="text-[10px] font-black uppercase text-primary-blue hover:underline cursor-pointer"
+                >
+                  {formData.categories.length === categories.length ? 'Deselect All' : 'Select All'}
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/5">
+                {categories.map((cat) => {
+                  const isChecked = formData.categories.includes(cat.id);
+                  return (
+                    <label key={cat.id} className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-350 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => {
+                          setFormData(prev => {
+                            let nextCats = [...prev.categories];
+                            if (isChecked) {
+                              nextCats = nextCats.filter(id => id !== cat.id);
+                            } else {
+                              nextCats.push(cat.id);
+                            }
+                            return {
+                              ...prev,
+                              categories: nextCats,
+                              category: nextCats[0] || ''
+                            };
+                          });
+                        }}
+                        className="rounded border-slate-300 text-primary-blue focus:ring-primary-blue cursor-pointer"
+                      />
+                      {cat.name}
+                    </label>
+                  );
+                })}
+              </div>
+              {formData.categories.length === 0 && (
+                <p className="text-[10px] text-red-500 font-bold">Please select at least one category</p>
+              )}
             </div>
 
             {/* Logo Type */}
@@ -747,9 +800,21 @@ const SkillsManager = () => {
 
                         {/* Category Column */}
                         <td className="py-4">
-                          <span className="inline-flex px-2.5 py-1 rounded-md bg-slate-50 dark:bg-white/5 border border-slate-200/50 dark:border-white/5 text-xs font-bold text-slate-550 dark:text-slate-400 uppercase tracking-wide">
-                            {skill.category}
-                          </span>
+                          <div className="flex flex-wrap gap-1 max-w-[200px]">
+                            {(() => {
+                              let cats = [];
+                              if (skill.categories && Array.isArray(skill.categories) && skill.categories.length > 0) {
+                                cats = skill.categories;
+                              } else if (skill.category) {
+                                cats = [skill.category];
+                              }
+                              return cats.map(cat => (
+                                <span key={cat} className="inline-flex px-2 py-0.5 rounded bg-slate-50 dark:bg-white/5 border border-slate-200/50 dark:border-white/5 text-[9px] font-black text-slate-550 dark:text-slate-400 uppercase tracking-wide">
+                                  {cat}
+                                </span>
+                              ));
+                            })()}
+                          </div>
                         </td>
 
                         {/* Percentage Column */}

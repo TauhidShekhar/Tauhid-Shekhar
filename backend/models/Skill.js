@@ -16,9 +16,11 @@ const skillSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      required: [true, 'Category is required'],
-      enum: ['Programming', 'Frontend', 'Backend', 'Database', 'Tools', 'Concepts', 'All', 'programming', 'frontend', 'backend', 'database', 'tools', 'concepts'],
       default: 'Frontend'
+    },
+    categories: {
+      type: [String],
+      default: ['Frontend']
     },
     logoType: {
       type: String,
@@ -44,5 +46,27 @@ const skillSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// Pre-save hook to normalize category (string) to categories (array)
+skillSchema.pre('save', function(next) {
+  if (this.category && (!this.categories || this.categories.length === 0)) {
+    this.categories = [this.category];
+  }
+  // Ensure title-case capitalization on categories
+  if (this.categories && this.categories.length > 0) {
+    this.categories = this.categories.map(cat => {
+      if (!cat) return 'Frontend';
+      const c = cat.trim().toLowerCase();
+      if (c === 'programming') return 'Programming';
+      if (c === 'frontend') return 'Frontend';
+      if (c === 'backend') return 'Backend';
+      if (c === 'database') return 'Database';
+      if (c === 'tools') return 'Tools';
+      if (c === 'concepts') return 'Concepts';
+      return cat.charAt(0).toUpperCase() + cat.slice(1);
+    });
+  }
+  next();
+});
 
 module.exports = mongoose.model('Skill', skillSchema);

@@ -167,9 +167,23 @@ const Skills = ({ skillsData }) => {
     }
   }, [skillsData]);
 
+  const getSkillCategories = (skill) => {
+    if (skill.categories && Array.isArray(skill.categories) && skill.categories.length > 0) {
+      return skill.categories;
+    }
+    if (skill.category) {
+      return [skill.category];
+    }
+    return [];
+  };
+
   const filteredSkills = activeFilter === 'all' 
     ? skillItems.filter(s => s.isActive !== false) 
-    : skillItems.filter(s => s.isActive !== false && (s.category || '').toLowerCase() === activeFilter.toLowerCase());
+    : skillItems.filter(s => {
+        if (s.isActive === false) return false;
+        const cats = getSkillCategories(s);
+        return cats.some(cat => cat.toLowerCase() === activeFilter.toLowerCase());
+      });
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -229,6 +243,7 @@ const Skills = ({ skillsData }) => {
           <AnimatePresence mode="popLayout">
             {filteredSkills.map((skill) => {
               const logoSrc = skill.logoType === 'custom' && skill.logoUrl ? skill.logoUrl : getAutoLogoUrl(skill.name);
+              const cats = getSkillCategories(skill);
               return (
                 <motion.div
                   key={skill.name}
@@ -238,7 +253,7 @@ const Skills = ({ skillsData }) => {
                   animate="visible"
                   exit={{ opacity: 0, scale: 0.95 }}
                   className="glass p-6 rounded-2xl flex flex-col justify-between shadow-sm border border-slate-100 dark:border-white/5 hover:scale-[1.02] transition-transform duration-300 relative group overflow-hidden"
-                  title={`${skill.name} - ${skill.category}`}
+                  title={`${skill.name} - ${cats.join(', ')}`}
                 >
                   {/* Mouse hover glow line */}
                   <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-primary-blue to-primary-cyan opacity-80" />
@@ -261,13 +276,17 @@ const Skills = ({ skillsData }) => {
                           {skill.name.charAt(0).toUpperCase()}
                         </div>
                       </div>
-                      <div className="flex flex-col gap-1 items-start">
+                      <div className="flex flex-col gap-1 items-start text-left">
                         <h4 className="text-sm font-bold text-black dark:text-white font-title leading-none">
                           {skill.name}
                         </h4>
-                        <span className="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-slate-200/50 dark:border-white/5">
-                          {skill.category}
-                        </span>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {cats.map((cat) => (
+                            <span key={cat} className="px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-slate-200/50 dark:border-white/5">
+                              {cat}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </div>
                     <span className="text-xs font-extrabold text-primary-blue">
