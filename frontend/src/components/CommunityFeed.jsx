@@ -36,7 +36,6 @@ const CommunityFeed = () => {
 
   // Sequential Image Cropping States
   const [cropQueue, setCropQueue] = useState([]);
-  const [currentCropIndex, setCurrentCropIndex] = useState(0);
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [cropCallback, setCropCallback] = useState(null);
 
@@ -225,9 +224,8 @@ const CommunityFeed = () => {
     e.target.value = ''; // Reset input
   };
 
-  const handleRecropImage = (img, idx) => {
+  const handleRecropImage = (img) => {
     setCropQueue([img.file]);
-    setCurrentCropIndex(0);
     setCropCallback(() => (croppedFile) => {
       setSelectedImages(prev => prev.map(item => 
         item.id === img.id 
@@ -320,7 +318,6 @@ const CommunityFeed = () => {
     }
 
     setCropQueue(allowed);
-    setCurrentCropIndex(0);
     setCropCallback(() => handleEditImageCropped);
     setCropModalOpen(true);
     e.target.value = '';
