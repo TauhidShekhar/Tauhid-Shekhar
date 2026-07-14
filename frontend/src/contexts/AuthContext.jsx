@@ -164,14 +164,33 @@ export const AuthProvider = ({ children }) => {
       window.dispatchEvent(new CustomEvent('cms-content-update', { detail: payload }));
     };
 
+    const handleUserUpdate = (payload) => {
+      if (user && payload && payload.userId && payload.userId.toString() === (user.id || user._id)?.toString()) {
+        checkAuthStatus();
+      }
+      window.dispatchEvent(new CustomEvent('cms-content-update', { detail: payload }));
+    };
+
+    const handleForceLogout = (payload) => {
+      if (user && payload && payload.userId && payload.userId.toString() === (user.id || user._id)?.toString()) {
+        logout();
+        alert(`Your account has been ${payload.reason || 'suspended'}. You have been logged out.`);
+        window.location.href = '/login';
+      }
+    };
+
     socket.on('cms_publish', handleSyncUpdate);
     socket.on('content_update', handleSyncUpdate);
+    socket.on('user_update', handleUserUpdate);
+    socket.on('force_logout', handleForceLogout);
 
     return () => {
       socket.off('cms_publish', handleSyncUpdate);
       socket.off('content_update', handleSyncUpdate);
+      socket.off('user_update', handleUserUpdate);
+      socket.off('force_logout', handleForceLogout);
     };
-  }, []);
+  }, [user]);
 
   // ---------------------------------------------------------------------------
   // login

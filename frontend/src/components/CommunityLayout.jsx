@@ -36,6 +36,471 @@ const CommunityLayout = () => {
   const [suggestedDevs, setSuggestedDevs] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [leaderboardTimeframe, setLeaderboardTimeframe] = useState('weekly');
+  const [mobileSectionsExpanded, setMobileSectionsExpanded] = useState({
+    actions: true,
+    suggested: false,
+    leaderboard: false,
+    stats: false,
+    tags: false,
+    announcements: false,
+    events: false
+  });
+  
+  const toggleMobileSection = (section) => {
+    setMobileSectionsExpanded(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
+  const renderRightSidebar = (isMobile) => {
+    const isSectionExpanded = (key) => {
+      if (!isMobile) return true;
+      return mobileSectionsExpanded[key];
+    };
+
+    return (
+      <div className="flex flex-col gap-5.5 w-full">
+        
+        {/* SECTION: QUICK ACTIONS */}
+        <div className="bg-[#121217] border border-white/5 rounded-2xl flex flex-col shadow-lg shadow-black/25 overflow-hidden hover:scale-[1.01] hover:border-purple-500/25 transition-all duration-300 text-left">
+          <button 
+            type="button"
+            disabled={!isMobile}
+            onClick={() => toggleMobileSection('actions')}
+            className="w-full p-4 flex items-center justify-between border-b border-white/5 bg-[#17171e]/40 select-none cursor-pointer text-left"
+          >
+            <div className="flex items-center gap-2">
+              <span className="p-1.5 bg-purple-500/10 rounded-lg text-purple-400">
+                <FaPlus size={10} />
+              </span>
+              <span className="text-[10px] font-black text-slate-350 uppercase tracking-widest">Quick Actions</span>
+            </div>
+            {isMobile && (
+              <span className={`text-slate-400 transition-transform duration-250 ${isSectionExpanded('actions') ? 'rotate-180' : ''}`}>
+                <FaAngleDown size={14} />
+              </span>
+            )}
+          </button>
+
+          {isSectionExpanded('actions') && (
+            <div className="p-4 flex flex-col gap-2.5">
+              {[
+                { name: 'Create Post', icon: <FaPlus />, path: '/community' },
+                { name: 'Upload Resource', icon: <FaFolderOpen />, path: '/community/resources' },
+                { name: 'Ask AI Assistant', icon: <FaBrain />, path: '/community/ai-assistant' },
+                { name: 'Create Community Group', icon: <FaUsers />, path: '/community/groups' },
+                { name: 'Find Top Developers', icon: <FaCrown />, path: '/community/leaderboard' }
+              ].map((action, idx) => (
+                <Link
+                  key={idx}
+                  to={action.path}
+                  className="flex items-center justify-between p-2.5 bg-[#181820]/45 hover:bg-[#20202c] border border-white/5 hover:border-purple-500/15 rounded-xl transition-all duration-200 group"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-slate-450 group-hover:text-purple-400 transition-colors text-xs">{action.icon}</span>
+                    <span className="text-[11px] font-bold text-slate-300 group-hover:text-white transition-colors">{action.name}</span>
+                  </div>
+                  <span className="text-[10px] text-slate-550 group-hover:text-slate-300 transition-transform group-hover:translate-x-0.5">→</span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* SECTION: SUGGESTED DEVELOPERS */}
+        <div className="bg-[#121217] border border-white/5 rounded-2xl flex flex-col shadow-lg shadow-black/25 overflow-hidden hover:scale-[1.01] hover:border-purple-500/25 transition-all duration-300 text-left">
+          <button
+            type="button"
+            disabled={!isMobile}
+            onClick={() => toggleMobileSection('suggested')}
+            className="w-full p-4 flex items-center justify-between border-b border-white/5 bg-[#17171e]/40 select-none cursor-pointer text-left"
+          >
+            <div className="flex items-center gap-2">
+              <span className="p-1.5 bg-purple-500/10 rounded-lg text-purple-400">
+                <FaUser size={10} />
+              </span>
+              <span className="text-[10px] font-black text-slate-350 uppercase tracking-widest">Suggested Developers</span>
+            </div>
+            {isMobile && (
+              <span className={`text-slate-400 transition-transform duration-250 ${isSectionExpanded('suggested') ? 'rotate-180' : ''}`}>
+                <FaAngleDown size={14} />
+              </span>
+            )}
+          </button>
+
+          {isSectionExpanded('suggested') && (
+            <div className="p-4 flex flex-col gap-3">
+              {suggestedDevs.filter(Boolean).slice(0, 5).map((dev, idx) => {
+                const currentUserId = (user?.id || user?._id)?.toString();
+                const isFollowing = dev.followers?.some(fid => fid && fid.toString() === currentUserId);
+                
+                const isVerified = dev.xp >= 300;
+                const devRole = dev.role === 'Admin' ? 'Administrator' : 
+                                dev.xp >= 300 ? 'Core Contributor' : 'Member';
+
+                return (
+                  <div key={dev._id} className="flex items-center justify-between gap-3 p-1 rounded-xl">
+                    <Link to={`/community/profile/${dev._id}`} className="flex items-center gap-3 min-w-0 flex-1 hover:opacity-90">
+                      <div className="relative shrink-0">
+                        <div className="w-10 h-10 rounded-xl overflow-hidden bg-[#1e1e24] border border-white/10 flex items-center justify-center shadow-inner">
+                          {dev.avatar?.url ? (
+                            <img src={dev.avatar.url} alt="Profile" className="w-full h-full object-cover" loading="lazy" />
+                          ) : (
+                            <FaUser className="text-slate-500" size={14} />
+                          )}
+                        </div>
+                        {dev.isActive !== false && (
+                          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border border-[#121217]" />
+                        )}
+                      </div>
+                      
+                      <div className="flex flex-col text-left min-w-0">
+                        <h5 className="text-[11px] font-black text-white flex items-center gap-1 leading-snug">
+                          <span className="truncate">{dev.fullName}</span>
+                          {isVerified && <FaCheckCircle size={10} className="text-purple-400 shrink-0" title="Verified Creator" />}
+                        </h5>
+                        <span className="text-[9px] text-slate-450 truncate">{devRole} • {dev.xp || 0} XP</span>
+                      </div>
+                    </Link>
+
+                    <button
+                      onClick={() => handleFollowDeveloper(dev._id)}
+                      className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider border cursor-pointer transition-all duration-200 shrink-0 ${
+                        isFollowing 
+                          ? 'bg-transparent border-slate-700 text-slate-400' 
+                          : 'bg-gradient-to-r from-purple-500/20 to-indigo-500/20 hover:from-purple-600 hover:to-indigo-600 border-purple-500/30 hover:border-transparent text-purple-300 hover:text-white shadow-md active:scale-95'
+                      }`}
+                    >
+                      {isFollowing ? 'Following' : 'Follow'}
+                    </button>
+                  </div>
+                );
+              })}
+
+              {suggestedDevs.length === 0 && (
+                <div className="text-[10px] text-slate-550 italic text-center py-4">No recommendations.</div>
+              )}
+
+              <Link 
+                to="/community/leaderboard"
+                className="mt-2 w-full py-2.5 bg-[#181820] hover:bg-[#20202c] border border-white/5 hover:border-purple-500/20 rounded-xl text-[9px] font-black uppercase tracking-wider text-slate-350 hover:text-purple-300 transition-all text-center flex items-center justify-center gap-1.5"
+              >
+                <FaCrown size={10} /> View Full Leaderboard
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* SECTION: TOP LEADERBOARD HIGHLIGHTS */}
+        <div className="bg-[#121217] border border-white/5 rounded-2xl flex flex-col shadow-lg shadow-black/25 overflow-hidden hover:scale-[1.01] hover:border-purple-500/25 transition-all duration-300 text-left">
+          <button
+            type="button"
+            disabled={!isMobile}
+            onClick={() => toggleMobileSection('leaderboard')}
+            className="w-full p-4 flex items-center justify-between border-b border-white/5 bg-[#17171e]/40 select-none cursor-pointer text-left"
+          >
+            <div className="flex items-center gap-2">
+              <span className="p-1.5 bg-purple-500/10 rounded-lg text-purple-400">
+                <FaCrown size={10} />
+              </span>
+              <span className="text-[10px] font-black text-slate-350 uppercase tracking-widest">Global Leaderboard</span>
+            </div>
+            {isMobile && (
+              <span className={`text-slate-400 transition-transform duration-250 ${isSectionExpanded('leaderboard') ? 'rotate-180' : ''}`}>
+                <FaAngleDown size={14} />
+              </span>
+            )}
+          </button>
+
+          {isSectionExpanded('leaderboard') && (
+            <div className="p-4 flex flex-col gap-4">
+              <div className="flex bg-[#181820] p-1 rounded-xl border border-white/5">
+                {['weekly', 'all-time'].map((timeframe) => (
+                  <button
+                    key={timeframe}
+                    onClick={() => setLeaderboardTimeframe(timeframe)}
+                    className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                      leaderboardTimeframe === timeframe
+                        ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-sm'
+                        : 'text-slate-455 hover:text-slate-200'
+                    }`}
+                  >
+                    {timeframe.replace('-', ' ')}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex flex-col gap-2.5">
+                {suggestedDevs.filter(Boolean).slice(0, 3).map((dev, idx) => {
+                  const medalColors = 
+                    idx === 0 ? 'bg-amber-400/10 border-amber-400/30 text-amber-400 shadow-amber-400/5' :
+                    idx === 1 ? 'bg-slate-300/10 border-slate-300/30 text-slate-300 shadow-slate-300/5' :
+                    'bg-amber-700/10 border-amber-750/30 text-amber-700 shadow-amber-700/5';
+
+                  const medalLabel = idx === 0 ? 'Gold' : idx === 1 ? 'Silver' : 'Bronze';
+                  const change = idx === 0 ? '↑1' : idx === 1 ? '↓1' : '•';
+                  const changeColor = idx === 0 ? 'text-green-500' : idx === 1 ? 'text-red-500' : 'text-slate-500';
+
+                  const displayedXP = leaderboardTimeframe === 'weekly' 
+                    ? Math.max(20, Math.floor(dev.xp * 0.4)) 
+                    : dev.xp;
+
+                  return (
+                    <div 
+                      key={dev._id} 
+                      className={`flex items-center justify-between p-2.5 rounded-xl border ${medalColors} shadow-md`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span className="text-[10px] font-black w-4 text-center shrink-0">#{idx + 1}</span>
+                        <div className="w-7 h-7 rounded-lg overflow-hidden bg-[#1e1e24] border border-white/10 shrink-0">
+                          {dev.avatar?.url ? (
+                            <img src={dev.avatar.url} alt="medal user" className="w-full h-full object-cover" loading="lazy" />
+                          ) : (
+                            <div className="w-full h-full bg-purple-900/20 text-purple-400 font-extrabold flex items-center justify-center text-[10px]">
+                              {dev.fullName[0]}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex flex-col text-left min-w-0">
+                          <span className="text-[10px] font-black text-white truncate">{dev.fullName}</span>
+                          <span className="text-[8px] text-slate-455 mt-0.5">{displayedXP} XP this period</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className={`text-[8px] font-black font-mono ${changeColor}`} title="Rank Movement">{change}</span>
+                        <span className="text-[7px] font-black tracking-widest uppercase bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-slate-400">{medalLabel}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* SECTION: COMMUNITY STATISTICS */}
+        <div className="bg-[#121217] border border-white/5 rounded-2xl flex flex-col shadow-lg shadow-black/25 overflow-hidden hover:scale-[1.01] hover:border-purple-500/25 transition-all duration-300 text-left">
+          <button
+            type="button"
+            disabled={!isMobile}
+            onClick={() => toggleMobileSection('stats')}
+            className="w-full p-4 flex items-center justify-between border-b border-white/5 bg-[#17171e]/40 select-none cursor-pointer text-left"
+          >
+            <div className="flex items-center gap-2">
+              <span className="p-1.5 bg-purple-500/10 rounded-lg text-purple-400">
+                <FaTachometerAlt size={10} />
+              </span>
+              <span className="text-[10px] font-black text-slate-350 uppercase tracking-widest">Community Statistics</span>
+            </div>
+            {isMobile && (
+              <span className={`text-slate-400 transition-transform duration-250 ${isSectionExpanded('stats') ? 'rotate-180' : ''}`}>
+                <FaAngleDown size={14} />
+              </span>
+            )}
+          </button>
+
+          {isSectionExpanded('stats') && (
+            <div className="p-4 grid grid-cols-2 gap-3.5">
+              {[
+                { name: 'Total Members', val: '2,482', change: '+12% this wk' },
+                { name: 'Online Right Now', val: '318', change: 'Live updates', isOnline: true },
+                { name: 'Knowledge Posts', val: '12,840', change: '24 new today' },
+                { name: 'Shared Resources', val: '1,192', change: 'ZIPs, PDFs, cheatsheets' }
+              ].map((stat, idx) => (
+                <div key={idx} className="p-3 bg-[#181820]/45 border border-white/5 rounded-xl flex flex-col text-left gap-1">
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">{stat.name}</span>
+                  <div className="flex items-center gap-1.5">
+                    {stat.isOnline && <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shrink-0" />}
+                    <h4 className="text-sm font-black text-white leading-tight">{stat.val}</h4>
+                  </div>
+                  <span className="text-[8px] text-slate-500 font-semibold">{stat.change}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* SECTION: POPULAR TAGS */}
+        <div className="bg-[#121217] border border-white/5 rounded-2xl flex flex-col shadow-lg shadow-black/25 overflow-hidden hover:scale-[1.01] hover:border-purple-500/25 transition-all duration-300 text-left">
+          <button
+            type="button"
+            disabled={!isMobile}
+            onClick={() => toggleMobileSection('tags')}
+            className="w-full p-4 flex items-center justify-between border-b border-white/5 bg-[#17171e]/40 select-none cursor-pointer text-left"
+          >
+            <div className="flex items-center gap-2">
+              <span className="p-1.5 bg-purple-500/10 rounded-lg text-purple-400">
+                <FaHashtag size={10} />
+              </span>
+              <span className="text-[10px] font-black text-slate-350 uppercase tracking-widest">Trending Tech Topics</span>
+            </div>
+            {isMobile && (
+              <span className={`text-slate-400 transition-transform duration-250 ${isSectionExpanded('tags') ? 'rotate-180' : ''}`}>
+                <FaAngleDown size={14} />
+              </span>
+            )}
+          </button>
+
+          {isSectionExpanded('tags') && (
+            <div className="p-4 flex flex-col gap-4">
+              <div className="flex flex-wrap gap-2 pt-1">
+                {[
+                  { tag: 'react', count: '1.2k', trending: true },
+                  { tag: 'nodejs', count: '890', trending: false },
+                  { tag: 'webdev', count: '2.4k', trending: true },
+                  { tag: 'ai', count: '3.1k', trending: true },
+                  { tag: 'mongodb', count: '450', trending: false },
+                  { tag: 'javascript', count: '1.9k', trending: false },
+                  { tag: 'tailwind', count: '780', trending: false },
+                  { tag: 'nextjs', count: '1.5k', trending: true }
+                ].map(item => (
+                  <Link
+                    key={item.tag}
+                    to={`/community?search=${item.tag}`}
+                    className="px-2.5 py-1 bg-purple-600/10 border border-purple-550/15 text-purple-400 hover:bg-purple-600 hover:text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition-all duration-200 flex items-center gap-1 group shadow-sm active:scale-95"
+                  >
+                    <span>#{item.tag}</span>
+                    <span className="text-[8px] opacity-75 font-semibold font-mono bg-purple-500/10 group-hover:bg-white/10 px-1 py-0.5 rounded">{item.count}</span>
+                    {item.trending && <span className="text-[9px]" title="Trending 🔥">🔥</span>}
+                  </Link>
+                ))}
+              </div>
+
+              {/* Active Contributors Stack */}
+              <div className="border-t border-white/5 pt-3.5 flex items-center justify-between text-[10px]">
+                <span className="font-bold text-slate-500 uppercase tracking-wider text-[9px]">Active Contributors</span>
+                <div className="flex items-center">
+                  {suggestedDevs.slice(0, 3).map((d, i) => (
+                    <div 
+                      key={d._id} 
+                      className="w-5.5 h-5.5 rounded-full overflow-hidden border border-[#121217] -ml-1.5 first:ml-0 shadow bg-slate-900"
+                      title={d.fullName}
+                    >
+                      {d.avatar?.url ? (
+                        <img src={d.avatar.url} alt="contr" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-purple-900/50 flex items-center justify-center text-[7px] text-white font-extrabold uppercase">
+                          {d.fullName[0]}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  <span className="text-[8px] font-black text-purple-400 ml-2 uppercase tracking-wide">+18 others</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* SECTION: ANNOUNCEMENTS */}
+        <div className="bg-[#121217] border border-white/5 rounded-2xl flex flex-col shadow-lg shadow-black/25 overflow-hidden hover:scale-[1.01] hover:border-purple-500/25 transition-all duration-300 text-left">
+          <button
+            type="button"
+            disabled={!isMobile}
+            onClick={() => toggleMobileSection('announcements')}
+            className="w-full p-4 flex items-center justify-between border-b border-white/5 bg-[#17171e]/40 select-none cursor-pointer text-left"
+          >
+            <div className="flex items-center gap-2">
+              <span className="p-1.5 bg-purple-500/10 rounded-lg text-purple-400">
+                <FaBell size={10} />
+              </span>
+              <span className="text-[10px] font-black text-slate-350 uppercase tracking-widest">Platform Announcements</span>
+            </div>
+            {isMobile && (
+              <span className={`text-slate-400 transition-transform duration-250 ${isSectionExpanded('announcements') ? 'rotate-180' : ''}`}>
+                <FaAngleDown size={14} />
+              </span>
+            )}
+          </button>
+
+          {isSectionExpanded('announcements') && (
+            <div className="p-4 flex flex-col gap-3.5 pt-1">
+              {[
+                { 
+                  title: '🚀 Hackathon July 2026', 
+                  desc: 'Showcase your AI projects by July 25 to win custom profile badges & reputation XP!',
+                  date: 'July 14, 2026',
+                  unread: true
+                },
+                { 
+                  title: '⚙️ Platform Updates', 
+                  desc: 'Gemini 2.5 real-time memory consultant, voice transcription, and Kanban trackers are now live.',
+                  date: 'July 12, 2026',
+                  unread: false
+                }
+              ].map((ann, idx) => (
+                <div 
+                  key={idx} 
+                  className="p-3 bg-[#181820]/45 rounded-xl border border-white/5 text-[10px] leading-relaxed flex flex-col gap-1.5 relative group/ann"
+                >
+                  {ann.unread && (
+                    <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse" title="New Announcement" />
+                  )}
+                  <div className="flex flex-col text-left">
+                    <span className="text-purple-400 font-black text-[11px] leading-snug group-hover/ann:text-purple-300 transition-colors">{ann.title}</span>
+                    <span className="text-[8px] text-slate-500 font-bold mt-0.5">{ann.date}</span>
+                  </div>
+                  <p className="text-slate-350 font-semibold">{ann.desc}</p>
+                  <button 
+                    type="button" 
+                    onClick={() => alert(`Details for: ${ann.title}\n\n${ann.desc}`)}
+                    className="text-[8px] text-purple-400 hover:text-purple-300 font-black uppercase tracking-wider mt-1 text-left w-fit cursor-pointer hover:underline"
+                  >
+                    Read More &rarr;
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* SECTION: UPCOMING EVENTS */}
+        <div className="bg-[#121217] border border-white/5 rounded-2xl flex flex-col shadow-lg shadow-black/25 overflow-hidden hover:scale-[1.01] hover:border-purple-500/25 transition-all duration-300 text-left">
+          <button
+            type="button"
+            disabled={!isMobile}
+            onClick={() => toggleMobileSection('events')}
+            className="w-full p-4 flex items-center justify-between border-b border-white/5 bg-[#17171e]/40 select-none cursor-pointer text-left"
+          >
+            <div className="flex items-center gap-2">
+              <span className="p-1.5 bg-purple-500/10 rounded-lg text-purple-400">
+                <FaTasks size={10} />
+              </span>
+              <span className="text-[10px] font-black text-slate-350 uppercase tracking-widest">Upcoming Events</span>
+            </div>
+            {isMobile && (
+              <span className={`text-slate-400 transition-transform duration-250 ${isSectionExpanded('events') ? 'rotate-180' : ''}`}>
+                <FaAngleDown size={14} />
+              </span>
+            )}
+          </button>
+
+          {isSectionExpanded('events') && (
+            <div className="p-4 flex flex-col gap-3">
+              {[
+                { name: 'AI Hackathon Submission Deadline', date: 'July 25, 2026', time: '11:59 PM IST' },
+                { name: 'Google Developer Summit 2026', date: 'Aug 12, 2026', time: '9:00 AM IST' },
+                { name: 'Weekly Live Group Code Review', date: 'Every Saturday', time: '6:00 PM IST' }
+              ].map((ev, idx) => (
+                <div key={idx} className="flex gap-3 items-start p-2 bg-[#181820]/45 rounded-xl border border-white/5">
+                  <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-400 shrink-0 font-mono text-[9px] font-black flex flex-col items-center justify-center w-9.5 h-9.5 leading-none border border-indigo-500/15">
+                    <span>{ev.date.split(' ')[1]?.replace(',', '') || '25'}</span>
+                    <span className="text-[7px] text-slate-500 uppercase mt-0.5">{ev.date.split(' ')[0]?.substring(0, 3) || 'SAT'}</span>
+                  </div>
+                  <div className="flex flex-col min-w-0 text-left">
+                    <span className="text-[10px] font-bold text-white leading-snug truncate">{ev.name}</span>
+                    <span className="text-[8px] text-slate-500 font-semibold mt-1">{ev.date} • {ev.time}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   const rawAdminUrl = import.meta.env.VITE_ADMIN_URL;
   const VITE_ADMIN_URL = (rawAdminUrl && rawAdminUrl !== 'undefined' && rawAdminUrl !== 'null')
@@ -100,14 +565,26 @@ const CommunityLayout = () => {
 
   useEffect(() => {
     fetchData();
+
+    // Listen for real-time updates and refresh sidebar content
+    const handleCmsUpdate = () => {
+      fetchData();
+    };
+    window.addEventListener('cms-content-update', handleCmsUpdate);
+
+    let interval;
     if (user) {
-      const interval = setInterval(() => {
+      interval = setInterval(() => {
         if (document.visibilityState === 'visible') {
           fetchData();
         }
       }, 15000);
-      return () => clearInterval(interval);
     }
+
+    return () => {
+      if (interval) clearInterval(interval);
+      window.removeEventListener('cms-content-update', handleCmsUpdate);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
@@ -507,96 +984,16 @@ const CommunityLayout = () => {
         {/* Center column - Active Outlet View */}
         <main className="flex-1 min-w-0 flex flex-col gap-6">
           <Outlet />
+          
+          {/* Mobile Right Sidebar Accordion Sections */}
+          <div className="xl:hidden flex flex-col gap-4 mt-6 w-full pb-10">
+            {renderRightSidebar(true)}
+          </div>
         </main>
 
         {/* Right Sidebar Navigator */}
-        <aside className="hidden xl:flex flex-col gap-6 w-[300px] shrink-0 sticky top-[72px] h-[calc(100vh-100px)] overflow-y-auto pl-1 text-left scrollbar-none">
-          
-          {/* People You May Know */}
-          <div className="bg-[#121217] border border-white/5 p-4 rounded-3xl flex flex-col gap-3.5 shadow-sm">
-            <div className="flex items-center justify-between border-b border-white/5 pb-2">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Suggested Developers</span>
-              <Link to="/community/leaderboard" className="text-[9px] text-purple-400 font-black uppercase hover:underline">View Leaderboard</Link>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              {suggestedDevs.filter(Boolean).map((dev, idx) => {
-                const currentUserId = (user?.id || user?._id)?.toString();
-                const isFollowing = dev.followers?.some(fid => fid && fid.toString() === currentUserId);
-                const rankColor = idx === 0 ? 'text-amber-400 font-extrabold' : idx === 1 ? 'text-slate-350 font-bold' : idx === 2 ? 'text-amber-600 font-bold' : 'text-slate-500';
-                return (
-                  <div key={dev._id} className="flex items-center justify-between gap-2.5 p-1 rounded-xl">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className={`text-[10px] w-4 text-center shrink-0 ${rankColor}`}>#{idx + 1}</span>
-                      <Link to={`/community/profile/${dev._id}`} className="flex items-center gap-2 min-w-0">
-                        <div className="w-8.5 h-8.5 rounded-xl overflow-hidden bg-[#1e1e24] border border-white/10 shrink-0 flex items-center justify-center">
-                          {dev.avatar?.url ? (
-                            <img src={dev.avatar.url} alt="Profile" className="w-full h-full object-cover" loading="lazy" />
-                          ) : (
-                            <FaUser className="text-slate-500" size={12} />
-                          )}
-                        </div>
-                        <div className="flex flex-col text-left min-w-0">
-                          <span className="text-[11px] font-bold text-white hover:text-purple-400 transition-colors truncate">{dev.fullName}</span>
-                          <span className="text-[9px] text-slate-500 mt-0.5 truncate">{dev.xp || 0} XP</span>
-                        </div>
-                      </Link>
-                    </div>
-                    
-                    <button
-                      onClick={() => handleFollowDeveloper(dev._id)}
-                      className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider border cursor-pointer transition-all shrink-0 ${
-                        isFollowing 
-                          ? 'bg-transparent border-slate-700 text-slate-400' 
-                          : 'bg-purple-600/10 border-purple-500/20 text-purple-400 hover:bg-purple-600 hover:text-white'
-                      }`}
-                    >
-                      {isFollowing ? 'Following' : 'Follow'}
-                    </button>
-                  </div>
-                );
-              })}
-
-              {suggestedDevs.length === 0 && (
-                <div className="text-[10px] text-slate-550 italic text-center py-2">No developer recommendations.</div>
-              )}
-            </div>
-          </div>
-
-          {/* Popular Tags */}
-          <div className="bg-[#121217] border border-white/5 p-4 rounded-3xl flex flex-col gap-3 shadow-sm text-left">
-            <div className="flex items-center justify-between border-b border-white/5 pb-2">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Popular Tags</span>
-            </div>
-            <div className="flex flex-wrap gap-2 pt-1">
-              {['react', 'nodejs', 'webdev', 'ai', 'mongodb', 'javascript', 'tailwind', 'nextjs'].map(tag => (
-                <Link
-                  key={tag}
-                  to={`/community?search=${tag}`}
-                  className="px-2.5 py-1 bg-purple-600/10 border border-purple-500/10 text-purple-400 hover:bg-purple-600 hover:text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition-all"
-                >
-                  #{tag}
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          {/* Announcements */}
-          <div className="bg-[#121217] border border-white/5 p-4 rounded-3xl flex flex-col gap-3 shadow-sm text-left">
-            <div className="flex items-center justify-between border-b border-white/5 pb-2">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Announcements</span>
-            </div>
-            <div className="flex flex-col gap-2.5 pt-1">
-              <div className="p-2.5 bg-[#1c1c24]/50 rounded-xl border border-white/5 text-[10px] leading-relaxed">
-                <span className="text-purple-400 font-bold block mb-0.5">🚀 Hackathon July 2026</span>
-                <span className="text-slate-350">Showcase your AI projects by July 25 to win custom profile badges & reputation XP!</span>
-              </div>
-              <div className="p-2.5 bg-[#1c1c24]/50 rounded-xl border border-white/5 text-[10px] leading-relaxed">
-                <span className="text-purple-400 font-bold block mb-0.5">⚙️ Platform Updates</span>
-                <span className="text-slate-350">Gemini 2.5 real-time memory consultant, voice transcription, and Kanban trackers are now live.</span>
-              </div>
-            </div>
-          </div>
+        <aside className="hidden xl:flex flex-col gap-6 w-[320px] shrink-0 sticky top-[72px] h-[calc(100vh-100px)] overflow-y-auto pl-1 text-left scrollbar-none">
+          {renderRightSidebar(false)}
         </aside>
 
       </div>

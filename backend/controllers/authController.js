@@ -818,6 +818,12 @@ const updateProfile = async (req, res, next) => {
 
     await user.save({ validateBeforeSave: false });
 
+    // Emit real-time user update via Socket.io
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('user_update', { userId: user._id, action: 'update', data: user });
+    }
+
     res.json({
       success: true,
       message: 'Profile updated successfully!',

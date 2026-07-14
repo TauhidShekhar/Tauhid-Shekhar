@@ -182,6 +182,15 @@ const adminUpdateUser = async (req, res, next) => {
       console.error('Failed to log admin action:', auditErr.message);
     }
 
+    // Emit real-time updates via Socket.io
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('user_update', { userId: user._id, action: 'update', data: user });
+      if (status === 'Suspended' || status === 'Banned') {
+        io.emit('force_logout', { userId: user._id, reason: status });
+      }
+    }
+
     res.json({ success: true, message: 'User updated successfully by administrator', data: user });
   } catch (error) {
     next(error);

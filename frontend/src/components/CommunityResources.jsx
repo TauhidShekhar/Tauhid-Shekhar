@@ -85,7 +85,7 @@ const CommunityResources = () => {
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-4xl mx-auto">
+    <div className="flex flex-col gap-6 max-w-4xl w-full mx-auto">
       
       {/* Header bar */}
       <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-white/5 p-5 rounded-3xl shadow-sm text-left">
@@ -95,7 +95,14 @@ const CommunityResources = () => {
         </div>
         {!showCreator && (
           <button
-            onClick={() => setShowCreator(true)}
+            onClick={() => {
+              if (!user) {
+                alert('Please log in to share file resources with the community.');
+                window.location.href = '/login';
+                return;
+              }
+              setShowCreator(true);
+            }}
             className="px-5 py-2.5 bg-primary-blue hover:bg-accent-blue text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer"
           >
             <FaPlus /> Share File
@@ -199,8 +206,8 @@ const CommunityResources = () => {
       )}
 
       {/* Filter and search */}
-      <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-white/5 p-4 rounded-3xl shadow-sm">
-        <div className="relative w-full md:w-80">
+      <div className="flex flex-col lg:flex-row gap-4 justify-between items-center bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-white/5 p-4 rounded-3xl shadow-sm w-full min-w-0">
+        <div className="relative w-full lg:w-80 shrink-0">
           <input
             type="text"
             placeholder="Search resources..."
@@ -212,7 +219,7 @@ const CommunityResources = () => {
           <button onClick={fetchResources} className="absolute top-2.5 right-3 text-slate-400 hover:text-primary-blue text-xs font-bold">Go</button>
         </div>
 
-        <div className="flex gap-2 overflow-x-auto w-full md:w-auto scrollbar-none py-1">
+        <div className="flex gap-2 overflow-x-auto w-full min-w-0 scrollbar-none py-1 justify-start lg:justify-end">
           {categories.map(c => (
             <button
               key={c}

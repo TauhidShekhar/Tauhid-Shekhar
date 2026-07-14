@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { io } from 'socket.io-client';
 import { 
   FaUserShield, FaUserEdit, FaTrash, FaCheck, FaTimes, FaSearch, 
   FaFilter, FaFileCsv, FaKey, FaChevronLeft, FaChevronRight, FaInfoCircle, 
@@ -57,6 +58,30 @@ const UsersManager = () => {
 
   useEffect(() => {
     fetchUsers();
+
+    const rawApiUrl = import.meta.env.VITE_API_URL;
+    const socketUrl = (rawApiUrl && rawApiUrl !== 'undefined' && rawApiUrl !== 'null')
+      ? rawApiUrl.replace('/api', '')
+      : (window.location.port === '5173' || window.location.port === '5174'
+          ? `${window.location.protocol}//${window.location.hostname}:5000`
+          : 'https://tauhid-shekhar-portfolio.onrender.com');
+
+    const socket = io(socketUrl, { withCredentials: true });
+
+    socket.on('content_update', (payload) => {
+      // Refresh user list if a user-related mutation happens
+      if (payload && (payload.path?.includes('/users') || payload.path?.includes('/auth'))) {
+        fetchUsers();
+      }
+    });
+
+    socket.on('user_update', () => {
+      fetchUsers();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   // Filter and Sort Logic
