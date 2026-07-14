@@ -168,6 +168,8 @@ const seedEcosystem = async () => {
           }
         }
         skill.categories = guessed;
+        skill.useCategoryFallback = true;
+        skill.primaryCategory = guessed[0] || 'Frontend';
         await skill.save();
       }
     }

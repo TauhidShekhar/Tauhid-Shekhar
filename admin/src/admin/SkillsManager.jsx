@@ -96,6 +96,38 @@ const getAutoLogoUrl = (skillName) => {
   return '';
 };
 
+const CATEGORY_LOGOS = {
+  'Programming': 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/javascript/javascript-original.svg',
+  'Frontend': 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/html5/html5-original.svg',
+  'Backend': 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nodejs/nodejs-original.svg',
+  'Database': 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/mongodb/mongodb-original.svg',
+  'Tools': 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/git/git-original.svg',
+  'Concepts': 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/redux/redux-original.svg'
+};
+
+const getSkillLogoUrl = (skill) => {
+  if (skill.logoType === 'custom' && skill.logoUrl) {
+    return skill.logoUrl;
+  }
+  const autoUrl = getAutoLogoUrl(skill.name);
+  if (autoUrl) {
+    return autoUrl;
+  }
+  if (skill.useCategoryFallback !== false) {
+    const prim = skill.primaryCategory || (skill.categories && skill.categories[0]) || skill.category || 'Frontend';
+    const norm = prim.charAt(0).toUpperCase() + prim.slice(1).toLowerCase();
+    let matchKey = 'Frontend';
+    if (norm === 'programming') matchKey = 'Programming';
+    else if (norm === 'frontend') matchKey = 'Frontend';
+    else if (norm === 'backend') matchKey = 'Backend';
+    else if (norm === 'database') matchKey = 'Database';
+    else if (norm === 'tools') matchKey = 'Tools';
+    else if (norm === 'concepts') matchKey = 'Concepts';
+    return CATEGORY_LOGOS[matchKey] || CATEGORY_LOGOS['Frontend'];
+  }
+  return '';
+};
+
 const guessRecommendedCategories = (skillName) => {
   const name = skillName.toLowerCase().trim();
   if (name.includes('javascript') || name === 'js' || name.includes('es6')) {
@@ -162,6 +194,8 @@ const SkillsManager = () => {
     logoType: 'auto',
     logoUrl: '',
     isActive: true,
+    useCategoryFallback: true,
+    primaryCategory: 'Frontend',
     displayOrder: 0
   });
 
@@ -241,6 +275,7 @@ const SkillsManager = () => {
         if (suggested && suggested.length > 0) {
           updated.categories = suggested;
           updated.category = suggested[0] || 'Frontend';
+          updated.primaryCategory = suggested[0] || 'Frontend';
         }
       }
       
@@ -262,13 +297,13 @@ const SkillsManager = () => {
         if (res.success) {
           setIsEditing(false);
           setCurrentId(null);
-          setFormData({ name: '', percentage: 80, category: 'Frontend', categories: ['Frontend'], logoType: 'auto', logoUrl: '', isActive: true, displayOrder: 0 });
+          setFormData({ name: '', percentage: 80, category: 'Frontend', categories: ['Frontend'], logoType: 'auto', logoUrl: '', isActive: true, useCategoryFallback: true, primaryCategory: 'Frontend', displayOrder: 0 });
           fetchSkills();
         }
       } else {
         const res = await api.createSkill(formData);
         if (res.success) {
-          setFormData({ name: '', percentage: 80, category: 'Frontend', categories: ['Frontend'], logoType: 'auto', logoUrl: '', isActive: true, displayOrder: 0 });
+          setFormData({ name: '', percentage: 80, category: 'Frontend', categories: ['Frontend'], logoType: 'auto', logoUrl: '', isActive: true, useCategoryFallback: true, primaryCategory: 'Frontend', displayOrder: 0 });
           fetchSkills();
         }
       }
@@ -297,6 +332,8 @@ const SkillsManager = () => {
       logoType: skill.logoType || 'auto',
       logoUrl: skill.logoUrl || '',
       isActive: skill.isActive !== false,
+      useCategoryFallback: skill.useCategoryFallback !== false,
+      primaryCategory: skill.primaryCategory || cats[0] || 'Frontend',
       displayOrder: skill.displayOrder || 0
     });
   };
@@ -533,7 +570,8 @@ const SkillsManager = () => {
                     setFormData(prev => ({
                       ...prev,
                       categories: isAllSelected ? [] : allCatIds,
-                      category: isAllSelected ? '' : allCatIds[0] || ''
+                      category: isAllSelected ? '' : allCatIds[0] || '',
+                      primaryCategory: isAllSelected ? '' : (prev.primaryCategory || allCatIds[0])
                     }));
                   }}
                   className="text-[10px] font-black uppercase text-primary-blue hover:underline cursor-pointer"
@@ -557,10 +595,17 @@ const SkillsManager = () => {
                             } else {
                               nextCats.push(cat.id);
                             }
+                            let nextPrimary = prev.primaryCategory;
+                            if (isChecked && prev.primaryCategory === cat.id) {
+                              nextPrimary = nextCats[0] || '';
+                            } else if (!isChecked && !prev.primaryCategory) {
+                              nextPrimary = cat.id;
+                            }
                             return {
                               ...prev,
                               categories: nextCats,
-                              category: nextCats[0] || ''
+                              category: nextCats[0] || '',
+                              primaryCategory: nextPrimary
                             };
                           });
                         }}
@@ -574,6 +619,40 @@ const SkillsManager = () => {
               {formData.categories.length === 0 && (
                 <p className="text-[10px] text-red-500 font-bold">Please select at least one category</p>
               )}
+            </div>
+
+            {/* Fallback Option & Primary Category Selector */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Fallback Option</label>
+                <label className="flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={formData.useCategoryFallback !== false}
+                    onChange={(e) => setFormData(prev => ({ ...prev, useCategoryFallback: e.target.checked }))}
+                    className="rounded border-slate-300 text-primary-blue focus:ring-primary-blue cursor-pointer"
+                  />
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-350">Use Category Logo as Fallback</span>
+                </label>
+              </div>
+              <div className="flex flex-col gap-2">
+                <label htmlFor="primaryCategory" className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Primary Category</label>
+                <select
+                  id="primaryCategory"
+                  name="primaryCategory"
+                  value={formData.primaryCategory}
+                  onChange={handleInputChange}
+                  disabled={formData.categories.length === 0}
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-primary-blue dark:focus:border-primary-blue text-sm transition-colors cursor-pointer disabled:opacity-55"
+                >
+                  {formData.categories.map(catId => (
+                    <option key={catId} value={catId}>{catId}</option>
+                  ))}
+                  {formData.categories.length === 0 && (
+                    <option value="">No categories selected</option>
+                  )}
+                </select>
+              </div>
             </div>
 
             {/* Logo Type */}
@@ -623,6 +702,47 @@ const SkillsManager = () => {
                 </div>
               </div>
             )}
+
+            {/* Logo Preview Panel */}
+            <div className="flex flex-col gap-2 p-3 bg-slate-100/50 dark:bg-white/5 rounded-xl border border-slate-250/50 dark:border-white/5">
+              <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Logo Preview</label>
+              <div className="flex items-center gap-4">
+                <div className="relative w-12 h-12 flex items-center justify-center bg-slate-100 dark:bg-slate-950 rounded-xl overflow-hidden border border-slate-200 dark:border-white/5 shrink-0">
+                  {(() => {
+                    const previewSrc = getSkillLogoUrl(formData);
+                    return previewSrc ? (
+                      <img 
+                        src={previewSrc} 
+                        alt="Preview" 
+                        className="w-8 h-8 object-contain" 
+                        onError={(e) => {
+                          const primaryCat = formData.primaryCategory || formData.categories[0] || 'Frontend';
+                          const fallbackLogo = CATEGORY_LOGOS[primaryCat] || CATEGORY_LOGOS['Frontend'];
+                          if (formData.useCategoryFallback !== false && e.target.src !== fallbackLogo) {
+                            e.target.src = fallbackLogo;
+                          } else {
+                            e.target.style.display = 'none';
+                          }
+                        }}
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/10 to-indigo-500/10 text-purple-400 border border-purple-500/10 flex items-center justify-center font-extrabold text-sm select-none">
+                        {formData.name ? formData.name.charAt(0).toUpperCase() : 'S'}
+                      </div>
+                    );
+                  })()}
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-800 dark:text-white leading-tight">
+                    {formData.name || 'Unnamed Skill'}
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">
+                    {formData.logoType === 'custom' ? 'Custom Upload Logo' : 'Automatic API Logo'} 
+                    {formData.useCategoryFallback !== false && ' (Category Fallback Enabled)'}
+                  </p>
+                </div>
+              </div>
+            </div>
 
             {/* Active Visibility Checkbox */}
             <div className="flex items-center gap-2">
@@ -835,7 +955,7 @@ const SkillsManager = () => {
                           <div className="flex items-center gap-2.5">
                             <div className="relative w-8 h-8 flex items-center justify-center shrink-0 bg-slate-100 dark:bg-slate-950 rounded-lg overflow-hidden border border-slate-200 dark:border-white/5">
                               {(() => {
-                                const logoSrc = skill.logoType === 'custom' && skill.logoUrl ? skill.logoUrl : getAutoLogoUrl(skill.name);
+                                const logoSrc = getSkillLogoUrl(skill);
                                 return logoSrc ? (
                                   <img 
                                     src={logoSrc} 
@@ -843,7 +963,13 @@ const SkillsManager = () => {
                                     className="w-5 h-5 object-contain select-none absolute z-10" 
                                     loading="lazy"
                                     onError={(e) => {
-                                      e.target.style.display = 'none';
+                                      const primaryCat = skill.primaryCategory || (skill.categories && skill.categories[0]) || skill.category || 'Frontend';
+                                      const fallbackLogo = CATEGORY_LOGOS[primaryCat] || CATEGORY_LOGOS['Frontend'];
+                                      if (skill.useCategoryFallback !== false && e.target.src !== fallbackLogo) {
+                                        e.target.src = fallbackLogo;
+                                      } else {
+                                        e.target.style.display = 'none';
+                                      }
                                     }}
                                   />
                                 ) : null;

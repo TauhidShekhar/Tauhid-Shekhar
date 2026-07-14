@@ -98,6 +98,38 @@ const getAutoLogoUrl = (skillName) => {
   return '';
 };
 
+const CATEGORY_LOGOS = {
+  'Programming': 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/javascript/javascript-original.svg',
+  'Frontend': 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/html5/html5-original.svg',
+  'Backend': 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nodejs/nodejs-original.svg',
+  'Database': 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/mongodb/mongodb-original.svg',
+  'Tools': 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/git/git-original.svg',
+  'Concepts': 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/redux/redux-original.svg'
+};
+
+const getSkillLogoUrl = (skill) => {
+  if (skill.logoType === 'custom' && skill.logoUrl) {
+    return skill.logoUrl;
+  }
+  const autoUrl = getAutoLogoUrl(skill.name);
+  if (autoUrl) {
+    return autoUrl;
+  }
+  if (skill.useCategoryFallback !== false) {
+    const prim = skill.primaryCategory || (skill.categories && skill.categories[0]) || skill.category || 'Frontend';
+    const norm = prim.charAt(0).toUpperCase() + prim.slice(1).toLowerCase();
+    let matchKey = 'Frontend';
+    if (norm === 'programming') matchKey = 'Programming';
+    else if (norm === 'frontend') matchKey = 'Frontend';
+    else if (norm === 'backend') matchKey = 'Backend';
+    else if (norm === 'database') matchKey = 'Database';
+    else if (norm === 'tools') matchKey = 'Tools';
+    else if (norm === 'concepts') matchKey = 'Concepts';
+    return CATEGORY_LOGOS[matchKey] || CATEGORY_LOGOS['Frontend'];
+  }
+  return '';
+};
+
 const defaultSkills = [
   { name: 'C / C++', percentage: 80, category: 'Programming' },
   { name: 'Python', percentage: 75, category: 'Programming' },
@@ -242,7 +274,7 @@ const Skills = ({ skillsData }) => {
         >
           <AnimatePresence mode="popLayout">
             {filteredSkills.map((skill) => {
-              const logoSrc = skill.logoType === 'custom' && skill.logoUrl ? skill.logoUrl : getAutoLogoUrl(skill.name);
+              const logoSrc = getSkillLogoUrl(skill);
               const cats = getSkillCategories(skill);
               return (
                 <motion.div
@@ -268,7 +300,13 @@ const Skills = ({ skillsData }) => {
                             className="w-8 h-8 object-contain select-none absolute z-10" 
                             loading="lazy"
                             onError={(e) => {
-                              e.target.style.display = 'none';
+                              const primaryCat = skill.primaryCategory || cats[0] || 'Frontend';
+                              const fallbackLogo = CATEGORY_LOGOS[primaryCat] || CATEGORY_LOGOS['Frontend'];
+                              if (skill.useCategoryFallback !== false && e.target.src !== fallbackLogo) {
+                                e.target.src = fallbackLogo;
+                              } else {
+                                e.target.style.display = 'none';
+                              }
                             }}
                           />
                         )}

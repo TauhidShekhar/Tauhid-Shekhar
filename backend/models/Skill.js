@@ -35,6 +35,14 @@ const skillSchema = new mongoose.Schema(
       type: Boolean,
       default: true
     },
+    useCategoryFallback: {
+      type: Boolean,
+      default: true
+    },
+    primaryCategory: {
+      type: String,
+      default: ''
+    },
     iconName: {
       type: String,
       default: '' // react-icons name for dynamic lookup (e.g. 'SiReact')
@@ -65,6 +73,11 @@ skillSchema.pre('save', function(next) {
       if (c === 'concepts') return 'Concepts';
       return cat.charAt(0).toUpperCase() + cat.slice(1);
     });
+    
+    // Set primaryCategory if empty
+    if (!this.primaryCategory) {
+      this.primaryCategory = this.categories[0] || 'Frontend';
+    }
   }
   next();
 });
