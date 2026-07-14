@@ -455,7 +455,7 @@ const HeroManager = () => {
           <div className="glass p-6 rounded-2xl border border-slate-200/60 dark:border-white/5 shadow-sm">
             <h3 className="text-base font-bold font-title text-black dark:text-white mb-4">Text Parameters</h3>
             <div className="flex flex-col gap-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1">
                   <label className="text-[10px] font-bold text-slate-450 uppercase">Name (Branding)</label>
                   <input type="text" name="siteName" value={formData.siteName} onChange={handleInputChange} className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-sm font-semibold focus:outline-none focus:border-primary-blue" />
@@ -479,7 +479,7 @@ const HeroManager = () => {
           {/* CTA Buttons Display */}
           <div className="glass p-6 rounded-2xl border border-slate-200/60 dark:border-white/5 shadow-sm">
             <h3 className="text-base font-bold font-title text-black dark:text-white mb-3">CTA Buttons Visibility</h3>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <label className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-200/40 dark:border-white/5 cursor-pointer">
                 <input type="checkbox" name="showHireMe" checked={formData.showHireMe} onChange={handleInputChange} className="rounded border-slate-300 text-primary-blue focus:ring-primary-blue cursor-pointer" />
                 <span className="text-xs font-bold text-slate-700 dark:text-slate-350">Hire Me</span>

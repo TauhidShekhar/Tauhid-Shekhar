@@ -116,6 +116,164 @@ const AdminLayout = () => {
   const activeLinkClass = "flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold bg-primary-blue text-white shadow-md shadow-primary-blue/15 transition-all text-left";
   const inactiveLinkClass = "flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-550 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-black dark:hover:text-white transition-all text-left";
 
+  const renderNavigation = (isMobile = false) => {
+    const handleLinkClick = () => {
+      if (isMobile) setSidebarOpen(false);
+    };
+
+    return (
+      <nav className="flex-1 p-3 flex flex-col gap-1 text-left overflow-y-auto">
+        {/* Main */}
+        <Link to="/admin/dashboard" onClick={handleLinkClick} className={isActive('/admin/dashboard') ? activeLinkClass : inactiveLinkClass}>
+          <FaTachometerAlt size={14} /> Dashboard
+        </Link>
+
+        {/* Section: Content */}
+        <div className="mt-4">
+          <button 
+            onClick={() => toggleSection('content')}
+            className="w-full flex items-center justify-between px-3 py-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest cursor-pointer hover:text-slate-600 dark:hover:text-slate-350"
+          >
+            Content Management {sections.content ? <FaChevronUp size={8} /> : <FaChevronDown size={8} />}
+          </button>
+          {sections.content && (
+            <div className="flex flex-col gap-0.5 mt-1.5 pl-1.5">
+              <Link to="/admin/dashboard/hero" onClick={handleLinkClick} className={isActive('/admin/dashboard/hero') ? activeLinkClass : inactiveLinkClass}>
+                <FaHome size={12} /> Home
+              </Link>
+              <Link to="/admin/dashboard/about" onClick={handleLinkClick} className={isActive('/admin/dashboard/about') ? activeLinkClass : inactiveLinkClass}>
+                <FaUserCircle size={12} /> About
+              </Link>
+              <Link to="/admin/dashboard/skills" onClick={handleLinkClick} className={isActive('/admin/dashboard/skills') ? activeLinkClass : inactiveLinkClass}>
+                <FaCode size={12} /> Skills
+              </Link>
+              <Link to="/admin/dashboard/projects" onClick={handleLinkClick} className={isActive('/admin/dashboard/projects') ? activeLinkClass : inactiveLinkClass}>
+                <FaBriefcase size={12} /> Projects
+              </Link>
+              <Link to="/admin/dashboard/services" onClick={handleLinkClick} className={isActive('/admin/dashboard/services') ? activeLinkClass : inactiveLinkClass}>
+                <FaLaptopCode size={12} /> Services
+              </Link>
+              <Link to="/admin/dashboard/experience" onClick={handleLinkClick} className={isActive('/admin/dashboard/experience') ? activeLinkClass : inactiveLinkClass}>
+                <FaHistory size={12} /> Experience
+              </Link>
+              <Link to="/admin/dashboard/education" onClick={handleLinkClick} className={isActive('/admin/dashboard/education') ? activeLinkClass : inactiveLinkClass}>
+                <FaAward size={12} /> Education
+              </Link>
+              <Link to="/admin/dashboard/certificates" onClick={handleLinkClick} className={isActive('/admin/dashboard/certificates') ? activeLinkClass : inactiveLinkClass}>
+                <FaCertificate size={12} /> Certifications
+              </Link>
+              <Link to="/admin/dashboard/achievements" onClick={handleLinkClick} className={isActive('/admin/dashboard/achievements') ? activeLinkClass : inactiveLinkClass}>
+                <FaAward size={12} /> Achievements
+              </Link>
+              <Link to="/admin/dashboard/resume" onClick={handleLinkClick} className={isActive('/admin/dashboard/resume') ? activeLinkClass : inactiveLinkClass}>
+                <FaFileAlt size={12} /> Resume
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* Section: Engagement */}
+        <div className="mt-4">
+          <button 
+            onClick={() => toggleSection('engagement')}
+            className="w-full flex items-center justify-between px-3 py-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest cursor-pointer hover:text-slate-600 dark:hover:text-slate-350"
+          >
+            Engagement {sections.engagement ? <FaChevronUp size={8} /> : <FaChevronDown size={8} />}
+          </button>
+          {sections.engagement && (
+            <div className="flex flex-col gap-0.5 mt-1.5 pl-1.5">
+              <Link to="/admin/dashboard/blogs" onClick={handleLinkClick} className={isActive('/admin/dashboard/blogs') ? activeLinkClass : inactiveLinkClass}>
+                <FaBook size={12} /> Blog Posts
+              </Link>
+              <Link to="/admin/dashboard/testimonials" onClick={handleLinkClick} className={isActive('/admin/dashboard/testimonials') ? activeLinkClass : inactiveLinkClass}>
+                <FaQuoteLeft size={12} /> Testimonials
+              </Link>
+              <Link to="/admin/dashboard/gallery" onClick={handleLinkClick} className={isActive('/admin/dashboard/gallery') ? activeLinkClass : inactiveLinkClass}>
+                <FaImages size={12} /> Media Gallery
+              </Link>
+              <Link to="/admin/dashboard/messages" onClick={handleLinkClick} className={isActive('/admin/dashboard/messages') ? activeLinkClass : inactiveLinkClass}>
+                <FaEnvelope size={12} /> 
+                <span className="flex items-center justify-between w-full">
+                  Contact Messages
+                  {unreadCount > 0 && (
+                    <span className="px-1.5 py-0.5 text-[9px] font-black bg-red-500 text-white rounded-full leading-none">{unreadCount}</span>
+                  )}
+                </span>
+              </Link>
+              <Link to="/admin/dashboard/orders" onClick={handleLinkClick} className={isActive('/admin/dashboard/orders') ? activeLinkClass : inactiveLinkClass}>
+                <FaShoppingBag size={12} /> Service Orders
+              </Link>
+              <Link to="/admin/dashboard/community" onClick={handleLinkClick} className={isActive('/admin/dashboard/community') ? activeLinkClass : inactiveLinkClass}>
+                <FaUsers size={12} /> Community CMS
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* Section: Management */}
+        <div className="mt-4">
+          <button 
+            onClick={() => toggleSection('management')}
+            className="w-full flex items-center justify-between px-3 py-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest cursor-pointer hover:text-slate-600 dark:hover:text-slate-350"
+          >
+            System Management {sections.management ? <FaChevronUp size={8} /> : <FaChevronDown size={8} />}
+          </button>
+          {sections.management && (
+            <div className="flex flex-col gap-0.5 mt-1.5 pl-1.5">
+              <Link to="/admin/dashboard/media" onClick={handleLinkClick} className={isActive('/admin/dashboard/media') ? activeLinkClass : inactiveLinkClass}>
+                <FaImages size={12} /> Media Library
+              </Link>
+              <Link to="/admin/dashboard/users" onClick={handleLinkClick} className={isActive('/admin/dashboard/users') ? activeLinkClass : inactiveLinkClass}>
+                <FaUserCog size={12} /> Users Directory
+              </Link>
+              <Link to="/admin/dashboard/audit-logs" onClick={handleLinkClick} className={isActive('/admin/dashboard/audit-logs') ? activeLinkClass : inactiveLinkClass}>
+                <FaHistory size={12} /> System Audit Logs
+              </Link>
+              <Link to="/admin/dashboard/features" onClick={handleLinkClick} className={isActive('/admin/dashboard/features') ? activeLinkClass : inactiveLinkClass}>
+                <FaRocket size={12} /> Feature Management
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* Section: Config */}
+        <div className="mt-4">
+          <button 
+            onClick={() => toggleSection('config')}
+            className="w-full flex items-center justify-between px-3 py-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest cursor-pointer hover:text-slate-600 dark:hover:text-slate-350"
+          >
+            Configurations {sections.config ? <FaChevronUp size={8} /> : <FaChevronDown size={8} />}
+          </button>
+          {sections.config && (
+            <div className="flex flex-col gap-0.5 mt-1.5 pl-1.5">
+              <Link to="/admin/dashboard/settings" onClick={handleLinkClick} className={isActive('/admin/dashboard/settings') ? activeLinkClass : inactiveLinkClass}>
+                <FaCog size={12} /> Site Settings
+              </Link>
+              <Link to="/admin/dashboard/seo" onClick={handleLinkClick} className={isActive('/admin/dashboard/seo') ? activeLinkClass : inactiveLinkClass}>
+                <FaGlobe size={12} /> SEO & Tags
+              </Link>
+              <Link to="/admin/dashboard/theme" onClick={handleLinkClick} className={isActive('/admin/dashboard/theme') ? activeLinkClass : inactiveLinkClass}>
+                <FaCog size={12} /> Theme Settings
+              </Link>
+              <Link to="/admin/dashboard/analytics" onClick={handleLinkClick} className={isActive('/admin/dashboard/analytics') ? activeLinkClass : inactiveLinkClass}>
+                <FaChartLine size={12} /> Analytics Dashboard
+              </Link>
+              <Link to="/admin/dashboard/performance" onClick={handleLinkClick} className={isActive('/admin/dashboard/performance') ? activeLinkClass : inactiveLinkClass}>
+                <FaRocket size={12} /> System Performance
+              </Link>
+              <Link to="/admin/dashboard/backup" onClick={handleLinkClick} className={isActive('/admin/dashboard/backup') ? activeLinkClass : inactiveLinkClass}>
+                <FaDatabase size={12} /> Backup & Restore
+              </Link>
+              <Link to="/admin/dashboard/security" onClick={handleLinkClick} className={isActive('/admin/dashboard/security') ? activeLinkClass : inactiveLinkClass}>
+                <FaShieldAlt size={12} /> Account Security
+              </Link>
+            </div>
+          )}
+        </div>
+      </nav>
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-black flex items-center justify-center">
@@ -125,7 +283,7 @@ const AdminLayout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-800 dark:text-slate-100 flex">
+    <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-800 dark:text-slate-100 flex font-sans">
       {/* Sidebar (Desktop) */}
       <aside className="hidden lg:flex flex-col w-64 bg-white dark:bg-slate-900 border-r border-slate-200/60 dark:border-white/5 h-screen sticky top-0 overflow-y-auto">
         <div className="p-5 border-b border-slate-200/60 dark:border-white/5 flex items-center justify-between">
@@ -146,155 +304,7 @@ const AdminLayout = () => {
           </div>
         </div>
 
-        <nav className="flex-1 p-3 flex flex-col gap-1 text-left">
-          {/* Main */}
-          <Link to="/admin/dashboard" className={isActive('/admin/dashboard') ? activeLinkClass : inactiveLinkClass}>
-            <FaTachometerAlt size={14} /> Dashboard
-          </Link>
-
-          {/* Section: Content */}
-          <div className="mt-4">
-            <button 
-              onClick={() => toggleSection('content')}
-              className="w-full flex items-center justify-between px-3 py-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest cursor-pointer hover:text-slate-600 dark:hover:text-slate-350"
-            >
-              Content Management {sections.content ? <FaChevronUp size={8} /> : <FaChevronDown size={8} />}
-            </button>
-            {sections.content && (
-              <div className="flex flex-col gap-0.5 mt-1.5 pl-1.5">
-                <Link to="/admin/dashboard/hero" className={isActive('/admin/dashboard/hero') ? activeLinkClass : inactiveLinkClass}>
-                  <FaHome size={12} /> Home
-                </Link>
-                <Link to="/admin/dashboard/about" className={isActive('/admin/dashboard/about') ? activeLinkClass : inactiveLinkClass}>
-                  <FaUserCircle size={12} /> About
-                </Link>
-                <Link to="/admin/dashboard/skills" className={isActive('/admin/dashboard/skills') ? activeLinkClass : inactiveLinkClass}>
-                  <FaCode size={12} /> Skills
-                </Link>
-                <Link to="/admin/dashboard/projects" className={isActive('/admin/dashboard/projects') ? activeLinkClass : inactiveLinkClass}>
-                  <FaBriefcase size={12} /> Projects
-                </Link>
-                <Link to="/admin/dashboard/services" className={isActive('/admin/dashboard/services') ? activeLinkClass : inactiveLinkClass}>
-                  <FaLaptopCode size={12} /> Services
-                </Link>
-                <Link to="/admin/dashboard/experience" className={isActive('/admin/dashboard/experience') ? activeLinkClass : inactiveLinkClass}>
-                  <FaHistory size={12} /> Experience
-                </Link>
-                <Link to="/admin/dashboard/education" className={isActive('/admin/dashboard/education') ? activeLinkClass : inactiveLinkClass}>
-                  <FaAward size={12} /> Education
-                </Link>
-                <Link to="/admin/dashboard/certificates" className={isActive('/admin/dashboard/certificates') ? activeLinkClass : inactiveLinkClass}>
-                  <FaCertificate size={12} /> Certifications
-                </Link>
-                <Link to="/admin/dashboard/achievements" className={isActive('/admin/dashboard/achievements') ? activeLinkClass : inactiveLinkClass}>
-                  <FaAward size={12} /> Achievements
-                </Link>
-                <Link to="/admin/dashboard/resume" className={isActive('/admin/dashboard/resume') ? activeLinkClass : inactiveLinkClass}>
-                  <FaFileAlt size={12} /> Resume
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* Section: Engagement */}
-          <div className="mt-4">
-            <button 
-              onClick={() => toggleSection('engagement')}
-              className="w-full flex items-center justify-between px-3 py-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest cursor-pointer hover:text-slate-600 dark:hover:text-slate-350"
-            >
-              Engagement {sections.engagement ? <FaChevronUp size={8} /> : <FaChevronDown size={8} />}
-            </button>
-            {sections.engagement && (
-              <div className="flex flex-col gap-0.5 mt-1.5 pl-1.5">
-                <Link to="/admin/dashboard/blogs" className={isActive('/admin/dashboard/blogs') ? activeLinkClass : inactiveLinkClass}>
-                  <FaBook size={12} /> Blog Posts
-                </Link>
-                <Link to="/admin/dashboard/testimonials" className={isActive('/admin/dashboard/testimonials') ? activeLinkClass : inactiveLinkClass}>
-                  <FaQuoteLeft size={12} /> Testimonials
-                </Link>
-                <Link to="/admin/dashboard/gallery" className={isActive('/admin/dashboard/gallery') ? activeLinkClass : inactiveLinkClass}>
-                  <FaImages size={12} /> Media Gallery
-                </Link>
-                <Link to="/admin/dashboard/messages" className={isActive('/admin/dashboard/messages') ? activeLinkClass : inactiveLinkClass}>
-                  <FaEnvelope size={12} /> 
-                  <span className="flex items-center justify-between w-full">
-                    Contact Messages
-                    {unreadCount > 0 && (
-                      <span className="px-1.5 py-0.5 text-[9px] font-black bg-red-500 text-white rounded-full leading-none">{unreadCount}</span>
-                    )}
-                  </span>
-                </Link>
-                <Link to="/admin/dashboard/orders" className={isActive('/admin/dashboard/orders') ? activeLinkClass : inactiveLinkClass}>
-                  <FaShoppingBag size={12} /> Service Orders
-                </Link>
-                <Link to="/admin/dashboard/community" className={isActive('/admin/dashboard/community') ? activeLinkClass : inactiveLinkClass}>
-                  <FaUsers size={12} /> Community CMS
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* Section: Management */}
-          <div className="mt-4">
-            <button 
-              onClick={() => toggleSection('management')}
-              className="w-full flex items-center justify-between px-3 py-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest cursor-pointer hover:text-slate-600 dark:hover:text-slate-350"
-            >
-              System Management {sections.management ? <FaChevronUp size={8} /> : <FaChevronDown size={8} />}
-            </button>
-            {sections.management && (
-              <div className="flex flex-col gap-0.5 mt-1.5 pl-1.5">
-                <Link to="/admin/dashboard/media" className={isActive('/admin/dashboard/media') ? activeLinkClass : inactiveLinkClass}>
-                  <FaImages size={12} /> Media Library
-                </Link>
-                <Link to="/admin/dashboard/users" className={isActive('/admin/dashboard/users') ? activeLinkClass : inactiveLinkClass}>
-                  <FaUserCog size={12} /> Users Directory
-                </Link>
-                <Link to="/admin/dashboard/audit-logs" className={isActive('/admin/dashboard/audit-logs') ? activeLinkClass : inactiveLinkClass}>
-                  <FaHistory size={12} /> System Audit Logs
-                </Link>
-                <Link to="/admin/dashboard/features" className={isActive('/admin/dashboard/features') ? activeLinkClass : inactiveLinkClass}>
-                  <FaRocket size={12} /> Feature Management
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* Section: Config */}
-          <div className="mt-4">
-            <button 
-              onClick={() => toggleSection('config')}
-              className="w-full flex items-center justify-between px-3 py-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest cursor-pointer hover:text-slate-600 dark:hover:text-slate-350"
-            >
-              Configurations {sections.config ? <FaChevronUp size={8} /> : <FaChevronDown size={8} />}
-            </button>
-            {sections.config && (
-              <div className="flex flex-col gap-0.5 mt-1.5 pl-1.5">
-                <Link to="/admin/dashboard/settings" className={isActive('/admin/dashboard/settings') ? activeLinkClass : inactiveLinkClass}>
-                  <FaCog size={12} /> Site Settings
-                </Link>
-                <Link to="/admin/dashboard/seo" className={isActive('/admin/dashboard/seo') ? activeLinkClass : inactiveLinkClass}>
-                  <FaGlobe size={12} /> SEO & Tags
-                </Link>
-                <Link to="/admin/dashboard/theme" className={isActive('/admin/dashboard/theme') ? activeLinkClass : inactiveLinkClass}>
-                  <FaCog size={12} /> Theme Settings
-                </Link>
-                <Link to="/admin/dashboard/analytics" className={isActive('/admin/dashboard/analytics') ? activeLinkClass : inactiveLinkClass}>
-                  <FaChartLine size={12} /> Analytics Dashboard
-                </Link>
-                <Link to="/admin/dashboard/performance" className={isActive('/admin/dashboard/performance') ? activeLinkClass : inactiveLinkClass}>
-                  <FaRocket size={12} /> System Performance
-                </Link>
-                <Link to="/admin/dashboard/backup" className={isActive('/admin/dashboard/backup') ? activeLinkClass : inactiveLinkClass}>
-                  <FaDatabase size={12} /> Backup & Restore
-                </Link>
-                <Link to="/admin/dashboard/security" className={isActive('/admin/dashboard/security') ? activeLinkClass : inactiveLinkClass}>
-                  <FaShieldAlt size={12} /> Account Security
-                </Link>
-              </div>
-            )}
-          </div>
-        </nav>
+        {renderNavigation(false)}
 
         <div className="p-4 border-t border-slate-200/60 dark:border-white/5 flex flex-col gap-2">
           <a
@@ -334,7 +344,7 @@ const AdminLayout = () => {
       >
         <div className="p-5 border-b border-slate-200/60 dark:border-white/5 flex items-center justify-between">
           <span className="text-sm font-black font-title tracking-wider text-black dark:text-white uppercase">Portfolio CMS</span>
-          <button onClick={() => setSidebarOpen(false)} className="text-xl text-black dark:text-white cursor-pointer">
+          <button onClick={() => setSidebarOpen(false)} className="text-xl text-slate-700 dark:text-slate-300 cursor-pointer p-1">
             <FaTimes />
           </button>
         </div>
@@ -352,66 +362,7 @@ const AdminLayout = () => {
           </div>
         </div>
 
-        <nav className="flex-1 p-3 flex flex-col gap-1 text-left">
-          {/* Main */}
-          <Link to="/admin/dashboard" onClick={() => setSidebarOpen(false)} className={isActive('/admin/dashboard') ? activeLinkClass : inactiveLinkClass}>
-            <FaTachometerAlt size={14} /> Dashboard
-          </Link>
-
-          {/* Links can just be rendered flattened for easy mobile tap access */}
-          <div className="mt-4">
-            <span className="px-3 py-1 text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-widest">
-              CMS Operations
-            </span>
-            <div className="flex flex-col gap-0.5 mt-1.5 pl-1.5">
-              <Link to="/admin/dashboard/hero" onClick={() => setSidebarOpen(false)} className={isActive('/admin/dashboard/hero') ? activeLinkClass : inactiveLinkClass}>
-                <FaHome size={12} /> Home
-              </Link>
-              <Link to="/admin/dashboard/about" onClick={() => setSidebarOpen(false)} className={isActive('/admin/dashboard/about') ? activeLinkClass : inactiveLinkClass}>
-                <FaUserCircle size={12} /> About
-              </Link>
-              <Link to="/admin/dashboard/skills" onClick={() => setSidebarOpen(false)} className={isActive('/admin/dashboard/skills') ? activeLinkClass : inactiveLinkClass}>
-                <FaCode size={12} /> Skills
-              </Link>
-              <Link to="/admin/dashboard/projects" onClick={() => setSidebarOpen(false)} className={isActive('/admin/dashboard/projects') ? activeLinkClass : inactiveLinkClass}>
-                <FaBriefcase size={12} /> Projects
-              </Link>
-              <Link to="/admin/dashboard/services" onClick={() => setSidebarOpen(false)} className={isActive('/admin/dashboard/services') ? activeLinkClass : inactiveLinkClass}>
-                <FaLaptopCode size={12} /> Services
-              </Link>
-              <Link to="/admin/dashboard/experience" onClick={() => setSidebarOpen(false)} className={isActive('/admin/dashboard/experience') ? activeLinkClass : inactiveLinkClass}>
-                <FaHistory size={12} /> Experience
-              </Link>
-              <Link to="/admin/dashboard/education" onClick={() => setSidebarOpen(false)} className={isActive('/admin/dashboard/education') ? activeLinkClass : inactiveLinkClass}>
-                <FaAward size={12} /> Education
-              </Link>
-              <Link to="/admin/dashboard/certificates" onClick={() => setSidebarOpen(false)} className={isActive('/admin/dashboard/certificates') ? activeLinkClass : inactiveLinkClass}>
-                <FaCertificate size={12} /> Certifications
-              </Link>
-              <Link to="/admin/dashboard/achievements" onClick={() => setSidebarOpen(false)} className={isActive('/admin/dashboard/achievements') ? activeLinkClass : inactiveLinkClass}>
-                <FaAward size={12} /> Achievements
-              </Link>
-              <Link to="/admin/dashboard/resume" onClick={() => setSidebarOpen(false)} className={isActive('/admin/dashboard/resume') ? activeLinkClass : inactiveLinkClass}>
-                <FaFileAlt size={12} /> Resume
-              </Link>
-              <Link to="/admin/dashboard/messages" onClick={() => setSidebarOpen(false)} className={isActive('/admin/dashboard/messages') ? activeLinkClass : inactiveLinkClass}>
-                <FaEnvelope size={12} /> Contact ({unreadCount})
-              </Link>
-              <Link to="/admin/dashboard/orders" onClick={() => setSidebarOpen(false)} className={isActive('/admin/dashboard/orders') ? activeLinkClass : inactiveLinkClass}>
-                <FaShoppingBag size={12} /> Service Orders
-              </Link>
-              <Link to="/admin/dashboard/community" onClick={() => setSidebarOpen(false)} className={isActive('/admin/dashboard/community') ? activeLinkClass : inactiveLinkClass}>
-                <FaUsers size={12} /> Community Moderation
-              </Link>
-              <Link to="/admin/dashboard/features" onClick={() => setSidebarOpen(false)} className={isActive('/admin/dashboard/features') ? activeLinkClass : inactiveLinkClass}>
-                <FaRocket size={12} /> Feature Management
-              </Link>
-              <Link to="/admin/dashboard/settings" onClick={() => setSidebarOpen(false)} className={isActive('/admin/dashboard/settings') ? activeLinkClass : inactiveLinkClass}>
-                <FaCog size={12} /> Settings
-              </Link>
-            </div>
-          </div>
-        </nav>
+        {renderNavigation(true)}
 
         <div className="p-4 border-t border-slate-200/60 dark:border-white/5 flex flex-col gap-2">
           <a
@@ -430,7 +381,7 @@ const AdminLayout = () => {
           </a>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-red-500 hover:bg-red-500/10 transition-colors w-full cursor-pointer text-left"
+            className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-red-500 hover:bg-red-500/10 transition-colors w-full cursor-pointer text-left animate-pulse"
           >
             <FaSignOutAlt /> Sign Out
           </button>
@@ -440,11 +391,11 @@ const AdminLayout = () => {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header Bar */}
-        <header className="sticky top-0 bg-white dark:bg-slate-900 border-b border-slate-200/60 dark:border-white/5 h-16 flex items-center justify-between px-6 z-50">
-          <div className="flex items-center gap-4">
+        <header className="sticky top-0 bg-white dark:bg-slate-900 border-b border-slate-200/60 dark:border-white/5 h-16 flex items-center justify-between px-4 sm:px-6 z-50">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="text-xl text-slate-700 dark:text-slate-350 lg:hidden cursor-pointer"
+              className="text-xl text-slate-700 dark:text-slate-350 lg:hidden cursor-pointer p-1"
             >
               <FaBars />
             </button>
@@ -452,13 +403,13 @@ const AdminLayout = () => {
             {/* Back to Website Button */}
             <a
               href={clientUrl}
-              className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-white/5"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 rounded-xl text-[10px] sm:text-xs font-bold transition-all border border-slate-200 dark:border-white/5"
             >
-              <span>&larr; Back to Website</span>
+              <span>&larr; <span className="hidden sm:inline">Back to Website</span></span>
             </a>
 
             {/* Breadcrumbs */}
-            <div className="hidden sm:block">
+            <div className="hidden md:block">
               {getBreadcrumbs()}
             </div>
           </div>
@@ -468,14 +419,14 @@ const AdminLayout = () => {
               Welcome back, <span className="text-black dark:text-white font-black">{user?.fullName || 'Admin'}</span>
             </div>
             
-            <div className="text-[10px] font-extrabold px-3 py-1.5 rounded-lg bg-green-500/10 text-green-500 border border-green-500/25">
+            <div className="hidden sm:block text-[10px] font-extrabold px-3 py-1.5 rounded-lg bg-green-500/10 text-green-500 border border-green-500/25">
               SYSTEM ONLINE
             </div>
           </div>
         </header>
 
         {/* Dynamic Route Container */}
-        <main className="flex-1 p-6 md:p-8 overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">
           <Outlet />
         </main>
       </div>

@@ -141,7 +141,7 @@ const GalleryManager = () => {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold text-slate-550 dark:text-slate-400 uppercase tracking-wider">Category</label>
                 <input
@@ -201,7 +201,7 @@ const GalleryManager = () => {
               No gallery images uploaded yet.
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 gap-4">
               {gallery.map((item) => (
                 <div key={item._id} className="group relative aspect-square rounded-xl overflow-hidden border border-slate-250 dark:border-white/5 shadow-sm">
                   <img src={item.image.url} alt={item.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />

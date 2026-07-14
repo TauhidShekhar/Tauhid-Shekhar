@@ -180,7 +180,7 @@ const FeatureManagement = () => {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">Category</label>
                 <select
@@ -227,7 +227,7 @@ const FeatureManagement = () => {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">Version</label>
                 <input 
@@ -250,7 +250,7 @@ const FeatureManagement = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 border-t border-slate-100 dark:border-white/5 pt-4 mt-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-100 dark:border-white/5 pt-4 mt-1">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-black uppercase tracking-wider text-slate-450">Login Required</span>
                 <button
@@ -274,7 +274,7 @@ const FeatureManagement = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-black uppercase tracking-wider text-slate-450">Featured</span>
                 <button

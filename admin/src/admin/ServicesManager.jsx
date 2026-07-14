@@ -187,7 +187,7 @@ const ServicesManager = () => {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold text-slate-550 dark:text-slate-400 uppercase tracking-wider">Starting Price</label>
                 <input

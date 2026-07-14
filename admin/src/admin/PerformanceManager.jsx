@@ -218,7 +218,7 @@ const PerformanceManager = () => {
               <FaDatabase className="text-primary-cyan" /> DB Connection Pool
             </h3>
             
-            <div className="grid grid-cols-2 gap-4 mt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
               <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200/40 dark:border-white/5">
                 <span className="text-[10px] text-slate-400 font-semibold block uppercase">Pool Size</span>
                 <span className="text-xl font-black font-title text-black dark:text-white mt-1 block">
@@ -250,7 +250,7 @@ const PerformanceManager = () => {
               <FaClock className="text-primary-blue" /> Request Telemetry
             </h3>
 
-            <div className="grid grid-cols-2 gap-4 mt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
               <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200/40 dark:border-white/5">
                 <span className="text-[10px] text-slate-400 font-semibold block uppercase">Total Handled</span>
                 <span className="text-xl font-black font-title text-black dark:text-white mt-1 block">
@@ -324,7 +324,7 @@ const PerformanceManager = () => {
               <FaTasks className="text-primary-purple" /> Worker Queue
             </h3>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-200/40 dark:border-white/5 text-center">
                 <span className="text-[9px] text-slate-400 font-bold block uppercase tracking-wider">Pending Jobs</span>
                 <span className="text-xl font-black font-title text-black dark:text-white mt-1 block">

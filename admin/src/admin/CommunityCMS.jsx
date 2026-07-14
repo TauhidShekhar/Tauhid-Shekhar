@@ -537,7 +537,7 @@ const CommunityCMS = () => {
             <div className="flex flex-col gap-6">
               
               {/* Stat Cards Row */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-[#121217] border border-white/5 p-5 rounded-3xl text-left">
                   <span className="text-[9px] text-slate-550 uppercase tracking-widest font-black block">Total Members</span>
                   <h3 className="text-2xl font-black text-white mt-2">{users.length}</h3>
@@ -759,7 +759,7 @@ const CommunityCMS = () => {
                     </div>
                     <form onSubmit={handleSaveUser} className="flex flex-col gap-4">
                       
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1.5">
                           <label className="text-[10px] text-slate-450 uppercase font-black">Full Name</label>
                           <input
@@ -782,7 +782,7 @@ const CommunityCMS = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-3 gap-4 border-t border-white/5 pt-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-white/5 pt-4">
                         <div className="flex flex-col gap-1.5">
                           <label className="text-[10px] text-slate-450 uppercase font-black">Coins Wallet</label>
                           <input
@@ -812,7 +812,7 @@ const CommunityCMS = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1.5">
                           <label className="text-[10px] text-slate-450 uppercase font-black">Level</label>
                           <input
@@ -1101,7 +1101,7 @@ const CommunityCMS = () => {
                         className="w-full px-3 py-2 bg-[#121217] border border-white/5 rounded-xl text-xs text-white focus:outline-none"
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="flex flex-col gap-1.5">
                         <label className="text-[9px] text-slate-455 uppercase font-black">Price (Coins)</label>
                         <input 
@@ -1173,7 +1173,7 @@ const CommunityCMS = () => {
                       className="w-full px-3 py-2 bg-[#1c1c24] border border-white/5 rounded-xl text-xs text-white focus:outline-none"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1.5">
                       <label className="text-[9px] text-slate-455 uppercase font-black">Discount Percentage</label>
                       <input 
@@ -1224,7 +1224,7 @@ const CommunityCMS = () => {
 
               {showEventForm && (
                 <form onSubmit={handleSaveEvent} className="p-5 rounded-2xl bg-[#181822] border border-white/5 flex flex-col gap-3 mb-6">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1.5">
                       <label className="text-[9px] text-slate-455 uppercase font-black">Event Title</label>
                       <input 
@@ -1261,7 +1261,7 @@ const CommunityCMS = () => {
                     />
                   </div>
 
-                  <div className="grid grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div className="flex flex-col gap-1.5">
                       <label className="text-[9px] text-slate-455 uppercase font-black">Date</label>
                       <input 
