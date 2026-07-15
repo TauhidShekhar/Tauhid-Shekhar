@@ -139,6 +139,8 @@ const Projects = ({ projectsData }) => {
   const { user } = useAuth();
   const [activeFilter, setActiveFilter] = useState('all');
   const [activeCaseStudy, setActiveCaseStudy] = useState(null);
+  const [savedIds, setSavedIds] = useState([]);
+  const [newCommentText, setNewCommentText] = useState('');
 
   const [projectItems, setProjectItems] = useState(() => {
     const list = (projectsData && projectsData.length > 0) ? projectsData : [];
@@ -147,6 +149,24 @@ const Projects = ({ projectsData }) => {
       subtitle: p.subtitle || `${p.tag.toUpperCase()} Project`
     }));
   });
+
+  useEffect(() => {
+    if (user) {
+      const fetchSavedIds = async () => {
+        try {
+          const res = await api.getSavedProjects();
+          if (res.success) {
+            setSavedIds((res.data || []).map(p => p._id));
+          }
+        } catch (err) {
+          console.error('Failed to load saved projects ids:', err.message);
+        }
+      };
+      fetchSavedIds();
+    } else {
+      setSavedIds([]);
+    }
+  }, [user]);
 
   if (projectsData === null) {
     return (
@@ -174,26 +194,6 @@ const Projects = ({ projectsData }) => {
       </section>
     );
   }
-  const [savedIds, setSavedIds] = useState([]);
-  const [newCommentText, setNewCommentText] = useState('');
-
-  useEffect(() => {
-    if (user) {
-      const fetchSavedIds = async () => {
-        try {
-          const res = await api.getSavedProjects();
-          if (res.success) {
-            setSavedIds((res.data || []).map(p => p._id));
-          }
-        } catch (err) {
-          console.error('Failed to load saved projects ids:', err.message);
-        }
-      };
-      fetchSavedIds();
-    } else {
-      setSavedIds([]);
-    }
-  }, [user]);
 
   const handleFavoriteClick = async (projectId) => {
     if (!user) {
