@@ -282,7 +282,7 @@ const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
 
       {/* Mobile Drawer (Responsive Drawer below xl screen size) */}
       <div
-        className={`fixed top-0 right-0 w-[280px] h-[100dvh] bg-white dark:bg-slate-950 shadow-2xl z-[998] flex flex-col transition-transform duration-300 transform xl:hidden ${
+        className={`fixed inset-y-0 right-0 w-[280px] bg-white dark:bg-slate-950 shadow-2xl z-[998] flex flex-col transition-transform duration-300 transform xl:hidden ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
         style={{
