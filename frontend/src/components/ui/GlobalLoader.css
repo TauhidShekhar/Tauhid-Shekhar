@@ -21,6 +21,13 @@
   pointer-events: none !important;
 }
 
+/* Spinner only phase overlay style */
+.global-loader-overlay.phase-spinner {
+  background: rgba(10, 10, 14, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
 /* Container spacing */
 .global-loader-container {
   display: flex;
