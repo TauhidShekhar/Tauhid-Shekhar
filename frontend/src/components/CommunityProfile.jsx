@@ -4,6 +4,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 import { Toast } from './ui/Toast';
 import ImageCropperModal from './ui/ImageCropperModal';
+import ShareButton from './ui/ShareButton';
+
 import { 
   FaUserCircle, FaMapMarkerAlt, FaLink, FaGithub, FaLinkedin, FaAward, 
   FaUserPlus, FaUserMinus, FaTwitter, FaInstagram, FaFacebook, FaYoutube, 
@@ -506,7 +508,17 @@ const CommunityProfile = () => {
                 </Link>
               </>
             )}
+            <ShareButton 
+              contentType="profile"
+              contentId={profile.username}
+              title={`${profile.fullName} (@${profile.username}) | Developer Profile`}
+              description={profile.bio || profile.profession || `Check out ${profile.fullName}'s developer profile, achievements, and statistics.`}
+              imageUrl={profile.avatar?.url || ''}
+              className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider border border-white/5 bg-[#1c1c24] hover:bg-[#252530] text-white transition-colors cursor-pointer flex items-center gap-1.5"
+              btnText="Share"
+            />
           </div>
+
 
         </div>
 

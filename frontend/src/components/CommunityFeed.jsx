@@ -4,6 +4,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 import socket from '../services/socket';
 import ImageCropperModal from './ui/ImageCropperModal';
+import ShareButton from './ui/ShareButton';
+
 import { 
   FaRegHeart, FaHeart, FaComment, FaBookmark, FaRegBookmark, 
   FaShareAlt, FaPlus, FaImage, FaPaperclip, FaTags, FaFilter, 
@@ -98,6 +100,25 @@ const CommunityFeed = () => {
   useEffect(() => {
     fetchFeed();
   }, [activeCategory, activeTagsFilter, searchUrlQuery]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const postId = params.get('post') || params.get('id');
+    if (postId && posts.length > 0) {
+      setTimeout(() => {
+        const element = document.getElementById(`post-${postId}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.classList.add('pulse-highlight');
+          setTimeout(() => {
+            element.classList.remove('pulse-highlight');
+          }, 3000);
+          toggleComments(postId);
+        }
+      }, 500);
+    }
+  }, [posts]);
+
 
   // Real-time socket event synchronization for community feed
   useEffect(() => {
@@ -1139,6 +1160,7 @@ const CommunityFeed = () => {
             return (
               <div 
                 key={post._id} 
+                id={`post-${post._id}`}
                 className="bg-[#121217] border border-white/5 p-5 rounded-3xl flex flex-col gap-4 shadow-sm hover:border-white/10 transition-colors"
               >
                 {/* Creator Header block */}
@@ -1414,7 +1436,7 @@ const CommunityFeed = () => {
                 </div>
 
                 {/* Interaction Buttons */}
-                <div className="grid grid-cols-3 border-t border-white/5 pt-2 text-[10px] font-black uppercase tracking-wider text-slate-400">
+                <div className="grid grid-cols-4 border-t border-white/5 pt-2 text-[10px] font-black uppercase tracking-wider text-slate-400">
                   <button
                     onClick={() => handleReaction(post._id, 'Like')}
                     className={`py-2 hover:bg-white/5 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
@@ -1437,7 +1459,17 @@ const CommunityFeed = () => {
                   >
                     {isBookmarked ? <FaBookmark /> : <FaRegBookmark />} Save
                   </button>
+                  <ShareButton 
+                    contentType="post"
+                    contentId={post._id}
+                    title={post.title || 'Community Post'}
+                    description={post.content ? post.content.replace(/<[^>]*>/g, '').substring(0, 160) : ''}
+                    imageUrl={post.mediaUrl || (post.mediaUrls && post.mediaUrls[0]) || ''}
+                    className="py-2 hover:bg-white/5 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                    btnText="Share"
+                  />
                 </div>
+
 
                 {/* Comments Section */}
                 {showComments[post._id] && (

@@ -223,6 +223,8 @@ const communityRoutes = require('./routes/communityRoutes');
 const featureRoutes = require('./routes/featureRoutes');
 const cmsRoutes = require('./routes/cmsRoutes');
 const portfolioRoutes = require('./routes/portfolioRoutes');
+const shareRoutes = require('./routes/shareRoutes');
+
 
 // Mount Routes
 const { cacheMiddleware } = require('./middleware/cacheMiddleware');
@@ -255,6 +257,8 @@ app.use('/api/services', cacheMiddleware('services'), serviceRoutes);
 app.use('/api/community', communityRoutes);
 app.use('/api/features', featureRoutes);
 app.use('/api/cms', cmsRoutes);
+app.use('/api/share', shareRoutes);
+
 
 // Dynamic Sitemap generator
 app.get('/sitemap.xml', async (req, res, next) => {

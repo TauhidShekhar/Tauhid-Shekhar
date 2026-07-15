@@ -1,0 +1,394 @@
+/* Glassmorphism Backdrop Overlay */
+.share-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000000;
+  animation: share-fade-in 0.3s ease-out;
+}
+
+/* Core Share Layout Container (Desktop Modal by default) */
+.share-sheet-container {
+  width: 100%;
+  max-width: 480px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: share-scale-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+/* Dark Mode Theme overrides */
+.darkmode .share-sheet-container {
+  background: rgba(18, 18, 22, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Slide up behavior on mobile viewports */
+@media (max-width: 767px) {
+  .share-backdrop {
+    align-items: flex-end;
+  }
+  .share-sheet-container {
+    max-width: 100%;
+    border-radius: 28px 28px 0 0;
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+    animation: share-slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+/* Header & drag handles */
+.share-sheet-header {
+  padding: 16px 20px 10px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+.darkmode .share-sheet-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.drag-indicator {
+  width: 40px;
+  height: 5px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+  margin-bottom: 12px;
+  display: none;
+}
+@media (max-width: 767px) {
+  .drag-indicator {
+    display: block;
+  }
+}
+.darkmode .drag-indicator {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.close-btn {
+  background: rgba(0, 0, 0, 0.04);
+  color: #64748b;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.close-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+  transform: scale(1.05);
+}
+.darkmode .close-btn {
+  background: rgba(255, 255, 255, 0.05);
+  color: #94a3b8;
+}
+.darkmode .close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Content Area styling */
+.share-sheet-content {
+  padding: 20px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+/* Premium Content Preview Card */
+.share-preview-card {
+  display: flex;
+  gap: 16px;
+  padding: 14px;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  margin-bottom: 18px;
+}
+.darkmode .share-preview-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.share-preview-img-container {
+  width: 70px;
+  height: 70px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+.darkmode .share-preview-img-container {
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.share-preview-img {
+  width: 100%;
+  height: 100%;
+  object-cover: cover;
+}
+
+.share-preview-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.share-preview-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: #1e293b;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.darkmode .share-preview-title {
+  color: #f1f5f9;
+}
+
+.share-preview-desc {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.darkmode .share-preview-desc {
+  color: #94a3b8;
+}
+
+.share-preview-url {
+  font-size: 10px;
+  color: #0071e3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.darkmode .share-preview-url {
+  color: #0a84ff;
+}
+
+/* Actions Row layout */
+.share-actions-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.share-action-btn {
+  height: 46px;
+  padding: 0 16px;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  transition: all 0.2s ease;
+}
+.darkmode .share-action-btn {
+  background: #1e1e24;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: #cbd5e1;
+}
+
+.share-action-btn:hover {
+  background: #f8fafc;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+.darkmode .share-action-btn:hover {
+  background: #272730;
+}
+
+.share-action-btn:active {
+  transform: translateY(0);
+}
+
+/* Grid of Social Channels */
+.social-grid-title {
+  font-size: 11px;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #64748b;
+  margin-bottom: 14px;
+}
+.darkmode .social-grid-title {
+  color: #94a3b8;
+}
+
+.social-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px 10px;
+}
+
+.social-grid-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.social-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+.darkmode .social-icon-wrapper {
+  background: #1e1e24;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.social-grid-item:hover .social-icon-wrapper {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+}
+
+.social-icon-label {
+  margin-top: 6px;
+  font-size: 10px;
+  font-weight: 550;
+  color: #475569;
+  text-align: center;
+  max-width: 68px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.darkmode .social-icon-label {
+  color: #94a3b8;
+}
+
+/* Social Media Specific Colors */
+.whatsapp-color { color: #25D366; }
+.facebook-color { color: #1877F2; }
+.twitter-color { color: #1DA1F2; }
+.linkedin-color { color: #0A66C2; }
+.telegram-color { color: #0088cc; }
+.reddit-color { color: #FF4500; }
+.pinterest-color { color: #BD081C; }
+.discord-color { color: #5865F2; }
+.snapchat-color { color: #FFFC00; filter: drop-shadow(0 0 1px #000); }
+.email-color { color: #ea4335; }
+.sms-color { color: #34b7f1; }
+
+/* QR Code Container styling */
+.qr-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0;
+  animation: share-fade-in 0.25s ease-out;
+}
+
+.qr-box {
+  padding: 12px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+  margin-bottom: 14px;
+}
+
+.qr-img {
+  width: 180px;
+  height: 180px;
+  display: block;
+}
+
+.qr-caption {
+  font-size: 11px;
+  color: #64748b;
+  text-align: center;
+  margin-bottom: 20px;
+}
+.darkmode .qr-caption {
+  color: #94a3b8;
+}
+
+.qr-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+
+.qr-action-btn {
+  height: 44px;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.darkmode .qr-action-btn {
+  background: #1e1e24;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: #cbd5e1;
+}
+
+.qr-action-btn:hover {
+  background: #f8fafc;
+  transform: translateY(-1px);
+}
+.darkmode .qr-action-btn:hover {
+  background: #272730;
+}
+
+/* Animations Keyframes */
+@keyframes share-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes share-scale-up {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes share-slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 import socket from '../services/socket';
+import ShareButton from './ui/ShareButton';
+
 import { 
   FaQuestionCircle, FaPlus, FaTimes, FaSpinner, FaSearch, 
   FaUser, FaThumbsUp, FaThumbsDown, FaBookmark, FaCheck, FaTrash 
@@ -77,6 +79,25 @@ const CommunityDoubts = () => {
   useEffect(() => {
     fetchQuestions();
   }, [filterCategory, searchQuery, sortOption]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const doubtId = params.get('id') || params.get('doubt');
+    if (doubtId) {
+      const loadDoubt = async () => {
+        try {
+          const res = await api.getCommunityQuestionDetails(doubtId);
+          if (res.success && res.data) {
+            setSelectedQuestion(res.data);
+          }
+        } catch (err) {
+          console.error('Failed to load deep-linked doubt:', err);
+        }
+      };
+      loadDoubt();
+    }
+  }, []);
+
 
   // Real-time socket event synchronization for doubts board
   useEffect(() => {
@@ -456,6 +477,18 @@ const CommunityDoubts = () => {
 
               {/* Stats badges */}
               <div className="flex gap-4 items-center shrink-0">
+                <div className="flex flex-col items-center justify-center">
+                  <ShareButton 
+                    contentType="doubt"
+                    contentId={q._id}
+                    title={q.title}
+                    description={q.content ? q.content.replace(/<[^>]*>/g, '').substring(0, 160) : ''}
+                    imageUrl={(q.images && q.images[0]?.url) || ''}
+                    iconOnly={true}
+                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors text-slate-400 hover:text-primary-blue cursor-pointer flex items-center justify-center"
+                  />
+                  <span className="text-[9px] font-black text-slate-400 uppercase mt-0.5">Share</span>
+                </div>
                 <div className="flex flex-col items-center">
                   <span className="text-xs font-black text-black dark:text-white">{q.upvotes?.length || 0}</span>
                   <span className="text-[9px] font-black text-slate-400 uppercase">Votes</span>
@@ -465,6 +498,7 @@ const CommunityDoubts = () => {
                   <span className="text-[9px] font-black text-slate-400 uppercase">Bookmarks</span>
                 </div>
               </div>
+
             </div>
           ))}
         </div>
@@ -624,12 +658,24 @@ const CommunityDoubts = () => {
                     <span>{new Date(selectedQuestion.createdAt).toLocaleDateString()}</span>
                   </div>
                 </div>
-                <button 
-                  onClick={() => setSelectedQuestion(null)}
-                  className="text-slate-400 hover:text-black dark:hover:text-white cursor-pointer p-1"
-                >
-                  <FaTimes size={18} />
-                </button>
+                <div className="flex items-center gap-2">
+                  <ShareButton 
+                    contentType="doubt"
+                    contentId={selectedQuestion._id}
+                    title={selectedQuestion.title}
+                    description={selectedQuestion.content ? selectedQuestion.content.replace(/<[^>]*>/g, '').substring(0, 160) : ''}
+                    imageUrl={(selectedQuestion.images && selectedQuestion.images[0]?.url) || ''}
+                    className="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider border border-slate-200 dark:border-white/5 bg-slate-100 hover:bg-slate-200 dark:bg-[#1c1c24] dark:hover:bg-[#252530] text-slate-700 dark:text-white transition-colors cursor-pointer flex items-center gap-1.5"
+                    btnText="Share"
+                  />
+                  <button 
+                    onClick={() => setSelectedQuestion(null)}
+                    className="text-slate-400 hover:text-black dark:hover:text-white cursor-pointer p-1"
+                  >
+                    <FaTimes size={18} />
+                  </button>
+                </div>
+
               </div>
 
               {/* Body */}

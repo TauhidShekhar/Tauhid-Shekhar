@@ -615,6 +615,11 @@ export const api = {
       body: JSON.stringify(pageData)
     });
   },
+  getShareStats: async () => {
+    return apiRequest('/analytics/shares');
+  },
+  exportShareCSVUrl: `${API_BASE}/analytics/shares/export`,
+
 
   exportBackupUrl: `${API_BASE}/backup/export`,
   restoreBackup: async (formData) => {

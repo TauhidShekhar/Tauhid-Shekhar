@@ -177,8 +177,167 @@ const getSystemPerformance = async (req, res, next) => {
   }
 };
 
+// @desc    Get share stats
+// @route   GET /api/analytics/shares
+// @access  Private/Admin
+const getShareStats = async (req, res, next) => {
+  try {
+    const Share = require('../models/Share');
+    const CommunityPost = require('../models/CommunityPost');
+    const CommunityQuestion = require('../models/CommunityQuestion');
+
+    const totalShares = await Share.countDocuments({});
+
+    // Platform breakdown
+    const platformsRaw = await Share.aggregate([
+      { $group: { _id: '$platform', count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]);
+    const platformBreakdown = platformsRaw.map(p => ({ platform: p._id, count: p.count }));
+
+    // Daily graph (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const dailyRaw = await Share.aggregate([
+      { $match: { sharedAt: { $gte: thirtyDaysAgo } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$sharedAt' } },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+    const dailyGraph = dailyRaw.map(d => ({ date: d._id, count: d.count }));
+
+    // Monthly graph (last 12 months)
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+    const monthlyRaw = await Share.aggregate([
+      { $match: { sharedAt: { $gte: oneYearAgo } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m', date: '$sharedAt' } },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+    const monthlyGraph = monthlyRaw.map(m => ({ month: m._id, count: m.count }));
+
+    // Top shared users (profile contentType)
+    const topUsersRaw = await Share.aggregate([
+      { $match: { contentType: 'profile' } },
+      { $group: { _id: '$contentId', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 5 }
+    ]);
+    
+    // Resolve user details
+    const topSharedUsers = [];
+    for (const item of topUsersRaw) {
+      const query = mongoose.isValidObjectId(item._id) ? { _id: item._id } : { username: item._id };
+      const user = await User.findOne(query).select('fullName username avatar');
+      topSharedUsers.push({
+        identifier: item._id,
+        fullName: user ? user.fullName : item._id,
+        username: user ? user.username : item._id,
+        avatar: user?.avatar?.url || '',
+        count: item.count
+      });
+    }
+
+    // Top shared posts
+    const topPostsRaw = await Share.aggregate([
+      { $match: { contentType: 'post' } },
+      { $group: { _id: '$contentId', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 5 }
+    ]);
+    const topSharedPosts = [];
+    for (const item of topPostsRaw) {
+      if (mongoose.isValidObjectId(item._id)) {
+        const post = await CommunityPost.findById(item._id).select('title author').populate('author', 'fullName');
+        topSharedPosts.push({
+          id: item._id,
+          title: post ? post.title : 'Deleted Post',
+          author: post?.author?.fullName || 'Unknown',
+          count: item.count
+        });
+      }
+    }
+
+    // Top shared doubts
+    const topDoubtsRaw = await Share.aggregate([
+      { $match: { contentType: 'doubt' } },
+      { $group: { _id: '$contentId', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 5 }
+    ]);
+    const topSharedDoubts = [];
+    for (const item of topDoubtsRaw) {
+      if (mongoose.isValidObjectId(item._id)) {
+        const doubt = await CommunityQuestion.findById(item._id).select('title author').populate('author', 'fullName');
+        topSharedDoubts.push({
+          id: item._id,
+          title: doubt ? doubt.title : 'Deleted Doubt',
+          author: doubt?.author?.fullName || 'Unknown',
+          count: item.count
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      data: {
+        totalShares,
+        platformBreakdown,
+        dailyGraph,
+        monthlyGraph,
+        topSharedUsers,
+        topSharedPosts,
+        topSharedDoubts
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Export share stats to CSV
+// @route   GET /api/analytics/shares/export
+// @access  Private/Admin
+const exportShareCSV = async (req, res, next) => {
+  try {
+    const Share = require('../models/Share');
+    const shares = await Share.find({})
+      .populate('userId', 'fullName email')
+      .sort({ sharedAt: -1 });
+
+    let csvContent = 'Date,Platform,ContentType,ContentID,SharedBy,Email\n';
+    shares.forEach(s => {
+      const date = s.sharedAt.toISOString();
+      const platform = s.platform;
+      const contentType = s.contentType;
+      const contentId = s.contentId;
+      const sharedBy = s.userId ? s.userId.fullName : 'Guest';
+      const email = s.userId ? s.userId.email : 'N/A';
+      csvContent += `"${date}","${platform}","${contentType}","${contentId}","${sharedBy}","${email}"\n`;
+    });
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=share_analytics.csv');
+    res.status(200).send(csvContent);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   trackView,
   getStats,
-  getSystemPerformance
+  getSystemPerformance,
+  getShareStats,
+  exportShareCSV
 };
+
