@@ -280,6 +280,60 @@
           </svg>
         </div>
       </div>
+      <!-- Script to execute loading and transition logic -->
+      <script>
+        (function() {
+          var splash = document.getElementById('instant-loader');
+          if (!splash) return;
+
+          // Skip if splash has already played in this browser session
+          try {
+            if (sessionStorage.getItem('splash-played') === 'true') {
+              splash.style.display = 'none';
+              splash.remove();
+              return;
+            }
+          } catch (_) {}
+          
+          var minDuration = 800; // 800ms min duration (fast and premium feel)
+          var startTime = Date.now();
+          var isPageLoaded = false;
+
+          function endSplash() {
+            var elapsed = Date.now() - startTime;
+            var remaining = Math.max(0, minDuration - elapsed);
+
+            setTimeout(function() {
+              splash.style.opacity = '0';
+              splash.style.visibility = 'hidden';
+              try {
+                sessionStorage.setItem('splash-played', 'true');
+              } catch (_) {}
+              setTimeout(function() {
+                splash.remove();
+              }, 400);
+            }, remaining);
+          }
+
+          if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            isPageLoaded = true;
+            endSplash();
+          } else {
+            window.addEventListener('load', function() {
+              isPageLoaded = true;
+              endSplash();
+            });
+          }
+
+          // Safety backup end in 5s
+          setTimeout(function() {
+            if (document.getElementById('instant-loader')) {
+              isPageLoaded = true;
+              endSplash();
+            }
+          }, 5000);
+        })();
+      </script>
     </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

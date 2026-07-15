@@ -319,10 +319,15 @@
           }, remaining);
         }
 
-        window.addEventListener('load', function() {
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
           isPageLoaded = true;
           endSplash();
-        });
+        } else {
+          window.addEventListener('load', function() {
+            isPageLoaded = true;
+            endSplash();
+          });
+        }
 
         // Safety backup end in 5s
         setTimeout(function() {

@@ -6,36 +6,19 @@ const AppLoader = ({ isLoading, onFinished }) => {
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
-    let minTimeElapsed = false;
-    let loadingFinished = false;
-
-    // Minimum display time of 1000ms to allow animations to play smoothly
-    const timer = setTimeout(() => {
-      minTimeElapsed = true;
-      if (loadingFinished || !isLoading) {
-        triggerFadeOut();
-      }
-    }, 1000);
-
     if (!isLoading) {
-      loadingFinished = true;
-      if (minTimeElapsed) {
-        triggerFadeOut();
-      }
+      // Once loading is complete, wait 800ms to ensure animation displays smoothly, then fade out
+      const timer = setTimeout(() => {
+        setFadeOut(true);
+        const exitTimer = setTimeout(() => {
+          setVisible(false);
+          if (onFinished) onFinished();
+        }, 400); // matches the CSS fade transition
+        return () => clearTimeout(exitTimer);
+      }, 800);
+      return () => clearTimeout(timer);
     }
-
-    return () => clearTimeout(timer);
-  }, [isLoading]);
-
-  const triggerFadeOut = () => {
-    setFadeOut(true);
-    // Wait for the fade-out CSS animation (500ms) to complete before unmounting
-    const timer = setTimeout(() => {
-      visible && setVisible(false);
-      if (onFinished) onFinished();
-    }, 500);
-    return () => clearTimeout(timer);
-  };
+  }, [isLoading, onFinished]);
 
   if (!visible) return null;
 
