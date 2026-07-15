@@ -6,22 +6,31 @@ import './GlobalLoader.css';
  * Professional fullscreen loading overlay.
  * Renders the brand logo with premium GPU-accelerated transition effects.
  */
-const GlobalLoader = ({ visible = true }) => {
-  const [shouldRender, setShouldRender] = useState(visible);
+const GlobalLoader = ({ visible = true, instant = false }) => {
+  const [shouldRender, setShouldRender] = useState(visible && instant);
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
+    let timer;
     if (visible) {
-      setShouldRender(true);
-      setFadeOut(false);
+      if (instant) {
+        setShouldRender(true);
+        setFadeOut(false);
+      } else {
+        // Debounce showing the loader by 300ms to avoid flicker on fast updates/routes
+        timer = setTimeout(() => {
+          setShouldRender(true);
+          setFadeOut(false);
+        }, 300);
+      }
     } else {
       setFadeOut(true);
-      const timer = setTimeout(() => {
+      timer = setTimeout(() => {
         setShouldRender(false);
       }, 400); // matches CSS fade-out transition
-      return () => clearTimeout(timer);
     }
-  }, [visible]);
+    return () => clearTimeout(timer);
+  }, [visible, instant]);
 
   if (!shouldRender) return null;
 

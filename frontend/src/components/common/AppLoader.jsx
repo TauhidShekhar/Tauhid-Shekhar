@@ -23,7 +23,7 @@ const AppLoader = ({ isLoading, onFinished }) => {
     }
   }, [isLoading, onFinished]);
 
-  return <GlobalLoader visible={visible} />;
+  return <GlobalLoader visible={visible} instant={true} />;
 };
 
 export default AppLoader;
