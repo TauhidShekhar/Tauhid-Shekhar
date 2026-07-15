@@ -1,35 +1,73 @@
-/* Fullscreen Black Overlay */
+/* Fullscreen Glassmorphism Overlay */
 .app-preloader-container {
   position: fixed;
   inset: 0;
-  background-color: #000000;
+  background: rgba(10, 10, 14, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 999999;
   opacity: 1;
-  visibility: visible;
-  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s;
-  transform: translateZ(0);
-  will-change: opacity;
-  backface-visibility: hidden;
+  transform: scale(1);
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: all;
 }
 
 .app-preloader-container.fade-out {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
+  opacity: 0 !important;
+  transform: scale(0.97) !important;
+  pointer-events: none !important;
 }
 
 .loader-content {
-  position: relative;
-  width: 250px;
-  height: 250px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  transform: translateZ(0);
-  will-change: transform;
+  gap: 24px;
+}
+
+/* Circular Spinner placed below the logo */
+.loader-spinner-circle {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255, 255, 255, 0.05);
+  border-top: 3px solid #00f3ff;
+  border-radius: 50%;
+  animation: loader-spin-spinner 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  filter: drop-shadow(0 0 6px rgba(0, 243, 255, 0.4));
+}
+
+@keyframes loader-spin-spinner {
+  to { transform: rotate(360deg); }
+}
+
+/* Preparing Experience Text styling */
+.loader-text-status {
+  font-family: 'Outfit', -apple-system, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  color: #94a3b8;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+}
+
+.loader-text-status::after {
+  content: '.';
+  display: inline-block;
+  width: 12px;
+  text-align: left;
+  animation: loader-dots-anim 1.5s steps(4, end) infinite;
+}
+
+@keyframes loader-dots-anim {
+  0%, 20% { content: '.'; }
+  40% { content: '..'; }
+  60%, 100% { content: '...'; }
 }
 
 .splash-logo-svg {
