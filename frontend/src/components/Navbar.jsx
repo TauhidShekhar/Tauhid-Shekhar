@@ -298,43 +298,47 @@ const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
         </div>
         
         {/* Scrollable middle container */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 text-left">
-          <ul className="flex flex-col gap-4">
-            {navItems.map((item) => (
-              <li key={item.name}>
-                {item.to ? (
-                  <Link
-                    to={item.to}
-                    onClick={() => setIsOpen(false)}
-                    className="text-[15px] font-bold block py-1.5 transition-colors text-slate-655 dark:text-slate-300 hover:text-primary-blue"
-                  >
-                    {item.name}
-                  </Link>
-                ) : (
-                  <a
-                    href={item.href}
-                    onClick={(e) => handleNavClick(e, item.href)}
-                    className={`text-[15px] font-bold block py-1.5 transition-colors ${
-                      activeSection === item.href.substring(1)
-                        ? 'text-primary-blue'
-                        : 'text-slate-655 dark:text-slate-300 hover:text-primary-blue'
-                    }`}
-                  >
-                    {item.name}
-                  </a>
-                )}
-              </li>
-            ))}
-          </ul>
+        <div className="flex-1 overflow-y-auto px-6 py-4 text-left flex flex-col justify-start">
+          {/* nav-links container */}
+          <div className="nav-links">
+            <ul className="flex flex-col gap-4">
+              {navItems.map((item) => (
+                <li key={item.name}>
+                  {item.to ? (
+                    <Link
+                      to={item.to}
+                      onClick={() => setIsOpen(false)}
+                      className="text-[15px] font-bold block py-1.5 transition-colors text-slate-655 dark:text-slate-300 hover:text-primary-blue"
+                    >
+                      {item.name}
+                    </Link>
+                  ) : (
+                    <a
+                      href={item.href}
+                      onClick={(e) => handleNavClick(e, item.href)}
+                      className={`text-[15px] font-bold block py-1.5 transition-colors ${
+                        activeSection === item.href.substring(1)
+                          ? 'text-primary-blue'
+                          : 'text-slate-655 dark:text-slate-300 hover:text-primary-blue'
+                      }`}
+                    >
+                      {item.name}
+                    </a>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
 
-          <div className="mobile-auth mt-5 pt-5 border-t border-slate-100 dark:border-white/5 flex flex-col gap-3">
+          {/* auth-section directly below nav-links */}
+          <div className="auth-section mt-5 pt-5 border-t border-slate-100 dark:border-white/5 flex flex-col gap-3 w-full max-w-[320px] mx-auto">
             {isAuthenticated ? (
               <>
                 {user?.role === 'Admin' ? (
                   <a
                     href={`${VITE_ADMIN_URL}/admin`}
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center justify-center gap-2 w-full min-h-[48px] bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-white rounded-xl font-bold text-sm border border-slate-200 dark:border-white/5 transition-all duration-300"
+                    className="flex items-center justify-center gap-2 w-full h-[50px] rounded-[12px] font-bold text-sm bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-white border border-slate-200 dark:border-white/5 transition-all duration-300"
                   >
                     <FaTachometerAlt /> Dashboard
                   </a>
@@ -342,7 +346,7 @@ const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
                   <Link
                     to="/user/dashboard"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center justify-center gap-2 w-full min-h-[48px] bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-white rounded-xl font-bold text-sm border border-slate-200 dark:border-white/5 transition-all duration-300"
+                    className="flex items-center justify-center gap-2 w-full h-[50px] rounded-[12px] font-bold text-sm bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-white border border-slate-200 dark:border-white/5 transition-all duration-300"
                   >
                     <FaUserCircle /> Dashboard
                   </Link>
@@ -353,7 +357,7 @@ const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
                     setIsOpen(false);
                     navigate('/login');
                   }}
-                  className="flex items-center justify-center gap-2 w-full min-h-[48px] bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl font-bold text-sm border border-red-500/20 cursor-pointer transition-all duration-300"
+                  className="flex items-center justify-center gap-2 w-full h-[50px] rounded-[12px] font-bold text-sm bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 cursor-pointer transition-all duration-300"
                 >
                   <FaSignOutAlt /> Logout
                 </button>
@@ -362,7 +366,7 @@ const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
               <Link
                 to="/login"
                 onClick={() => setIsOpen(false)}
-                className="flex items-center justify-center w-full min-h-[48px] bg-primary-blue hover:bg-accent-blue text-white rounded-xl font-bold text-sm shadow-md transition-all duration-300"
+                className="flex items-center justify-center w-full h-[50px] rounded-[12px] font-bold text-sm bg-primary-blue hover:bg-accent-blue text-white shadow-md transition-all duration-300"
               >
                 Login
               </Link>
@@ -371,7 +375,7 @@ const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
             <a
               href="#contact"
               onClick={(e) => handleNavClick(e, '#contact')}
-              className="flex items-center justify-center w-full min-h-[48px] bg-slate-100 dark:bg-white/5 text-slate-800 dark:text-white rounded-xl font-bold text-sm border border-slate-200 dark:border-white/5 transition-all duration-300"
+              className="flex items-center justify-center w-full h-[50px] rounded-[12px] font-bold text-sm bg-slate-100 dark:bg-white/5 text-slate-800 dark:text-white border border-slate-200 dark:border-white/5 transition-all duration-300"
             >
               Hire Me
             </a>
