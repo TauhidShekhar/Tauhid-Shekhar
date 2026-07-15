@@ -266,39 +266,8 @@ const Navbar = ({ activeSection, toggleTheme, isDark }) => {
         
         {/* Scrollable middle container */}
         <div className="flex-1 overflow-y-auto px-6 py-4 text-left flex flex-col justify-start">
-          {/* nav-links container */}
-          <div className="nav-links">
-            <ul className="flex flex-col gap-4">
-              {navItems.map((item) => (
-                <li key={item.name}>
-                  {item.to ? (
-                    <Link
-                      to={item.to}
-                      onClick={() => setIsOpen(false)}
-                      className="text-[15px] font-bold block py-1.5 transition-colors text-slate-655 dark:text-slate-300 hover:text-primary-blue"
-                    >
-                      {item.name}
-                    </Link>
-                  ) : (
-                    <a
-                      href={item.href}
-                      onClick={(e) => handleNavClick(e, item.href)}
-                      className={`text-[15px] font-bold block py-1.5 transition-colors ${
-                        activeSection === item.href.substring(1)
-                          ? 'text-primary-blue'
-                          : 'text-slate-655 dark:text-slate-300 hover:text-primary-blue'
-                      }`}
-                    >
-                      {item.name}
-                    </a>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* auth-section directly below nav-links */}
-          <div className="auth-section mt-5 pt-5 border-t border-slate-100 dark:border-white/5 flex flex-col gap-3 w-full max-w-[320px] mx-auto">
+          {/* auth-section directly below navbar header */}
+          <div className="auth-section mb-5 pb-5 border-b border-slate-100 dark:border-white/5 flex flex-col gap-3 w-full max-w-[320px] mx-auto">
             {isAuthenticated ? (
               <>
                 {user?.role === 'Admin' ? (
@@ -346,6 +315,37 @@ const Navbar = ({ activeSection, toggleTheme, isDark }) => {
             >
               Hire Me
             </a>
+          </div>
+
+          {/* nav-links container */}
+          <div className="nav-links">
+            <ul className="flex flex-col gap-4">
+              {navItems.map((item) => (
+                <li key={item.name}>
+                  {item.to ? (
+                    <Link
+                      to={item.to}
+                      onClick={() => setIsOpen(false)}
+                      className="text-[15px] font-bold block py-1.5 transition-colors text-slate-655 dark:text-slate-300 hover:text-primary-blue"
+                    >
+                      {item.name}
+                    </Link>
+                  ) : (
+                    <a
+                      href={item.href}
+                      onClick={(e) => handleNavClick(e, item.href)}
+                      className={`text-[15px] font-bold block py-1.5 transition-colors ${
+                        activeSection === item.href.substring(1)
+                          ? 'text-primary-blue'
+                          : 'text-slate-655 dark:text-slate-300 hover:text-primary-blue'
+                      }`}
+                    >
+                      {item.name}
+                    </a>
+                  )}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>
