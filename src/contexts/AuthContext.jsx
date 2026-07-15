@@ -160,10 +160,33 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       console.error('Logout error:', err.message);
     } finally {
+      // Disconnect socket explicitly
+      try {
+        socket.disconnect();
+      } catch (_) {}
+
+      // Clear all auth items from localStorage
+      try {
+        localStorage.removeItem(AUTH_STORAGE_KEY);
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+      } catch (_) {}
+
+      // Clear memory references
+      delete window['__mem_accessToken'];
+      delete window['__mem_refreshToken'];
+
+      // Clear sessionStorage to prevent any cached pages
+      try {
+        sessionStorage.clear();
+      } catch (_) {}
+
       setUser(null);
       setIsAuthenticated(false);
-      persistUser(null);
       setIsLoading(false);
+
+      // Force navigation to login and reload to purge memory state
+      window.location.replace('/login');
     }
   };
 
