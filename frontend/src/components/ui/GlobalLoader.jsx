@@ -11,7 +11,7 @@ const GlobalLoader = ({ visible = true, instant = false }) => {
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
-    let timer1, timer2, exitTimer;
+    let timer, exitTimer;
 
     if (visible) {
       if (instant) {
@@ -19,18 +19,10 @@ const GlobalLoader = ({ visible = true, instant = false }) => {
         setFadeOut(false);
       } else {
         setFadeOut(false);
-        // Phase 1: 0-300ms - Keep hidden
-        setLoadingPhase('hidden');
-
-        // Phase 2: 300-800ms - Show chhota spinner
-        timer1 = setTimeout(() => {
-          setLoadingPhase('spinner');
-        }, 300);
-
-        // Phase 3: 800ms+ - Show full Global Logo Animation
-        timer2 = setTimeout(() => {
+        // Debounce showing the loader by 300ms to avoid flicker on fast updates/routes
+        timer = setTimeout(() => {
           setLoadingPhase('full');
-        }, 800);
+        }, 300);
       }
     } else {
       setFadeOut(true);
@@ -40,94 +32,99 @@ const GlobalLoader = ({ visible = true, instant = false }) => {
     }
 
     return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
+      clearTimeout(timer);
       clearTimeout(exitTimer);
     };
   }, [visible, instant]);
 
+  useEffect(() => {
+    if (loadingPhase === 'full' && !fadeOut) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [loadingPhase, fadeOut]);
+
   if (loadingPhase === 'hidden') return null;
 
   return (
-    <div className={`global-loader-overlay ${fadeOut ? 'global-loader-fade-out' : ''} ${loadingPhase === 'spinner' ? 'phase-spinner' : ''}`}>
+    <div className={`global-loader-overlay ${fadeOut ? 'global-loader-fade-out' : ''}`}>
       <div className="global-loader-container">
-        {loadingPhase === 'full' && (
-          <div style={{ width: '220px', height: '220px' }}>
-            {/* SVG Brand Logo with fade, scale, rotation & glow */}
-            <svg className="global-loader-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <filter id="loader-neon-cyan" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur stdDeviation="3.5" result="blur" />
-                  <feMerge>
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-                <linearGradient id="loader-cyan-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#00f3ff" />
-                  <stop offset="100%" stopColor="#0071e3" />
-                </linearGradient>
-              </defs>
+        <div style={{ width: '220px', height: '220px' }}>
+          {/* SVG Brand Logo with fade, scale, rotation & glow */}
+          <svg className="global-loader-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <filter id="loader-neon-cyan" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3.5" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+              <linearGradient id="loader-cyan-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#00f3ff" />
+                <stop offset="100%" stopColor="#0071e3" />
+              </linearGradient>
+            </defs>
 
-              {/* Outer circle */}
-              <circle 
-                className="loader-ring" 
-                cx="100" 
-                cy="100" 
-                r="70" 
-                stroke="#ffffff" 
-                strokeWidth="3.5" 
-                fill="none" 
-                strokeLinecap="round" 
-              />
+            {/* Outer circle */}
+            <circle 
+              className="loader-ring" 
+              cx="100" 
+              cy="100" 
+              r="70" 
+              stroke="#ffffff" 
+              strokeWidth="3.5" 
+              fill="none" 
+              strokeLinecap="round" 
+            />
 
-              {/* Glowing rotation ring */}
-              <circle 
-                className="loader-ring-glow" 
-                cx="100" 
-                cy="100" 
-                r="70" 
-                stroke="url(#loader-cyan-gradient)" 
-                strokeWidth="4" 
-                fill="none" 
-                filter="url(#loader-neon-cyan)" 
-                strokeLinecap="round" 
-              />
+            {/* Glowing rotation ring */}
+            <circle 
+              className="loader-ring-glow" 
+              cx="100" 
+              cy="100" 
+              r="70" 
+              stroke="url(#loader-cyan-gradient)" 
+              strokeWidth="4" 
+              fill="none" 
+              filter="url(#loader-neon-cyan)" 
+              strokeLinecap="round" 
+            />
 
-              {/* Crown */}
-              <path 
-                className="loader-crown" 
-                d="M 100,48 L 114,68 L 132,62 C 128,78 114,84 100,84 C 86,84 72,78 68,62 L 86,68 Z" 
-                fill="#00f3ff" 
-                filter="url(#loader-neon-cyan)" 
-              />
+            {/* Crown */}
+            <path 
+              className="loader-crown" 
+              d="M 100,48 L 114,68 L 132,62 C 128,78 114,84 100,84 C 86,84 72,78 68,62 L 86,68 Z" 
+              fill="#00f3ff" 
+              filter="url(#loader-neon-cyan)" 
+            />
 
-              {/* Eyes */}
-              <g className="loader-eyes">
-                <path d="M 78,98 Q 85,92 92,98 Q 85,102 78,98 Z" fill="#00f3ff" />
-                <path d="M 108,98 Q 115,92 122,98 Q 115,102 108,98 Z" fill="#00f3ff" />
-              </g>
+            {/* Eyes */}
+            <g className="loader-eyes">
+              <path d="M 78,98 Q 85,92 92,98 Q 85,102 78,98 Z" fill="#00f3ff" />
+              <path d="M 108,98 Q 115,92 122,98 Q 115,102 108,98 Z" fill="#00f3ff" />
+            </g>
 
-              {/* Text branding */}
-              <text className="loader-txt-tauhid" x="100" y="122" fill="#ffffff">TAUHID</text>
-              <text className="loader-txt-shekhar" x="100" y="138" fill="#00f3ff" filter="url(#loader-neon-cyan)">SHEKHAR</text>
+            {/* Text branding */}
+            <text className="loader-txt-tauhid" x="100" y="122" fill="#ffffff">TAUHID</text>
+            <text className="loader-txt-shekhar" x="100" y="138" fill="#00f3ff" filter="url(#loader-neon-cyan)">SHEKHAR</text>
 
-              {/* Bouncing dots */}
-              <g className="loader-dots">
-                <circle cx="84" cy="154" r="4.5" fill="#ffffff" />
-                <circle cx="100" cy="154" r="4.5" fill="#00f3ff" filter="url(#loader-neon-cyan)" />
-                <circle cx="116" cy="154" r="4.5" fill="#ffffff" />
-              </g>
-            </svg>
-          </div>
-        )}
-
-        {/* Spinner (Shown in both spinner and full phases) */}
-        <div className="loader-spinner-circle"></div>
+            {/* Bouncing dots */}
+            <g className="loader-dots">
+              <circle cx="84" cy="154" r="4.5" fill="#ffffff" />
+              <circle cx="100" cy="154" r="4.5" fill="#00f3ff" filter="url(#loader-neon-cyan)" />
+              <circle cx="116" cy="154" r="4.5" fill="#ffffff" />
+            </g>
+          </svg>
+        </div>
 
         {/* Loading text status with animated CSS dots */}
         <div className="loader-text-status">
-          {loadingPhase === 'full' ? 'Preparing Experience' : 'Loading'}
+          Preparing Experience
         </div>
       </div>
     </div>

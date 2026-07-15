@@ -28,6 +28,17 @@ const AppLoader = ({ isLoading, onFinished }) => {
     }
   }, [isLoading, onFinished]);
 
+  useEffect(() => {
+    if (visible && !fadeOut) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [visible, fadeOut]);
+
   if (!visible) return null;
 
   return (
@@ -84,9 +95,6 @@ const AppLoader = ({ isLoading, onFinished }) => {
             </g>
           </svg>
         </div>
-
-        {/* Spinner */}
-        <div className="loader-spinner-circle"></div>
 
         {/* Loading text status with animated CSS dots */}
         <div className="loader-text-status">
