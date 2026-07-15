@@ -239,55 +239,71 @@ const Navbar = ({ activeSection, toggleTheme, isDark }) => {
         </div>
       </nav>
 
+      {/* Mobile Drawer backdrop overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-[997] bg-slate-950/60 backdrop-blur-sm xl:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
       {/* Mobile Drawer (Responsive Drawer below xl screen size) */}
       <div
-        className={`fixed top-0 right-0 w-[280px] h-screen bg-white dark:bg-slate-950 shadow-2xl z-[998] p-8 flex flex-col gap-8 transition-transform duration-300 transform xl:hidden ${
+        className={`fixed top-0 right-0 w-[280px] h-[100dvh] bg-white dark:bg-slate-950 shadow-2xl z-[998] flex flex-col transition-transform duration-300 transform xl:hidden ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
+        style={{
+          paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.5rem)',
+          paddingTop: 'calc(env(safe-area-inset-top) + 0.5rem)'
+        }}
       >
-        <div className="flex justify-between items-center mb-2 border-b border-slate-100 dark:border-white/5 pb-4">
+        <div className="flex justify-between items-center px-6 py-4 border-b border-slate-100 dark:border-white/5 shrink-0">
           <span className="text-base font-black font-title tracking-wider text-black dark:text-white">TAUHID SHEKHAR</span>
-          <button onClick={() => setIsOpen(false)} className="text-2xl text-black dark:text-white cursor-pointer">
+          <button onClick={() => setIsOpen(false)} className="text-2xl text-black dark:text-white cursor-pointer p-1">
             <FaTimes />
           </button>
         </div>
         
-        <ul className="flex flex-col gap-5 text-left">
-          {navItems.map((item) => (
-            <li key={item.name}>
-              {item.to ? (
-                <Link
-                  to={item.to}
-                  onClick={() => setIsOpen(false)}
-                  className="text-[15px] font-bold block transition-colors text-slate-655 dark:text-slate-300 hover:text-primary-blue"
-                >
-                  {item.name}
-                </Link>
-              ) : (
-                <a
-                  href={item.href}
-                  onClick={(e) => handleNavClick(e, item.href)}
-                  className={`text-[15px] font-bold block transition-colors ${
-                    activeSection === item.href.substring(1)
-                      ? 'text-primary-blue'
-                      : 'text-slate-655 dark:text-slate-300'
-                  }`}
-                >
-                  {item.name}
-                </a>
-              )}
-            </li>
-          ))}
-        </ul>
+        {/* Scrollable middle container */}
+        <div className="flex-1 overflow-y-auto px-6 py-4 text-left">
+          <ul className="flex flex-col gap-4">
+            {navItems.map((item) => (
+              <li key={item.name}>
+                {item.to ? (
+                  <Link
+                    to={item.to}
+                    onClick={() => setIsOpen(false)}
+                    className="text-[15px] font-bold block py-1.5 transition-colors text-slate-655 dark:text-slate-300 hover:text-primary-blue"
+                  >
+                    {item.name}
+                  </Link>
+                ) : (
+                  <a
+                    href={item.href}
+                    onClick={(e) => handleNavClick(e, item.href)}
+                    className={`text-[15px] font-bold block py-1.5 transition-colors ${
+                      activeSection === item.href.substring(1)
+                        ? 'text-primary-blue'
+                        : 'text-slate-655 dark:text-slate-300 hover:text-primary-blue'
+                    }`}
+                  >
+                    {item.name}
+                  </a>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
 
-        <div className="flex flex-col gap-3 mt-auto border-t border-slate-100 dark:border-white/5 pt-6">
+        {/* Sticky bottom panel */}
+        <div className="border-t border-slate-100 dark:border-white/5 px-6 py-4 bg-white dark:bg-slate-950 shrink-0 flex flex-col gap-2.5">
           {/* Mobile Auth options */}
           {isAuthenticated ? (
-            <div className="flex flex-col gap-2.5 mb-2">
+            <div className="flex flex-col gap-2.5">
               <Link
                 to={user?.role === 'Admin' ? '/admin' : '/user/dashboard'}
                 onClick={() => setIsOpen(false)}
-                className="flex items-center justify-center gap-2 w-full py-3 bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-white rounded-xl font-bold text-sm border border-slate-200 dark:border-white/5"
+                className="flex items-center justify-center gap-2 w-full py-2.5 bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-white rounded-xl font-bold text-xs border border-slate-200 dark:border-white/5"
               >
                 {user?.role === 'Admin' ? <FaTachometerAlt /> : <FaUserCircle />} Dashboard
               </Link>
@@ -296,17 +312,17 @@ const Navbar = ({ activeSection, toggleTheme, isDark }) => {
                   logout();
                   setIsOpen(false);
                 }}
-                className="flex items-center justify-center gap-2 w-full py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl font-bold text-sm border border-red-500/20 cursor-pointer"
+                className="flex items-center justify-center gap-2 w-full py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl font-bold text-xs border border-red-500/20 cursor-pointer"
               >
                 Sign Out
               </button>
             </div>
           ) : (
-            <div className="mb-2">
+            <div className="flex flex-col gap-2.5">
               <Link
                 to="/admin/login"
                 onClick={() => setIsOpen(false)}
-                className="flex items-center justify-center w-full py-3 bg-primary-blue text-white rounded-xl font-bold text-sm shadow-md"
+                className="flex items-center justify-center w-full py-2.5 bg-primary-blue hover:bg-accent-blue text-white rounded-xl font-bold text-xs shadow-md"
               >
                 Login
               </Link>
@@ -316,7 +332,7 @@ const Navbar = ({ activeSection, toggleTheme, isDark }) => {
           <a
             href="#contact"
             onClick={(e) => handleNavClick(e, '#contact')}
-            className="flex items-center justify-center w-full py-3 bg-slate-100 dark:bg-white/5 text-slate-800 dark:text-white rounded-xl font-bold text-sm border border-slate-200 dark:border-white/5"
+            className="flex items-center justify-center w-full py-2.5 bg-slate-100 dark:bg-white/5 text-slate-800 dark:text-white rounded-xl font-bold text-xs border border-slate-200 dark:border-white/5"
           >
             Hire Me
           </a>
