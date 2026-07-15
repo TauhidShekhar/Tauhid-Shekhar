@@ -293,49 +293,56 @@ const Navbar = ({ activeSection, toggleTheme, isDark }) => {
               </li>
             ))}
           </ul>
-        </div>
 
-        {/* Sticky bottom panel */}
-        <div className="border-t border-slate-100 dark:border-white/5 px-6 py-4 bg-white dark:bg-slate-950 shrink-0 flex flex-col gap-2.5">
-          {/* Mobile Auth options */}
-          {isAuthenticated ? (
-            <div className="flex flex-col gap-2.5">
+          <div className="mobile-auth mt-5 pt-5 border-t border-slate-100 dark:border-white/5 flex flex-col gap-3">
+            {isAuthenticated ? (
+              <>
+                {user?.role === 'Admin' ? (
+                  <a
+                    href={`${VITE_ADMIN_URL}/admin`}
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center justify-center gap-2 w-full min-h-[48px] bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-white rounded-xl font-bold text-sm border border-slate-200 dark:border-white/5 transition-all duration-300"
+                  >
+                    <FaTachometerAlt /> Dashboard
+                  </a>
+                ) : (
+                  <Link
+                    to="/user/dashboard"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center justify-center gap-2 w-full min-h-[48px] bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-white rounded-xl font-bold text-sm border border-slate-200 dark:border-white/5 transition-all duration-300"
+                  >
+                    <FaUserCircle /> Dashboard
+                  </Link>
+                )}
+                <button
+                  onClick={async () => {
+                    await logout();
+                    setIsOpen(false);
+                    navigate('/login');
+                  }}
+                  className="flex items-center justify-center gap-2 w-full min-h-[48px] bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl font-bold text-sm border border-red-500/20 cursor-pointer transition-all duration-300"
+                >
+                  <FaSignOutAlt /> Logout
+                </button>
+              </>
+            ) : (
               <Link
-                to={user?.role === 'Admin' ? '/admin' : '/user/dashboard'}
+                to="/login"
                 onClick={() => setIsOpen(false)}
-                className="flex items-center justify-center gap-2 w-full py-2.5 bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-white rounded-xl font-bold text-xs border border-slate-200 dark:border-white/5"
-              >
-                {user?.role === 'Admin' ? <FaTachometerAlt /> : <FaUserCircle />} Dashboard
-              </Link>
-              <button
-                onClick={() => {
-                  logout();
-                  setIsOpen(false);
-                }}
-                className="flex items-center justify-center gap-2 w-full py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl font-bold text-xs border border-red-500/20 cursor-pointer"
-              >
-                Sign Out
-              </button>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2.5">
-              <Link
-                to="/admin/login"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center justify-center w-full py-2.5 bg-primary-blue hover:bg-accent-blue text-white rounded-xl font-bold text-xs shadow-md"
+                className="flex items-center justify-center w-full min-h-[48px] bg-primary-blue hover:bg-accent-blue text-white rounded-xl font-bold text-sm shadow-md transition-all duration-300"
               >
                 Login
               </Link>
-            </div>
-          )}
+            )}
 
-          <a
-            href="#contact"
-            onClick={(e) => handleNavClick(e, '#contact')}
-            className="flex items-center justify-center w-full py-2.5 bg-slate-100 dark:bg-white/5 text-slate-800 dark:text-white rounded-xl font-bold text-xs border border-slate-200 dark:border-white/5"
-          >
-            Hire Me
-          </a>
+            <a
+              href="#contact"
+              onClick={(e) => handleNavClick(e, '#contact')}
+              className="flex items-center justify-center w-full min-h-[48px] bg-slate-100 dark:bg-white/5 text-slate-800 dark:text-white rounded-xl font-bold text-sm border border-slate-200 dark:border-white/5 transition-all duration-300"
+            >
+              Hire Me
+            </a>
+          </div>
         </div>
       </div>
     </header>
