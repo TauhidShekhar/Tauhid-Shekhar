@@ -289,15 +289,6 @@
       (function() {
         var splash = document.getElementById('premium-splash-wrapper');
         if (!splash) return;
-
-        // Skip if splash has already played in this browser session
-        try {
-          if (sessionStorage.getItem('splash-played') === 'true') {
-            splash.style.display = 'none';
-            splash.remove();
-            return;
-          }
-        } catch (_) {}
         
         var minDuration = 800; // 800ms min duration (fast and premium feel)
         var startTime = Date.now();
@@ -310,9 +301,6 @@
           setTimeout(function() {
             splash.style.opacity = '0';
             splash.style.visibility = 'hidden';
-            try {
-              sessionStorage.setItem('splash-played', 'true');
-            } catch (_) {}
             setTimeout(function() {
               splash.remove();
             }, 400);
@@ -325,9 +313,6 @@
           if (activeSplash) {
             activeSplash.style.opacity = '0';
             activeSplash.style.visibility = 'hidden';
-            try {
-              sessionStorage.setItem('splash-played', 'true');
-            } catch (_) {}
             setTimeout(function() {
               activeSplash.remove();
             }, 400);

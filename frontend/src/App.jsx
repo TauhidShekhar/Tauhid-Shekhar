@@ -42,14 +42,14 @@ const App = () => {
     settings: null,
     hero: null,
     about: null,
-    skills: null,
-    projects: null,
-    experiences: null,
-    services: null,
+    skills: [],
+    projects: [],
+    experiences: [],
+    services: [],
     activeResume: null,
-    education: null,
-    certificates: null,
-    achievements: null
+    education: [],
+    certificates: [],
+    achievements: []
   });
   const settings = portfolioData.settings;
   const [showCookieNotice, setShowCookieNotice] = useState(false);

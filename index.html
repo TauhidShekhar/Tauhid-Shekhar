@@ -281,56 +281,41 @@
         </div>
       </div>
       <!-- Script to execute loading and transition logic -->
-      <script>
-        (function() {
-          var splash = document.getElementById('instant-loader');
-          if (!splash) return;
+    <script>
+      (function() {
+        var splash = document.getElementById('instant-loader');
+        if (!splash) return;
+        
+        var minDuration = 800; // 800ms min duration (fast and premium feel)
+        var startTime = Date.now();
+        var isPageLoaded = false;
 
-          // Skip if splash has already played in this browser session
-          try {
-            if (sessionStorage.getItem('splash-played') === 'true') {
-              splash.style.display = 'none';
-              splash.remove();
-              return;
-            }
-          } catch (_) {}
-          
-          var minDuration = 800; // 800ms min duration (fast and premium feel)
-          var startTime = Date.now();
-          var isPageLoaded = false;
+        function endSplash() {
+          var elapsed = Date.now() - startTime;
+          var remaining = Math.max(0, minDuration - elapsed);
 
-          function endSplash() {
-            var elapsed = Date.now() - startTime;
-            var remaining = Math.max(0, minDuration - elapsed);
-
-            setTimeout(function() {
-              splash.style.opacity = '0';
-              splash.style.visibility = 'hidden';
-              try {
-                sessionStorage.setItem('splash-played', 'true');
-              } catch (_) {}
-              setTimeout(function() {
-                splash.remove();
-              }, 400);
-            }, remaining);
-          }
-
-          // Safety backup: if React fails to mount within 8 seconds, remove the loader
           setTimeout(function() {
-            var activeSplash = document.getElementById('instant-loader');
-            if (activeSplash) {
-              activeSplash.style.opacity = '0';
-              activeSplash.style.visibility = 'hidden';
-              try {
-                sessionStorage.setItem('splash-played', 'true');
-              } catch (_) {}
-              setTimeout(function() {
-                activeSplash.remove();
-              }, 400);
-            }
-          }, 8000);
-        })();
-      </script>
+            splash.style.opacity = '0';
+            splash.style.visibility = 'hidden';
+            setTimeout(function() {
+              splash.remove();
+            }, 400);
+          }, remaining);
+        }
+
+        // Safety backup: if React fails to mount within 8 seconds, remove the loader
+        setTimeout(function() {
+          var activeSplash = document.getElementById('instant-loader');
+          if (activeSplash) {
+            activeSplash.style.opacity = '0';
+            activeSplash.style.visibility = 'hidden';
+            setTimeout(function() {
+              activeSplash.remove();
+            }, 400);
+          }
+        }, 8000);
+      })();
+    </script>
     </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
