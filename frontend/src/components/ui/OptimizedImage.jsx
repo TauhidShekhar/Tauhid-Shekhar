@@ -126,7 +126,7 @@ const OptimizedImage = ({
         sizes={imgSizes}
         loading={priority ? 'eager' : 'lazy'}
         decoding="async"
-        {...(priority ? { fetchpriority: 'high' } : {})}
+        {...(priority ? { fetchPriority: 'high' } : {})}
         onLoad={handleLoad}
         onError={handleError}
         style={imgStyle}

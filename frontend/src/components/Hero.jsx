@@ -367,7 +367,7 @@ const Hero = ({ heroData, resumeData }) => {
               src={heroImg}
               alt={`${siteName} headshot`}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              fetchpriority="high"
+              fetchPriority="high"
               decoding="async"
             />
           </motion.div>

@@ -39,8 +39,8 @@ const GlobalLoader = ({ visible = true }) => {
               </feMerge>
             </filter>
             <linearGradient id="loader-cyan-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#00f3ff" />
-              <stop offset="100%" stop-color="#0071e3" />
+              <stop offset="0%" stopColor="#00f3ff" />
+              <stop offset="100%" stopColor="#0071e3" />
             </linearGradient>
           </defs>
 
