@@ -14,12 +14,11 @@ import { AuthProvider } from './contexts/AuthContext.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 
+import AppLoader from './components/common/AppLoader.jsx';
+
 // Loading Screen Fallback Spinner
 const LoadingScreen = () => (
-  <div className="min-h-screen bg-[#09090c] flex items-center justify-center flex-col gap-4">
-    <div className="w-12 h-12 rounded-full border-4 border-purple-500/20 border-t-purple-500 animate-spin" />
-    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse">Loading Platform...</span>
-  </div>
+  <AppLoader isLoading={true} />
 );
 
 // Dashboards / Profiles (Lazy Loaded)

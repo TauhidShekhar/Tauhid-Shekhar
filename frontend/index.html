@@ -50,233 +50,48 @@
         } catch (e) {}
       })();
     </script>
+    <!-- Wake up the backend serverless instance as early as possible -->
+    <script>
+      (function() {
+        try {
+          var backendUrl = 'https://tauhid-shekhar-portfolio.onrender.com/api/health';
+          fetch(backendUrl, { mode: 'no-cors' }).catch(function() {});
+        } catch (e) {}
+      })();
+    </script>
     <style>
-      /* Inline critical styles for premium splash screen */
-      #premium-splash-wrapper {
-        position: fixed;
-        inset: 0;
-        background-color: #000000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 99999;
-        opacity: 1;
-        transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        transform: translateZ(0);
-        will-change: opacity;
-        backface-visibility: hidden;
-      }
-      .logo-container {
-        position: relative;
-        width: 250px;
-        height: 250px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transform: translateZ(0);
-        will-change: transform;
-      }
-      .splash-logo-svg {
-        width: 100%;
-        height: 100%;
-        overflow: visible;
-      }
-      .center-init-glow {
-        position: absolute;
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background-color: #00f3ff;
-        box-shadow: 0 0 15px 4px #00f3ff, 0 0 30px 8px rgba(0, 243, 255, 0.4);
-        transform: scale(0);
-        opacity: 0;
-        animation: init-glow 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      }
-      @keyframes init-glow {
-        0% { transform: scale(0); opacity: 0; }
-        60% { transform: scale(2); opacity: 1; }
-        100% { transform: scale(1); opacity: 0.8; }
-      }
-      .ring-circle {
-        stroke-dasharray: 440;
-        stroke-dashoffset: 440;
-        transform-origin: 100px 100px;
-        animation: draw-ring 0.2s cubic-bezier(0.4, 0, 0.2, 1) 0.1s forwards,
-                   ring-spin-pulse 0.3s cubic-bezier(0.25, 1, 0.5, 1) 0.65s forwards;
-        will-change: stroke-dashoffset, transform;
-      }
-      @keyframes draw-ring {
-        to { stroke-dashoffset: 0; }
-      }
-      @keyframes ring-spin-pulse {
-        0% { transform: rotate(0deg); }
-        50% { stroke: #00f3ff; }
-        100% { transform: rotate(360deg); }
-      }
-      .crown-path {
-        transform-origin: 100px 66px;
-        transform: scale(0);
-        opacity: 0;
-        animation: crown-pop-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s forwards;
-        will-change: transform, opacity;
-      }
-      @keyframes crown-pop-in {
-        0% { transform: scale(0); opacity: 0; }
-        70% { transform: scale(1.1); opacity: 0.9; }
-        100% { transform: scale(1); opacity: 1; }
-      }
-      .eyes-group {
-        opacity: 0;
-        animation: eyes-fade-in 0.15s ease-out 0.3s forwards;
-      }
-      .eye-left, .eye-right {
-        transform-origin: 85px 98px;
-        animation: eye-blink-cycle 3s infinite 0.5s;
-        will-change: transform;
-      }
-      .eye-right {
-        transform-origin: 115px 98px;
-      }
-      @keyframes eyes-fade-in {
-        to { opacity: 1; }
-      }
-      @keyframes eye-blink-cycle {
-        0%, 90%, 94%, 98%, 100% { transform: scaleY(1); }
-        92%, 96% { transform: scaleY(0.1); }
-      }
-      .text-brand-tauhid {
-        opacity: 0;
-        transform: translateX(-30px);
-        animation: text-slide-l 0.2s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
-        will-change: transform, opacity;
-      }
-      .text-brand-shekhar {
-        opacity: 0;
-        transform: translateX(30px);
-        animation: text-slide-r 0.2s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
-        will-change: transform, opacity;
-      }
-      @keyframes text-slide-l {
-        to { transform: translateX(0); opacity: 1; }
-      }
-      @keyframes text-slide-r {
-        to { transform: translateX(0); opacity: 1; }
-      }
-      .dot-l, .dot-c, .dot-r {
-        opacity: 0;
-        transform-origin: 100px 154px;
-        will-change: transform, opacity;
-      }
-      .dot-l { animation: dot-pop-bounce 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) 0.55s forwards; }
-      .dot-c { animation: dot-pop-bounce 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) 0.58s forwards; }
-      .dot-r { animation: dot-pop-bounce 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) 0.61s forwards; }
-      @keyframes dot-pop-bounce {
-        0% { transform: translateY(12px) scale(0.5); opacity: 0; }
-        60% { transform: translateY(-4px) scale(1.1); opacity: 0.9; }
-        100% { transform: translateY(0) scale(1); opacity: 1; }
-      }
-      .ring-glow-sweep {
-        stroke-dasharray: 440;
-        stroke-dashoffset: 440;
-        transform-origin: 100px 100px;
-        opacity: 0;
-        animation: glow-sweep-spin 0.3s cubic-bezier(0.25, 1, 0.5, 1) 0.65s forwards;
-        will-change: transform, stroke-dashoffset, opacity;
-      }
-      @keyframes glow-sweep-spin {
-        0% { transform: rotate(0deg); stroke-dashoffset: 440; opacity: 0.8; }
-        50% { opacity: 1; }
-        100% { transform: rotate(360deg); stroke-dashoffset: 0; opacity: 0; }
-      }
-      .burst-particles .b-p {
-        transform-origin: 100px 100px;
-        opacity: 0;
-        transform: translate(0, 0) scale(0);
-        animation: burst-emit 0.25s cubic-bezier(0.16, 1, 0.3, 1) 0.65s forwards;
-        will-change: transform, opacity;
-      }
-      @keyframes burst-emit {
-        0% { transform: translate(0, 0) scale(0); opacity: 0; }
-        30% { opacity: 1; }
-        100% { transform: translate(var(--tx), var(--ty)) scale(1); opacity: 0; }
-      }
-      .splash-logo-svg {
-        transform-origin: 100px 100px;
-        animation: soft-pulse 0.2s ease-in-out 0.8s forwards;
-        will-change: transform;
-      }
-      @keyframes soft-pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.04); filter: drop-shadow(0 0 10px rgba(0, 243, 255, 0.3)); }
-        100% { transform: scale(1); }
-      }
-      .pulse-loop-active .splash-logo-svg {
-        animation: pulse-loop 2s infinite ease-in-out !important;
-      }
-      @keyframes pulse-loop {
-        0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(0, 243, 255, 0.1)); }
-        50% { transform: scale(1.03); filter: drop-shadow(0 0 15px rgba(0, 243, 255, 0.4)); }
-      }
-      .splash-fade-out {
-        opacity: 0 !important;
-        pointer-events: none;
-      }
+      /* Keep theme loader styling */
     </style>
   </head>
   <body class="darkmode">
-    <!-- Premium Vector Splash Screen -->
-    <div id="premium-splash-wrapper">
-      <div class="logo-container">
-        <div class="center-init-glow"></div>
-        <svg class="splash-logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <filter id="neon-cyan" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="3" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-            <filter id="neon-glow-sweep" x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation="5" result="blur1" />
-              <feGaussianBlur stdDeviation="10" result="blur2" />
-              <feMerge>
-                <feMergeNode in="blur2" />
-                <feMergeNode in="blur1" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-            <linearGradient id="cyan-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#00f3ff" />
-              <stop offset="100%" stop-color="#0071e3" />
-            </linearGradient>
-          </defs>
-          <circle class="ring-circle" cx="100" cy="100" r="70" stroke="#ffffff" stroke-width="3.5" fill="none" stroke-linecap="round" />
-          <circle class="ring-glow-sweep" cx="100" cy="100" r="70" stroke="url(#cyan-gradient)" stroke-width="4" fill="none" filter="url(#neon-glow-sweep)" stroke-linecap="round" />
-          <path class="crown-path" d="M 100,48 L 114,68 L 132,62 C 128,78 114,84 100,84 C 86,84 72,78 68,62 L 86,68 Z" fill="#00f3ff" filter="url(#neon-cyan)" />
-          <g class="eyes-group">
-            <path class="eye-left" d="M 78,98 Q 85,92 92,98 Q 85,102 78,98 Z" fill="#00f3ff" />
-            <path class="eye-right" d="M 108,98 Q 115,92 122,98 Q 115,102 108,98 Z" fill="#00f3ff" />
-          </g>
-          <text class="text-brand-tauhid" x="100" y="122" font-family="'Outfit', -apple-system, sans-serif" font-weight="900" font-size="16.5" fill="#ffffff" letter-spacing="2" text-anchor="middle">TAUHID</text>
-          <text class="text-brand-shekhar" x="100" y="138" font-family="'Outfit', -apple-system, sans-serif" font-weight="900" font-size="13" fill="#00f3ff" letter-spacing="1.5" text-anchor="middle" filter="url(#neon-cyan)">SHEKHAR</text>
-          <g class="dots-group">
-            <circle class="dot-l" cx="84" cy="154" r="4.5" fill="#ffffff" />
-            <circle class="dot-c" cx="100" cy="154" r="4.5" fill="#00f3ff" filter="url(#neon-cyan)" />
-            <circle class="dot-r" cx="116" cy="154" r="4.5" fill="#ffffff" />
-          </g>
-          <g class="burst-particles">
-            <circle class="b-p" cx="100" cy="100" r="2" fill="#00f3ff" style="--tx: -30px; --ty: -30px" />
-            <circle class="b-p" cx="100" cy="100" r="2" fill="#00f3ff" style="--tx: 30px; --ty: -30px" />
-            <circle class="b-p" cx="100" cy="100" r="2" fill="#00f3ff" style="--tx: 30px; --ty: 30px" />
-            <circle class="b-p" cx="100" cy="100" r="2" fill="#00f3ff" style="--tx: -30px; --ty: 30px" />
-            <circle class="b-p" cx="100" cy="100" r="1.5" fill="#ffffff" style="--tx: 0px; --ty: -40px" />
-            <circle class="b-p" cx="100" cy="100" r="1.5" fill="#ffffff" style="--tx: 40px; --ty: 0px" />
-            <circle class="b-p" cx="100" cy="100" r="1.5" fill="#ffffff" style="--tx: 0px; --ty: 40px" />
-            <circle class="b-p" cx="100" cy="100" r="1.5" fill="#ffffff" style="--tx: -40px; --ty: 0px" />
-          </g>
-        </svg>
+    <!-- High-fidelity inline styled logo loading screen that renders instantly -->
+    <div id="premium-splash-wrapper" style="position: fixed; inset: 0; background-color: #090909; display: flex; align-items: center; justify-content: center; z-index: 999999; transition: opacity 0.4s ease, visibility 0.4s;">
+      <div style="position: relative; width: 160px; height: 160px; display: flex; align-items: center; justify-content: center;">
+        <!-- Spinning Progress Ring -->
+        <div style="position: absolute; width: 150px; height: 150px; border-radius: 50%; border: 3px solid transparent; border-top: 3px solid #a855f7; border-bottom: 3px solid #3b82f6; animation: spin-loader-spin 1.8s cubic-bezier(0.53, 0.21, 0.29, 0.67) infinite; filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.4)) drop-shadow(0 0 15px rgba(59, 130, 246, 0.3));"></div>
+        <!-- Hexagon Logo -->
+        <div style="position: absolute; width: 90px; height: 90px; display: flex; align-items: center; justify-content: center; animation: spin-logo-bounce 2.2s ease-in-out infinite;">
+          <svg viewBox="0 0 100 100" style="width: 100%; height: 100%; filter: drop-shadow(0 0 12px rgba(168, 85, 247, 0.5));">
+            <defs>
+              <linearGradient id="inlineLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#a855f7" />
+                <stop offset="100%" stop-color="#3b82f6" />
+              </linearGradient>
+            </defs>
+            <polygon points="50,15 82,33.5 82,66.5 50,85 18,66.5 18,33.5" fill="none" stroke="url(#inlineLogoGrad)" stroke-width="4" style="stroke-dasharray: 300; stroke-dashoffset: 0;" />
+            <path d="M38,36 H62 M50,36 V64 M40,64 H60 M38,48 H48" fill="none" stroke="#ffffff" stroke-width="5.5" stroke-linecap="round" />
+          </svg>
+        </div>
       </div>
+      <style>
+        @keyframes spin-loader-spin {
+          to { transform: rotate(360deg); }
+        }
+        @keyframes spin-logo-bounce {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.08) rotate(3deg); }
+        }
+      </style>
     </div>
 
     <!-- Script to execute loading and transition logic -->
@@ -297,33 +112,25 @@
         var minDuration = 800; // 800ms min duration (fast and premium feel)
         var startTime = Date.now();
         var isPageLoaded = false;
-        var loopTimer = null;
 
         function endSplash() {
           var elapsed = Date.now() - startTime;
           var remaining = Math.max(0, minDuration - elapsed);
 
           setTimeout(function() {
-            splash.classList.add('splash-fade-out');
+            splash.style.opacity = '0';
+            splash.style.visibility = 'hidden';
             try {
               sessionStorage.setItem('splash-played', 'true');
             } catch (_) {}
             setTimeout(function() {
               splash.remove();
-            }, 300);
+            }, 400);
           }, remaining);
         }
 
-        // Loop pulsing state fallback if loading takes longer than 1s
-        loopTimer = setTimeout(function() {
-          if (!isPageLoaded) {
-            splash.classList.add('pulse-loop-active');
-          }
-        }, minDuration - 100);
-
         window.addEventListener('load', function() {
           isPageLoaded = true;
-          clearTimeout(loopTimer);
           endSplash();
         });
 

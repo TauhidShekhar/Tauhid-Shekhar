@@ -8,12 +8,11 @@ import './index.css';
 import { AuthProvider } from './contexts/AuthContext.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
+import AppLoader from './components/common/AppLoader.jsx';
+
 // Loading Screen Fallback Spinner
 const LoadingScreen = () => (
-  <div className="min-h-screen bg-slate-950 flex items-center justify-center flex-col gap-4">
-    <div className="w-12 h-12 rounded-full border-4 border-primary-blue/20 border-t-primary-blue animate-spin" />
-    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse">Loading CMS Panel...</span>
-  </div>
+  <AppLoader isLoading={true} />
 );
 
 // Auth Pages (Lazy Loaded)
