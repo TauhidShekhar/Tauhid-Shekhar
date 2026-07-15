@@ -16,7 +16,7 @@ const ProtectedRoute = ({ children, allowedRoles = ['Admin'] }) => {
 
   if (!isAuthenticated) {
     // Redirect to login page, preserving path to redirect back later
-    return <Navigate to="/admin/login" state={{ from: location }} replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(user?.role)) {

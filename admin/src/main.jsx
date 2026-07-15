@@ -80,15 +80,16 @@ createRoot(document.getElementById('root')).render(
 
             {/* Protected Admin CMS Dashboard Routes */}
             <Route 
-              path="/admin/dashboard" 
+              path="/admin" 
               element={
                 <ProtectedRoute allowedRoles={['Admin']}>
                   <AdminLayout />
                 </ProtectedRoute>
               }
             >
-              <Route index element={<Dashboard />} />
-              <Route path="hero" element={<HeroManager />} />
+              <Route index element={<Navigate to="/admin/dashboard" replace />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="cms" element={<HeroManager />} />
               <Route path="about" element={<AboutManager />} />
               <Route path="skills" element={<SkillsManager />} />
               <Route path="projects" element={<ProjectsManager />} />

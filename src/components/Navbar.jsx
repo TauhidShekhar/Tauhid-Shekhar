@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 import { 
@@ -10,6 +10,7 @@ import {
 
 const Navbar = ({ activeSection, toggleTheme, isDark }) => {
   const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [settings, setSettings] = useState(null);
@@ -166,10 +167,10 @@ const Navbar = ({ activeSection, toggleTheme, isDark }) => {
                   </div>
                   {user?.role === 'Admin' ? (
                     <>
-                      <Link to="/admin" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-blue transition-colors">
+                      <Link to="/admin/dashboard" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-blue transition-colors">
                         <FaTachometerAlt /> Admin Dashboard
                       </Link>
-                      <Link to="/admin/hero" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-blue transition-colors">
+                      <Link to="/admin/cms" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-blue transition-colors">
                         <FaGlobe /> Website CMS
                       </Link>
                       <Link to="/admin/users" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-blue transition-colors">
@@ -181,16 +182,16 @@ const Navbar = ({ activeSection, toggleTheme, isDark }) => {
                     </>
                   ) : (
                     <>
-                      <Link to="/user/dashboard" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-blue transition-colors">
+                      <Link to="/dashboard" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-blue transition-colors">
                         <FaTachometerAlt /> Dashboard
                       </Link>
-                      <Link to="/user/dashboard" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-blue transition-colors">
+                      <Link to="/dashboard" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-blue transition-colors">
                         <FaUserCircle /> My Profile
                       </Link>
                     </>
                   )}
                   <div className="border-t border-slate-100 dark:border-white/5 mt-1.5 pt-1.5">
-                    <button onClick={() => { logout(); setDropdownOpen(false); }} className="flex items-center gap-2.5 w-full text-left px-4 py-2 text-xs font-bold text-red-500 hover:bg-red-500/5 transition-colors cursor-pointer">
+                    <button onClick={async () => { await logout(); setDropdownOpen(false); navigate('/login'); }} className="flex items-center gap-2.5 w-full text-left px-4 py-2 text-xs font-bold text-red-500 hover:bg-red-500/5 transition-colors cursor-pointer">
                       <FaSignOutAlt /> Logout
                     </button>
                   </div>
@@ -200,7 +201,7 @@ const Navbar = ({ activeSection, toggleTheme, isDark }) => {
           ) : (
             <div className="flex items-center gap-2 border-l border-slate-200/50 dark:border-white/10 pl-4 py-1">
               <Link
-                to="/admin/login"
+                to="/login"
                 className="px-4.5 py-2 bg-primary-blue hover:bg-accent-blue text-white rounded-full text-xs font-bold tracking-wider uppercase transition-all duration-300 hover:-translate-y-0.5 shadow-md shadow-primary-blue/20"
               >
                 Login

@@ -138,34 +138,34 @@ const AdminLayout = () => {
           </button>
           {sections.content && (
             <div className="flex flex-col gap-0.5 mt-1.5 pl-1.5">
-              <Link to="/admin/dashboard/hero" onClick={handleLinkClick} className={isActive('/admin/dashboard/hero') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/cms" onClick={handleLinkClick} className={isActive('/admin/cms') ? activeLinkClass : inactiveLinkClass}>
                 <FaHome size={12} /> Home
               </Link>
-              <Link to="/admin/dashboard/about" onClick={handleLinkClick} className={isActive('/admin/dashboard/about') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/about" onClick={handleLinkClick} className={isActive('/admin/about') ? activeLinkClass : inactiveLinkClass}>
                 <FaUserCircle size={12} /> About
               </Link>
-              <Link to="/admin/dashboard/skills" onClick={handleLinkClick} className={isActive('/admin/dashboard/skills') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/skills" onClick={handleLinkClick} className={isActive('/admin/skills') ? activeLinkClass : inactiveLinkClass}>
                 <FaCode size={12} /> Skills
               </Link>
-              <Link to="/admin/dashboard/projects" onClick={handleLinkClick} className={isActive('/admin/dashboard/projects') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/projects" onClick={handleLinkClick} className={isActive('/admin/projects') ? activeLinkClass : inactiveLinkClass}>
                 <FaBriefcase size={12} /> Projects
               </Link>
-              <Link to="/admin/dashboard/services" onClick={handleLinkClick} className={isActive('/admin/dashboard/services') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/services" onClick={handleLinkClick} className={isActive('/admin/services') ? activeLinkClass : inactiveLinkClass}>
                 <FaLaptopCode size={12} /> Services
               </Link>
-              <Link to="/admin/dashboard/experience" onClick={handleLinkClick} className={isActive('/admin/dashboard/experience') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/experience" onClick={handleLinkClick} className={isActive('/admin/experience') ? activeLinkClass : inactiveLinkClass}>
                 <FaHistory size={12} /> Experience
               </Link>
-              <Link to="/admin/dashboard/education" onClick={handleLinkClick} className={isActive('/admin/dashboard/education') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/education" onClick={handleLinkClick} className={isActive('/admin/education') ? activeLinkClass : inactiveLinkClass}>
                 <FaAward size={12} /> Education
               </Link>
-              <Link to="/admin/dashboard/certificates" onClick={handleLinkClick} className={isActive('/admin/dashboard/certificates') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/certificates" onClick={handleLinkClick} className={isActive('/admin/certificates') ? activeLinkClass : inactiveLinkClass}>
                 <FaCertificate size={12} /> Certifications
               </Link>
-              <Link to="/admin/dashboard/achievements" onClick={handleLinkClick} className={isActive('/admin/dashboard/achievements') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/achievements" onClick={handleLinkClick} className={isActive('/admin/achievements') ? activeLinkClass : inactiveLinkClass}>
                 <FaAward size={12} /> Achievements
               </Link>
-              <Link to="/admin/dashboard/resume" onClick={handleLinkClick} className={isActive('/admin/dashboard/resume') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/resume" onClick={handleLinkClick} className={isActive('/admin/resume') ? activeLinkClass : inactiveLinkClass}>
                 <FaFileAlt size={12} /> Resume
               </Link>
             </div>
@@ -182,16 +182,16 @@ const AdminLayout = () => {
           </button>
           {sections.engagement && (
             <div className="flex flex-col gap-0.5 mt-1.5 pl-1.5">
-              <Link to="/admin/dashboard/blogs" onClick={handleLinkClick} className={isActive('/admin/dashboard/blogs') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/blogs" onClick={handleLinkClick} className={isActive('/admin/blogs') ? activeLinkClass : inactiveLinkClass}>
                 <FaBook size={12} /> Blog Posts
               </Link>
-              <Link to="/admin/dashboard/testimonials" onClick={handleLinkClick} className={isActive('/admin/dashboard/testimonials') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/testimonials" onClick={handleLinkClick} className={isActive('/admin/testimonials') ? activeLinkClass : inactiveLinkClass}>
                 <FaQuoteLeft size={12} /> Testimonials
               </Link>
-              <Link to="/admin/dashboard/gallery" onClick={handleLinkClick} className={isActive('/admin/dashboard/gallery') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/gallery" onClick={handleLinkClick} className={isActive('/admin/gallery') ? activeLinkClass : inactiveLinkClass}>
                 <FaImages size={12} /> Media Gallery
               </Link>
-              <Link to="/admin/dashboard/messages" onClick={handleLinkClick} className={isActive('/admin/dashboard/messages') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/messages" onClick={handleLinkClick} className={isActive('/admin/messages') ? activeLinkClass : inactiveLinkClass}>
                 <FaEnvelope size={12} /> 
                 <span className="flex items-center justify-between w-full">
                   Contact Messages
@@ -200,10 +200,10 @@ const AdminLayout = () => {
                   )}
                 </span>
               </Link>
-              <Link to="/admin/dashboard/orders" onClick={handleLinkClick} className={isActive('/admin/dashboard/orders') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/orders" onClick={handleLinkClick} className={isActive('/admin/orders') ? activeLinkClass : inactiveLinkClass}>
                 <FaShoppingBag size={12} /> Service Orders
               </Link>
-              <Link to="/admin/dashboard/community" onClick={handleLinkClick} className={isActive('/admin/dashboard/community') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/community" onClick={handleLinkClick} className={isActive('/admin/community') ? activeLinkClass : inactiveLinkClass}>
                 <FaUsers size={12} /> Community CMS
               </Link>
             </div>
@@ -220,19 +220,19 @@ const AdminLayout = () => {
           </button>
           {sections.management && (
             <div className="flex flex-col gap-0.5 mt-1.5 pl-1.5">
-              <Link to="/admin/dashboard/media" onClick={handleLinkClick} className={isActive('/admin/dashboard/media') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/media" onClick={handleLinkClick} className={isActive('/admin/media') ? activeLinkClass : inactiveLinkClass}>
                 <FaImages size={12} /> Media Library
               </Link>
-              <Link to="/admin/dashboard/users" onClick={handleLinkClick} className={isActive('/admin/dashboard/users') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/users" onClick={handleLinkClick} className={isActive('/admin/users') ? activeLinkClass : inactiveLinkClass}>
                 <FaUserCog size={12} /> Users Directory
               </Link>
-              <Link to="/admin/dashboard/doubts" onClick={handleLinkClick} className={isActive('/admin/dashboard/doubts') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/doubts" onClick={handleLinkClick} className={isActive('/admin/doubts') ? activeLinkClass : inactiveLinkClass}>
                 <FaQuestionCircle size={12} /> Doubts Lounge
               </Link>
-              <Link to="/admin/dashboard/audit-logs" onClick={handleLinkClick} className={isActive('/admin/dashboard/audit-logs') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/audit-logs" onClick={handleLinkClick} className={isActive('/admin/audit-logs') ? activeLinkClass : inactiveLinkClass}>
                 <FaHistory size={12} /> System Audit Logs
               </Link>
-              <Link to="/admin/dashboard/features" onClick={handleLinkClick} className={isActive('/admin/dashboard/features') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/features" onClick={handleLinkClick} className={isActive('/admin/features') ? activeLinkClass : inactiveLinkClass}>
                 <FaRocket size={12} /> Feature Management
               </Link>
             </div>
@@ -249,25 +249,25 @@ const AdminLayout = () => {
           </button>
           {sections.config && (
             <div className="flex flex-col gap-0.5 mt-1.5 pl-1.5">
-              <Link to="/admin/dashboard/settings" onClick={handleLinkClick} className={isActive('/admin/dashboard/settings') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/settings" onClick={handleLinkClick} className={isActive('/admin/settings') ? activeLinkClass : inactiveLinkClass}>
                 <FaCog size={12} /> Site Settings
               </Link>
-              <Link to="/admin/dashboard/seo" onClick={handleLinkClick} className={isActive('/admin/dashboard/seo') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/seo" onClick={handleLinkClick} className={isActive('/admin/seo') ? activeLinkClass : inactiveLinkClass}>
                 <FaGlobe size={12} /> SEO & Tags
               </Link>
-              <Link to="/admin/dashboard/theme" onClick={handleLinkClick} className={isActive('/admin/dashboard/theme') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/theme" onClick={handleLinkClick} className={isActive('/admin/theme') ? activeLinkClass : inactiveLinkClass}>
                 <FaCog size={12} /> Theme Settings
               </Link>
-              <Link to="/admin/dashboard/analytics" onClick={handleLinkClick} className={isActive('/admin/dashboard/analytics') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/analytics" onClick={handleLinkClick} className={isActive('/admin/analytics') ? activeLinkClass : inactiveLinkClass}>
                 <FaChartLine size={12} /> Analytics Dashboard
               </Link>
-              <Link to="/admin/dashboard/performance" onClick={handleLinkClick} className={isActive('/admin/dashboard/performance') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/performance" onClick={handleLinkClick} className={isActive('/admin/performance') ? activeLinkClass : inactiveLinkClass}>
                 <FaRocket size={12} /> System Performance
               </Link>
-              <Link to="/admin/dashboard/backup" onClick={handleLinkClick} className={isActive('/admin/dashboard/backup') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/backup" onClick={handleLinkClick} className={isActive('/admin/backup') ? activeLinkClass : inactiveLinkClass}>
                 <FaDatabase size={12} /> Backup & Restore
               </Link>
-              <Link to="/admin/dashboard/security" onClick={handleLinkClick} className={isActive('/admin/dashboard/security') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/security" onClick={handleLinkClick} className={isActive('/admin/security') ? activeLinkClass : inactiveLinkClass}>
                 <FaShieldAlt size={12} /> Account Security
               </Link>
             </div>

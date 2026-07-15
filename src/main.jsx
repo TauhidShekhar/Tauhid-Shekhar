@@ -75,11 +75,11 @@ createRoot(document.getElementById('root')).render(
           <Route path="/" element={<App />} />
 
           {/* Public Auth Routes */}
-          <Route path="/admin/login" element={<Auth />} />
-          <Route path="/admin/register" element={<Auth />} />
-          <Route path="/admin/forgot-password" element={<ForgotPassword />} />
-          <Route path="/admin/reset-password/:token" element={<ResetPassword />} />
-          <Route path="/admin/verify-email/:token" element={<VerifyEmail />} />
+          <Route path="/login" element={<Auth />} />
+          <Route path="/register" element={<Auth />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/verify-email/:token" element={<VerifyEmail />} />
 
           {/* Protected User Dashboard Route */}
           <Route 
@@ -95,13 +95,14 @@ createRoot(document.getElementById('root')).render(
           <Route 
             path="/admin" 
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['Admin']}>
                 <AdminLayout />
               </ProtectedRoute>
             }
           >
-            <Route index element={<Dashboard />} />
-            <Route path="hero" element={<HeroManager />} />
+            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="cms" element={<HeroManager />} />
             <Route path="about" element={<AboutManager />} />
             <Route path="skills" element={<SkillsManager />} />
             <Route path="projects" element={<ProjectsManager />} />

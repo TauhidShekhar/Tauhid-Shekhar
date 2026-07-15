@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 import { getCacheBustedUrl } from '../utils/cacheBuster';
@@ -14,6 +14,7 @@ import {
 
 const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
   const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
   const rawAdminUrl = import.meta.env.VITE_ADMIN_URL;
   const VITE_ADMIN_URL = (rawAdminUrl && rawAdminUrl !== 'undefined' && rawAdminUrl !== 'null') 
     ? rawAdminUrl 
@@ -24,6 +25,22 @@ const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
   const [scrolled, setScrolled] = useState(false);
   const [settings, setSettings] = useState(settingsData || null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const AdminLink = ({ to, children, className }) => {
+    const isUnified = !VITE_ADMIN_URL || VITE_ADMIN_URL.includes(window.location.host);
+    if (isUnified) {
+      return (
+        <Link to={to} onClick={() => setDropdownOpen(false)} className={className}>
+          {children}
+        </Link>
+      );
+    }
+    return (
+      <a href={`${VITE_ADMIN_URL}${to}`} onClick={() => setDropdownOpen(false)} className={className}>
+        {children}
+      </a>
+    );
+  };
 
   useEffect(() => {
     if (settingsData) {
@@ -183,31 +200,31 @@ const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
                   </div>
                   {user?.role === 'Admin' ? (
                     <>
-                      <a href={`${VITE_ADMIN_URL}/admin`} onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-blue transition-colors">
+                      <AdminLink to="/admin/dashboard" className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-blue transition-colors">
                         <FaTachometerAlt /> Admin Dashboard
-                      </a>
-                      <a href={`${VITE_ADMIN_URL}/admin/hero`} onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-blue transition-colors">
+                      </AdminLink>
+                      <AdminLink to="/admin/cms" className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-blue transition-colors">
                         <FaGlobe /> Website CMS
-                      </a>
-                      <a href={`${VITE_ADMIN_URL}/admin/users`} onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-blue transition-colors">
+                      </AdminLink>
+                      <AdminLink to="/admin/users" className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-blue transition-colors">
                         <FaUserCircle /> User Management
-                      </a>
-                      <a href={`${VITE_ADMIN_URL}/admin/settings`} onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-blue transition-colors">
+                      </AdminLink>
+                      <AdminLink to="/admin/settings" className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-blue transition-colors">
                         <FaCog /> Settings
-                      </a>
+                      </AdminLink>
                     </>
                   ) : (
                     <>
-                      <Link to="/user/dashboard" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-blue transition-colors">
+                      <Link to="/dashboard" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-305 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-blue transition-colors">
                         <FaTachometerAlt /> Dashboard
                       </Link>
-                      <Link to="/user/dashboard" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-blue transition-colors">
+                      <Link to="/dashboard" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-305 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-blue transition-colors">
                         <FaUserCircle /> My Profile
                       </Link>
                     </>
                   )}
                   <div className="border-t border-slate-100 dark:border-white/5 mt-1.5 pt-1.5">
-                    <button onClick={() => { logout(); setDropdownOpen(false); }} className="flex items-center gap-2.5 w-full text-left px-4 py-2 text-xs font-bold text-red-500 hover:bg-red-500/5 transition-colors cursor-pointer">
+                    <button onClick={async () => { await logout(); setDropdownOpen(false); navigate('/login'); }} className="flex items-center gap-2.5 w-full text-left px-4 py-2 text-xs font-bold text-red-500 hover:bg-red-500/5 transition-colors cursor-pointer">
                       <FaSignOutAlt /> Logout
                     </button>
                   </div>
