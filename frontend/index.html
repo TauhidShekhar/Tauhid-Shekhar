@@ -319,23 +319,20 @@
           }, remaining);
         }
 
-        if (document.readyState === 'complete' || document.readyState === 'interactive') {
-          isPageLoaded = true;
-          endSplash();
-        } else {
-          window.addEventListener('load', function() {
-            isPageLoaded = true;
-            endSplash();
-          });
-        }
-
-        // Safety backup end in 5s
+        // Safety backup: if React fails to mount within 8 seconds, remove the loader
         setTimeout(function() {
-          if (document.getElementById('premium-splash-wrapper')) {
-            isPageLoaded = true;
-            endSplash();
+          var activeSplash = document.getElementById('premium-splash-wrapper');
+          if (activeSplash) {
+            activeSplash.style.opacity = '0';
+            activeSplash.style.visibility = 'hidden';
+            try {
+              sessionStorage.setItem('splash-played', 'true');
+            } catch (_) {}
+            setTimeout(function() {
+              activeSplash.remove();
+            }, 400);
           }
-        }, 5000);
+        }, 8000);
       })();
     </script>
 
