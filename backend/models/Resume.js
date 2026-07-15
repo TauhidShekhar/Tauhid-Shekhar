@@ -80,7 +80,7 @@ const grammarCheckerSchema = new mongoose.Schema({
   passiveVoiceCount: { type: Number, default: 0 },
   weakWordsCount: { type: Number, default: 0 },
   repeatedWordsCount: { type: Number, default: 0 }
-}, { _id: false });
+}, { _id: false, suppressReservedKeysWarning: true });
 
 const readabilitySchema = new mongoose.Schema({
   readingTime: { type: Number, default: 0 }, // in minutes
