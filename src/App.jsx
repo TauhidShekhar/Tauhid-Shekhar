@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import AppLoader from './components/common/AppLoader';
 import Navbar from './components/Navbar';
 import ParticlesBackground from './components/ParticlesBackground';
 import CustomCursor from './components/CustomCursor';
@@ -220,11 +221,7 @@ const App = () => {
   return (
     <>
       {/* Pre-loader loading screen */}
-      {loading && (
-        <div className="fixed inset-0 bg-slate-50 dark:bg-black z-[10000] flex items-center justify-center">
-          <div className="w-12 h-12 rounded-full border-4 border-slate-200/80 dark:border-white/5 border-t-primary-blue animate-spin" />
-        </div>
-      )}
+      <AppLoader isLoading={loading} />
 
       {/* Mouse Glow Background Effect */}
       <div className="mouse-glow-bg" />

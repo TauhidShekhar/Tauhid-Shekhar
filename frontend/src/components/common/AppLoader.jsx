@@ -47,40 +47,17 @@ const AppLoader = ({ isLoading, onFinished }) => {
           <div className="loader-progress-ring"></div>
         </div>
 
-        {/* Animated Custom Logo */}
+        {/* Animated Brand Logo Image */}
         <div className="loader-logo-wrapper">
-          <svg className="loader-logo-svg" viewBox="0 0 100 100">
-            <defs>
-              <linearGradient id="loaderLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#a855f7" />
-                <stop offset="100%" stopColor="#3b82f6" />
-              </linearGradient>
-              <filter id="loaderLogoGlow">
-                <feGaussianBlur stdDeviation="3.5" result="coloredBlur"/>
-                <feMerge>
-                  <feMergeNode in="coloredBlur"/>
-                  <feMergeNode in="SourceGraphic"/>
-                </feMerge>
-              </filter>
-            </defs>
-            {/* Hexagon Outline */}
-            <polygon 
-              points="50,15 82,33.5 82,66.5 50,85 18,66.5 18,33.5" 
-              fill="none" 
-              stroke="url(#loaderLogoGrad)" 
-              strokeWidth="4" 
-              className="hexagon-shape"
-            />
-            {/* Stylized TS Initials */}
-            <path 
-              d="M38,36 H62 M50,36 V64 M40,64 H60 M38,48 H48" 
-              fill="none" 
-              stroke="#ffffff" 
-              strokeWidth="5.5" 
-              strokeLinecap="round" 
-              className="logo-letters"
-            />
-          </svg>
+          <img 
+            src="/assits/tauhidshekhar.png" 
+            alt="Tauhid Shekhar Logo" 
+            className="loader-logo-img"
+            onError={(e) => {
+              // Fallback to logo2 if main logo fails
+              e.target.src = '/assits/logo2.png';
+            }}
+          />
         </div>
       </div>
     </div>

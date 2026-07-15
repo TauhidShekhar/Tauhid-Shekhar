@@ -1,17 +1,14 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import AppLoader from './common/AppLoader';
 
 const ProtectedRoute = ({ children, allowedRoles = ['Admin'] }) => {
   const { isAuthenticated, user, isLoading } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-slate-50 dark:bg-black flex items-center justify-center">
-        <div className="w-12 h-12 rounded-full border-4 border-slate-200 border-t-primary-blue animate-spin" />
-      </div>
-    );
+    return <AppLoader isLoading={isLoading} />;
   }
 
   if (!isAuthenticated) {

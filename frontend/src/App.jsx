@@ -1,4 +1,5 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
+import AppLoader from './components/common/AppLoader';
 import Navbar from './components/Navbar';
 import CustomCursor from './components/CustomCursor';
 import Hero from './components/Hero';
@@ -372,12 +373,7 @@ const App = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#09090c] flex items-center justify-center flex-col gap-4">
-        <div className="w-12 h-12 rounded-full border-4 border-purple-500/20 border-t-purple-500 animate-spin" />
-        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse">Loading Platform...</span>
-      </div>
-    );
+    return <AppLoader isLoading={loading} />;
   }
 
   return (
