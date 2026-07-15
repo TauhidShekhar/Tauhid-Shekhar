@@ -50,6 +50,10 @@ const apiRequest = async (endpoint, options = {}) => {
 
   let url = `${API_BASE}${endpoint}`;
 
+  // Configure 6-second request timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 6000);
+
   const requestPromise = (async () => {
     try {
       const response = await fetch(url, {
@@ -57,8 +61,16 @@ const apiRequest = async (endpoint, options = {}) => {
         headers,
         credentials: 'include', // Crucial for HttpOnly cookies on cross-origin requests
         cache: 'no-store', // Disable browser caching for fresh database data
+        signal: controller.signal
       });
+      clearTimeout(timeoutId);
       return await checkResponse(response);
+    } catch (err) {
+      clearTimeout(timeoutId);
+      if (err.name === 'AbortError') {
+        throw new Error('API Request timed out after 6 seconds');
+      }
+      throw err;
     } finally {
       if (method === 'GET') {
         inflightRequests.delete(endpoint);

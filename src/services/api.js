@@ -16,18 +16,32 @@ const apiRequest = async (endpoint, options = {}) => {
     url = `${url}${separator}t=${Date.now()}`;
   }
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-    credentials: 'include', // Crucial for HttpOnly cookies on cross-origin requests
-    cache: 'no-store', // Disable browser caching for fresh database data
-  });
+  // Configure 6-second request timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 6000);
 
-  const result = await response.json();
-  if (!response.ok) {
-    throw new Error(result.message || 'API request failed');
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers,
+      credentials: 'include', // Crucial for HttpOnly cookies on cross-origin requests
+      cache: 'no-store', // Disable browser caching for fresh database data
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.message || 'API request failed');
+    }
+    return result;
+  } catch (err) {
+    clearTimeout(timeoutId);
+    if (err.name === 'AbortError') {
+      throw new Error('API Request timed out after 6 seconds');
+    }
+    throw err;
   }
-  return result;
 };
 
 // Helper for multipart/form-data requests (file uploads)
