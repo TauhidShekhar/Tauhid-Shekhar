@@ -16,9 +16,10 @@ import ErrorBoundary from './components/ErrorBoundary.jsx';
 
 import AppLoader from './components/common/AppLoader.jsx';
 
-// Loading Screen Fallback Spinner
 const LoadingScreen = () => (
-  <AppLoader isLoading={true} />
+  <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+    <div className="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+  </div>
 );
 
 // Dashboards / Profiles (Lazy Loaded)

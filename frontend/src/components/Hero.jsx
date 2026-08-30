@@ -114,19 +114,19 @@ const Hero = ({ heroData, resumeData }) => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2,
+        staggerChildren: 0.06,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { y: 30, opacity: 0 },
+    hidden: { y: 15, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
       transition: {
-        duration: 0.8,
-        ease: [0.16, 1, 0.3, 1], // Apple-style ease out
+        duration: 0.35,
+        ease: [0.16, 1, 0.3, 1],
       },
     },
   };

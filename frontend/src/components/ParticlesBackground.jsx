@@ -33,7 +33,8 @@ const ParticlesBackground = () => {
 
     handleResize();
 
-    const particleCount = Math.min(Math.floor((window.innerWidth * window.innerHeight) / 10000), 100);
+    const isMobileDevice = window.innerWidth < 768;
+    const particleCount = isMobileDevice ? 20 : 35;
     
     // Initialize particles
     for (let i = 0; i < particleCount; i++) {
@@ -60,7 +61,8 @@ const ParticlesBackground = () => {
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const isDark = document.body.classList.contains('darkmode');
-      const maxDistance = 110;
+      const maxDistance = 90;
+      const maxDistSq = maxDistance * maxDistance;
 
       // Draw connection lines
       for (let i = 0; i < particles.length; i++) {
@@ -69,9 +71,10 @@ const ParticlesBackground = () => {
           const p2 = particles[j];
           const dx = p1.x - p2.x;
           const dy = p1.y - p2.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
+          const distSq = dx * dx + dy * dy;
 
-          if (dist < maxDistance) {
+          if (distSq < maxDistSq) {
+            const dist = Math.sqrt(distSq);
             const alpha = (1 - dist / maxDistance) * 0.35;
             ctx.beginPath();
             ctx.strokeStyle = isDark 

@@ -65,29 +65,11 @@ const App = () => {
   });
   const navigate = useNavigate();
   const location = useLocation();
-  const { showLoader, hideLoader } = useLoading();
-  const isInitialMount = React.useRef(true);
-
-  useEffect(() => {
-    // Skip showing the loader transition on the very first mount/startup of the SPA
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-
-    // Show premium loader transition on subsequent route changes (between main site & community/etc)
-    showLoader();
-    const timer = setTimeout(() => {
-      hideLoader();
-    }, 700); // Premium short transition duration (700ms)
-    return () => clearTimeout(timer);
-  }, [location.pathname]);
-
   const [activeSection, setActiveSection] = useState('home');
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [drawerExpanded, setDrawerExpanded] = useState(true);
 
