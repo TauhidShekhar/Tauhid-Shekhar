@@ -4,15 +4,32 @@ import { api } from '../services/api';
 import { FaGraduationCap, FaAward, FaBriefcase, FaCheckCircle, FaLanguage } from 'react-icons/fa';
 
 const getAbsolutePdfUrl = (url) => {
-  if (!url) return '';
+  if (!url || typeof url !== 'string') return '/assits/Resume-file.pdf';
   let cleanUrl = url.trim();
+  if (!cleanUrl) return '/assits/Resume-file.pdf';
+
   if (cleanUrl.includes('/raw/upload/') && cleanUrl.toLowerCase().endsWith('.pdf')) {
     cleanUrl = cleanUrl.replace('/raw/upload/', '/image/upload/');
   }
-  if (/^(f|ht)tps?:\/\//i.test(cleanUrl)) {
-    return cleanUrl;
+
+  if (/^https?:\/\//i.test(cleanUrl)) {
+    return cleanUrl.replace(/^http:\/\//i, 'https://');
   }
-  return `https://${cleanUrl}`;
+
+  if (cleanUrl.startsWith('//')) {
+    return `https:${cleanUrl}`;
+  }
+
+  if (cleanUrl.startsWith('/assits/') || cleanUrl.startsWith('assits/') || cleanUrl.startsWith('/assets/') || cleanUrl.startsWith('assets/')) {
+    return cleanUrl.startsWith('/') ? cleanUrl : `/${cleanUrl}`;
+  }
+
+  const backendApi = typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL 
+    ? import.meta.env.VITE_API_URL 
+    : 'https://tauhid-shekhar-portfolio.onrender.com/api';
+  const backendBase = backendApi.replace(/\/api\/?$/, '');
+  const relativePath = cleanUrl.startsWith('/') ? cleanUrl : `/${cleanUrl}`;
+  return `${backendBase}${relativePath}`;
 };
 
 const About = ({ aboutData, resumeData }) => {
@@ -105,19 +122,13 @@ const About = ({ aboutData, resumeData }) => {
   const aboutText = settings?.aboutContent || 'Results-oriented Full Stack Web Developer with practical experience in building responsive web applications using HTML5, CSS3, JavaScript, React.js, Node.js, Express.js, MongoDB, and MySQL. Experienced in developing REST APIs, authentication systems, dashboards, and responsive user interfaces. Passionate about solving real-world problems, writing clean code, and continuously learning modern technologies.';
   const resumeLink = getAbsolutePdfUrl(activeResume?.fileUrl || settings?.resumeUrl || '');
   
-  const handleViewResume = async (e) => {
-    e?.preventDefault();
-    if (!resumeLink) return;
-    try {
-      const response = await fetch(resumeLink);
-      if (!response.ok) throw new Error('Fetch failed');
-      const blob = await response.blob();
-      const pdfBlob = new Blob([blob], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(pdfBlob);
-      window.open(url, '_blank');
-    } catch (err) {
-      console.error('Failed to view resume inline from About:', err.message);
-      window.open(resumeLink, '_blank');
+  const handleViewResume = (e) => {
+    if (e) e.preventDefault();
+    const linkToOpen = resumeLink || getAbsolutePdfUrl(activeResume?.fileUrl || settings?.resumeUrl || '');
+    if (!linkToOpen) return;
+    const win = window.open(linkToOpen, '_blank', 'noopener,noreferrer');
+    if (!win) {
+      window.location.href = linkToOpen;
     }
   };
   

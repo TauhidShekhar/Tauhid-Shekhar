@@ -7,15 +7,32 @@ import {
 } from 'react-icons/fa';
 
 const getAbsolutePdfUrl = (url) => {
-  if (!url) return '';
+  if (!url || typeof url !== 'string') return '/assits/Resume-file.pdf';
   let cleanUrl = url.trim();
+  if (!cleanUrl) return '/assits/Resume-file.pdf';
+
   if (cleanUrl.includes('/raw/upload/') && cleanUrl.toLowerCase().endsWith('.pdf')) {
     cleanUrl = cleanUrl.replace('/raw/upload/', '/image/upload/');
   }
-  if (/^(f|ht)tps?:\/\//i.test(cleanUrl)) {
-    return cleanUrl;
+
+  if (/^https?:\/\//i.test(cleanUrl)) {
+    return cleanUrl.replace(/^http:\/\//i, 'https://');
   }
-  return `https://${cleanUrl}`;
+
+  if (cleanUrl.startsWith('//')) {
+    return `https:${cleanUrl}`;
+  }
+
+  if (cleanUrl.startsWith('/assits/') || cleanUrl.startsWith('assits/') || cleanUrl.startsWith('/assets/') || cleanUrl.startsWith('assets/')) {
+    return cleanUrl.startsWith('/') ? cleanUrl : `/${cleanUrl}`;
+  }
+
+  const backendApi = typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL 
+    ? import.meta.env.VITE_API_URL 
+    : 'https://tauhid-shekhar-portfolio.onrender.com/api';
+  const backendBase = backendApi.replace(/\/api\/?$/, '');
+  const relativePath = cleanUrl.startsWith('/') ? cleanUrl : `/${cleanUrl}`;
+  return `${backendBase}${relativePath}`;
 };
 
 const Hero = () => {
@@ -130,19 +147,13 @@ const Hero = () => {
   const resumeLink = getAbsolutePdfUrl(settings?.resumeUrl || 'assits/Resume-file.pdf');
   const heroBg = settings?.heroBackground?.url || '';
 
-  const handleViewResume = async (e) => {
-    e?.preventDefault();
-    if (!resumeLink) return;
-    try {
-      const response = await fetch(resumeLink);
-      if (!response.ok) throw new Error('Fetch failed');
-      const blob = await response.blob();
-      const pdfBlob = new Blob([blob], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(pdfBlob);
-      window.open(url, '_blank');
-    } catch (err) {
-      console.error('Failed to view resume inline from legacy Hero:', err.message);
-      window.open(resumeLink, '_blank');
+  const handleViewResume = (e) => {
+    if (e) e.preventDefault();
+    const linkToOpen = resumeLink || getAbsolutePdfUrl(settings?.resumeUrl || 'assits/Resume-file.pdf');
+    if (!linkToOpen) return;
+    const win = window.open(linkToOpen, '_blank', 'noopener,noreferrer');
+    if (!win) {
+      window.location.href = linkToOpen;
     }
   };
 

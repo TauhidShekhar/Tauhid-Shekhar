@@ -8,12 +8,32 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 
 const getAbsolutePdfUrl = (url) => {
-  if (!url) return '';
+  if (!url || typeof url !== 'string') return '/assits/Resume-file.pdf';
   let cleanUrl = url.trim();
-  if (/^(f|ht)tps?:\/\//i.test(cleanUrl)) {
-    return cleanUrl;
+  if (!cleanUrl) return '/assits/Resume-file.pdf';
+
+  if (cleanUrl.includes('/raw/upload/') && cleanUrl.toLowerCase().endsWith('.pdf')) {
+    cleanUrl = cleanUrl.replace('/raw/upload/', '/image/upload/');
   }
-  return `https://${cleanUrl}`;
+
+  if (/^https?:\/\//i.test(cleanUrl)) {
+    return cleanUrl.replace(/^http:\/\//i, 'https://');
+  }
+
+  if (cleanUrl.startsWith('//')) {
+    return `https:${cleanUrl}`;
+  }
+
+  if (cleanUrl.startsWith('/assits/') || cleanUrl.startsWith('assits/') || cleanUrl.startsWith('/assets/') || cleanUrl.startsWith('assets/')) {
+    return cleanUrl.startsWith('/') ? cleanUrl : `/${cleanUrl}`;
+  }
+
+  const backendApi = typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL 
+    ? import.meta.env.VITE_API_URL 
+    : 'https://tauhid-shekhar-portfolio.onrender.com/api';
+  const backendBase = backendApi.replace(/\/api\/?$/, '');
+  const relativePath = cleanUrl.startsWith('/') ? cleanUrl : `/${cleanUrl}`;
+  return `${backendBase}${relativePath}`;
 };
 
 const Resume = ({ resumeData, settingsData }) => {
@@ -159,46 +179,31 @@ const Resume = ({ resumeData, settingsData }) => {
     }
   };
 
-  const handleDownloadResume = async (e) => {
-    e.preventDefault();
-    if (!resumePdfUrl) return;
-    try {
-      const response = await fetch(resumePdfUrl);
-      if (!response.ok) throw new Error('Fetch failed');
-      const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.setAttribute('download', activeResume?.fileName || 'Resume.pdf');
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode.removeChild(link);
-      window.URL.revokeObjectURL(blobUrl);
-    } catch (err) {
-      console.error('Failed to download resume directly, using fl_attachment redirect:', err.message);
-      let downloadUrl = resumePdfUrl;
-      if (downloadUrl.includes('/image/upload/')) {
-        downloadUrl = downloadUrl.replace('/image/upload/', '/image/upload/fl_attachment/');
-      } else if (downloadUrl.includes('/raw/upload/')) {
-        downloadUrl = downloadUrl.replace('/raw/upload/', '/raw/upload/fl_attachment/');
-      }
-      window.open(downloadUrl, '_blank');
+  const handleDownloadResume = (e) => {
+    if (e) e.preventDefault();
+    const linkToDownload = resumePdfUrl || getAbsolutePdfUrl(activeResume?.fileUrl || settings?.resumeUrl || '');
+    if (!linkToDownload) return;
+
+    let downloadUrl = linkToDownload;
+    if (downloadUrl.includes('/image/upload/')) {
+      downloadUrl = downloadUrl.replace('/image/upload/', '/image/upload/fl_attachment/');
+    } else if (downloadUrl.includes('/raw/upload/')) {
+      downloadUrl = downloadUrl.replace('/raw/upload/', '/raw/upload/fl_attachment/');
+    }
+
+    const win = window.open(downloadUrl, '_blank', 'noopener,noreferrer');
+    if (!win) {
+      window.location.href = downloadUrl;
     }
   };
 
-  const handleViewResume = async (e) => {
-    e?.preventDefault();
-    if (!resumePdfUrl) return;
-    try {
-      const response = await fetch(resumePdfUrl);
-      if (!response.ok) throw new Error('Fetch failed');
-      const blob = await response.blob();
-      const pdfBlob = new Blob([blob], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(pdfBlob);
-      window.open(url, '_blank');
-    } catch (err) {
-      console.error('Failed to view resume inline, redirecting to direct url:', err.message);
-      window.open(resumePdfUrl, '_blank');
+  const handleViewResume = (e) => {
+    if (e) e.preventDefault();
+    const linkToOpen = resumePdfUrl || getAbsolutePdfUrl(activeResume?.fileUrl || settings?.resumeUrl || '');
+    if (!linkToOpen) return;
+    const win = window.open(linkToOpen, '_blank', 'noopener,noreferrer');
+    if (!win) {
+      window.location.href = linkToOpen;
     }
   };
 
