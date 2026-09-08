@@ -11,8 +11,8 @@ const getAbsolutePdfUrl = (url) => {
   let cleanUrl = url.trim();
   if (!cleanUrl) return '/assits/Resume-file.pdf';
 
-  if (cleanUrl.includes('/raw/upload/') && cleanUrl.toLowerCase().endsWith('.pdf')) {
-    cleanUrl = cleanUrl.replace('/raw/upload/', '/image/upload/');
+  if (cleanUrl.includes('/image/upload/') && cleanUrl.toLowerCase().endsWith('.pdf')) {
+    cleanUrl = cleanUrl.replace('/image/upload/', '/raw/upload/');
   }
 
   if (/^https?:\/\//i.test(cleanUrl)) {

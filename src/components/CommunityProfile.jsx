@@ -10,15 +10,32 @@ import {
 } from 'react-icons/fa';
 
 const getAbsolutePdfUrl = (url) => {
-  if (!url) return '';
+  if (!url || typeof url !== 'string') return '/assits/Resume-file.pdf';
   let cleanUrl = url.trim();
-  if (cleanUrl.includes('/raw/upload/') && cleanUrl.toLowerCase().endsWith('.pdf')) {
-    cleanUrl = cleanUrl.replace('/raw/upload/', '/image/upload/');
+  if (!cleanUrl) return '/assits/Resume-file.pdf';
+
+  if (cleanUrl.includes('/image/upload/') && cleanUrl.toLowerCase().endsWith('.pdf')) {
+    cleanUrl = cleanUrl.replace('/image/upload/', '/raw/upload/');
   }
-  if (/^(f|ht)tps?:\/\//i.test(cleanUrl)) {
-    return cleanUrl;
+
+  if (/^https?:\/\//i.test(cleanUrl)) {
+    return cleanUrl.replace(/^http:\/\//i, 'https://');
   }
-  return `https://${cleanUrl}`;
+
+  if (cleanUrl.startsWith('//')) {
+    return `https:${cleanUrl}`;
+  }
+
+  if (cleanUrl.startsWith('/assits/') || cleanUrl.startsWith('assits/') || cleanUrl.startsWith('/assets/') || cleanUrl.startsWith('assets/')) {
+    return cleanUrl.startsWith('/') ? cleanUrl : `/${cleanUrl}`;
+  }
+
+  const backendApi = typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL 
+    ? import.meta.env.VITE_API_URL 
+    : 'https://tauhid-shekhar-portfolio.onrender.com/api';
+  const backendBase = backendApi.replace(/\/api\/?$/, '');
+  const relativePath = cleanUrl.startsWith('/') ? cleanUrl : `/${cleanUrl}`;
+  return `${backendBase}${relativePath}`;
 };
 
 const CommunityProfile = () => {
