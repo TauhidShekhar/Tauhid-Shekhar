@@ -196,9 +196,8 @@ const Hero = ({ heroData, resumeData }) => {
   return (
     <section 
       id="home" 
-      className="min-h-screen flex items-center justify-center pt-24 pb-16 relative overflow-hidden bg-cover bg-center"
       style={heroBg ? { backgroundImage: `linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.98)), url(${heroBg})` } : {}}
-      className={`min-h-screen flex items-center justify-center pt-24 pb-16 relative overflow-hidden ${
+      className={`min-h-screen flex items-center justify-center pt-24 pb-16 relative overflow-hidden bg-cover bg-center ${
         heroBg ? 'dark:bg-blend-multiply dark:bg-slate-950/90' : ''
       }`}
     >

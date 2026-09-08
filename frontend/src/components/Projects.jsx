@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { FaGithub, FaExternalLinkAlt, FaBookOpen, FaTimes, FaCheck, FaHeart, FaRegHeart } from 'react-icons/fa';
 import { getCacheBustedUrl } from '../utils/cacheBuster';
 
-const ProjectGallery = ({ mainImage, images, updatedAt }) => {
+const ProjectGallery = ({ mainImage, images, title, updatedAt }) => {
   const [activeImg, setActiveImg] = useState(mainImage);
   const allImages = [mainImage, ...(images || [])].filter(Boolean);
 
@@ -14,34 +14,52 @@ const ProjectGallery = ({ mainImage, images, updatedAt }) => {
     setActiveImg(mainImage);
   }, [mainImage]);
 
-  if (allImages.length <= 1) {
-    return (
-      <div className="w-full aspect-[16/9] rounded-2xl overflow-hidden border border-slate-200 dark:border-white/5 mb-8">
-        <img src={getCacheBustedUrl(mainImage, updatedAt)} alt="Project main" className="w-full h-full object-cover" loading="lazy" decoding="async" />
-      </div>
-    );
-  }
-
   return (
-    <div className="flex flex-col gap-3 mb-8 w-full">
-      <div className="w-full aspect-[16/9] rounded-2xl overflow-hidden border border-slate-200/60 dark:border-white/5 shadow-inner bg-slate-100 dark:bg-slate-900 flex items-center justify-center">
-        <img src={getCacheBustedUrl(activeImg, updatedAt)} alt="Showcase active" className="w-full h-full object-cover transition-all duration-300" loading="lazy" decoding="async" />
+    <div className="flex flex-col gap-3 mb-8 w-full select-none">
+      {/* Mac Window Desktop Frame */}
+      <div className="w-full rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-2xl bg-slate-900">
+        {/* Top Browser Bar */}
+        <div className="px-4 py-2.5 bg-slate-800/90 border-b border-slate-700/50 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 shrink-0">
+            <div className="w-3 h-3 rounded-full bg-red-500/80" />
+            <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+            <div className="w-3 h-3 rounded-full bg-green-500/80" />
+          </div>
+          <div className="flex-1 max-w-md mx-auto bg-slate-950/70 rounded-lg px-3 py-1 text-[11px] text-slate-400 font-mono text-center truncate border border-white/5">
+            https://tauhidshekhar.app/projects/{encodeURIComponent((title || 'showcase').toLowerCase().replace(/\s+/g, '-'))}
+          </div>
+          <div className="w-12 text-right hidden sm:block">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">LIVE</span>
+          </div>
+        </div>
+        {/* Main Image Viewport */}
+        <div className="w-full aspect-[16/9] bg-slate-950 overflow-hidden flex items-center justify-center relative group">
+          <img 
+            src={getCacheBustedUrl(activeImg || mainImage, updatedAt)} 
+            alt="Showcase active" 
+            className="w-full h-full object-cover object-top transition-all duration-500 group-hover:scale-[1.02]" 
+            loading="lazy" 
+            decoding="async" 
+          />
+        </div>
       </div>
       
       {/* Thumbnails Row */}
-      <div className="flex gap-2 overflow-x-auto py-1 scrollbar-thin">
-        {allImages.map((img, idx) => (
-          <button
-            key={idx}
-            onClick={() => setActiveImg(img)}
-            className={`w-20 aspect-video rounded-lg overflow-hidden border-2 shrink-0 cursor-pointer transition-all ${
-              activeImg === img ? 'border-primary-blue scale-95 shadow-sm' : 'border-slate-200/50 dark:border-white/5 hover:border-slate-400'
-            }`}
-          >
-            <img src={getCacheBustedUrl(img, updatedAt)} alt="Thumbnail preview" className="w-full h-full object-cover" loading="lazy" decoding="async" />
-          </button>
-        ))}
-      </div>
+      {allImages.length > 1 && (
+        <div className="flex gap-2.5 overflow-x-auto py-1.5 scrollbar-thin">
+          {allImages.map((img, idx) => (
+            <button
+              key={idx}
+              onClick={() => setActiveImg(img)}
+              className={`w-20 aspect-video rounded-xl overflow-hidden border-2 shrink-0 cursor-pointer transition-all ${
+                activeImg === img ? 'border-primary-blue scale-95 shadow-md' : 'border-slate-200/50 dark:border-white/5 hover:border-slate-400'
+              }`}
+            >
+              <img src={getCacheBustedUrl(img, updatedAt)} alt="Thumbnail preview" className="w-full h-full object-cover" loading="lazy" decoding="async" />
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -141,6 +159,18 @@ const Projects = ({ projectsData }) => {
   const [activeCaseStudy, setActiveCaseStudy] = useState(null);
   const [savedIds, setSavedIds] = useState([]);
   const [newCommentText, setNewCommentText] = useState('');
+
+  // Lock background body scrolling when case study modal is active
+  useEffect(() => {
+    if (activeCaseStudy) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [activeCaseStudy]);
 
   const [projectItems, setProjectItems] = useState(() => {
     const list = (projectsData && projectsData.length > 0) ? projectsData : [];
@@ -408,28 +438,39 @@ const Projects = ({ projectsData }) => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[1000] bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4 md:p-12 overflow-y-auto"
+              className="fixed inset-0 z-[99999] bg-slate-950/85 backdrop-blur-md flex items-start justify-center pt-16 md:pt-24 pb-12 px-4 md:px-8 overflow-y-auto"
               onClick={() => setActiveCaseStudy(null)}
             >
               <motion.div
-                initial={{ y: 50, scale: 0.95 }}
+                initial={{ y: 25, scale: 0.96 }}
                 animate={{ y: 0, scale: 1 }}
-                exit={{ y: 50, scale: 0.95 }}
-                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                exit={{ y: 25, scale: 0.96 }}
+                transition={{ type: 'spring', damping: 28, stiffness: 300 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 w-full max-w-[800px] rounded-[30px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col relative"
+                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 w-full max-w-[850px] rounded-[28px] shadow-2xl overflow-hidden flex flex-col relative my-auto my-0 mb-8"
               >
-                {/* Close Button */}
-                <button
-                  onClick={() => setActiveCaseStudy(null)}
-                  className="absolute top-6 right-6 w-10 h-10 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-slate-700 dark:text-slate-300 flex items-center justify-center cursor-pointer hover:bg-red-500 hover:text-white transition-all duration-300 z-10"
-                >
-                  <FaTimes />
-                </button>
+                {/* Sticky Header Bar */}
+                <div className="sticky top-0 z-20 px-6 py-4 md:px-8 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/60 dark:border-white/10 flex items-center justify-between">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="w-3 h-3 rounded-full bg-red-500/80 inline-block" />
+                    <span className="w-3 h-3 rounded-full bg-yellow-500/80 inline-block" />
+                    <span className="w-3 h-3 rounded-full bg-green-500/80 inline-block" />
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 truncate ml-2">
+                      {activeCaseStudy.title} &mdash; Project Case Study
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setActiveCaseStudy(null)}
+                    className="w-9 h-9 rounded-full bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 flex items-center justify-center cursor-pointer hover:bg-red-500 hover:text-white transition-all shrink-0"
+                    title="Close Case Study"
+                  >
+                    <FaTimes size={14} />
+                  </button>
+                </div>
 
                 <div className="overflow-y-auto p-6 md:p-10 text-left">
                   {/* Dynamic Project Showcase Gallery */}
-                  <ProjectGallery mainImage={activeCaseStudy.image} images={activeCaseStudy.images} updatedAt={activeCaseStudy.updatedAt} />
+                  <ProjectGallery mainImage={activeCaseStudy.image} images={activeCaseStudy.images} title={activeCaseStudy.title} updatedAt={activeCaseStudy.updatedAt} />
 
                   <span className="text-xs font-bold text-primary-blue uppercase tracking-wider block mb-1">
                     {activeCaseStudy.subtitle}
