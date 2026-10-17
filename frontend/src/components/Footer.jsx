@@ -89,7 +89,7 @@ const Footer = ({ settingsData, heroData }) => {
   const siteName = settings?.siteName || heroSettings?.siteName || 'TAUHID SHEKHAR';
 
   return (
-    <footer className="bg-white dark:bg-[#000000] border-t border-[#E5E7EB] dark:border-white/10 pt-14 sm:pt-16 pb-10 sm:pb-12 text-[#525252] dark:text-[#D1D5DB] transition-colors duration-300">
+    <footer className="bg-white dark:bg-[#000000] border-t border-[#E5E7EB] dark:border-white/10 pt-14 sm:pt-16 pb-24 sm:pb-14 text-[#525252] dark:text-[#D1D5DB] transition-colors duration-300">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12">
         
         {/* Main Footer Grid */}
@@ -324,13 +324,13 @@ const Footer = ({ settingsData, heroData }) => {
 
         </div>
 
-        {/* Bottom Bar: Copyright, Legal Links, and Back-to-Top */}
-        <div className="pt-6 sm:pt-7 flex flex-col md:flex-row items-center justify-between gap-4 text-xs sm:text-sm">
-          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 md:gap-6 text-center sm:text-left">
+        {/* Bottom Bar: Copyright, Legal Links, and Attribution */}
+        <div className="pt-6 sm:pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs sm:text-sm text-center md:text-left">
+          <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-2 sm:gap-4 md:gap-6">
             <p className="font-normal text-[#525252] dark:text-[#D1D5DB]">
               {settings?.copyrightText || `© ${new Date().getFullYear()} ${siteName}. All Rights Reserved.`}
             </p>
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-3 gap-y-1 font-medium">
+            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 font-medium">
               <Link to="/legal" className="hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors text-[#525252] dark:text-[#D1D5DB]">
                 Legal Notice
               </Link>
@@ -345,20 +345,11 @@ const Footer = ({ settingsData, heroData }) => {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <p className="font-medium flex items-center gap-1.5 text-[#525252] dark:text-[#D1D5DB]">
-              Designed & Engineered with <FaHeart className="text-[#C2272D] animate-pulse" /> by {siteName}
-            </p>
-            <button
-              onClick={scrollToTop}
-              type="button"
-              className="w-8 h-8 rounded-full bg-[#F8FAFC] dark:bg-[#1A1A1A] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF] hover:border-[#C2272D] dark:hover:border-[#00FFFF] transition-all cursor-pointer shadow-sm hover:scale-110 active:scale-95"
-              aria-label="Back to Top"
-              title="Back to Top"
-            >
-              <FaArrowUp size={11} />
-            </button>
-          </div>
+          <p className="font-medium inline-flex items-center justify-center flex-wrap gap-1.5 text-[#525252] dark:text-[#D1D5DB] text-center">
+            <span>Designed & Engineered with</span>
+            <FaHeart className="text-[#C2272D] animate-pulse inline mx-0.5 shrink-0" />
+            <span className="whitespace-nowrap">by {siteName}</span>
+          </p>
         </div>
 
       </div>

@@ -202,7 +202,7 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-            className="lg:col-span-5 flex flex-col gap-4 sm:gap-5 w-full"
+            className="lg:col-span-5 flex flex-col gap-3.5 sm:gap-4.5 w-full"
           >
             {/* Multiple Locations Tabs */}
             {settings?.locations?.length > 1 && (
@@ -227,19 +227,22 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
             {contactDetails.map((detail, idx) => (
               <div
                 key={idx}
-                className="bg-white dark:bg-[#111111] p-4 sm:p-5 md:p-6 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm flex items-center gap-3.5 sm:gap-4 hover:border-[#C2272D] dark:hover:border-[#00FFFF] hover:-translate-y-1 hover:shadow-lg hover:shadow-[#C2272D]/10 dark:hover:shadow-[#00FFFF]/10 transition-all duration-300 text-left card-interactive group cursor-pointer"
+                className="bg-white dark:bg-[#111111] p-4 sm:p-5 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm flex items-center gap-3.5 sm:gap-4 hover:border-[#C2272D] dark:hover:border-[#00FFFF] hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 text-left card-interactive group cursor-pointer"
               >
-                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#F8FAFC] dark:bg-[#1A1A1A] flex items-center justify-center shrink-0 border border-[#E5E7EB] dark:border-white/10 text-[#C2272D] dark:text-[#00FFFF] text-lg sm:text-xl shadow-sm group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
+                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-[#F8FAFC] dark:bg-[#1A1A1A] flex items-center justify-center shrink-0 border border-[#E5E7EB] dark:border-white/10 text-[#C2272D] dark:text-[#00FFFF] text-base sm:text-lg shadow-sm group-hover:scale-110 transition-transform duration-300">
                   {detail.icon}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-[11px] sm:text-xs font-semibold text-[#525252] dark:text-[#9CA3AF] uppercase tracking-wider block mb-0.5">{detail.title}</h3>
+                  <h3 className="text-[11px] sm:text-xs font-bold text-[#525252] dark:text-[#9CA3AF] uppercase tracking-wider block mb-0.5">{detail.title}</h3>
                   {detail.href ? (
-                    <a href={detail.href} className="text-sm sm:text-base font-semibold text-[#171717] dark:text-white hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors break-all sm:break-normal block">
+                    <a 
+                      href={detail.href} 
+                      className="text-sm sm:text-[15px] font-semibold text-[#171717] dark:text-white hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors [overflow-wrap:anywhere] block"
+                    >
                       {detail.value}
                     </a>
                   ) : (
-                    <span className="text-sm sm:text-base font-semibold text-[#171717] dark:text-white block break-words">{detail.value}</span>
+                    <span className="text-sm sm:text-[15px] font-semibold text-[#171717] dark:text-white block [overflow-wrap:anywhere]">{detail.value}</span>
                   )}
                 </div>
               </div>
@@ -247,8 +250,8 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
 
             {/* Social Links Block */}
             {socialPlatforms.length > 0 && (
-              <div className="bg-white dark:bg-[#111111] p-5 sm:p-6 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm text-left flex flex-col gap-3">
-                <h3 className="text-xs font-bold text-[#525252] dark:text-[#9CA3AF] uppercase tracking-wider">Social Channels</h3>
+              <div className="bg-white dark:bg-[#111111] p-4 sm:p-5 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm text-left flex flex-col gap-3">
+                <h3 className="text-[11px] sm:text-xs font-bold text-[#525252] dark:text-[#9CA3AF] uppercase tracking-wider">Social Channels</h3>
                 <div className="flex flex-wrap gap-2.5 sm:gap-3">
                   {socialPlatforms.map((platform, pIdx) => (
                     <a

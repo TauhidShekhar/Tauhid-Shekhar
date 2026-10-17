@@ -417,9 +417,9 @@ const App = () => {
       </Suspense>
 
       {/* Floating Actions Drawer */}
-      <div className="fixed bottom-8 right-8 z-[900] flex flex-col gap-4 items-center">
+      <div className="fixed bottom-5 right-4 sm:bottom-8 sm:right-6 z-[900] flex flex-col gap-2.5 sm:gap-3 items-center">
         {/* Expandable actions list with animation */}
-        <div className={`flex flex-col gap-4 transition-all duration-300 transform ${
+        <div className={`flex flex-col gap-2.5 sm:gap-3 transition-all duration-300 transform ${
           drawerExpanded 
             ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto' 
             : 'opacity-0 translate-y-4 scale-75 pointer-events-none h-0 overflow-hidden'
@@ -427,21 +427,21 @@ const App = () => {
           {/* Floating AI Assistant Trigger */}
           <button
             onClick={() => navigate('/community/ai-assistant')}
-            className="w-12 h-12 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full flex items-center justify-center shadow-lg shadow-[#C2272D]/25 hover:scale-110 transition-all duration-300 cursor-pointer border border-[#C2272D]/30"
+            className="w-11 h-11 sm:w-12 sm:h-12 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full flex items-center justify-center shadow-lg shadow-[#C2272D]/25 hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer border border-[#C2272D]/30"
             title="Open AI Consultant"
             aria-label="Open AI Consultant"
           >
-            <FaBrain size={18} />
+            <FaBrain size={17} />
           </button>
 
           {/* Floating Community Link */}
           <Link
             to="/community"
-            className="w-12 h-12 bg-[#111111] hover:bg-[#1A1A1A] text-[#00FFFF] hover:text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300 border border-white/10"
+            className="w-11 h-11 sm:w-12 sm:h-12 bg-[#111111] hover:bg-[#1A1A1A] text-[#00FFFF] hover:text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all duration-300 border border-white/10"
             title="Go to TS DevCommunity"
             aria-label="Go to TS DevCommunity"
           >
-            <FaComments size={18} />
+            <FaComments size={17} />
           </Link>
 
           {/* WhatsApp */}
@@ -449,42 +449,42 @@ const App = () => {
             href="https://wa.me/919142725562"
             target="_blank"
             rel="noopener noreferrer"
-            className="w-12 h-12 bg-[#25d366] text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 hover:shadow-green-500/20 transition-all duration-300"
+            className="w-11 h-11 sm:w-12 sm:h-12 bg-[#25d366] text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 hover:shadow-green-500/20 transition-all duration-300"
             aria-label="Contact via WhatsApp"
             title="WhatsApp Chat"
           >
-            <FaWhatsapp size={22} />
+            <FaWhatsapp size={20} />
           </a>
         </div>
 
         {/* Toggle Button */}
         <button
           onClick={() => setDrawerExpanded(prev => !prev)}
-          className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg cursor-pointer transition-all duration-300 border ${
+          className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shadow-lg cursor-pointer transition-all duration-300 border ${
             drawerExpanded 
               ? 'bg-[#1c1c24] text-slate-400 border-white/10 hover:text-white' 
-              : 'bg-[#C2272D] hover:bg-[#A51E23] text-white border-[#C2272D]/30 shadow-lg shadow-[#C2272D]/25 hover:scale-110'
+              : 'bg-[#C2272D] hover:bg-[#A51E23] text-white border-[#C2272D]/30 shadow-lg shadow-[#C2272D]/25 hover:scale-110 active:scale-95'
           }`}
-          title={drawerExpanded ? 'Hide Actions' : 'Show Actions'}
-          aria-label={drawerExpanded ? 'Hide Actions' : 'Show Actions'}
+          title={drawerExpanded ? 'Hide Actions' : 'Quick Actions'}
+          aria-label={drawerExpanded ? 'Hide Actions' : 'Quick Actions'}
         >
           <FaPlus 
-            size={16} 
+            size={15} 
             className={`transition-transform duration-300 ${drawerExpanded ? 'rotate-45' : 'rotate-0'}`} 
           />
         </button>
 
         {/* Back to Top */}
-        <button
-          onClick={scrollToTop}
-          className={`w-12 h-12 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full flex items-center justify-center shadow-lg shadow-[#C2272D]/25 hover:scale-110 transition-all duration-300 cursor-pointer ${
-            showBackToTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
-          }`}
-          aria-label="Scroll back to top"
-          title="Back to Top"
-        >
-          <FaChevronUp size={16} />
-        </button>
+        {showBackToTop && (
+          <button
+            onClick={scrollToTop}
+            className="w-11 h-11 sm:w-12 sm:h-12 bg-[#111111] hover:bg-[#C2272D] text-white rounded-full flex items-center justify-center shadow-lg border border-white/10 hover:border-[#C2272D] hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer animate-fade-in"
+            aria-label="Scroll back to top"
+            title="Back to Top"
+          >
+            <FaChevronUp size={15} />
+          </button>
+        )}
       </div>
 
       {/* Global Command Palette */}
