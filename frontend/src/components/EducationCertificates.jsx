@@ -203,17 +203,17 @@ const EducationCertificates = ({ educationData, certificatesData, achievementsDa
                 initial="hidden"
                 animate="visible"
                 exit={{ opacity: 0, y: -20 }}
-                className="relative pl-6 md:pl-12 border-l-2 border-slate-200 dark:border-white/10 flex flex-col gap-10 text-left"
+                className="relative pl-7 xs:pl-8 md:pl-12 border-l-2 border-slate-200 dark:border-white/10 flex flex-col gap-8 md:gap-10 text-left"
               >
                 {educationList.map((edu, idx) => (
                   <motion.div key={idx} variants={itemVariants} className="relative">
                     {/* Bullet */}
-                    <div className="absolute -left-[42px] md:-left-[66px] top-1.5 w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 flex items-center justify-center shadow-md z-10">
-                      <FaGraduationCap className="text-[#C2272D] dark:text-[#00FFFF]" size={20} />
+                    <div className="absolute -left-[43px] xs:-left-[47px] md:-left-[66px] top-1.5 w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 flex items-center justify-center shadow-md z-10">
+                      <FaGraduationCap className="text-[#C2272D] dark:text-[#00FFFF]" size={18} />
                     </div>
 
                     {/* Card */}
-                    <div className="bg-[#F8FAFC] dark:bg-[#111111] p-6 md:p-8 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm">
+                    <div className="bg-[#F8FAFC] dark:bg-[#111111] p-5 xs:p-6 md:p-8 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3">
                         <div>
                           <h3 className="text-lg md:text-[20px] font-bold font-title text-[#171717] dark:text-white leading-tight">

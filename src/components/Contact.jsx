@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../services/api';
 import { 
   FaEnvelope, FaPhone, FaMapMarkerAlt, FaPaperPlane, FaClock,
-  FaGithub, FaLinkedin, FaTwitter, FaInstagram, FaYoutube, FaFacebook 
+  FaGithub, FaLinkedin, FaTwitter, FaInstagram, FaYoutube, FaFacebook,
+  FaCheckCircle, FaExclamationCircle
 } from 'react-icons/fa';
 
 const formatExternalLink = (url) => {
@@ -27,7 +28,6 @@ const extractIframeSrc = (input) => {
   // Regex to match src attribute inside iframe or HTML string
   const match = trimmed.match(/src\s*=\s*["']([^"']+)["']/i);
   if (match && match[1]) {
-    // Decode HTML entities like &amp; to &
     return match[1].replace(/&amp;/g, '&');
   }
   return trimmed;
@@ -36,6 +36,7 @@ const extractIframeSrc = (input) => {
 const Contact = ({ settingsData, aboutData, onShowToast }) => {
   const [formData, setFormData] = useState({});
   const [submitting, setSubmitting] = useState(false);
+  const [status, setStatus] = useState(null); // { type: 'success' | 'error', message: string }
   const [settings, setSettings] = useState(settingsData || null);
   const [aboutSettings, setAboutSettings] = useState(aboutData || null);
   const [selectedLocationIdx, setSelectedLocationIdx] = useState(0);
@@ -53,27 +54,27 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
     }
   }, [aboutData]);
 
+  const defaultFields = [
+    { id: '1', name: 'name', label: 'Your Name', type: 'text', required: true, placeholder: 'e.g. John Doe' },
+    { id: '2', name: 'email', label: 'Email Address', type: 'email', required: true, placeholder: 'e.g. john@example.com' },
+    { id: '3', name: 'phone_number', label: 'Phone Number', type: 'tel', required: false, placeholder: '+91 98765 43210' },
+    { id: '4', name: 'subject', label: 'Subject', type: 'text', required: true, placeholder: 'Project Inquiry / Job Opportunity' },
+    { id: '5', name: 'message', label: 'Message', type: 'textarea', required: true, placeholder: 'Tell me about your project, timeline, or inquiry...' }
+  ];
+
+  const formFields = settings?.contactFormFields?.length ? settings.contactFormFields : defaultFields;
+
   // Pre-populate empty form state based on loaded fields
   useEffect(() => {
-    if (settings) {
-      const defaultFields = [
-        { id: '1', name: 'name', label: 'Your Name', type: 'text', required: true, placeholder: 'Enter your name' },
-        { id: '2', name: 'email', label: 'Email Address', type: 'email', required: true, placeholder: 'Enter your email' },
-        { id: '3', name: 'phone', label: 'Mobile Number', type: 'text', required: false, placeholder: 'Enter mobile number' },
-        { id: '4', name: 'subject', label: 'Subject', type: 'text', required: true, placeholder: 'Enter project/inquiry subject' },
-        { id: '5', name: 'message', label: 'Message', type: 'textarea', required: true, placeholder: 'Type your message here...' }
-      ];
-      const formFields = settings.contactFormFields?.length ? settings.contactFormFields : defaultFields;
-      setFormData(prev => {
-        const initialData = { ...prev };
-        formFields.forEach(f => {
-          if (initialData[f.name] === undefined) {
-            initialData[f.name] = '';
-          }
-        });
-        return initialData;
+    setFormData(prev => {
+      const initialData = { ...prev };
+      formFields.forEach(f => {
+        if (initialData[f.name] === undefined) {
+          initialData[f.name] = '';
+        }
       });
-    }
+      return initialData;
+    });
   }, [settings]);
 
   useEffect(() => {
@@ -110,38 +111,42 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
   const mapEmbedVal = extractIframeSrc(mapEmbedRaw);
 
   const contactDetails = [
-    { title: 'Email', value: emailVal, href: `mailto:${emailVal}`, icon: <FaEnvelope className="text-primary-blue" /> },
-    { title: 'Phone', value: phoneVal, href: `tel:${phoneVal.replace(/\s+/g, '')}`, icon: <FaPhone className="text-primary-purple" /> },
-    { title: 'Location', value: addressVal, href: null, icon: <FaMapMarkerAlt className="text-primary-cyan" /> },
-    { title: 'Working Hours', value: workingHoursVal, href: null, icon: <FaClock className="text-green-500" /> }
+    { title: 'Email', value: emailVal, href: `mailto:${emailVal}`, icon: <FaEnvelope className="text-[#C2272D]" /> },
+    { title: 'Phone', value: phoneVal, href: `tel:${phoneVal.replace(/\s+/g, '')}`, icon: <FaPhone className="text-[#00FFFF]" /> },
+    { title: 'Location', value: addressVal, href: null, icon: <FaMapMarkerAlt className="text-[#C2272D]" /> },
+    { title: 'Working Hours', value: workingHoursVal, href: null, icon: <FaClock className="text-emerald-500" /> }
   ];
-
-  const defaultFields = [
-    { id: '1', name: 'name', label: 'Your Name', type: 'text', required: true, placeholder: 'Enter your name' },
-    { id: '2', name: 'email', label: 'Email Address', type: 'email', required: true, placeholder: 'Enter your email' },
-    { id: '3', name: 'phone', label: 'Mobile Number', type: 'text', required: false, placeholder: 'Enter mobile number' },
-    { id: '4', name: 'subject', label: 'Subject', type: 'text', required: true, placeholder: 'Enter project/inquiry subject' },
-    { id: '5', name: 'message', label: 'Message', type: 'textarea', required: true, placeholder: 'Type your message here...' }
-  ];
-
-  const formFields = settings?.contactFormFields?.length ? settings.contactFormFields : defaultFields;
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({ 
-      ...prev, 
-      [name]: type === 'checkbox' ? checked : value 
-    }));
+    const val = type === 'checkbox' ? checked : value;
+    if (status) setStatus(null);
+    setFormData(prev => {
+      const next = { ...prev, [name]: val };
+      // Sync phone and phone_number aliases
+      if (name === 'phone') next.phone_number = val;
+      if (name === 'phone_number') next.phone = val;
+      return next;
+    });
   };
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
+    setStatus(null);
 
     try {
-      const res = await api.createMessage(formData);
-      if (res.success) {
-        onShowToast('Message Sent Successfully!');
+      // Ensure phone and phone_number are populated if either is filled
+      const payload = { ...formData };
+      if (payload.phone && !payload.phone_number) payload.phone_number = payload.phone;
+      if (payload.phone_number && !payload.phone) payload.phone = payload.phone_number;
+
+      const res = await api.createMessage(payload);
+      if (res?.success) {
+        const successMsg = res.message || 'Thank you! Your message has been sent successfully. I will respond to you shortly.';
+        setStatus({ type: 'success', message: successMsg });
+        if (onShowToast) onShowToast('Message Sent Successfully!');
+        
         // Reset form inputs
         const resetData = {};
         formFields.forEach(f => {
@@ -149,10 +154,14 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
         });
         setFormData(resetData);
       } else {
-        onShowToast('Failed to send message. Please try again.');
+        const errorMsg = res?.message || 'Failed to send message. Please verify all required fields.';
+        setStatus({ type: 'error', message: errorMsg });
+        if (onShowToast) onShowToast(errorMsg);
       }
     } catch (error) {
-      onShowToast(error.message || 'An error occurred. Please try again.');
+      const errorMsg = error.message || 'An error occurred while connecting. Please try again.';
+      setStatus({ type: 'error', message: errorMsg });
+      if (onShowToast) onShowToast(errorMsg);
     } finally {
       setSubmitting(false);
     }
@@ -169,20 +178,23 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
   ].filter(p => socialLinks[p.key]);
 
   return (
-    <section id="contact" className="scroll-mt-24 py-24 sm:py-28 bg-[#F8FAFC] dark:bg-[#000000] relative">
-      <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12">
+    <section id="contact" className="scroll-mt-24 py-20 sm:py-24 lg:py-28 bg-[#F8FAFC] dark:bg-[#000000] relative">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12">
         
         {/* Section Header */}
-        <div className="text-center mb-14 sm:mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#C2272D]/10 dark:bg-[#00FFFF]/10 border border-[#C2272D]/20 dark:border-[#00FFFF]/30 text-[#C2272D] dark:text-[#00FFFF] text-xs sm:text-sm font-semibold tracking-wider uppercase mb-3">
+        <div className="text-center mb-12 sm:mb-16">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#C2272D]/10 dark:bg-[#00FFFF]/10 border border-[#C2272D]/20 dark:border-[#00FFFF]/30 text-[#C2272D] dark:text-[#00FFFF] text-xs sm:text-sm font-semibold tracking-wider uppercase mb-3">
             <span>Get In Touch</span>
           </div>
-          <h2 className="text-2xl md:text-[32px] font-bold font-title tracking-tight text-[#171717] dark:text-white">
+          <h2 className="text-2xl sm:text-3xl md:text-[32px] font-bold font-title tracking-tight text-[#171717] dark:text-white">
             Let's Start a Conversation
           </h2>
+          <p className="mt-2.5 text-sm sm:text-base text-[#525252] dark:text-[#D1D5DB] max-w-xl mx-auto leading-relaxed">
+            Have a project in mind, seeking full-stack engineering expertise, or just want to connect? Send a note below.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-14 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           
           {/* Left: Contact Info cards */}
           <motion.div
@@ -190,7 +202,7 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-            className="lg:col-span-5 flex flex-col gap-5"
+            className="lg:col-span-5 flex flex-col gap-4 sm:gap-5 w-full"
           >
             {/* Multiple Locations Tabs */}
             {settings?.locations?.length > 1 && (
@@ -215,19 +227,19 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
             {contactDetails.map((detail, idx) => (
               <div
                 key={idx}
-                className="bg-white dark:bg-[#111111] p-5 sm:p-6 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm flex items-center gap-4 hover:border-[#C2272D] dark:hover:border-[#00FFFF] hover:-translate-y-1 hover:shadow-lg hover:shadow-[#C2272D]/10 dark:hover:shadow-[#00FFFF]/10 transition-all duration-300 text-left card-interactive group cursor-pointer"
+                className="bg-white dark:bg-[#111111] p-4 sm:p-5 md:p-6 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm flex items-center gap-3.5 sm:gap-4 hover:border-[#C2272D] dark:hover:border-[#00FFFF] hover:-translate-y-1 hover:shadow-lg hover:shadow-[#C2272D]/10 dark:hover:shadow-[#00FFFF]/10 transition-all duration-300 text-left card-interactive group cursor-pointer"
               >
-                <div className="w-12 h-12 rounded-2xl bg-[#F8FAFC] dark:bg-[#1A1A1A] flex items-center justify-center shrink-0 border border-[#E5E7EB] dark:border-white/10 text-[#C2272D] dark:text-[#00FFFF] text-xl shadow-sm group-hover:scale-115 group-hover:rotate-6 transition-transform duration-300">
+                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#F8FAFC] dark:bg-[#1A1A1A] flex items-center justify-center shrink-0 border border-[#E5E7EB] dark:border-white/10 text-[#C2272D] dark:text-[#00FFFF] text-lg sm:text-xl shadow-sm group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
                   {detail.icon}
                 </div>
-                <div>
-                  <h3 className="text-xs font-semibold text-[#525252] dark:text-[#9CA3AF] uppercase tracking-wider block mb-0.5">{detail.title}</h3>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-[11px] sm:text-xs font-semibold text-[#525252] dark:text-[#9CA3AF] uppercase tracking-wider block mb-0.5">{detail.title}</h3>
                   {detail.href ? (
-                    <a href={detail.href} className="text-base font-semibold text-[#171717] dark:text-white hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors">
+                    <a href={detail.href} className="text-sm sm:text-base font-semibold text-[#171717] dark:text-white hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors break-all sm:break-normal block">
                       {detail.value}
                     </a>
                   ) : (
-                    <span className="text-base font-semibold text-[#171717] dark:text-white">{detail.value}</span>
+                    <span className="text-sm sm:text-base font-semibold text-[#171717] dark:text-white block break-words">{detail.value}</span>
                   )}
                 </div>
               </div>
@@ -235,16 +247,16 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
 
             {/* Social Links Block */}
             {socialPlatforms.length > 0 && (
-              <div className="bg-white dark:bg-[#111111] p-6 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm text-left flex flex-col gap-3.5">
+              <div className="bg-white dark:bg-[#111111] p-5 sm:p-6 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm text-left flex flex-col gap-3">
                 <h3 className="text-xs font-bold text-[#525252] dark:text-[#9CA3AF] uppercase tracking-wider">Social Channels</h3>
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-2.5 sm:gap-3">
                   {socialPlatforms.map((platform, pIdx) => (
                     <a
                       key={pIdx}
                       href={formatExternalLink(socialLinks[platform.key])}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`w-11 h-11 rounded-xl bg-[#F8FAFC] dark:bg-[#1A1A1A] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] transition-all duration-200 hover:text-white ${platform.color} shadow-sm`}
+                      className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#F8FAFC] dark:bg-[#1A1A1A] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] transition-all duration-200 hover:text-white hover:scale-110 active:scale-95 ${platform.color} shadow-sm`}
                       aria-label={`Connect on ${platform.key}`}
                     >
                       {platform.icon}
@@ -256,11 +268,11 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
 
             {/* Embedded Google Map */}
             {mapEmbedVal && (
-              <div className="bg-white dark:bg-[#111111] p-3 rounded-3xl border border-[#E5E7EB] dark:border-white/10 shadow-sm overflow-hidden h-[240px]">
+              <div className="bg-white dark:bg-[#111111] p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl border border-[#E5E7EB] dark:border-white/10 shadow-sm overflow-hidden h-[180px] sm:h-[220px]">
                 <iframe
                   title="Google Map location"
                   src={mapEmbedVal}
-                  className="w-full h-full border-none rounded-2xl"
+                  className="w-full h-full border-none rounded-xl sm:rounded-2xl"
                   allowFullScreen=""
                   loading="lazy"
                 />
@@ -274,98 +286,139 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
-            className="lg:col-span-7"
+            className="lg:col-span-7 w-full"
           >
-            <form onSubmit={handleFormSubmit} className="bg-white dark:bg-[#111111] p-8 sm:p-10 md:p-12 rounded-3xl border border-[#E5E7EB] dark:border-white/10 shadow-md flex flex-col gap-6 text-left">
+            <form 
+              onSubmit={handleFormSubmit} 
+              className="bg-white dark:bg-[#111111] p-5 xs:p-6 sm:p-8 md:p-10 lg:p-12 rounded-2xl sm:rounded-3xl border border-[#E5E7EB] dark:border-white/10 shadow-md flex flex-col gap-5 sm:gap-6 text-left"
+            >
               
-              {formFields.map((field, fIdx) => (
-                <div key={field.id || fIdx} className="flex flex-col gap-1.5">
-                  {field.type !== 'checkbox' && (
-                    <label htmlFor={field.name} className="text-[15px] font-semibold text-[#171717] dark:text-white">
-                      {field.label} {field.required && <span className="text-[#C2272D]">*</span>}
-                    </label>
-                  )}
-
-                  {field.type === 'textarea' ? (
-                    <textarea
-                      id={field.name}
-                      name={field.name}
-                      value={formData[field.name] || ''}
-                      onChange={handleInputChange}
-                      required={field.required}
-                      rows="5"
-                      placeholder={field.placeholder}
-                      className="w-full px-4 py-3.5 rounded-xl border border-[#E5E7EB] dark:border-white/10 bg-[#F8FAFC] dark:bg-[#1A1A1A] text-[#171717] dark:text-white focus:outline-none focus:border-[#C2272D] dark:focus:border-[#00FFFF] text-base transition-colors resize-none placeholder-slate-400"
-                    />
-                  ) : field.type === 'select' ? (
-                    <select
-                      id={field.name}
-                      name={field.name}
-                      value={formData[field.name] || ''}
-                      onChange={handleInputChange}
-                      required={field.required}
-                      className="w-full px-4 py-3.5 rounded-xl border border-[#E5E7EB] dark:border-white/10 bg-[#F8FAFC] dark:bg-[#1A1A1A] text-[#171717] dark:text-white focus:outline-none focus:border-[#C2272D] dark:focus:border-[#00FFFF] text-base transition-colors"
+              {/* Form Inputs Grid: 1 column on mobile, 2 columns on tablet/desktop */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                {formFields.map((field, fIdx) => {
+                  const isFullWidth = field.type === 'textarea' || field.type === 'checkbox' || field.type === 'radio' || formFields.length <= 2;
+                  
+                  return (
+                    <div 
+                      key={field.id || fIdx} 
+                      className={`flex flex-col gap-1.5 ${isFullWidth ? 'sm:col-span-2' : 'sm:col-span-1'}`}
                     >
-                      <option value="">Select option...</option>
-                      {field.options?.map((opt, oIdx) => (
-                        <option key={oIdx} value={opt}>{opt}</option>
-                      ))}
-                    </select>
-                  ) : field.type === 'checkbox' ? (
-                    <div className="flex items-center gap-3 py-1">
-                      <input
-                        type="checkbox"
-                        id={field.name}
-                        name={field.name}
-                        checked={!!formData[field.name]}
-                        onChange={handleInputChange}
-                        required={field.required}
-                        className="w-4.5 h-4.5 accent-[#C2272D] rounded focus:ring-[#C2272D]"
-                      />
-                      <label htmlFor={field.name} className="text-[15px] font-medium text-[#171717] dark:text-white cursor-pointer">
-                        {field.label} {field.required && <span className="text-[#C2272D]">*</span>}
-                      </label>
-                    </div>
-                  ) : field.type === 'radio' ? (
-                    <div className="flex flex-wrap gap-4 py-1">
-                      {field.options?.map((opt, oIdx) => (
-                        <label key={oIdx} className="flex items-center gap-2 text-[15px] font-medium text-[#171717] dark:text-white cursor-pointer">
+                      {field.type !== 'checkbox' && (
+                        <label htmlFor={field.name} className="text-sm sm:text-[15px] font-semibold text-[#171717] dark:text-white flex items-center justify-between">
+                          <span>
+                            {field.label} {field.required && <span className="text-[#C2272D]">*</span>}
+                          </span>
+                        </label>
+                      )}
+
+                      {field.type === 'textarea' ? (
+                        <textarea
+                          id={field.name}
+                          name={field.name}
+                          value={formData[field.name] || ''}
+                          onChange={handleInputChange}
+                          required={field.required}
+                          rows="4"
+                          placeholder={field.placeholder}
+                          className="w-full px-4 py-3 sm:py-3.5 rounded-xl border border-[#E5E7EB] dark:border-white/10 bg-[#F8FAFC] dark:bg-[#1A1A1A] text-[#171717] dark:text-white focus:outline-none focus:border-[#C2272D] dark:focus:border-[#00FFFF] focus:ring-2 focus:ring-[#C2272D]/20 dark:focus:ring-[#00FFFF]/20 text-[15px] sm:text-base transition-all resize-none placeholder-slate-400 min-h-[110px]"
+                        />
+                      ) : field.type === 'select' ? (
+                        <select
+                          id={field.name}
+                          name={field.name}
+                          value={formData[field.name] || ''}
+                          onChange={handleInputChange}
+                          required={field.required}
+                          className="w-full px-4 py-3 sm:py-3.5 rounded-xl border border-[#E5E7EB] dark:border-white/10 bg-[#F8FAFC] dark:bg-[#1A1A1A] text-[#171717] dark:text-white focus:outline-none focus:border-[#C2272D] dark:focus:border-[#00FFFF] focus:ring-2 focus:ring-[#C2272D]/20 dark:focus:ring-[#00FFFF]/20 text-[15px] sm:text-base transition-all min-h-[46px]"
+                        >
+                          <option value="">Select option...</option>
+                          {field.options?.map((opt, oIdx) => (
+                            <option key={oIdx} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      ) : field.type === 'checkbox' ? (
+                        <div className="flex items-center gap-3 py-1">
                           <input
-                            type="radio"
+                            type="checkbox"
+                            id={field.name}
                             name={field.name}
-                            value={opt}
-                            checked={formData[field.name] === opt}
+                            checked={!!formData[field.name]}
                             onChange={handleInputChange}
                             required={field.required}
-                            className="w-4.5 h-4.5 accent-[#C2272D]"
+                            className="w-5 h-5 accent-[#C2272D] rounded focus:ring-[#C2272D] cursor-pointer"
                           />
-                          {opt}
-                        </label>
-                      ))}
+                          <label htmlFor={field.name} className="text-sm sm:text-[15px] font-medium text-[#171717] dark:text-white cursor-pointer select-none">
+                            {field.label} {field.required && <span className="text-[#C2272D]">*</span>}
+                          </label>
+                        </div>
+                      ) : field.type === 'radio' ? (
+                        <div className="flex flex-wrap gap-4 py-1">
+                          {field.options?.map((opt, oIdx) => (
+                            <label key={oIdx} className="flex items-center gap-2 text-sm sm:text-[15px] font-medium text-[#171717] dark:text-white cursor-pointer select-none">
+                              <input
+                                type="radio"
+                                name={field.name}
+                                value={opt}
+                                checked={formData[field.name] === opt}
+                                onChange={handleInputChange}
+                                required={field.required}
+                                className="w-4.5 h-4.5 accent-[#C2272D] cursor-pointer"
+                              />
+                              {opt}
+                            </label>
+                          ))}
+                        </div>
+                      ) : (
+                        <input
+                          type={field.type || 'text'}
+                          id={field.name}
+                          name={field.name}
+                          value={formData[field.name] || ''}
+                          onChange={handleInputChange}
+                          required={field.required}
+                          placeholder={field.placeholder}
+                          className="w-full px-4 py-3 sm:py-3.5 rounded-xl border border-[#E5E7EB] dark:border-white/10 bg-[#F8FAFC] dark:bg-[#1A1A1A] text-[#171717] dark:text-white focus:outline-none focus:border-[#C2272D] dark:focus:border-[#00FFFF] focus:ring-2 focus:ring-[#C2272D]/20 dark:focus:ring-[#00FFFF]/20 text-[15px] sm:text-base transition-all placeholder-slate-400 min-h-[46px]"
+                        />
+                      )}
                     </div>
-                  ) : (
-                    <input
-                      type={field.type}
-                      id={field.name}
-                      name={field.name}
-                      value={formData[field.name] || ''}
-                      onChange={handleInputChange}
-                      required={field.required}
-                      placeholder={field.placeholder}
-                      className="w-full px-4 py-3.5 rounded-xl border border-[#E5E7EB] dark:border-white/10 bg-[#F8FAFC] dark:bg-[#1A1A1A] text-[#171717] dark:text-white focus:outline-none focus:border-[#C2272D] dark:focus:border-[#00FFFF] text-base transition-colors placeholder-slate-400"
-                    />
-                  )}
-                </div>
-              ))}
+                  );
+                })}
+              </div>
+
+              {/* Status Feedback Banner */}
+              <AnimatePresence>
+                {status && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    className={`p-4 rounded-xl flex items-center gap-3 text-sm font-medium border ${
+                      status.type === 'success'
+                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
+                        : 'bg-[#C2272D]/10 border-[#C2272D]/30 text-[#C2272D] dark:text-red-400'
+                    }`}
+                  >
+                    {status.type === 'success' ? (
+                      <FaCheckCircle className="shrink-0 text-base" />
+                    ) : (
+                      <FaExclamationCircle className="shrink-0 text-base" />
+                    )}
+                    <span className="leading-relaxed">{status.message}</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Submit Button */}
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full py-4 px-8 bg-[#C2272D] hover:bg-[#A51E23] disabled:bg-slate-400 text-white rounded-full font-semibold text-[16px] shadow-md shadow-[#C2272D]/25 hover:shadow-xl hover:shadow-[#C2272D]/40 transition-all duration-200 flex items-center justify-center gap-2.5 cursor-pointer mt-3 hover:scale-[1.03] active:scale-[0.97] btn-shine-effect group"
+                className="w-full min-h-[48px] sm:min-h-[52px] py-3.5 sm:py-4 px-6 sm:px-8 bg-[#C2272D] hover:bg-[#A51E23] disabled:bg-slate-400 text-white rounded-full font-semibold text-[15px] sm:text-[16px] shadow-md shadow-[#C2272D]/25 hover:shadow-xl hover:shadow-[#C2272D]/40 transition-all duration-200 flex items-center justify-center gap-2.5 cursor-pointer mt-1 hover:scale-[1.02] active:scale-[0.98] btn-shine-effect group"
               >
                 {submitting ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Sending message...</span>
+                  </>
                 ) : (
                   <>
                     <FaPaperPlane size={15} className="transition-transform duration-200 group-hover:translate-x-1 group-hover:-translate-y-1" />

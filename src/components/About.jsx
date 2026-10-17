@@ -171,19 +171,19 @@ const About = ({ aboutData, resumeData }) => {
             </motion.div>
 
             {/* Stats Cards */}
-            <motion.div variants={childVariants} className="grid grid-cols-3 gap-3.5 sm:gap-4 w-full max-w-[420px]">
+            <motion.div variants={childVariants} className="grid grid-cols-3 gap-2 xs:gap-3 sm:gap-4 w-full max-w-[420px]">
               {stats.map((stat, idx) => (
                 <div 
                   key={idx} 
-                  className="bg-white dark:bg-[#111111] p-4 sm:p-5 rounded-2xl flex flex-col items-center justify-center text-center shadow-md border border-[#E5E7EB] dark:border-white/10 hover:border-[#C2272D] dark:hover:border-[#00FFFF] hover:-translate-y-2 hover:shadow-xl hover:shadow-[#C2272D]/15 dark:hover:shadow-[#00FFFF]/15 transition-all duration-300 group cursor-pointer"
+                  className="bg-white dark:bg-[#111111] p-2.5 xs:p-3.5 sm:p-5 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center text-center shadow-md border border-[#E5E7EB] dark:border-white/10 hover:border-[#C2272D] dark:hover:border-[#00FFFF] hover:-translate-y-1.5 hover:shadow-xl hover:shadow-[#C2272D]/15 dark:hover:shadow-[#00FFFF]/15 transition-all duration-300 group cursor-pointer"
                 >
-                  <div className="mb-2 p-2.5 rounded-xl bg-[#F8FAFC] dark:bg-white/5 flex items-center justify-center group-hover:scale-125 group-hover:rotate-6 transition-all duration-300">
+                  <div className="mb-1.5 sm:mb-2 p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-[#F8FAFC] dark:bg-white/5 flex items-center justify-center group-hover:scale-125 group-hover:rotate-6 transition-all duration-300 text-sm sm:text-base">
                     {stat.icon}
                   </div>
-                  <span className="text-2xl sm:text-[28px] font-bold font-title text-[#171717] dark:text-white mb-0.5 group-hover:text-[#C2272D] dark:group-hover:text-[#00FFFF] transition-colors">
+                  <span className="text-xl xs:text-2xl sm:text-[28px] font-bold font-title text-[#171717] dark:text-white mb-0.5 group-hover:text-[#C2272D] dark:group-hover:text-[#00FFFF] transition-colors leading-tight">
                     {stat.value}
                   </span>
-                  <span className="text-xs sm:text-[13px] font-medium text-[#525252] dark:text-[#9CA3AF] leading-tight">
+                  <span className="text-[10px] xs:text-xs sm:text-[13px] font-medium text-[#525252] dark:text-[#9CA3AF] leading-tight">
                     {stat.label}
                   </span>
                 </div>

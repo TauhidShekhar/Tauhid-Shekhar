@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { 
   FaHeart, FaGithub, FaLinkedin, FaEnvelope, FaInstagram,
-  FaTwitter, FaYoutube, FaFacebook, FaArrowUp, FaPaperPlane,
-  FaMapMarkerAlt, FaCode, FaCheckCircle
+  FaTwitter, FaYoutube, FaFacebook, FaArrowUp
 } from 'react-icons/fa';
 
 const formatExternalLink = (url) => {
@@ -70,11 +69,18 @@ const Footer = ({ settingsData, heroData }) => {
     }
   };
 
-  const footerTextVal = settings?.footerText || 'Creative Graphic Designer & Full-Stack Web Developer. Bridging logical systems engineering with responsive frontend interfaces.';
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  };
+
+  const footerTextVal = settings?.footerText || settings?.siteTagline || heroSettings?.siteTagline || 'Full Stack Web Developer & Graphic Designer crafting robust web architectures, scalable backend solutions, and pixel-perfect digital experiences.';
   
-  const githubLink = heroSettings?.socialLinks?.github || settings?.socialLinks?.github || 'https://github.com/TauhidShekhar';
-  const linkedinLink = heroSettings?.socialLinks?.linkedin || settings?.socialLinks?.linkedin || 'https://www.linkedin.com/in/tauhidshekhar/';
-  const instagramLink = heroSettings?.socialLinks?.instagram || settings?.socialLinks?.instagram || 'https://www.instagram.com/tauhidshekhar/';
+  const githubLink = heroSettings?.socialLinks?.github || settings?.socialLinks?.github;
+  const linkedinLink = heroSettings?.socialLinks?.linkedin || settings?.socialLinks?.linkedin;
+  const instagramLink = heroSettings?.socialLinks?.instagram || settings?.socialLinks?.instagram;
   const twitterLink = heroSettings?.socialLinks?.twitter || settings?.socialLinks?.twitter;
   const youtubeLink = heroSettings?.socialLinks?.youtube || settings?.socialLinks?.youtube;
   const facebookLink = heroSettings?.socialLinks?.facebook || settings?.socialLinks?.facebook;
@@ -83,56 +89,56 @@ const Footer = ({ settingsData, heroData }) => {
   const siteName = settings?.siteName || heroSettings?.siteName || 'TAUHID SHEKHAR';
 
   return (
-    <footer className="bg-white dark:bg-[#000000] border-t border-[#E5E7EB] dark:border-white/10 pt-16 pb-12 text-[#525252] dark:text-[#D1D5DB] transition-colors duration-300">
-      <div className="max-w-[1280px] mx-auto px-6 md:px-12">
+    <footer className="bg-white dark:bg-[#000000] border-t border-[#E5E7EB] dark:border-white/10 pt-14 sm:pt-16 pb-10 sm:pb-12 text-[#525252] dark:text-[#D1D5DB] transition-colors duration-300">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12">
         
         {/* Main Footer Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 md:gap-12 pb-14 border-b border-[#E5E7EB] dark:border-white/10 items-start text-left">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 sm:gap-10 lg:gap-12 pb-10 sm:pb-14 border-b border-[#E5E7EB] dark:border-white/10 items-start text-left">
           
-          {/* Brand Column (5 cols) */}
-          <div className="lg:col-span-5 flex flex-col items-start">
-            <Link to="/" className="flex items-center gap-3.5 mb-5 group">
+          {/* Brand Column (Full width on mobile, 5 cols on lg) */}
+          <div className="sm:col-span-2 lg:col-span-5 flex flex-col items-start">
+            <Link to="/" className="flex items-center gap-3 sm:gap-3.5 mb-4 sm:mb-5 group">
               {/* Light Mode Crowned TS Logo */}
               <img 
                 src="/assits/ts-logo-red.jpg" 
                 alt="Tauhid Shekhar TS Logo" 
-                className="w-11 h-11 rounded-xl object-contain shadow-sm border border-slate-200 dark:hidden"
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-contain shadow-sm border border-slate-200 dark:hidden"
               />
               {/* Dark Mode Crowned TS Logo */}
               <img 
                 src="/assits/ts-logo-dark.jpg" 
                 alt="Tauhid Shekhar TS Logo" 
-                className="w-11 h-11 rounded-xl object-contain shadow-sm border border-white/10 hidden dark:block"
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-contain shadow-sm border border-white/10 hidden dark:block"
               />
               <div className="flex flex-col text-left">
-                <span className="font-title font-black text-xl tracking-tight text-[#171717] dark:text-white leading-none">
+                <span className="font-title font-black text-lg sm:text-xl tracking-tight text-[#171717] dark:text-white leading-none">
                   {siteName.toUpperCase()}
                 </span>
-                <span className="text-[11px] font-bold tracking-widest text-[#525252] dark:text-[#D1D5DB] mt-1 uppercase flex items-center gap-1.5">
+                <span className="text-[10px] sm:text-[11px] font-bold tracking-widest text-[#525252] dark:text-[#D1D5DB] mt-1 uppercase flex items-center gap-1.5">
                   DEVELOPER <span className="text-[#00FFFF] font-black">|</span> CREATOR <span className="text-[#00FFFF] font-black">|</span> LEARNER
                 </span>
               </div>
             </Link>
 
-            <p className="text-[15px] sm:text-base text-[#525252] dark:text-[#D1D5DB] mb-5 max-w-[380px] leading-relaxed">
+            <p className="text-sm sm:text-base text-[#525252] dark:text-[#D1D5DB] mb-4 sm:mb-5 max-w-[420px] leading-relaxed">
               {footerTextVal}
             </p>
 
             {/* Availability Pill */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/25 text-emerald-600 dark:text-emerald-400 text-xs font-semibold mb-6">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Available for freelance projects & full-time roles</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/25 text-emerald-600 dark:text-emerald-400 text-xs font-semibold mb-5 sm:mb-6 max-w-full">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              <span className="truncate sm:whitespace-normal">Available for freelance & full-time roles</span>
             </div>
 
-            {/* Social Icons */}
-            <div className="flex items-center gap-2.5 flex-wrap">
+            {/* Social Icons with Touch Targets */}
+            <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
               {githubLink && (
                 <a
                   href={formatExternalLink(githubLink)}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="GitHub Profile"
-                  className="w-10 h-10 rounded-xl bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] transition-all hover:scale-110"
+                  className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] transition-all hover:scale-110 active:scale-95 shadow-sm"
                 >
                   <FaGithub size={18} />
                 </a>
@@ -143,7 +149,7 @@ const Footer = ({ settingsData, heroData }) => {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="LinkedIn Profile"
-                  className="w-10 h-10 rounded-xl bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] transition-all hover:scale-110"
+                  className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] transition-all hover:scale-110 active:scale-95 shadow-sm"
                 >
                   <FaLinkedin size={18} />
                 </a>
@@ -154,7 +160,7 @@ const Footer = ({ settingsData, heroData }) => {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Instagram Profile"
-                  className="w-10 h-10 rounded-xl bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] transition-all hover:scale-110"
+                  className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] transition-all hover:scale-110 active:scale-95 shadow-sm"
                 >
                   <FaInstagram size={18} />
                 </a>
@@ -165,7 +171,7 @@ const Footer = ({ settingsData, heroData }) => {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Twitter Profile"
-                  className="w-10 h-10 rounded-xl bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] transition-all hover:scale-110"
+                  className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] transition-all hover:scale-110 active:scale-95 shadow-sm"
                 >
                   <FaTwitter size={18} />
                 </a>
@@ -176,7 +182,7 @@ const Footer = ({ settingsData, heroData }) => {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="YouTube Channel"
-                  className="w-10 h-10 rounded-xl bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] transition-all hover:scale-110"
+                  className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] transition-all hover:scale-110 active:scale-95 shadow-sm"
                 >
                   <FaYoutube size={18} />
                 </a>
@@ -187,7 +193,7 @@ const Footer = ({ settingsData, heroData }) => {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Facebook Profile"
-                  className="w-10 h-10 rounded-xl bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] transition-all hover:scale-110"
+                  className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] transition-all hover:scale-110 active:scale-95 shadow-sm"
                 >
                   <FaFacebook size={18} />
                 </a>
@@ -196,7 +202,7 @@ const Footer = ({ settingsData, heroData }) => {
                 <a
                   href={`mailto:${emailLink}`}
                   aria-label="Send Email"
-                  className="w-10 h-10 rounded-xl bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] transition-all hover:scale-110"
+                  className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] transition-all hover:scale-110 active:scale-95 shadow-sm"
                 >
                   <FaEnvelope size={18} />
                 </a>
@@ -204,18 +210,18 @@ const Footer = ({ settingsData, heroData }) => {
             </div>
           </div>
 
-          {/* Quick Navigation (3 cols) */}
-          <div className="lg:col-span-3">
-            <h4 className="text-xs sm:text-sm font-semibold text-[#171717] dark:text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+          {/* Quick Navigation */}
+          <div className="sm:col-span-1 lg:col-span-3">
+            <h4 className="text-xs sm:text-sm font-semibold text-[#171717] dark:text-white uppercase tracking-wider mb-3 sm:mb-4 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-[#C2272D]" />
               Navigation
             </h4>
-            <ul className="flex flex-col gap-3">
+            <ul className="flex flex-col gap-2 sm:gap-2.5">
               <li>
                 <a 
                   href="#home" 
                   onClick={(e) => handleScrollTo(e, '#home')} 
-                  className="text-[15px] sm:text-[16px] font-normal text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors"
+                  className="text-sm sm:text-base font-normal text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors py-1 inline-block"
                 >
                   Home
                 </a>
@@ -224,7 +230,7 @@ const Footer = ({ settingsData, heroData }) => {
                 <a 
                   href="#about" 
                   onClick={(e) => handleScrollTo(e, '#about')} 
-                  className="text-[15px] sm:text-[16px] font-normal text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors"
+                  className="text-sm sm:text-base font-normal text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors py-1 inline-block"
                 >
                   About TS
                 </a>
@@ -233,7 +239,7 @@ const Footer = ({ settingsData, heroData }) => {
                 <a 
                   href="#projects" 
                   onClick={(e) => handleScrollTo(e, '#projects')} 
-                  className="text-[15px] sm:text-[16px] font-normal text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors"
+                  className="text-sm sm:text-base font-normal text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors py-1 inline-block"
                 >
                   Featured Projects
                 </a>
@@ -242,7 +248,7 @@ const Footer = ({ settingsData, heroData }) => {
                 <a 
                   href="#experience" 
                   onClick={(e) => handleScrollTo(e, '#experience')} 
-                  className="text-[15px] sm:text-[16px] font-normal text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors"
+                  className="text-sm sm:text-base font-normal text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors py-1 inline-block"
                 >
                   Work Experience
                 </a>
@@ -251,7 +257,7 @@ const Footer = ({ settingsData, heroData }) => {
                 <a 
                   href="#contact" 
                   onClick={(e) => handleScrollTo(e, '#contact')} 
-                  className="text-[15px] sm:text-[16px] font-normal text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors"
+                  className="text-sm sm:text-base font-normal text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors py-1 inline-block"
                 >
                   Contact & Inquiries
                 </a>
@@ -259,18 +265,18 @@ const Footer = ({ settingsData, heroData }) => {
             </ul>
           </div>
 
-          {/* Highlights & Resources (4 cols) */}
-          <div className="lg:col-span-4">
-            <h4 className="text-xs sm:text-sm font-semibold text-[#171717] dark:text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+          {/* Highlights & Resources */}
+          <div className="sm:col-span-1 lg:col-span-4">
+            <h4 className="text-xs sm:text-sm font-semibold text-[#171717] dark:text-white uppercase tracking-wider mb-3 sm:mb-4 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-[#00FFFF]" />
               Highlights & Community
             </h4>
-            <ul className="flex flex-col gap-3">
+            <ul className="flex flex-col gap-2 sm:gap-2.5">
               <li>
                 <a 
                   href="#skills" 
                   onClick={(e) => handleScrollTo(e, '#skills')} 
-                  className="text-[15px] sm:text-[16px] font-normal text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors"
+                  className="text-sm sm:text-base font-normal text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors py-1 inline-block"
                 >
                   Tech Skills & Stack
                 </a>
@@ -279,7 +285,7 @@ const Footer = ({ settingsData, heroData }) => {
                 <a 
                   href="#services" 
                   onClick={(e) => handleScrollTo(e, '#services')} 
-                  className="text-[15px] sm:text-[16px] font-normal text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors"
+                  className="text-sm sm:text-base font-normal text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors py-1 inline-block"
                 >
                   Design & Dev Services
                 </a>
@@ -288,7 +294,7 @@ const Footer = ({ settingsData, heroData }) => {
                 <a 
                   href="#resume" 
                   onClick={(e) => handleScrollTo(e, '#resume')} 
-                  className="text-[15px] sm:text-[16px] font-normal text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors"
+                  className="text-sm sm:text-base font-normal text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors py-1 inline-block"
                 >
                   ATS Resume & Verification
                 </a>
@@ -297,7 +303,7 @@ const Footer = ({ settingsData, heroData }) => {
                 <a 
                   href="#education" 
                   onClick={(e) => handleScrollTo(e, '#education')} 
-                  className="text-[15px] sm:text-[16px] font-normal text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors"
+                  className="text-sm sm:text-base font-normal text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors py-1 inline-block"
                 >
                   Education & Certifications
                 </a>
@@ -305,7 +311,7 @@ const Footer = ({ settingsData, heroData }) => {
               <li>
                 <Link 
                   to="/community" 
-                  className="text-[15px] sm:text-[16px] font-normal text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors inline-flex items-center gap-2"
+                  className="text-sm sm:text-base font-normal text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors py-1 inline-flex items-center gap-2"
                 >
                   <span>TS Developer Community & Blog</span>
                   <span className="px-2 py-0.5 text-[10px] uppercase font-semibold rounded-full bg-[#C2272D]/10 text-[#C2272D] dark:bg-[#00FFFF]/10 dark:text-[#00FFFF]">
@@ -318,30 +324,41 @@ const Footer = ({ settingsData, heroData }) => {
 
         </div>
 
-        {/* Bottom Bar */}
-        <div className="pt-7 flex flex-col md:flex-row items-center justify-between gap-5 text-sm">
-          <div className="flex flex-col md:flex-row items-center gap-3 md:gap-7">
-            <p className="text-sm font-normal text-[#525252] dark:text-[#D1D5DB]">
+        {/* Bottom Bar: Copyright, Legal Links, and Back-to-Top */}
+        <div className="pt-6 sm:pt-7 flex flex-col md:flex-row items-center justify-between gap-4 text-xs sm:text-sm">
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 md:gap-6 text-center sm:text-left">
+            <p className="font-normal text-[#525252] dark:text-[#D1D5DB]">
               {settings?.copyrightText || `© ${new Date().getFullYear()} ${siteName}. All Rights Reserved.`}
             </p>
-            <div className="flex items-center gap-3 text-sm font-medium">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-3 gap-y-1 font-medium">
               <Link to="/legal" className="hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors text-[#525252] dark:text-[#D1D5DB]">
                 Legal Notice
               </Link>
-              <span className="text-[#E5E7EB] dark:text-white/20">•</span>
+              <span className="text-[#E5E7EB] dark:text-white/20 select-none">•</span>
               <Link to="/terms" className="hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors text-[#525252] dark:text-[#D1D5DB]">
                 Terms of Service
               </Link>
-              <span className="text-[#E5E7EB] dark:text-white/20">•</span>
+              <span className="text-[#E5E7EB] dark:text-white/20 select-none">•</span>
               <Link to="/privacy" className="hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors text-[#525252] dark:text-[#D1D5DB]">
                 Privacy Policy
               </Link>
             </div>
           </div>
 
-          <p className="text-sm font-medium flex items-center gap-1.5 text-[#525252] dark:text-[#D1D5DB]">
-            Designed & Engineered with <FaHeart className="text-[#C2272D] animate-pulse" /> by {siteName}
-          </p>
+          <div className="flex items-center gap-4">
+            <p className="font-medium flex items-center gap-1.5 text-[#525252] dark:text-[#D1D5DB]">
+              Designed & Engineered with <FaHeart className="text-[#C2272D] animate-pulse" /> by {siteName}
+            </p>
+            <button
+              onClick={scrollToTop}
+              type="button"
+              className="w-8 h-8 rounded-full bg-[#F8FAFC] dark:bg-[#1A1A1A] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF] hover:border-[#C2272D] dark:hover:border-[#00FFFF] transition-all cursor-pointer shadow-sm hover:scale-110 active:scale-95"
+              aria-label="Back to Top"
+              title="Back to Top"
+            >
+              <FaArrowUp size={11} />
+            </button>
+          </div>
         </div>
 
       </div>

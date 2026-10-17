@@ -88,7 +88,7 @@ const Experience = ({ experienceData }) => {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-80px' }}
-          className="relative pl-6 sm:pl-12 border-l-2 border-[#E5E7EB] dark:border-white/10 flex flex-col gap-10"
+          className="relative pl-7 xs:pl-8 sm:pl-12 border-l-2 border-[#E5E7EB] dark:border-white/10 flex flex-col gap-8 sm:gap-10"
         >
           {experiences.map((exp, idx) => (
             <motion.div
@@ -97,12 +97,12 @@ const Experience = ({ experienceData }) => {
               className="relative"
             >
               {/* Timeline Icon Badge */}
-              <div className="absolute -left-[45px] sm:-left-[69px] top-2 w-11 h-11 sm:w-13 sm:h-13 rounded-2xl bg-white dark:bg-[#111111] border-2 border-[#E5E7EB] dark:border-white/10 flex items-center justify-center shadow-lg z-10 hover:scale-125 hover:rotate-6 transition-all duration-300 cursor-pointer">
+              <div className="absolute -left-[43px] xs:-left-[47px] sm:-left-[69px] top-2 w-10 h-10 sm:w-13 sm:h-13 rounded-2xl bg-white dark:bg-[#111111] border-2 border-[#E5E7EB] dark:border-white/10 flex items-center justify-center shadow-lg z-10 hover:scale-115 hover:rotate-6 transition-all duration-300 cursor-pointer">
                 {getIcon(exp.type)}
               </div>
 
               {/* Experience Card */}
-              <div className="bg-[#F8FAFC] dark:bg-[#111111] p-6 sm:p-7 rounded-3xl border border-[#E5E7EB] dark:border-white/10 shadow-sm hover:shadow-2xl hover:shadow-[#C2272D]/10 dark:hover:shadow-[#00FFFF]/10 hover:border-[#C2272D] dark:hover:border-[#00FFFF] hover:-translate-y-1.5 transition-all duration-300 card-interactive">
+              <div className="bg-[#F8FAFC] dark:bg-[#111111] p-5 xs:p-6 sm:p-7 rounded-2xl sm:rounded-3xl border border-[#E5E7EB] dark:border-white/10 shadow-sm hover:shadow-2xl hover:shadow-[#C2272D]/10 dark:hover:shadow-[#00FFFF]/10 hover:border-[#C2272D] dark:hover:border-[#00FFFF] hover:-translate-y-1.5 transition-all duration-300 card-interactive">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3.5">
                   <div>
                     <h3 className="text-lg sm:text-[20px] font-bold font-title text-[#171717] dark:text-white leading-snug">

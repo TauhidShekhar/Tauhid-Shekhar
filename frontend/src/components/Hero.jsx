@@ -245,12 +245,12 @@ const Hero = ({ heroData, resumeData }) => {
           </motion.p>
 
           {/* Primary Action Buttons */}
-          <motion.div variants={itemVariants} className="flex flex-wrap gap-3.5 mb-9 w-full sm:w-auto">
+          <motion.div variants={itemVariants} className="flex flex-wrap gap-3 sm:gap-3.5 mb-7 sm:mb-9 w-full sm:w-auto">
             {/* Prominent Let's Talk CTA */}
             <a
               href="#contact"
               onClick={(e) => handleScrollTo(e, '#contact')}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] sm:text-[16px] font-semibold shadow-md shadow-[#C2272D]/25 hover:shadow-xl hover:shadow-[#C2272D]/40 transition-all duration-200 hover:scale-[1.04] active:scale-[0.96] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF] btn-shine-effect group"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-6 py-3.5 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] sm:text-[16px] font-semibold shadow-md shadow-[#C2272D]/25 hover:shadow-xl hover:shadow-[#C2272D]/40 transition-all duration-200 hover:scale-[1.04] active:scale-[0.96] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF] btn-shine-effect group text-center"
               aria-label="Let's Talk - Jump to contact section"
             >
               <FaPaperPlane size={15} className="transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -261,7 +261,7 @@ const Hero = ({ heroData, resumeData }) => {
               <a
                 href="#projects"
                 onClick={(e) => handleScrollTo(e, '#projects')}
-                className="flex items-center justify-center px-6 py-3 bg-[#F8FAFC] dark:bg-[#1A1A1A] hover:bg-slate-200 dark:hover:bg-white/10 text-[#171717] dark:text-white rounded-full text-[15px] sm:text-[16px] font-semibold border border-[#E5E7EB] dark:border-white/10 hover:border-[#00FFFF] hover:shadow-lg hover:shadow-[#00FFFF]/20 transition-all duration-200 hover:scale-[1.04] active:scale-[0.96] cursor-pointer"
+                className="flex-1 sm:flex-initial flex items-center justify-center px-6 py-3.5 bg-[#F8FAFC] dark:bg-[#1A1A1A] hover:bg-slate-200 dark:hover:bg-white/10 text-[#171717] dark:text-white rounded-full text-[15px] sm:text-[16px] font-semibold border border-[#E5E7EB] dark:border-white/10 hover:border-[#00FFFF] hover:shadow-lg hover:shadow-[#00FFFF]/20 transition-all duration-200 hover:scale-[1.04] active:scale-[0.96] cursor-pointer text-center"
               >
                 Explore Projects
               </a>
@@ -271,7 +271,7 @@ const Hero = ({ heroData, resumeData }) => {
               <a
                 href={resumeLink}
                 onClick={handleViewResume}
-                className="flex items-center justify-center px-6 py-3 bg-transparent border-2 border-slate-300 dark:border-white/20 hover:border-[#C2272D] hover:text-[#C2272D] dark:hover:border-[#00FFFF] dark:hover:text-[#00FFFF] text-[#171717] dark:text-white rounded-full text-[15px] sm:text-[16px] font-semibold transition-all duration-200 hover:scale-[1.04] active:scale-[0.96] cursor-pointer hover:shadow-lg hover:shadow-[#C2272D]/20"
+                className="flex-1 sm:flex-initial flex items-center justify-center px-6 py-3.5 bg-transparent border-2 border-slate-300 dark:border-white/20 hover:border-[#C2272D] hover:text-[#C2272D] dark:hover:border-[#00FFFF] dark:hover:text-[#00FFFF] text-[#171717] dark:text-white rounded-full text-[15px] sm:text-[16px] font-semibold transition-all duration-200 hover:scale-[1.04] active:scale-[0.96] cursor-pointer hover:shadow-lg hover:shadow-[#C2272D]/20 text-center"
               >
                 View Resume
               </a>
@@ -279,8 +279,8 @@ const Hero = ({ heroData, resumeData }) => {
           </motion.div>
 
           {/* Social Links Row */}
-          <motion.div variants={itemVariants} className="flex flex-wrap items-center gap-3">
-            <span className="text-sm font-semibold tracking-wider uppercase text-slate-500 dark:text-gray-400 mr-1.5">
+          <motion.div variants={itemVariants} className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+            <span className="text-xs sm:text-sm font-semibold tracking-wider uppercase text-slate-500 dark:text-gray-400 mr-1 sm:mr-1.5">
               Connect:
             </span>
             {githubLink && (
@@ -362,13 +362,13 @@ const Hero = ({ heroData, resumeData }) => {
         </motion.div>
 
         {/* Right Column: Headshot & Floating Brand Accents */}
-        <div className="lg:col-span-5 flex justify-center relative select-none">
+        <div className="lg:col-span-5 flex justify-center relative select-none w-full max-w-full overflow-hidden sm:overflow-visible py-4">
           {/* Main Headshot Container */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-[300px] h-[390px] sm:w-[340px] sm:h-[440px] rounded-3xl border-4 border-white dark:border-[#222222] shadow-2xl overflow-hidden group bg-slate-100 dark:bg-[#111111]"
+            className="relative w-[260px] h-[340px] xs:w-[290px] xs:h-[380px] sm:w-[340px] sm:h-[440px] rounded-3xl border-4 border-white dark:border-[#222222] shadow-2xl overflow-hidden group bg-slate-100 dark:bg-[#111111]"
           >
             <img
               src={heroImg}
@@ -380,42 +380,44 @@ const Hero = ({ heroData, resumeData }) => {
           </motion.div>
 
           {/* Floating Technology Pills */}
-          <div className="absolute inset-0 pointer-events-none">
-            <motion.div
-              variants={floatingVariants(0)}
-              animate="animate"
-              className="absolute -top-4 -left-4 w-14 h-14 rounded-2xl bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 shadow-xl flex items-center justify-center text-[#C2272D]"
-              title="Full Stack Coding"
-            >
-              <FaCode size={24} />
-            </motion.div>
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+            <div className="relative w-[260px] h-[340px] xs:w-[290px] xs:h-[380px] sm:w-[340px] sm:h-[440px]">
+              <motion.div
+                variants={floatingVariants(0)}
+                animate="animate"
+                className="absolute -top-3 -left-3 sm:-top-4 sm:-left-4 w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 shadow-xl flex items-center justify-center text-[#C2272D]"
+                title="Full Stack Coding"
+              >
+                <FaCode className="text-lg sm:text-2xl" />
+              </motion.div>
 
-            <motion.div
-              variants={floatingVariants(1)}
-              animate="animate"
-              className="absolute top-1/3 -right-5 w-14 h-14 rounded-2xl bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 shadow-xl flex items-center justify-center text-[#00FFFF]"
-              title="React Ecosystem"
-            >
-              <FaReact size={26} className="animate-spin-slow" />
-            </motion.div>
+              <motion.div
+                variants={floatingVariants(1)}
+                animate="animate"
+                className="absolute top-1/3 -right-3 sm:-right-5 w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 shadow-xl flex items-center justify-center text-[#00FFFF]"
+                title="React Ecosystem"
+              >
+                <FaReact className="text-xl sm:text-[26px] animate-spin-slow" />
+              </motion.div>
 
-            <motion.div
-              variants={floatingVariants(0.6)}
-              animate="animate"
-              className="absolute -bottom-4 left-6 w-14 h-14 rounded-2xl bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 shadow-xl flex items-center justify-center text-[#00FFFF]"
-              title="Backend & Cloud APIs"
-            >
-              <FaServer size={22} />
-            </motion.div>
+              <motion.div
+                variants={floatingVariants(0.6)}
+                animate="animate"
+                className="absolute -bottom-3 left-3 sm:-bottom-4 sm:left-6 w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 shadow-xl flex items-center justify-center text-[#00FFFF]"
+                title="Backend & Cloud APIs"
+              >
+                <FaServer className="text-base sm:text-[22px]" />
+              </motion.div>
 
-            <motion.div
-              variants={floatingVariants(1.4)}
-              animate="animate"
-              className="absolute bottom-1/3 -left-7 w-14 h-14 rounded-2xl bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 shadow-xl flex items-center justify-center text-[#C2272D]"
-              title="Database Systems"
-            >
-              <FaDatabase size={22} />
-            </motion.div>
+              <motion.div
+                variants={floatingVariants(1.4)}
+                animate="animate"
+                className="absolute bottom-1/3 -left-3 sm:-left-6 w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 shadow-xl flex items-center justify-center text-[#C2272D]"
+                title="Database Systems"
+              >
+                <FaDatabase className="text-base sm:text-[22px]" />
+              </motion.div>
+            </div>
           </div>
         </div>
       </div>

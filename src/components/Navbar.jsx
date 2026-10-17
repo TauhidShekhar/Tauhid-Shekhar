@@ -166,12 +166,12 @@ const Navbar = ({ activeSection, toggleTheme: propsToggleTheme, isDark: propsIsD
               className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-cover shadow-sm transition-transform duration-200 group-hover:scale-105"
             />
             <div className="flex flex-col text-left">
-              <div className="flex items-center text-lg sm:text-xl font-black font-title tracking-tight leading-tight">
+              <div className="flex items-center text-base sm:text-lg md:text-xl font-black font-title tracking-tight leading-tight">
                 <span className={isDark ? 'text-white' : 'text-[#171717]'}>TAUHID&nbsp;</span>
                 <span className="text-[#C2272D]">SHEKHAR</span>
-                <span className="text-[#00FFFF] font-bold mx-2 select-none text-base">|</span>
+                <span className="text-[#00FFFF] font-bold mx-1.5 sm:mx-2 select-none text-base hidden xs:inline">|</span>
               </div>
-              <span className="text-[10px] font-bold tracking-widest uppercase text-[#525252] dark:text-[#9CA3AF]">
+              <span className="text-[9px] sm:text-[10px] font-bold tracking-widest uppercase text-[#525252] dark:text-[#9CA3AF] hidden xs:block">
                 DEVELOPER | CREATOR | LEARNER
               </span>
             </div>
@@ -385,7 +385,7 @@ const Navbar = ({ activeSection, toggleTheme: propsToggleTheme, isDark: propsIsD
           onClick={() => setIsOpen(false)}
         >
           <div
-            className={`w-full max-w-[360px] rounded-2xl p-6 shadow-2xl border transition-all duration-300 ${
+            className={`w-full max-w-[360px] max-h-[90vh] overflow-y-auto rounded-2xl p-5 sm:p-6 shadow-2xl border transition-all duration-300 ${
               isDark 
                 ? 'bg-[#111111] text-white border-white/10' 
                 : 'bg-[#FFFFFF] text-[#171717] border-[#E5E7EB]'

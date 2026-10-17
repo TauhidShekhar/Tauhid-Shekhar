@@ -39,7 +39,7 @@ const createMessage = async (req, res) => {
         if (val !== undefined && val !== null) {
           if (field.name === 'name') name = String(val);
           else if (field.name === 'email') email = String(val);
-          else if (field.name === 'phone') phone = String(val);
+          else if (field.name === 'phone' || field.name === 'phone_number' || field.name === 'mobile') phone = String(val);
           else if (field.name === 'subject') subject = String(val);
           else if (field.name === 'message') message = String(val);
           else {

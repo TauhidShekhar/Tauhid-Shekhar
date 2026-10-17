@@ -118,12 +118,12 @@ const GitHubStats = () => {
                 </div>
               ) : (
                 /* Fallback streak metrics */
-                <div className="grid grid-cols-3 gap-3 w-full py-4 text-center">
+                <div className="grid grid-cols-3 gap-2 xs:gap-3 w-full py-4 text-center">
                   {fallbackStreak.map((item, idx) => (
-                    <div key={idx} className="flex flex-col gap-1 p-3.5 bg-white dark:bg-white/5 rounded-xl border border-[#E5E7EB] dark:border-white/10">
-                      <span className="text-[10px] font-bold text-[#525252] dark:text-[#D1D5DB] uppercase tracking-wider">{item.label}</span>
-                      <span className="text-xl font-black text-[#171717] dark:text-white">{item.value}</span>
-                      <span className="text-[10px] text-slate-400">{item.desc}</span>
+                    <div key={idx} className="flex flex-col gap-1 p-2 xs:p-3 sm:p-3.5 bg-white dark:bg-white/5 rounded-xl border border-[#E5E7EB] dark:border-white/10">
+                      <span className="text-[9px] xs:text-[10px] font-bold text-[#525252] dark:text-[#D1D5DB] uppercase tracking-wider">{item.label}</span>
+                      <span className="text-lg xs:text-xl font-black text-[#171717] dark:text-white leading-tight">{item.value}</span>
+                      <span className="text-[9px] xs:text-[10px] text-slate-400">{item.desc}</span>
                     </div>
                   ))}
                 </div>
@@ -167,7 +167,7 @@ const GitHubStats = () => {
               href={`https://github.com/${username}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full font-bold text-base shadow-md shadow-[#C2272D]/20 transition-all duration-300 hover:-translate-y-0.5 cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-3.5 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full font-bold text-base shadow-md shadow-[#C2272D]/20 transition-all duration-300 hover:-translate-y-0.5 cursor-pointer text-center"
             >
               <FaGithub size={18} /> Explore GitHub Profile
             </a>
