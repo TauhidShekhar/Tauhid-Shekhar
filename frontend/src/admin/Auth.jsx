@@ -164,9 +164,9 @@ const Auth = () => {
       <div className="glass p-5 sm:p-8 md:p-10 rounded-[20px] sm:rounded-[30px] border border-slate-200/60 dark:border-white/5 shadow-xl w-full max-w-[440px] relative z-10 text-left">
         
         {/* Back Link */}
-        <a href={clientUrl} className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-primary-blue transition-colors mb-6">
+        <Link to="/" className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors mb-6">
           <FaArrowLeft /> Back to Website
-        </a>
+        </Link>
 
         {/* Tab Headers */}
         <div className="flex border-b border-slate-200 dark:border-white/5 mb-6 select-none">
