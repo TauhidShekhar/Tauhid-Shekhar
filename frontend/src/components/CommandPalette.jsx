@@ -148,7 +148,7 @@ const CommandPalette = ({ isOpen, onClose, isDark, toggleTheme }) => {
                   onClick={cmd.action}
                   className={`flex items-center gap-3.5 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-150 ${
                     idx === selectedIndex 
-                      ? 'bg-purple-600/20 border-l-2 border-purple-500 text-white pl-4' 
+                      ? 'bg-[#C2272D]/20 border-l-2 border-[#C2272D] text-white pl-4' 
                       : 'hover:bg-white/5 text-slate-300'
                   }`}
                 >

@@ -4,8 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { FaGithub, FaExternalLinkAlt, FaBookOpen, FaTimes, FaCheck, FaHeart, FaRegHeart } from 'react-icons/fa';
+import { getCacheBustedUrl } from '../utils/cacheBuster';
 
-const ProjectGallery = ({ mainImage, images }) => {
+const ProjectGallery = ({ mainImage, images, title, updatedAt }) => {
   const [activeImg, setActiveImg] = useState(mainImage);
   const allImages = [mainImage, ...(images || [])].filter(Boolean);
 
@@ -13,45 +14,171 @@ const ProjectGallery = ({ mainImage, images }) => {
     setActiveImg(mainImage);
   }, [mainImage]);
 
-  if (allImages.length <= 1) {
-    return (
-      <div className="w-full aspect-[16/9] rounded-2xl overflow-hidden border border-slate-200 dark:border-white/5 mb-8">
-        <img src={mainImage} alt="Project main" className="w-full h-full object-cover" />
-      </div>
-    );
-  }
-
   return (
-    <div className="flex flex-col gap-3 mb-8 w-full">
-      <div className="w-full aspect-[16/9] rounded-2xl overflow-hidden border border-slate-200/60 dark:border-white/5 shadow-inner bg-slate-100 dark:bg-slate-900 flex items-center justify-center">
-        <img src={activeImg} alt="Showcase active" className="w-full h-full object-cover transition-all duration-300" />
+    <div className="flex flex-col gap-3 mb-8 w-full select-none">
+      {/* Mac Window Desktop Frame */}
+      <div className="w-full rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-2xl bg-slate-900">
+        {/* Top Browser Bar */}
+        <div className="px-4 py-2.5 bg-slate-800/90 border-b border-slate-700/50 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 shrink-0">
+            <div className="w-3 h-3 rounded-full bg-red-500/80" />
+            <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+            <div className="w-3 h-3 rounded-full bg-green-500/80" />
+          </div>
+          <div className="flex-1 max-w-md mx-auto bg-slate-950/70 rounded-lg px-3 py-1 text-[11px] text-slate-400 font-mono text-center truncate border border-white/5">
+            https://tauhidshekhar.app/projects/{encodeURIComponent((title || 'showcase').toLowerCase().replace(/\s+/g, '-'))}
+          </div>
+          <div className="w-12 text-right hidden sm:block">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">LIVE</span>
+          </div>
+        </div>
+        {/* Main Image Viewport */}
+        <div className="w-full aspect-[16/9] bg-slate-950 overflow-hidden flex items-center justify-center relative group">
+          <img 
+            src={getCacheBustedUrl(activeImg || mainImage, updatedAt)} 
+            alt="Showcase active" 
+            className="w-full h-full object-cover object-top transition-all duration-500 group-hover:scale-[1.02]" 
+            loading="lazy" 
+            decoding="async" 
+          />
+        </div>
       </div>
       
       {/* Thumbnails Row */}
-      <div className="flex gap-2 overflow-x-auto py-1 scrollbar-thin">
-        {allImages.map((img, idx) => (
-          <button
-            key={idx}
-            onClick={() => setActiveImg(img)}
-            className={`w-20 aspect-video rounded-lg overflow-hidden border-2 shrink-0 cursor-pointer transition-all ${
-              activeImg === img ? 'border-primary-blue scale-95 shadow-sm' : 'border-slate-200/50 dark:border-white/5 hover:border-slate-400'
-            }`}
-          >
-            <img src={img} alt="Thumbnail preview" className="w-full h-full object-cover" />
-          </button>
-        ))}
-      </div>
+      {allImages.length > 1 && (
+        <div className="flex gap-2.5 overflow-x-auto py-1.5 scrollbar-thin">
+          {allImages.map((img, idx) => (
+            <button
+              key={idx}
+              onClick={() => setActiveImg(img)}
+              className={`w-20 aspect-video rounded-xl overflow-hidden border-2 shrink-0 cursor-pointer transition-all ${
+                activeImg === img ? 'border-primary-blue scale-95 shadow-md' : 'border-slate-200/50 dark:border-white/5 hover:border-slate-400'
+              }`}
+            >
+              <img src={getCacheBustedUrl(img, updatedAt)} alt="Thumbnail preview" className="w-full h-full object-cover" loading="lazy" decoding="async" />
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
 
-const Projects = () => {
+const defaultProjects = [
+  {
+    _id: '1',
+    title: 'Course Selling Platform',
+    tag: 'website',
+    subtitle: 'MERN Stack LMS',
+    tech: ['React.js', 'Node.js', 'Express.js', 'MongoDB', 'JWT'],
+    image: 'assits/Project1.jpg',
+    github: 'https://github.com/TauhidShekhar',
+    demo: 'https://github.com/TauhidShekhar',
+    features: [
+      'Dedicated dashboards for Admin, Teacher, and Student roles.',
+      'Secure token-based JWT authentication and protected routing.',
+      'Integrated course purchasing workflow and progress tracking.',
+      'File uploads for homework assignments and PDF course notes.',
+      'Streaming features for recorded video lessons.'
+    ],
+    description: 'A comprehensive Learning Management System designed to handle course listings, student study tracks, lecturer material uploads, and transactional purchasing paths using Mongo schemas and Express endpoints.'
+  },
+  {
+    _id: '2',
+    title: 'Gym & Fitness Hub',
+    tag: 'website',
+    subtitle: 'Responsive React SPA',
+    tech: ['React.js', 'JavaScript', 'CSS3', 'Responsive Design'],
+    image: 'assits/Project2.jpg',
+    github: 'https://github.com/TauhidShekhar',
+    demo: 'https://github.com/TauhidShekhar',
+    features: [
+      'Interactive trainer profiling dashboards.',
+      'Dynamic membership package comparison grids.',
+      'Cross-browser responsive mobile booking forms.',
+      'Performant assets loading and custom responsive layout.'
+    ],
+    description: 'A beautiful single-page dashboard displaying gym details, trainer portfolios, scheduling systems, and membership plans optimized for tablets and smartphones.'
+  },
+  {
+    _id: '3',
+    title: 'Fast Delivery Food App',
+    tag: 'website',
+    subtitle: 'HTML5/CSS3 Responsive Menu',
+    tech: ['HTML5', 'CSS3', 'JavaScript', 'Responsive UI'],
+    image: 'assits/Project3.jpg',
+    github: 'https://github.com/TauhidShekhar',
+    demo: 'https://github.com/TauhidShekhar',
+    features: [
+      'Highly responsive fluid grid menu layout.',
+      'Vanilla JS cart adding and calculation scripts.',
+      'Optimized CSS typography, shadows, and smooth transitions.',
+      'Frictionless mobile navigation and collapsible menus.'
+    ],
+    description: 'An interactive menu interface focusing on food items search, lazy-loading thumbnails, item filters, and fast performance.'
+  },
+  {
+    _id: '4',
+    title: 'Portfolio Website',
+    tag: 'website',
+    subtitle: 'HTML5/CSS3 Personal Showcase',
+    tech: ['HTML5', 'CSS3', 'JavaScript', 'Responsive Design'],
+    image: 'assits/Project2.jpg',
+    github: 'https://github.com/TauhidShekhar',
+    demo: 'https://github.com/TauhidShekhar',
+    features: [
+      'Designed a modern personal portfolio showcasing development projects, technical skills, and contact information.',
+      'Structured semantic HTML5 layout with clean styling using custom CSS properties.',
+      'Fully responsive layout optimized for mobile, tablet, and desktop viewports.',
+      'SEO-friendly structure with quick assets load performance.'
+    ],
+    description: 'A professional frontend developer portfolio built using HTML5, CSS3, and JavaScript, designed to present projects and contact inquiries clearly to recruiters.'
+  },
+  {
+    _id: '5',
+    title: 'Thumbnails & Brand Identity',
+    tag: 'graphic',
+    subtitle: 'Graphic Design Campaign',
+    tech: ['Photoshop', 'Illustrator', 'Canva', 'AI Design'],
+    image: 'assits/project4.jpg',
+    github: 'https://github.com/TauhidShekhar',
+    demo: 'https://github.com/TauhidShekhar',
+    features: [
+      '300+ custom high CTR YouTube thumbnails.',
+      'Branding design kits: logos, banners, posters.',
+      'Consistent vector illustration assets in Illustrator.',
+      'Adobe Photoshop rendering pipelines.'
+    ],
+    description: 'A professional curation of high-performing thumbnail designs and brand identities constructed for YouTube content creators and business agencies.'
+  }
+];
+
+const Projects = ({ projectsData }) => {
   const { user } = useAuth();
   const [activeFilter, setActiveFilter] = useState('all');
   const [activeCaseStudy, setActiveCaseStudy] = useState(null);
-  const [projectItems, setProjectItems] = useState([]);
   const [savedIds, setSavedIds] = useState([]);
   const [newCommentText, setNewCommentText] = useState('');
+
+  // Lock background body scrolling when case study modal is active
+  useEffect(() => {
+    if (activeCaseStudy) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [activeCaseStudy]);
+
+  const [projectItems, setProjectItems] = useState(() => {
+    const list = (projectsData && projectsData.length > 0) ? projectsData : [];
+    return list.map(p => ({
+      ...p,
+      subtitle: p.subtitle || `${p.tag.toUpperCase()} Project`
+    }));
+  });
 
   useEffect(() => {
     if (user) {
@@ -70,6 +197,33 @@ const Projects = () => {
       setSavedIds([]);
     }
   }, [user]);
+
+  if (projectsData === null) {
+    return (
+      <section id="projects" className="py-24 bg-slate-50 dark:bg-slate-900/20 relative">
+        <div className="max-w-[1140px] mx-auto px-6 md:px-12">
+          <div className="text-center mb-16">
+            <div className="h-4 w-28 bg-purple-500/20 animate-pulse rounded mx-auto mb-2.5" />
+            <div className="h-10 w-64 bg-slate-200 dark:bg-white/10 animate-pulse rounded mx-auto" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {[1, 2, 3, 4].map(n => (
+              <div key={n} className="rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden bg-white dark:bg-slate-950 p-6 flex flex-col gap-4">
+                <div className="w-full aspect-[16/9] bg-slate-100 dark:bg-white/5 animate-pulse rounded-xl" />
+                <div className="h-6 w-3/4 bg-slate-200 dark:bg-white/10 animate-pulse rounded" />
+                <div className="h-4 w-1/2 bg-slate-150 dark:bg-white/5 animate-pulse rounded" />
+                <div className="flex gap-2">
+                  <div className="h-5 w-16 bg-slate-150 dark:bg-white/5 animate-pulse rounded-lg" />
+                  <div className="h-5 w-16 bg-slate-150 dark:bg-white/5 animate-pulse rounded-lg" />
+                  <div className="h-5 w-16 bg-slate-150 dark:bg-white/5 animate-pulse rounded-lg" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   const handleFavoriteClick = async (projectId) => {
     if (!user) {
@@ -126,138 +280,49 @@ const Projects = () => {
     { id: 'ui', label: 'UI Design' }
   ];
 
-  const defaultProjects = [
-    {
-      _id: '1',
-      title: 'Course Selling Platform',
-      tag: 'website',
-      subtitle: 'MERN Stack LMS',
-      tech: ['React.js', 'Node.js', 'Express.js', 'MongoDB', 'JWT'],
-      image: 'assits/Project1.jpg',
-      github: 'https://github.com/TauhidShekhar',
-      demo: 'https://github.com/TauhidShekhar',
-      features: [
-        'Dedicated dashboards for Admin, Teacher, and Student roles.',
-        'Secure token-based JWT authentication and protected routing.',
-        'Integrated course purchasing workflow and progress tracking.',
-        'File uploads for homework assignments and PDF course notes.',
-        'Streaming features for recorded video lessons.'
-      ],
-      description: 'A comprehensive Learning Management System designed to handle course listings, student study tracks, lecturer material uploads, and transactional purchasing paths using Mongo schemas and Express endpoints.'
-    },
-    {
-      _id: '2',
-      title: 'Gym & Fitness Hub',
-      tag: 'website',
-      subtitle: 'Responsive React SPA',
-      tech: ['React.js', 'JavaScript', 'CSS3', 'Responsive Design'],
-      image: 'assits/Project2.jpg',
-      github: 'https://github.com/TauhidShekhar',
-      demo: 'https://github.com/TauhidShekhar',
-      features: [
-        'Interactive trainer profiling dashboards.',
-        'Dynamic membership package comparison grids.',
-        'Cross-browser responsive mobile booking forms.',
-        'Performant assets loading and custom responsive layout.'
-      ],
-      description: 'A beautiful single-page dashboard displaying gym details, trainer portfolios, scheduling systems, and membership plans optimized for tablets and smartphones.'
-    },
-    {
-      _id: '3',
-      title: 'Fast Delivery Food App',
-      tag: 'website',
-      subtitle: 'HTML5/CSS3 Responsive Menu',
-      tech: ['HTML5', 'CSS3', 'JavaScript', 'Responsive UI'],
-      image: 'assits/Project3.jpg',
-      github: 'https://github.com/TauhidShekhar',
-      demo: 'https://github.com/TauhidShekhar',
-      features: [
-        'Highly responsive fluid grid menu layout.',
-        'Vanilla JS cart adding and calculation scripts.',
-        'Optimized CSS typography, shadows, and smooth transitions.',
-        'Frictionless mobile navigation and collapsible menus.'
-      ],
-      description: 'An interactive menu interface focusing on food items search, lazy-loading thumbnails, item filters, and fast performance.'
-    },
-    {
-      _id: '4',
-      title: 'Portfolio Website',
-      tag: 'website',
-      subtitle: 'HTML5/CSS3 Personal Showcase',
-      tech: ['HTML5', 'CSS3', 'JavaScript', 'Responsive Design'],
-      image: 'assits/Project2.jpg',
-      github: 'https://github.com/TauhidShekhar',
-      demo: 'https://github.com/TauhidShekhar',
-      features: [
-        'Designed a modern personal portfolio showcasing development projects, technical skills, and contact information.',
-        'Structured semantic HTML5 layout with clean styling using custom CSS properties.',
-        'Fully responsive layout optimized for mobile, tablet, and desktop viewports.',
-        'SEO-friendly structure with quick assets load performance.'
-      ],
-      description: 'A professional frontend developer portfolio built using HTML5, CSS3, and JavaScript, designed to present projects and contact inquiries clearly to recruiters.'
-    },
-    {
-      _id: '5',
-      title: 'Thumbnails & Brand Identity',
-      tag: 'graphic',
-      subtitle: 'Graphic Design Campaign',
-      tech: ['Photoshop', 'Illustrator', 'Canva', 'AI Design'],
-      image: 'assits/project4.jpg',
-      github: 'https://github.com/TauhidShekhar',
-      demo: 'https://github.com/TauhidShekhar',
-      features: [
-        '300+ custom high CTR YouTube thumbnails.',
-        'Branding design kits: logos, banners, posters.',
-        'Consistent vector illustration assets in Illustrator.',
-        'Adobe Photoshop rendering pipelines.'
-      ],
-      description: 'A professional curation of high-performing thumbnail designs and brand identities constructed for YouTube content creators and business agencies.'
-    }
-  ];
+
 
   useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const res = await api.getProjects();
-        if (res.success && res.data.length > 0) {
-          setProjectItems(res.data.map(p => ({
-            ...p,
-            subtitle: p.subtitle || `${p.tag.toUpperCase()} Project`
-          })));
-        } else {
-          setProjectItems(defaultProjects);
-        }
-      } catch (err) {
-        setProjectItems(defaultProjects);
-      }
-    };
-    fetchProjects();
-  }, []);
+    if (projectsData && projectsData.length > 0) {
+      setProjectItems(projectsData.map(p => ({
+        ...p,
+        subtitle: p.subtitle || `${p.tag.toUpperCase()} Project`
+      })));
+    } else {
+      setProjectItems([]);
+    }
+  }, [projectsData]);
 
   const filteredProjects = activeFilter === 'all'
     ? projectItems
     : projectItems.filter(p => p.tag === activeFilter);
 
   return (
-    <section id="projects" className="py-24 bg-white dark:bg-slate-900/40 relative">
-      <div className="max-w-[1280px] mx-auto px-6 md:px-12">
+    <section id="projects" className="py-24 sm:py-28 bg-[#F8FAFC] dark:bg-[#000000] relative">
+      <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12">
         
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <h3 className="text-sm font-bold uppercase tracking-widest text-primary-blue font-title mb-2">My Work</h3>
-          <h2 className="text-3xl md:text-5xl font-black font-title tracking-tight text-black dark:text-white">Featured Projects</h2>
+        <div className="text-center mb-14 sm:mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#C2272D]/10 dark:bg-[#00FFFF]/10 border border-[#C2272D]/20 dark:border-[#00FFFF]/30 text-[#C2272D] dark:text-[#00FFFF] text-xs sm:text-sm font-semibold tracking-wider uppercase mb-3">
+            <span>Portfolio Showcase</span>
+          </div>
+          <h2 className="text-2xl md:text-[32px] font-bold font-title tracking-tight text-[#171717] dark:text-white">
+            Featured Projects & Engineering
+          </h2>
         </div>
 
         {/* Filter Buttons */}
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-12">
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 mb-12" role="tablist" aria-label="Project Categories">
           {filters.map((f) => (
             <button
               key={f.id}
               onClick={() => setActiveFilter(f.id)}
-              className={`px-5 py-2.5 rounded-full text-xs font-bold font-title tracking-wider uppercase border transition-all duration-300 cursor-pointer ${
+              role="tab"
+              aria-selected={activeFilter === f.id}
+              className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-[14px] font-medium tracking-wider uppercase border transition-all duration-200 cursor-pointer ${
                 activeFilter === f.id
-                  ? 'bg-primary-blue border-primary-blue text-white shadow-lg shadow-primary-blue/20 -translate-y-0.5'
-                  : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-white/5 text-slate-650 dark:text-slate-400 hover:border-slate-300 dark:hover:border-white/10'
+                  ? 'bg-[#C2272D] border-[#C2272D] text-white shadow-md shadow-[#C2272D]/20 -translate-y-0.5'
+                  : 'bg-white dark:bg-[#111111] border-[#E5E7EB] dark:border-white/10 text-[#525252] dark:text-[#D1D5DB] hover:border-[#C2272D] dark:hover:border-[#00FFFF]'
               }`}
             >
               {f.label}
@@ -268,7 +333,7 @@ const Projects = () => {
         {/* Projects Grid */}
         <motion.div
           layout
-          className="grid grid-cols-1 md:grid-cols-2 gap-8"
+          className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10"
         >
           <AnimatePresence mode="popLayout">
             {filteredProjects.map((project) => (
@@ -278,78 +343,85 @@ const Projects = () => {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="glass rounded-[24px] overflow-hidden border border-slate-100 dark:border-white/5 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col justify-between"
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                className="bg-white dark:bg-[#111111] rounded-3xl overflow-hidden border border-[#E5E7EB] dark:border-white/10 shadow-md hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group"
               >
                 {/* Image & Overlay */}
-                <div className="relative aspect-[16/9] overflow-hidden group">
+                <div className="relative aspect-[16/9] overflow-hidden">
                   <img
-                    src={project.image}
+                    src={getCacheBustedUrl(project.image, project.updatedAt)}
                     alt={project.title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    loading="lazy"
+                    decoding="async"
                   />
                   
                   {/* Heart Bookmark Overlay Button */}
                   <button
                     onClick={() => handleFavoriteClick(project._id)}
-                    className="absolute top-4 right-4 z-10 w-9 h-9 rounded-xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md text-slate-800 dark:text-white flex items-center justify-center shadow-md hover:scale-110 active:scale-95 transition-all border border-slate-200/50 dark:border-white/5 cursor-pointer"
+                    className="absolute top-4 right-4 z-10 w-10 h-10 rounded-xl bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md text-[#171717] dark:text-white flex items-center justify-center shadow-md hover:scale-110 active:scale-95 transition-all border border-[#E5E7EB] dark:border-white/10 cursor-pointer"
                     title={savedIds.includes(project._id) ? "Remove from Saved" : "Save Project"}
+                    aria-label="Save Project"
                   >
                     {savedIds.includes(project._id) ? (
-                      <FaHeart className="text-red-500 transition-colors" size={15} />
+                      <FaHeart className="text-[#C2272D] transition-colors" size={17} />
                     ) : (
-                      <FaRegHeart className="text-slate-400 dark:text-slate-300 hover:text-red-500 transition-colors" size={15} />
+                      <FaRegHeart className="text-slate-400 dark:text-slate-300 hover:text-[#C2272D] transition-colors" size={17} />
                     )}
                   </button>
 
-                  <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
+                  <div className="absolute inset-0 bg-[#000000]/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
                     <button
                       onClick={() => setActiveCaseStudy(project)}
-                      className="w-12 h-12 rounded-full bg-white text-slate-900 flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer"
+                      className="w-12 h-12 rounded-full bg-white text-[#171717] hover:bg-[#00FFFF] flex items-center justify-center shadow-lg hover:scale-110 transition-all cursor-pointer"
                       title="Case Study"
+                      aria-label="Open Project Case Study"
                     >
-                      <FaBookOpen size={16} />
+                      <FaBookOpen size={17} />
                     </button>
                     {project.github && (
                       <a
                         href={project.github}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-12 h-12 rounded-full bg-white text-slate-900 flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
+                        className="w-12 h-12 rounded-full bg-white text-[#171717] hover:bg-[#C2272D] hover:text-white flex items-center justify-center shadow-lg hover:scale-110 transition-all"
                         title="Source Code"
+                        aria-label="GitHub Repository"
                       >
-                        <FaGithub size={18} />
+                        <FaGithub size={19} />
                       </a>
                     )}
                   </div>
                 </div>
 
                 {/* Details */}
-                <div className="p-6 md:p-8 text-left">
-                  <span className="text-xs font-bold text-primary-blue uppercase tracking-wider block mb-1">
-                    {project.subtitle}
-                  </span>
-                  <h3 className="text-xl md:text-2xl font-black font-title text-black dark:text-white mb-3">
-                    {project.title}
-                  </h3>
-                  <p className="text-sm text-slate-650 dark:text-slate-350 mb-6 leading-relaxed line-clamp-3">
-                    {project.description}
-                  </p>
+                <div className="p-6 sm:p-7 text-left flex flex-col flex-1 justify-between">
+                  <div>
+                    <span className="text-xs font-semibold text-[#C2272D] dark:text-[#00FFFF] uppercase tracking-wider block mb-1.5">
+                      {project.subtitle}
+                    </span>
+                    <h3 className="text-[20px] md:text-[22px] font-bold font-title text-[#171717] dark:text-white mb-2.5">
+                      {project.title}
+                    </h3>
+                    <p className="text-base text-[#525252] dark:text-[#D1D5DB] mb-5 leading-relaxed line-clamp-3">
+                      {project.description}
+                    </p>
 
-                  {/* Tags */}
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    {(project.tech || []).map((t) => (
-                      <span key={t} className="text-xs font-bold px-3 py-1 bg-slate-50 dark:bg-white/5 border border-slate-200/60 dark:border-white/5 text-slate-500 dark:text-slate-400 rounded-md">
-                        {t}
-                      </span>
-                    ))}
+                    {/* Tech Badges */}
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {(project.tech || []).map((t) => (
+                        <span key={t} className="text-xs sm:text-[13px] font-medium px-2.5 py-1 bg-[#F8FAFC] dark:bg-white/5 border border-[#E5E7EB] dark:border-white/10 text-[#525252] dark:text-[#D1D5DB] rounded-lg">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex gap-4 border-t border-slate-100 dark:border-white/5 pt-6">
+                  {/* Action Buttons */}
+                  <div className="flex gap-3.5 border-t border-[#E5E7EB] dark:border-white/10 pt-5">
                     <button
                       onClick={() => setActiveCaseStudy(project)}
-                      className="flex-1 py-3 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 text-slate-800 dark:text-white rounded-xl text-center text-sm font-bold border border-slate-200 dark:border-white/5 transition-all cursor-pointer flex items-center justify-center gap-2"
+                      className="flex-1 py-2.5 sm:py-3 bg-[#F8FAFC] dark:bg-[#1A1A1A] hover:bg-slate-200 dark:hover:bg-white/10 text-[#171717] dark:text-white rounded-xl text-center text-[15px] font-semibold border border-[#E5E7EB] dark:border-white/10 transition-all cursor-pointer flex items-center justify-center gap-2"
                     >
                       Case Study
                     </button>
@@ -358,9 +430,9 @@ const Projects = () => {
                         href={project.demo}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 py-3 bg-primary-blue hover:bg-accent-blue text-white rounded-xl text-center text-sm font-bold shadow-lg shadow-primary-blue/10 transition-all flex items-center justify-center gap-2"
+                        className="flex-1 py-2.5 sm:py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-xl text-center text-[15px] font-semibold shadow-md shadow-[#C2272D]/20 transition-all flex items-center justify-center gap-2"
                       >
-                        Live Demo <FaExternalLinkAlt size={11} />
+                        Live Demo <FaExternalLinkAlt size={12} />
                       </a>
                     )}
                   </div>
@@ -377,43 +449,54 @@ const Projects = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[1000] bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4 md:p-12 overflow-y-auto"
+              className="fixed inset-0 z-[99999] bg-slate-950/85 backdrop-blur-md flex items-start justify-center pt-16 md:pt-24 pb-12 px-4 md:px-8 overflow-y-auto"
               onClick={() => setActiveCaseStudy(null)}
             >
               <motion.div
-                initial={{ y: 50, scale: 0.95 }}
+                initial={{ y: 25, scale: 0.96 }}
                 animate={{ y: 0, scale: 1 }}
-                exit={{ y: 50, scale: 0.95 }}
-                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                exit={{ y: 25, scale: 0.96 }}
+                transition={{ type: 'spring', damping: 28, stiffness: 300 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 w-full max-w-[800px] rounded-[30px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col relative"
+                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 w-full max-w-[850px] rounded-[28px] shadow-2xl overflow-hidden flex flex-col relative my-auto my-0 mb-8"
               >
-                {/* Close Button */}
-                <button
-                  onClick={() => setActiveCaseStudy(null)}
-                  className="absolute top-6 right-6 w-10 h-10 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-slate-700 dark:text-slate-300 flex items-center justify-center cursor-pointer hover:bg-red-500 hover:text-white transition-all duration-300 z-10"
-                >
-                  <FaTimes />
-                </button>
+                {/* Sticky Header Bar */}
+                <div className="sticky top-0 z-20 px-6 py-4 md:px-8 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/60 dark:border-white/10 flex items-center justify-between">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="w-3 h-3 rounded-full bg-red-500/80 inline-block" />
+                    <span className="w-3 h-3 rounded-full bg-yellow-500/80 inline-block" />
+                    <span className="w-3 h-3 rounded-full bg-green-500/80 inline-block" />
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 truncate ml-2">
+                      {activeCaseStudy.title} &mdash; Project Case Study
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setActiveCaseStudy(null)}
+                    className="w-9 h-9 rounded-full bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 flex items-center justify-center cursor-pointer hover:bg-red-500 hover:text-white transition-all shrink-0"
+                    title="Close Case Study"
+                  >
+                    <FaTimes size={14} />
+                  </button>
+                </div>
 
                 <div className="overflow-y-auto p-6 md:p-10 text-left">
                   {/* Dynamic Project Showcase Gallery */}
-                  <ProjectGallery mainImage={activeCaseStudy.image} images={activeCaseStudy.images} />
+                  <ProjectGallery mainImage={activeCaseStudy.image} images={activeCaseStudy.images} title={activeCaseStudy.title} updatedAt={activeCaseStudy.updatedAt} />
 
-                  <span className="text-xs font-bold text-primary-blue uppercase tracking-wider block mb-1">
+                  <span className="text-xs font-semibold text-[#C2272D] dark:text-[#00FFFF] uppercase tracking-wider block mb-1">
                     {activeCaseStudy.subtitle}
                   </span>
-                  <h3 className="text-2xl md:text-4xl font-black font-title text-black dark:text-white mb-4">
+                  <h3 className="text-2xl md:text-[28px] font-bold font-title text-[#171717] dark:text-white mb-3">
                     {activeCaseStudy.title}
                   </h3>
-                  <p className="text-base text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">
+                  <p className="text-base text-[#525252] dark:text-[#D1D5DB] mb-6 leading-relaxed">
                     {activeCaseStudy.description}
                   </p>
 
-                  <h4 className="text-lg font-bold font-title text-black dark:text-white mb-4">Key Features</h4>
-                  <ul className="grid grid-cols-1 gap-3 mb-8">
+                  <h4 className="text-[18px] font-bold font-title text-[#171717] dark:text-white mb-3">Key Features</h4>
+                  <ul className="grid grid-cols-1 gap-2.5 mb-7">
                     {(activeCaseStudy.features || []).map((feat, idx) => (
-                      <li key={idx} className="flex gap-3 items-start text-sm text-slate-500 dark:text-slate-400">
+                      <li key={idx} className="flex gap-3 items-start text-sm text-[#525252] dark:text-[#D1D5DB]">
                         <span className="w-5 h-5 rounded-full bg-green-500/10 text-green-500 flex items-center justify-center shrink-0 mt-0.5">
                           <FaCheck size={10} />
                         </span>
@@ -422,18 +505,18 @@ const Projects = () => {
                     ))}
                   </ul>
 
-                  <h4 className="text-lg font-bold font-title text-black dark:text-white mb-4">Tech Stack</h4>
-                  <div className="flex flex-wrap gap-2 mb-8">
+                  <h4 className="text-[18px] font-bold font-title text-[#171717] dark:text-white mb-3">Tech Stack</h4>
+                  <div className="flex flex-wrap gap-2 mb-7">
                     {(activeCaseStudy.tech || []).map((t) => (
-                      <span key={t} className="text-xs font-bold px-4 py-1.5 bg-slate-50 dark:bg-white/5 border border-slate-200/60 dark:border-white/5 text-slate-500 dark:text-slate-400 rounded-md">
+                      <span key={t} className="text-xs sm:text-[13px] font-medium px-3.5 py-1.5 bg-[#F8FAFC] dark:bg-white/5 border border-[#E5E7EB] dark:border-white/10 text-[#525252] dark:text-[#D1D5DB] rounded-lg">
                         {t}
                       </span>
                     ))}
                   </div>
 
                   {/* Project Comments & Reviews Discussion */}
-                  <div className="border-t border-slate-200/60 dark:border-white/5 pt-8 mt-8 text-left">
-                    <h4 className="text-lg font-bold font-title text-black dark:text-white mb-4">
+                  <div className="border-t border-[#E5E7EB] dark:border-white/10 pt-7 mt-7 text-left">
+                    <h4 className="text-[18px] font-bold font-title text-[#171717] dark:text-white mb-3">
                       Discussion & Feedback ({activeCaseStudy.comments?.length || 0})
                     </h4>
 
@@ -443,7 +526,7 @@ const Projects = () => {
                         <div key={comm._id} className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200/50 dark:border-white/5 flex gap-3 text-left items-start">
                           <div className="w-8.5 h-8.5 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-900 shrink-0 border border-slate-200 dark:border-white/5 flex items-center justify-center">
                             {comm.userAvatar ? (
-                              <img src={comm.userAvatar} alt="Commenter Avatar" className="w-full h-full object-cover" />
+                              <img src={comm.userAvatar} alt="Commenter Avatar" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                             ) : (
                               <FaUserCircle className="text-slate-400 dark:text-slate-500 w-full h-full" size={24} />
                             )}
@@ -490,7 +573,7 @@ const Projects = () => {
                       </form>
                     ) : (
                       <p className="text-xs text-slate-500 leading-relaxed">
-                        Please <Link to="/admin/login" onClick={() => setActiveCaseStudy(null)} className="text-primary-blue font-bold hover:underline">log in</Link> to post feedback or ask questions on this project.
+                        Please <Link to="/login" onClick={() => setActiveCaseStudy(null)} className="text-primary-blue font-bold hover:underline">log in</Link> to post feedback or ask questions on this project.
                       </p>
                     )}
                   </div>

@@ -169,37 +169,41 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
   ].filter(p => socialLinks[p.key]);
 
   return (
-    <section id="contact" className="py-24 bg-white dark:bg-slate-900/40 relative">
-      <div className="max-w-[1280px] mx-auto px-6 md:px-12">
+    <section id="contact" className="py-24 sm:py-28 bg-[#F8FAFC] dark:bg-[#000000] relative">
+      <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12">
         
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <h3 className="text-sm font-bold uppercase tracking-widest text-primary-blue font-title mb-2">Get In Touch</h3>
-          <h2 className="text-3xl md:text-5xl font-black font-title tracking-tight text-black dark:text-white">Contact Me</h2>
+        <div className="text-center mb-14 sm:mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#C2272D]/10 dark:bg-[#00FFFF]/10 border border-[#C2272D]/20 dark:border-[#00FFFF]/30 text-[#C2272D] dark:text-[#00FFFF] text-xs sm:text-sm font-semibold tracking-wider uppercase mb-3">
+            <span>Get In Touch</span>
+          </div>
+          <h2 className="text-2xl md:text-[32px] font-bold font-title tracking-tight text-[#171717] dark:text-white">
+            Let's Start a Conversation
+          </h2>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-14 items-start">
           
           {/* Left: Contact Info cards */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="lg:col-span-5 flex flex-col gap-6"
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            className="lg:col-span-5 flex flex-col gap-5"
           >
             {/* Multiple Locations Tabs */}
             {settings?.locations?.length > 1 && (
-              <div className="flex flex-wrap gap-2 mb-2 p-1.5 bg-slate-550/5 rounded-2xl border border-slate-200/40 dark:border-white/5">
+              <div className="flex flex-wrap gap-2 mb-1 p-1.5 bg-white dark:bg-[#111111] rounded-2xl border border-[#E5E7EB] dark:border-white/10">
                 {settings.locations.map((loc, idx) => (
                   <button
                     key={idx}
                     onClick={() => setSelectedLocationIdx(idx)}
                     type="button"
-                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer ${
                       selectedLocationIdx === idx
-                        ? 'bg-primary-blue text-white shadow-md'
-                        : 'bg-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                        ? 'bg-[#C2272D] text-white shadow-md'
+                        : 'bg-transparent text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF]'
                     }`}
                   >
                     {loc.title || `Location ${idx + 1}`}
@@ -211,19 +215,19 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
             {contactDetails.map((detail, idx) => (
               <div
                 key={idx}
-                className="glass p-6 rounded-2xl border border-slate-100 dark:border-white/5 shadow-sm flex items-center gap-5 hover:scale-[1.01] transition-all duration-300 text-left"
+                className="bg-white dark:bg-[#111111] p-5 sm:p-6 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm flex items-center gap-4 hover:border-[#C2272D] dark:hover:border-[#00FFFF] transition-all duration-200 text-left"
               >
-                <div className="p-3.5 rounded-xl bg-slate-550/5 dark:bg-slate-900 flex items-center justify-center shrink-0 border border-slate-200/40 dark:border-white/5 shadow-inner">
+                <div className="w-12 h-12 rounded-2xl bg-[#F8FAFC] dark:bg-[#1A1A1A] flex items-center justify-center shrink-0 border border-[#E5E7EB] dark:border-white/10 text-[#C2272D] dark:text-[#00FFFF] text-xl shadow-sm">
                   {detail.icon}
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-0.5">{detail.title}</h4>
+                  <h3 className="text-xs font-semibold text-[#525252] dark:text-[#9CA3AF] uppercase tracking-wider block mb-0.5">{detail.title}</h3>
                   {detail.href ? (
-                    <a href={detail.href} className="text-base font-bold text-black dark:text-white hover:text-primary-blue dark:hover:text-primary-blue transition-colors">
+                    <a href={detail.href} className="text-base font-semibold text-[#171717] dark:text-white hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors">
                       {detail.value}
                     </a>
                   ) : (
-                    <span className="text-base font-bold text-black dark:text-white">{detail.value}</span>
+                    <span className="text-base font-semibold text-[#171717] dark:text-white">{detail.value}</span>
                   )}
                 </div>
               </div>
@@ -231,16 +235,17 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
 
             {/* Social Links Block */}
             {socialPlatforms.length > 0 && (
-              <div className="glass p-5 rounded-2xl border border-slate-100 dark:border-white/5 shadow-sm text-left flex flex-col gap-3">
-                <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Connect With Me</h4>
-                <div className="flex gap-3">
+              <div className="bg-white dark:bg-[#111111] p-6 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm text-left flex flex-col gap-3.5">
+                <h3 className="text-xs font-bold text-[#525252] dark:text-[#9CA3AF] uppercase tracking-wider">Social Channels</h3>
+                <div className="flex flex-wrap gap-3">
                   {socialPlatforms.map((platform, pIdx) => (
                     <a
                       key={pIdx}
                       href={formatExternalLink(socialLinks[platform.key])}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`w-10 h-10 rounded-xl bg-slate-550/5 dark:bg-slate-900 border border-slate-200/40 dark:border-white/5 flex items-center justify-center text-slate-655 dark:text-slate-300 transition-all duration-300 hover:text-white ${platform.color} shadow-sm`}
+                      className={`w-11 h-11 rounded-xl bg-[#F8FAFC] dark:bg-[#1A1A1A] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] transition-all duration-200 hover:text-white ${platform.color} shadow-sm`}
+                      aria-label={`Connect on ${platform.key}`}
                     >
                       {platform.icon}
                     </a>
@@ -251,7 +256,7 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
 
             {/* Embedded Google Map */}
             {mapEmbedVal && (
-              <div className="glass p-3 rounded-[24px] border border-slate-100 dark:border-white/5 shadow-sm overflow-hidden h-[240px]">
+              <div className="bg-white dark:bg-[#111111] p-3 rounded-3xl border border-[#E5E7EB] dark:border-white/10 shadow-sm overflow-hidden h-[240px]">
                 <iframe
                   title="Google Map location"
                   src={mapEmbedVal}
@@ -268,16 +273,16 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
             className="lg:col-span-7"
           >
-            <form onSubmit={handleFormSubmit} className="glass p-8 md:p-10 rounded-[30px] border border-slate-100 dark:border-white/5 shadow-sm flex flex-col gap-6 text-left">
+            <form onSubmit={handleFormSubmit} className="bg-white dark:bg-[#111111] p-8 sm:p-10 md:p-12 rounded-3xl border border-[#E5E7EB] dark:border-white/10 shadow-md flex flex-col gap-6 text-left">
               
               {formFields.map((field, fIdx) => (
-                <div key={field.id || fIdx} className="flex flex-col gap-2">
+                <div key={field.id || fIdx} className="flex flex-col gap-1.5">
                   {field.type !== 'checkbox' && (
-                    <label htmlFor={field.name} className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      {field.label} {field.required && <span className="text-red-500">*</span>}
+                    <label htmlFor={field.name} className="text-[15px] font-semibold text-[#171717] dark:text-white">
+                      {field.label} {field.required && <span className="text-[#C2272D]">*</span>}
                     </label>
                   )}
 
@@ -290,7 +295,7 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
                       required={field.required}
                       rows="5"
                       placeholder={field.placeholder}
-                      className="w-full px-5 py-3.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-primary-blue dark:focus:border-primary-blue text-sm transition-colors resize-none"
+                      className="w-full px-4 py-3.5 rounded-xl border border-[#E5E7EB] dark:border-white/10 bg-[#F8FAFC] dark:bg-[#1A1A1A] text-[#171717] dark:text-white focus:outline-none focus:border-[#C2272D] dark:focus:border-[#00FFFF] text-base transition-colors resize-none placeholder-slate-400"
                     />
                   ) : field.type === 'select' ? (
                     <select
@@ -299,7 +304,7 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
                       value={formData[field.name] || ''}
                       onChange={handleInputChange}
                       required={field.required}
-                      className="w-full px-5 py-3.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-primary-blue dark:focus:border-primary-blue text-sm transition-colors"
+                      className="w-full px-4 py-3.5 rounded-xl border border-[#E5E7EB] dark:border-white/10 bg-[#F8FAFC] dark:bg-[#1A1A1A] text-[#171717] dark:text-white focus:outline-none focus:border-[#C2272D] dark:focus:border-[#00FFFF] text-base transition-colors"
                     >
                       <option value="">Select option...</option>
                       {field.options?.map((opt, oIdx) => (
@@ -307,7 +312,7 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
                       ))}
                     </select>
                   ) : field.type === 'checkbox' ? (
-                    <div className="flex items-center gap-2.5 py-1">
+                    <div className="flex items-center gap-3 py-1">
                       <input
                         type="checkbox"
                         id={field.name}
@@ -315,16 +320,16 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
                         checked={!!formData[field.name]}
                         onChange={handleInputChange}
                         required={field.required}
-                        className="w-4 h-4 text-primary-blue border-slate-250 dark:border-white/10 rounded focus:ring-primary-blue"
+                        className="w-4.5 h-4.5 accent-[#C2272D] rounded focus:ring-[#C2272D]"
                       />
-                      <label htmlFor={field.name} className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer">
-                        {field.label} {field.required && <span className="text-red-500">*</span>}
+                      <label htmlFor={field.name} className="text-[15px] font-medium text-[#171717] dark:text-white cursor-pointer">
+                        {field.label} {field.required && <span className="text-[#C2272D]">*</span>}
                       </label>
                     </div>
                   ) : field.type === 'radio' ? (
                     <div className="flex flex-wrap gap-4 py-1">
                       {field.options?.map((opt, oIdx) => (
-                        <label key={oIdx} className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-350 cursor-pointer">
+                        <label key={oIdx} className="flex items-center gap-2 text-[15px] font-medium text-[#171717] dark:text-white cursor-pointer">
                           <input
                             type="radio"
                             name={field.name}
@@ -332,7 +337,7 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
                             checked={formData[field.name] === opt}
                             onChange={handleInputChange}
                             required={field.required}
-                            className="w-4 h-4 text-primary-blue focus:ring-primary-blue"
+                            className="w-4.5 h-4.5 accent-[#C2272D]"
                           />
                           {opt}
                         </label>
@@ -347,7 +352,7 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
                       onChange={handleInputChange}
                       required={field.required}
                       placeholder={field.placeholder}
-                      className="w-full px-5 py-3.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-primary-blue dark:focus:border-primary-blue text-sm transition-colors"
+                      className="w-full px-4 py-3.5 rounded-xl border border-[#E5E7EB] dark:border-white/10 bg-[#F8FAFC] dark:bg-[#1A1A1A] text-[#171717] dark:text-white focus:outline-none focus:border-[#C2272D] dark:focus:border-[#00FFFF] text-base transition-colors placeholder-slate-400"
                     />
                   )}
                 </div>
@@ -357,13 +362,14 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full py-4 bg-primary-blue hover:bg-accent-blue disabled:bg-slate-400 text-white rounded-xl font-bold text-sm shadow-lg shadow-primary-blue/15 transition-all flex items-center justify-center gap-2 cursor-pointer mt-4"
+                className="w-full py-3.5 px-8 bg-[#C2272D] hover:bg-[#A51E23] disabled:bg-slate-400 text-white rounded-full font-semibold text-[16px] shadow-md shadow-[#C2272D]/20 transition-all flex items-center justify-center gap-2.5 cursor-pointer mt-3 hover:scale-[1.01] active:scale-[0.99]"
               >
                 {submitting ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
-                    Send Message <FaPaperPlane size={12} />
+                    <FaPaperPlane size={15} />
+                    <span>Send Message</span>
                   </>
                 )}
               </button>

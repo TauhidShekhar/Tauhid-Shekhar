@@ -231,9 +231,16 @@ const Resume = ({ resumeData, settingsData }) => {
       <div className="max-w-[1280px] mx-auto px-6 md:px-12">
         
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <h3 className="text-sm font-bold uppercase tracking-widest text-primary-blue font-title mb-2">Recruiter Panel</h3>
-          <h2 className="text-3xl md:text-5xl font-black font-title tracking-tight text-black dark:text-white">ATS & Resume Preview</h2>
+        <div className="text-center mb-14 sm:mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs sm:text-sm font-semibold uppercase tracking-wider bg-[#C2272D]/10 text-[#C2272D] border border-[#C2272D]/20 mb-3">
+            Recruiter & Verification Panel
+          </div>
+          <h2 className="text-2xl md:text-[32px] font-bold font-title tracking-tight text-[#171717] dark:text-white">
+            ATS & Resume Preview
+          </h2>
+          <p className="mt-3 text-base text-[#525252] dark:text-[#D1D5DB] max-w-2xl mx-auto leading-relaxed">
+            Live document verification, industry parser compliance score, and automated skill extraction.
+          </p>
         </div>
 
         {error && (
@@ -249,7 +256,7 @@ const Resume = ({ resumeData, settingsData }) => {
 
         {loading ? (
           <div className="py-24 flex items-center justify-center">
-            <FaSpinner className="animate-spin text-primary-blue" size={32} />
+            <FaSpinner className="animate-spin text-[#C2272D]" size={32} />
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -340,18 +347,18 @@ const Resume = ({ resumeData, settingsData }) => {
 
               <div className="flex flex-col gap-2.5">
                 {resumePdfUrl ? (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2.5">
                     <a
                       href={resumePdfUrl}
                       onClick={handleViewResume}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary-blue hover:bg-accent-blue text-white rounded-full font-bold text-[11px] shadow-sm transition-all active:scale-[0.98] cursor-pointer"
+                      className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 sm:py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full font-semibold text-[15px] shadow-md shadow-[#C2272D]/20 transition-all active:scale-[0.98] cursor-pointer"
                     >
                       <FaEye /> View Resume PDF
                     </a>
                     <a
                       href={resumePdfUrl}
                       onClick={handleDownloadResume}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-800 dark:text-white rounded-full font-bold text-[11px] border border-slate-200 dark:border-white/5 transition-all cursor-pointer"
+                      className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 sm:py-3 bg-[#F8FAFC] dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-[#171717] dark:text-white rounded-full font-semibold text-[15px] border border-[#E5E7EB] dark:border-white/10 transition-all cursor-pointer"
                     >
                       <FaDownload /> Download CV
                     </a>
@@ -367,11 +374,11 @@ const Resume = ({ resumeData, settingsData }) => {
                     <button
                       onClick={handleReanalyze}
                       disabled={analyzing}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-purple-600/10 hover:bg-purple-650/20 text-purple-400 rounded-full font-bold text-[11px] border border-purple-500/20 transition-all"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#C2272D]/10 hover:bg-[#C2272D]/20 text-[#C2272D] dark:text-[#00FFFF] rounded-full font-bold text-xs border border-[#C2272D]/20 transition-all"
                     >
                       {analyzing ? <FaSpinner className="animate-spin" /> : <FaRedo />} Re-analyze
                     </button>
-                    <label className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 rounded-full font-bold text-[11px] border border-amber-500/20 transition-all cursor-pointer">
+                    <label className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 rounded-full font-bold text-xs border border-amber-500/20 transition-all cursor-pointer">
                       <FaUpload /> Replace Resume
                       <input
                         type="file"
@@ -396,10 +403,10 @@ const Resume = ({ resumeData, settingsData }) => {
               {/* ATS circular status dial */}
               <div className="glass p-6 rounded-[24px] border border-slate-100 dark:border-white/5 flex items-center justify-between gap-4 shadow-sm bg-white dark:bg-[#121217]">
                 <div className="text-left">
-                  <h3 className="text-sm font-black font-title text-black dark:text-white mb-1">
+                  <h3 className="text-base font-black font-title text-[#171717] dark:text-white mb-1">
                     ATS Verification Index
                   </h3>
-                  <p className="text-[10px] text-slate-550 dark:text-slate-400 leading-normal">
+                  <p className="text-xs text-[#525252] dark:text-[#D1D5DB] leading-normal">
                     Scanned against industry parser syntax rules.
                   </p>
                 </div>
@@ -427,7 +434,7 @@ const Resume = ({ resumeData, settingsData }) => {
                       className={getScoreColor(atsScore)}
                     />
                   </svg>
-                  <div className="absolute text-xs font-black font-title text-primary-blue">
+                  <div className="absolute text-sm font-black font-title text-[#C2272D] dark:text-[#00FFFF]">
                     {atsScore}%
                   </div>
                 </div>
@@ -435,18 +442,18 @@ const Resume = ({ resumeData, settingsData }) => {
 
               {/* Progress Bars checklist */}
               <div className="glass p-6 rounded-[24px] border border-slate-100 dark:border-white/5 bg-white dark:bg-[#121217] flex flex-col gap-3">
-                <h4 className="text-xs font-black font-title text-black dark:text-white uppercase tracking-wider mb-1 text-left">CV Section Compatibility</h4>
+                <h4 className="text-xs font-black font-title text-[#171717] dark:text-white uppercase tracking-wider mb-1 text-left">CV Section Compatibility</h4>
                 
                 <div className="flex flex-col gap-3">
                   {breakdownBars.map((bar, idx) => (
                     <div key={idx} className="flex flex-col gap-1 text-left">
-                      <div className="flex justify-between items-center text-[10px] font-bold text-slate-600 dark:text-slate-350">
+                      <div className="flex justify-between items-center text-xs font-bold text-[#525252] dark:text-[#D1D5DB]">
                         <span>{bar.label}</span>
                         <span>{bar.val}%</span>
                       </div>
-                      <div className="w-full h-1.5 bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden">
+                      <div className="w-full h-2 bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-primary-blue rounded-full transition-all duration-1000"
+                          className="h-full bg-gradient-to-r from-[#C2272D] to-[#00FFFF] rounded-full transition-all duration-1000"
                           style={{ width: `${bar.val}%` }}
                         />
                       </div>
@@ -466,35 +473,35 @@ const Resume = ({ resumeData, settingsData }) => {
             >
               <div className="glass p-6 md:p-7 rounded-[24px] border border-slate-100 dark:border-white/5 flex flex-col gap-5 shadow-sm bg-white dark:bg-[#121217]">
                 <div className="border-b border-slate-150 dark:border-white/5 pb-3 text-left">
-                  <h3 className="text-xs font-black font-title text-black dark:text-white uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                    <FaAward className="text-primary-blue animate-pulse" /> Key Resume Highlights
+                  <h3 className="text-sm font-black font-title text-[#171717] dark:text-white uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                    <FaAward className="text-[#C2272D] dark:text-[#00FFFF] animate-pulse" /> Key Resume Highlights
                   </h3>
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                  <p className="text-xs text-[#525252] dark:text-[#D1D5DB]">
                     AI-powered summary of profile strength markers.
                   </p>
                 </div>
 
                 {/* Profile Summary */}
                 <div className="flex flex-col gap-1.5 text-left">
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                    <FaBook size={10} className="text-purple-400" /> Career Summary
+                  <span className="text-xs font-black text-[#525252] dark:text-[#D1D5DB] uppercase tracking-wider flex items-center gap-1.5">
+                    <FaBook size={12} className="text-[#C2272D] dark:text-[#00FFFF]" /> Career Summary
                   </span>
-                  <p className="text-[11px] text-slate-650 dark:text-slate-350 leading-relaxed italic bg-slate-50 dark:bg-[#181822] p-3 rounded-2xl border border-slate-150 dark:border-white/5">
+                  <p className="text-sm text-[#525252] dark:text-[#D1D5DB] leading-relaxed italic bg-slate-50 dark:bg-[#181822] p-3.5 rounded-2xl border border-slate-150 dark:border-white/5">
                     {activeResume?.parsedData?.summary ? `"${activeResume.parsedData.summary}"` : `"Full stack software engineer with extensive experience in the MERN stack ecosystem. Specialized in constructing high-performance REST APIs, stateful interfaces, and database architectures."`}
                   </p>
                 </div>
 
                 {/* Tone & Level metrics */}
                 <div className="grid grid-cols-2 gap-3 text-left">
-                  <div className="p-3 bg-slate-50 dark:bg-[#181822] border border-slate-150 dark:border-white/5 rounded-2xl">
-                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider block mb-1">Tone Analysis</span>
-                    <span className="text-xs font-bold text-slate-800 dark:text-white capitalize">
+                  <div className="p-3.5 bg-slate-50 dark:bg-[#181822] border border-slate-150 dark:border-white/5 rounded-2xl">
+                    <span className="text-[11px] font-black text-[#525252] dark:text-[#D1D5DB] uppercase tracking-wider block mb-1">Tone Analysis</span>
+                    <span className="text-sm font-bold text-[#171717] dark:text-white capitalize">
                       {activeResume?.readability?.tone || 'Professional'}
                     </span>
                   </div>
-                  <div className="p-3 bg-slate-50 dark:bg-[#181822] border border-slate-150 dark:border-white/5 rounded-2xl">
-                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider block mb-1">Career Level</span>
-                    <span className="text-xs font-bold text-slate-800 dark:text-white capitalize">
+                  <div className="p-3.5 bg-slate-50 dark:bg-[#181822] border border-slate-150 dark:border-white/5 rounded-2xl">
+                    <span className="text-[11px] font-black text-[#525252] dark:text-[#D1D5DB] uppercase tracking-wider block mb-1">Career Level</span>
+                    <span className="text-sm font-bold text-[#171717] dark:text-white capitalize">
                       {activeResume?.aiAnalysis?.careerLevel || 'Mid to Senior'}
                     </span>
                   </div>
@@ -502,19 +509,19 @@ const Resume = ({ resumeData, settingsData }) => {
 
                 {/* Technical Skills Badge List */}
                 <div className="flex flex-col gap-1.5 text-left">
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                    <FaCode size={10} className="text-primary-blue" /> Verified Technical Skills
+                  <span className="text-xs font-black text-[#525252] dark:text-[#D1D5DB] uppercase tracking-wider flex items-center gap-1.5">
+                    <FaCode size={12} className="text-[#C2272D] dark:text-[#00FFFF]" /> Verified Technical Skills
                   </span>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap gap-2">
                     {activeResume?.parsedData?.skills && activeResume.parsedData.skills.length > 0 ? (
                       activeResume.parsedData.skills.map((s, idx) => (
-                        <span key={idx} className="px-2.5 py-1 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-slate-750 dark:text-slate-300 rounded-lg text-[10px] font-bold">
+                        <span key={idx} className="px-3 py-1.5 bg-[#F8FAFC] dark:bg-white/5 border border-[#E5E7EB] dark:border-white/10 text-[#171717] dark:text-[#D1D5DB] rounded-xl text-xs font-bold">
                           {s}
                         </span>
                       ))
                     ) : (
                       ['React', 'Node.js', 'Express', 'MongoDB', 'REST API', 'GraphQL', 'JWT', 'TypeScript', 'Docker', 'AWS'].map((s, idx) => (
-                        <span key={idx} className="px-2.5 py-1 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-slate-750 dark:text-slate-300 rounded-lg text-[10px] font-bold">
+                        <span key={idx} className="px-3 py-1.5 bg-[#F8FAFC] dark:bg-white/5 border border-[#E5E7EB] dark:border-white/10 text-[#171717] dark:text-[#D1D5DB] rounded-xl text-xs font-bold">
                           {s}
                         </span>
                       ))

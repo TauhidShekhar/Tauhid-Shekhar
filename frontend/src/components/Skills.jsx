@@ -237,29 +237,35 @@ const Skills = ({ skillsData }) => {
   };
 
   return (
-    <section id="skills" className="py-24 bg-slate-50 dark:bg-black relative">
-      <div className="max-w-[1280px] mx-auto px-6 md:px-12">
+    <section id="skills" className="py-24 sm:py-28 bg-white dark:bg-[#000000] relative">
+      <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12">
         
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <h3 className="text-sm font-bold uppercase tracking-widest text-primary-blue font-title mb-2">Why Choose Me</h3>
-          <h2 className="text-3xl md:text-5xl font-black font-title tracking-tight text-black dark:text-white">Technical Skills</h2>
+        <div className="text-center mb-14 sm:mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#C2272D]/10 dark:bg-[#00FFFF]/10 border border-[#C2272D]/20 dark:border-[#00FFFF]/30 text-[#C2272D] dark:text-[#00FFFF] text-xs sm:text-sm font-semibold tracking-wider uppercase mb-3">
+            <span>Core Competencies</span>
+          </div>
+          <h2 className="text-2xl md:text-[32px] font-bold font-title tracking-tight text-[#171717] dark:text-white">
+            Technical Skills & Tooling
+          </h2>
         </div>
 
         {/* Category Filters */}
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-12">
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 mb-12" role="tablist" aria-label="Skill Categories">
           {categories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setActiveFilter(cat.id)}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold font-title tracking-wider uppercase border transition-all duration-300 cursor-pointer ${
+              role="tab"
+              aria-selected={activeFilter.toLowerCase() === cat.id.toLowerCase()}
+              className={`flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-[14px] font-medium tracking-wider uppercase border transition-all duration-200 cursor-pointer ${
                 activeFilter.toLowerCase() === cat.id.toLowerCase()
-                  ? 'bg-primary-blue border-primary-blue text-white shadow-lg shadow-primary-blue/20 -translate-y-0.5'
-                  : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-white/5 text-slate-650 dark:text-slate-400 hover:border-slate-300 dark:hover:border-white/10'
+                  ? 'bg-[#C2272D] border-[#C2272D] text-white shadow-md shadow-[#C2272D]/20 -translate-y-0.5'
+                  : 'bg-[#F8FAFC] dark:bg-[#111111] border-[#E5E7EB] dark:border-white/10 text-[#525252] dark:text-[#D1D5DB] hover:border-[#C2272D] dark:hover:border-[#00FFFF]'
               }`}
             >
               {cat.icon}
-              {cat.name}
+              <span>{cat.name}</span>
             </button>
           ))}
         </div>
@@ -284,15 +290,15 @@ const Skills = ({ skillsData }) => {
                   initial="hidden"
                   animate="visible"
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className="glass p-6 rounded-2xl flex flex-col justify-between shadow-sm border border-slate-100 dark:border-white/5 hover:scale-[1.02] transition-transform duration-300 relative group overflow-hidden"
+                  className="bg-[#F8FAFC] dark:bg-[#111111] p-5 sm:p-6 rounded-2xl flex flex-col justify-between shadow-sm border border-[#E5E7EB] dark:border-white/10 hover:border-[#C2272D] dark:hover:border-[#00FFFF] hover:scale-[1.02] transition-all duration-200 relative group overflow-hidden"
                   title={`${skill.name} - ${cats.join(', ')}`}
                 >
-                  {/* Mouse hover glow line */}
-                  <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-primary-blue to-primary-cyan opacity-80" />
+                  {/* Left Accent indicator */}
+                  <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-[#C2272D] to-[#00FFFF] opacity-90" />
 
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3.5">
-                      <div className="relative w-12 h-12 flex items-center justify-center shrink-0 bg-slate-50 dark:bg-slate-950 rounded-xl overflow-hidden border border-slate-150 dark:border-white/5">
+                      <div className="relative w-12 h-12 flex items-center justify-center shrink-0 bg-white dark:bg-[#1A1A1A] rounded-xl overflow-hidden border border-[#E5E7EB] dark:border-white/10">
                         {logoSrc && (
                           <img 
                             src={logoSrc} 
@@ -310,36 +316,36 @@ const Skills = ({ skillsData }) => {
                             }}
                           />
                         )}
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/10 to-indigo-500/10 text-purple-400 border border-purple-500/10 flex items-center justify-center font-extrabold text-sm select-none">
+                        <div className="w-12 h-12 rounded-xl bg-[#C2272D]/10 text-[#C2272D] dark:text-[#00FFFF] flex items-center justify-center font-bold text-sm select-none">
                           {skill.name.charAt(0).toUpperCase()}
                         </div>
                       </div>
                       <div className="flex flex-col gap-1 items-start text-left">
-                        <h4 className="text-sm font-bold text-black dark:text-white font-title leading-none">
+                        <h3 className="text-base sm:text-[18px] font-semibold text-[#171717] dark:text-white font-title leading-tight">
                           {skill.name}
-                        </h4>
-                        <div className="flex flex-wrap gap-1 mt-1">
+                        </h3>
+                        <div className="flex flex-wrap gap-1 mt-0.5">
                           {cats.map((cat) => (
-                            <span key={cat} className="px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-slate-200/50 dark:border-white/5">
+                            <span key={cat} className="px-2 py-0.5 rounded text-[10px] font-medium uppercase tracking-wider bg-white dark:bg-white/5 text-[#525252] dark:text-[#9CA3AF] border border-[#E5E7EB] dark:border-white/5">
                               {cat}
                             </span>
                           ))}
                         </div>
                       </div>
                     </div>
-                    <span className="text-xs font-extrabold text-primary-blue">
+                    <span className="text-sm font-semibold text-[#C2272D] dark:text-[#00FFFF]">
                       {skill.percentage}%
                     </span>
                   </div>
 
                   {/* Progress Bar */}
-                  <div className="h-2 w-full bg-slate-200/60 dark:bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-2.5 w-full bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       whileInView={{ width: `${skill.percentage}%` }}
                       viewport={{ once: true }}
                       transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-                      className="h-full bg-gradient-to-r from-primary-blue to-primary-cyan rounded-full"
+                      className="h-full bg-gradient-to-r from-[#C2272D] to-[#00FFFF] rounded-full"
                     />
                   </div>
                 </motion.div>

@@ -3,73 +3,82 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../services/api';
 import { FaLaptopCode, FaServer, FaReact, FaPaintBrush, FaTimes, FaCheckCircle, FaPaperPlane } from 'react-icons/fa';
 
-const Services = () => {
-  const defaultServices = [
-    {
-      title: 'MERN Stack Web Development',
-      desc: 'End-to-end full stack web applications integrating React frontends with Node.js/Express.js REST APIs and MongoDB databases.',
-      price: '$149',
-      iconName: 'FaLaptopCode',
-      features: ['Admin & Teacher Dashboards', 'JWT Authentication', 'MongoDB Schema Modeling', 'CRUD Operations']
-    },
-    {
-      title: 'Frontend Development',
-      desc: 'Converting graphic layouts (Figma/Adobe) into clean, semantic HTML5, CSS3, and modern interactive React.js modules.',
-      price: '$99',
-      iconName: 'FaReact',
-      features: ['Responsive UI Layouts', 'Apple Style Animations', 'Speed Optimization', 'Cross-browser Compatibility']
-    },
-    {
-      title: 'REST API & Backend Development',
-      desc: 'Architecting secure backend servers, integrating third-party endpoints, database connections, and session management.',
-      price: '$79',
-      iconName: 'FaServer',
-      features: ['Express.js Routing', 'JWT & Auth Guards', 'MySQL & MongoDB integration', 'Error handling middleware']
-    },
-    {
-      title: 'Thumbnail & Graphic Design',
-      desc: 'Eye-catching, high-converting YouTube thumbnails, banners, posters, and professional brand assets designed to secure clicks.',
-      price: '$15',
-      iconName: 'FaPaintBrush',
-      features: ['YouTube Thumbnail Packages', 'Instagram Ads/Posts', 'Custom Brand Logos', 'Adobe Suite Production']
-    }
-  ];
+const defaultServices = [
+  {
+    title: 'MERN Stack Web Development',
+    desc: 'End-to-end full stack web applications integrating React frontends with Node.js/Express.js REST APIs and MongoDB databases.',
+    price: '$149',
+    iconName: 'FaLaptopCode',
+    features: ['Admin & Teacher Dashboards', 'JWT Authentication', 'MongoDB Schema Modeling', 'CRUD Operations']
+  },
+  {
+    title: 'Frontend Development',
+    desc: 'Converting graphic layouts (Figma/Adobe) into clean, semantic HTML5, CSS3, and modern interactive React.js modules.',
+    price: '$99',
+    iconName: 'FaReact',
+    features: ['Responsive UI Layouts', 'Apple Style Animations', 'Speed Optimization', 'Cross-browser Compatibility']
+  },
+  {
+    title: 'REST API & Backend Development',
+    desc: 'Architecting secure backend servers, integrating third-party endpoints, database connections, and session management.',
+    price: '$79',
+    iconName: 'FaServer',
+    features: ['Express.js Routing', 'JWT & Auth Guards', 'MySQL & MongoDB integration', 'Error handling middleware']
+  },
+  {
+    title: 'Thumbnail & Graphic Design',
+    desc: 'Eye-catching, high-converting YouTube thumbnails, banners, posters, and professional brand assets designed to secure clicks.',
+    price: '$15',
+    iconName: 'FaPaintBrush',
+    features: ['YouTube Thumbnail Packages', 'Instagram Ads/Posts', 'Custom Brand Logos', 'Adobe Suite Production']
+  }
+];
 
-  const [services, setServices] = useState([]);
-  const [loading, setLoading] = useState(true);
+const Services = ({ servicesData }) => {
+  const [services, setServices] = useState(() => {
+    return (servicesData && servicesData.length > 0) ? servicesData : [];
+  });
 
   const getIcon = (iconName) => {
     switch (iconName) {
       case 'FaLaptopCode':
-        return <FaLaptopCode size={26} className="text-primary-blue" />;
+        return <FaLaptopCode size={26} className="text-[#C2272D]" />;
       case 'FaReact':
-        return <FaReact size={26} className="text-primary-cyan" />;
+        return <FaReact size={26} className="text-[#00FFFF]" />;
       case 'FaServer':
-        return <FaServer size={26} className="text-primary-purple" />;
+        return <FaServer size={26} className="text-[#00FFFF]" />;
       case 'FaPaintBrush':
-        return <FaPaintBrush size={24} className="text-pink-500" />;
+        return <FaPaintBrush size={24} className="text-[#C2272D]" />;
       default:
-        return <FaLaptopCode size={26} className="text-primary-blue" />;
+        return <FaLaptopCode size={26} className="text-[#C2272D]" />;
     }
   };
 
+  if (servicesData === null) {
+    return (
+      <section id="services" className="py-24 bg-slate-50 dark:bg-slate-950/20 relative animate-pulse">
+        <div className="max-w-[1140px] mx-auto px-6 md:px-12">
+          <div className="text-center mb-16">
+            <div className="h-4 w-24 bg-purple-500/20 rounded mx-auto mb-2" />
+            <div className="h-10 w-48 bg-slate-200 dark:bg-white/10 rounded mx-auto" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map(n => (
+              <div key={n} className="h-48 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-white/5 p-6 flex flex-col gap-3" />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const res = await api.getServices();
-        if (res.success && res.data && res.data.length > 0) {
-          setServices(res.data);
-        } else {
-          setServices(defaultServices);
-        }
-      } catch (err) {
-        setServices(defaultServices);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchServices();
-  }, []);
+    if (servicesData && servicesData.length > 0) {
+      setServices(servicesData);
+    } else {
+      setServices([]);
+    }
+  }, [servicesData]);
 
   // Modal & Form State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -77,10 +86,14 @@ const Services = () => {
     name: '',
     email: '',
     phone: '',
+    companyName: '',
     serviceType: '',
     budget: '',
+    projectType: '',
+    deadline: '',
     description: ''
   });
+  const [attachment, setAttachment] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -97,10 +110,14 @@ const Services = () => {
       name: '',
       email: '',
       phone: '',
+      companyName: '',
       serviceType: matchedEnum,
       budget: '',
+      projectType: '',
+      deadline: '',
       description: ''
     });
+    setAttachment(null);
     setSubmitSuccess(false);
     setSubmitError('');
     setIsModalOpen(true);
@@ -111,6 +128,18 @@ const Services = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 50 * 1024 * 1024) {
+        alert('File size exceeds the 50MB limit.');
+        e.target.value = '';
+        return;
+      }
+      setAttachment(file);
+    }
+  };
+
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -118,10 +147,35 @@ const Services = () => {
     setSubmitSuccess(false);
 
     try {
-      const res = await api.createOrder(formData);
+      const submitData = new FormData();
+      submitData.append('name', formData.name);
+      submitData.append('email', formData.email);
+      submitData.append('phone', formData.phone);
+      submitData.append('companyName', formData.companyName);
+      submitData.append('selectedService', formData.serviceType); // maps to selectedService in Order model
+      submitData.append('budget', formData.budget);
+      submitData.append('projectType', formData.projectType);
+      submitData.append('deadline', formData.deadline);
+      submitData.append('description', formData.description);
+      if (attachment) {
+        submitData.append('attachment', attachment);
+      }
+
+      const res = await api.createOrder(submitData);
       if (res.success) {
         setSubmitSuccess(true);
-        setFormData({ name: '', email: '', phone: '', serviceType: '', budget: '', description: '' });
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          companyName: '',
+          serviceType: '',
+          budget: '',
+          projectType: '',
+          deadline: '',
+          description: ''
+        });
+        setAttachment(null);
       }
     } catch (err) {
       setSubmitError(err.message || 'Failed to submit order. Please try again.');
@@ -152,9 +206,13 @@ const Services = () => {
       <div className="max-w-[1280px] mx-auto px-6 md:px-12">
         
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <h3 className="text-sm font-bold uppercase tracking-widest text-primary-blue font-title mb-2">What I Offer</h3>
-          <h2 className="text-3xl md:text-5xl font-black font-title tracking-tight text-black dark:text-white">Design & Dev Services</h2>
+        <div className="text-center mb-14 sm:mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#C2272D]/10 dark:bg-[#00FFFF]/10 border border-[#C2272D]/20 dark:border-[#00FFFF]/30 text-[#C2272D] dark:text-[#00FFFF] text-xs sm:text-sm font-semibold tracking-wider uppercase mb-3">
+            <span>What I Deliver</span>
+          </div>
+          <h2 className="text-2xl md:text-[32px] font-bold font-title tracking-tight text-[#171717] dark:text-white">
+            Design & Development Services
+          </h2>
         </div>
 
         {/* Services Grid */}
@@ -163,58 +221,58 @@ const Services = () => {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-50px' }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-8"
+          className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10"
         >
           {services.map((service, idx) => (
             <motion.div
               key={idx}
               variants={cardVariants}
-              className="glass p-8 rounded-[24px] border border-slate-100 dark:border-white/5 shadow-sm hover:scale-[1.01] hover:shadow-md transition-all duration-300 flex flex-col justify-between"
+              className="bg-[#F8FAFC] dark:bg-[#111111] p-6 sm:p-7 rounded-3xl border border-[#E5E7EB] dark:border-white/10 shadow-sm hover:scale-[1.01] hover:shadow-2xl hover:border-[#C2272D] dark:hover:border-[#00FFFF] transition-all duration-300 flex flex-col justify-between"
             >
               <div>
                  {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 flex items-center justify-center shadow-inner">
+                <div className="flex items-center justify-between mb-5">
+                  <div className="p-3.5 rounded-2xl bg-white dark:bg-[#1A1A1A] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center shadow-sm">
                     {getIcon(service.iconName)}
                   </div>
                   <div className="text-right">
-                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-0.5">Starting From</span>
-                    <span className="text-3xl font-black text-primary-blue font-title">{service.price}</span>
+                    <span className="text-xs font-semibold text-[#525252] dark:text-[#9CA3AF] uppercase tracking-wider block mb-0.5">Starting From</span>
+                    <span className="text-2xl sm:text-[26px] font-bold text-[#C2272D] dark:text-[#00FFFF] font-title">{service.price}</span>
                   </div>
                 </div>
 
                 {/* Title */}
-                <h3 className="text-xl md:text-2xl font-black font-title text-black dark:text-white mb-3">
+                <h3 className="text-[20px] md:text-[22px] font-bold font-title text-[#171717] dark:text-white mb-2.5">
                   {service.title}
                 </h3>
 
                 {/* Description */}
-                <p className="text-sm text-slate-655 dark:text-slate-400 mb-6 leading-relaxed">
+                <p className="text-base text-[#525252] dark:text-[#D1D5DB] mb-5 leading-relaxed">
                   {service.desc}
                 </p>
 
                 {/* Features */}
-                <ul className="grid grid-cols-2 gap-3 mb-8">
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-7">
                   {(service.features || []).map((feat, fIdx) => (
-                    <li key={fIdx} className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary-blue shrink-0" />
-                      {feat}
+                    <li key={fIdx} className="flex items-center gap-2 text-sm font-medium text-[#525252] dark:text-[#D1D5DB]">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#C2272D] dark:bg-[#00FFFF] shrink-0" />
+                      <span>{feat}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
               {/* Actions */}
-              <div className="flex gap-4 border-t border-slate-100 dark:border-white/5 pt-6">
+              <div className="flex gap-3.5 border-t border-[#E5E7EB] dark:border-white/10 pt-5">
                 <button
                   onClick={() => openOrderModal(service.title)}
-                  className="flex-1 py-3 bg-primary-blue hover:bg-accent-blue text-white rounded-xl text-center text-sm font-extrabold shadow-lg shadow-primary-blue/10 transition-all cursor-pointer"
+                  className="flex-1 py-2.5 sm:py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-xl text-center text-[15px] font-semibold shadow-md shadow-[#C2272D]/20 transition-all cursor-pointer"
                 >
                   Order Service
                 </button>
                 <a
                   href="#contact"
-                  className="flex-1 py-3 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 text-slate-800 dark:text-white rounded-xl text-center text-sm font-extrabold border border-slate-200 dark:border-white/5 transition-all"
+                  className="flex-1 py-2.5 sm:py-3 bg-white dark:bg-[#1A1A1A] hover:bg-slate-100 dark:hover:bg-white/10 text-[#171717] dark:text-white rounded-xl text-center text-[15px] font-semibold border border-[#E5E7EB] dark:border-white/10 transition-all"
                 >
                   Inquire Info
                 </a>
@@ -285,10 +343,8 @@ const Services = () => {
                     <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl text-xs font-bold">
                       ❌ {submitError}
                     </div>
-                  )}
-
-                  {/* Name, Email, Phone Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  )}                  {/* Name & Email Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1.5">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Your Name</label>
                       <input
@@ -313,6 +369,10 @@ const Services = () => {
                         className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue"
                       />
                     </div>
+                  </div>
+
+                  {/* Phone & Company Name Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1.5">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mobile Number</label>
                       <input
@@ -321,6 +381,17 @@ const Services = () => {
                         value={formData.phone}
                         onChange={handleInputChange}
                         placeholder="e.g. +91 98765 43210"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Company Name (Optional)</label>
+                      <input
+                        type="text"
+                        name="companyName"
+                        value={formData.companyName}
+                        onChange={handleInputChange}
+                        placeholder="e.g. Acme Corp"
                         className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue"
                       />
                     </div>
@@ -359,6 +430,31 @@ const Services = () => {
                     </div>
                   </div>
 
+                  {/* Project Type & Target Deadline */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Project Type</label>
+                      <input
+                        type="text"
+                        name="projectType"
+                        value={formData.projectType}
+                        onChange={handleInputChange}
+                        placeholder="e.g. E-commerce Website"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Target Deadline</label>
+                      <input
+                        type="date"
+                        name="deadline"
+                        value={formData.deadline}
+                        onChange={handleInputChange}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue"
+                      />
+                    </div>
+                  </div>
+
                   {/* Order Description details */}
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Project details & Information</label>
@@ -370,6 +466,17 @@ const Services = () => {
                       onChange={handleInputChange}
                       placeholder="Briefly describe what you want built or designed, timeline scope, and any details..."
                       className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue resize-none"
+                    />
+                  </div>
+
+                  {/* File Attachment Upload */}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Attach Brief/Assets (Image, PDF, ZIP &mdash; Max 50MB)</label>
+                    <input
+                      type="file"
+                      accept="image/*,application/pdf,.zip,.rar"
+                      onChange={handleFileChange}
+                      className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-xs focus:outline-none focus:border-primary-blue cursor-pointer file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-primary-blue/10 file:text-primary-blue hover:file:bg-primary-blue/20"
                     />
                   </div>
 

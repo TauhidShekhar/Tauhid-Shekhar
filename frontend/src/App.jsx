@@ -444,8 +444,9 @@ const App = () => {
           {/* Floating AI Assistant Trigger */}
           <button
             onClick={() => navigate('/community/ai-assistant')}
-            className="w-12 h-12 bg-gradient-to-r from-purple-650 to-indigo-650 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300 cursor-pointer border border-purple-500/20"
+            className="w-12 h-12 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full flex items-center justify-center shadow-lg shadow-[#C2272D]/25 hover:scale-110 transition-all duration-300 cursor-pointer border border-[#C2272D]/30"
             title="Open AI Consultant"
+            aria-label="Open AI Consultant"
           >
             <FaBrain size={18} />
           </button>
@@ -453,8 +454,9 @@ const App = () => {
           {/* Floating Community Link */}
           <Link
             to="/community"
-            className="w-12 h-12 bg-[#121217] hover:bg-[#1e1e28] text-purple-400 hover:text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300 border border-white/5"
-            title="Go to DevCommunity"
+            className="w-12 h-12 bg-[#111111] hover:bg-[#1A1A1A] text-[#00FFFF] hover:text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300 border border-white/10"
+            title="Go to TS DevCommunity"
+            aria-label="Go to TS DevCommunity"
           >
             <FaComments size={18} />
           </Link>
@@ -477,10 +479,11 @@ const App = () => {
           onClick={() => setDrawerExpanded(prev => !prev)}
           className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg cursor-pointer transition-all duration-300 border ${
             drawerExpanded 
-              ? 'bg-[#1c1c24] text-slate-400 border-white/5 hover:text-white' 
-              : 'bg-gradient-to-r from-purple-650 to-indigo-650 text-white border-purple-500/20 hover:scale-110'
+              ? 'bg-[#1c1c24] text-slate-400 border-white/10 hover:text-white' 
+              : 'bg-[#C2272D] hover:bg-[#A51E23] text-white border-[#C2272D]/30 shadow-lg shadow-[#C2272D]/25 hover:scale-110'
           }`}
           title={drawerExpanded ? 'Hide Actions' : 'Show Actions'}
+          aria-label={drawerExpanded ? 'Hide Actions' : 'Show Actions'}
         >
           <FaPlus 
             size={16} 
@@ -491,7 +494,7 @@ const App = () => {
         {/* Back to Top */}
         <button
           onClick={scrollToTop}
-          className={`w-12 h-12 bg-primary-blue text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300 cursor-pointer ${
+          className={`w-12 h-12 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full flex items-center justify-center shadow-lg shadow-[#C2272D]/25 hover:scale-110 transition-all duration-300 cursor-pointer ${
             showBackToTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
           }`}
           aria-label="Scroll back to top"
@@ -532,7 +535,7 @@ const App = () => {
           <div className="flex justify-end gap-3">
             <button
               onClick={handleAcceptCookies}
-              className="px-4 py-2 bg-primary-blue hover:bg-accent-blue text-white rounded-xl text-xs font-bold transition-all cursor-pointer"
+              className="px-4 py-2 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-xl text-xs font-bold transition-all cursor-pointer"
             >
               Accept All
             </button>

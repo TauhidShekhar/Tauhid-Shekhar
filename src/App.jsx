@@ -1,24 +1,59 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import AppLoader from './components/common/AppLoader';
 import Navbar from './components/Navbar';
-import ParticlesBackground from './components/ParticlesBackground';
 import CustomCursor from './components/CustomCursor';
 import Hero from './components/Hero';
-import About from './components/About';
-import Skills from './components/Skills';
-import Projects from './components/Projects';
-import Experience from './components/Experience';
-import Services from './components/Services';
-import Resume from './components/Resume';
-import EducationCertificates from './components/EducationCertificates';
-import GitHubStats from './components/GitHubStats';
-import Contact from './components/Contact';
-import Footer from './components/Footer';
 import { FaWhatsapp, FaChevronUp, FaCircleCheck } from 'react-icons/fa6';
+import { FaBrain, FaComments, FaPlus } from 'react-icons/fa';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import socket from './services/socket';
 import { useAuth } from './contexts/AuthContext';
 import { api } from './services/api';
+import { useLoading } from './contexts/LoadingContext';
+
+// Lazy load below-the-fold components
+const ParticlesBackground = lazy(() => import('./components/ParticlesBackground'));
+const About = lazy(() => import('./components/About'));
+const Skills = lazy(() => import('./components/Skills'));
+const Projects = lazy(() => import('./components/Projects'));
+const Experience = lazy(() => import('./components/Experience'));
+const Services = lazy(() => import('./components/Services'));
+const Resume = lazy(() => import('./components/Resume'));
+const EducationCertificates = lazy(() => import('./components/EducationCertificates'));
+const GitHubStats = lazy(() => import('./components/GitHubStats'));
+const Contact = lazy(() => import('./components/Contact'));
+const Footer = lazy(() => import('./components/Footer'));
+const CommandPalette = lazy(() => import('./components/CommandPalette'));
+
+// Skeleton Loader for progressive section mounting
+const SectionSkeleton = () => (
+  <div className="py-20 px-6 max-w-[1280px] mx-auto w-full flex flex-col gap-6 animate-pulse">
+    <div className="h-6 w-32 bg-slate-200 dark:bg-white/10 rounded-full" />
+    <div className="h-10 w-64 bg-slate-200 dark:bg-white/10 rounded-full mb-8" />
+    <div className="h-40 bg-slate-200 dark:bg-white/5 rounded-3xl w-full" />
+  </div>
+);
+
+let isInitialFetchStarted = false;
 
 const App = () => {
+  const { user } = useAuth();
+  const [portfolioData, setPortfolioData] = useState({
+    settings: null,
+    hero: null,
+    about: null,
+    skills: [],
+    projects: [],
+    experiences: [],
+    services: [],
+    activeResume: null,
+    education: [],
+    certificates: [],
+    achievements: []
+  });
+  const settings = portfolioData.settings;
+  const [showCookieNotice, setShowCookieNotice] = useState(false);
+
   const [isDark, setIsDark] = useState(() => {
     try {
       const savedTheme = localStorage.getItem('theme');
@@ -28,30 +63,136 @@ const App = () => {
       return false;
     }
   });
-  const { user } = useAuth();
-  const [settings, setSettings] = useState(null);
-  const [showCookieNotice, setShowCookieNotice] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const navigate = useNavigate();
+  const location = useLocation();
   const [activeSection, setActiveSection] = useState('home');
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [drawerExpanded, setDrawerExpanded] = useState(true);
 
-  // Fetch settings dynamically
+  // Listen for Ctrl+K global keyboard shortcut
   useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const res = await api.getSettings();
-        if (res.success) {
-          setSettings(res.data);
-        }
-      } catch (err) {
-        console.error('Failed to load settings in App:', err.message);
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setCommandPaletteOpen(prev => !prev);
       }
     };
-    fetchSettings();
-  }, [refreshKey]);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Prefetch remaining lazy-loaded chunks after home loads to make navigation instant
+  useEffect(() => {
+    const prefetchChunks = () => {
+      const chunks = [
+        () => import('./components/About'),
+        () => import('./components/Skills'),
+        () => import('./components/Projects'),
+        () => import('./components/Experience'),
+        () => import('./components/Services'),
+        () => import('./components/Resume'),
+        () => import('./components/EducationCertificates'),
+        () => import('./components/GitHubStats'),
+        () => import('./components/Contact'),
+        () => import('./components/Footer')
+      ];
+
+      if ('requestIdleCallback' in window) {
+        let index = 0;
+        const scheduleNext = () => {
+          if (index < chunks.length) {
+            window.requestIdleCallback(() => {
+              chunks[index]().catch(() => {});
+              index++;
+              setTimeout(scheduleNext, 500); // Stagger chunk imports
+            });
+          }
+        };
+        scheduleNext();
+      } else {
+        // Fallback for Safari / other browsers
+        setTimeout(() => {
+          Promise.all(chunks.map(c => c().catch(() => {})));
+        }, 3000);
+      }
+    };
+
+    if (document.readyState === 'complete') {
+      prefetchChunks();
+    } else {
+      window.addEventListener('load', prefetchChunks);
+      return () => window.removeEventListener('load', prefetchChunks);
+    }
+  }, []);
+
+  const isFetching = React.useRef(false);
+
+  const fetchPortfolioData = async (showLoader = false) => {
+    if (isFetching.current) return;
+    isFetching.current = true;
+    if (showLoader) setLoading(true);
+    try {
+      const res = await api.getPortfolioAll();
+      if (res && res.success) {
+        const d = res.data;
+        setPortfolioData({
+          settings: d.settings || null,
+          hero: d.hero || null,
+          about: d.about || null,
+          skills: d.skills || [],
+          projects: d.projects || [],
+          experiences: d.experiences || [],
+          services: d.services || [],
+          activeResume: d.activeResume || null,
+          education: d.education || [],
+          certificates: d.certificates || [],
+          achievements: d.achievements || []
+        });
+      }
+    } catch (err) {
+      console.error('Failed to load portfolio data:', err.message);
+    } finally {
+      isFetching.current = false;
+      setLoading(false);
+      // Flag app as loaded after a short delay to permit smooth startup transition
+      setTimeout(() => {
+        window.isAppLoaded = true;
+      }, 100);
+    }
+  };
+
+  // Fetch initial data on mount
+  useEffect(() => {
+    if (!isInitialFetchStarted) {
+      isInitialFetchStarted = true;
+      fetchPortfolioData(true);
+    } else {
+      // If already started in another strict mode mount, ensure spinner turns off
+      setLoading(false);
+    }
+  }, []);
+
+  // Listen for real-time updates and fetch silently in the background
+  useEffect(() => {
+    let timeoutId;
+    const handleSyncUpdate = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        fetchPortfolioData(false);
+      }, 100);
+    };
+
+    window.addEventListener('cms-content-update', handleSyncUpdate);
+
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('cms-content-update', handleSyncUpdate);
+    };
+  }, []);
 
   // Cookie notice check
   useEffect(() => {
@@ -155,12 +296,7 @@ const App = () => {
     }
   }
 
-  // 1. Theme Configuration
-  useEffect(() => {
-    // End loading screen
-    const loadTimer = setTimeout(() => setLoading(false), 500);
-    return () => clearTimeout(loadTimer);
-  }, []);
+
 
   const toggleTheme = () => {
     const newTheme = !isDark;
@@ -218,10 +354,12 @@ const App = () => {
     setTimeout(() => setShowToast(false), 3000);
   };
 
+  if (loading) {
+    return <AppLoader isLoading={loading} />;
+  }
+
   return (
     <>
-      {/* Pre-loader loading screen */}
-      <AppLoader isLoading={loading} />
 
       {/* Mouse Glow Background Effect */}
       <div className="mouse-glow-bg" />
@@ -230,7 +368,9 @@ const App = () => {
       <CustomCursor />
 
       {/* Interactive Node Background */}
-      <ParticlesBackground />
+      <Suspense fallback={null}>
+        <ParticlesBackground />
+      </Suspense>
 
       {/* Announcement Banner */}
       {settings?.announcementBanner?.show && settings?.announcementBanner?.text && (
@@ -245,49 +385,134 @@ const App = () => {
       )}
 
       {/* Nav */}
-      <Navbar activeSection={activeSection} toggleTheme={toggleTheme} isDark={isDark} />
+      <Navbar settingsData={portfolioData.settings} activeSection={activeSection} toggleTheme={toggleTheme} isDark={isDark} />
 
       {/* Main Content Layout */}
       <main className="relative">
-        <Hero />
-        <About />
-        <Skills />
-        <Projects />
-        <Experience />
-        <Services />
-        <Resume />
-        <EducationCertificates />
-        <GitHubStats />
-        <Contact onShowToast={triggerToast} />
+        <Hero heroData={portfolioData.hero} resumeData={portfolioData.activeResume} />
+        
+        <Suspense fallback={<SectionSkeleton />}>
+          <About aboutData={portfolioData.about} resumeData={portfolioData.activeResume} />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <Skills skillsData={portfolioData.skills} />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <Projects projectsData={portfolioData.projects} />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <Experience experienceData={portfolioData.experiences} />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <Services servicesData={portfolioData.services} />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <Resume resumeData={portfolioData.activeResume} settingsData={portfolioData.settings} />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <EducationCertificates educationData={portfolioData.education} certificatesData={portfolioData.certificates} achievementsData={portfolioData.achievements} />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <GitHubStats />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <Contact settingsData={portfolioData.settings} aboutData={portfolioData.about} onShowToast={triggerToast} />
+        </Suspense>
       </main>
 
       {/* Footer */}
-      <Footer />
+      <Suspense fallback={null}>
+        <Footer settingsData={portfolioData.settings} heroData={portfolioData.hero} />
+      </Suspense>
 
-      {/* Floating Actions CTA */}
-      <div className="fixed bottom-8 right-8 z-[900] flex flex-col gap-4">
-        {/* WhatsApp */}
-        <a
-          href="https://wa.me/919142725562"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="w-12 h-12 bg-[#25d366] text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 hover:shadow-green-500/20 transition-all duration-300"
-          aria-label="Contact via WhatsApp"
+      {/* Floating Actions Drawer */}
+      <div className="fixed bottom-8 right-8 z-[900] flex flex-col gap-4 items-center">
+        {/* Expandable actions list with animation */}
+        <div className={`flex flex-col gap-4 transition-all duration-300 transform ${
+          drawerExpanded 
+            ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto' 
+            : 'opacity-0 translate-y-4 scale-75 pointer-events-none h-0 overflow-hidden'
+        }`}>
+          {/* Floating AI Assistant Trigger */}
+          <button
+            onClick={() => navigate('/community/ai-assistant')}
+            className="w-12 h-12 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full flex items-center justify-center shadow-lg shadow-[#C2272D]/25 hover:scale-110 transition-all duration-300 cursor-pointer border border-[#C2272D]/30"
+            title="Open AI Consultant"
+            aria-label="Open AI Consultant"
+          >
+            <FaBrain size={18} />
+          </button>
+
+          {/* Floating Community Link */}
+          <Link
+            to="/community"
+            className="w-12 h-12 bg-[#111111] hover:bg-[#1A1A1A] text-[#00FFFF] hover:text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300 border border-white/10"
+            title="Go to TS DevCommunity"
+            aria-label="Go to TS DevCommunity"
+          >
+            <FaComments size={18} />
+          </Link>
+
+          {/* WhatsApp */}
+          <a
+            href="https://wa.me/919142725562"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-12 h-12 bg-[#25d366] text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 hover:shadow-green-500/20 transition-all duration-300"
+            aria-label="Contact via WhatsApp"
+            title="WhatsApp Chat"
+          >
+            <FaWhatsapp size={22} />
+          </a>
+        </div>
+
+        {/* Toggle Button */}
+        <button
+          onClick={() => setDrawerExpanded(prev => !prev)}
+          className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg cursor-pointer transition-all duration-300 border ${
+            drawerExpanded 
+              ? 'bg-[#1c1c24] text-slate-400 border-white/10 hover:text-white' 
+              : 'bg-[#C2272D] hover:bg-[#A51E23] text-white border-[#C2272D]/30 shadow-lg shadow-[#C2272D]/25 hover:scale-110'
+          }`}
+          title={drawerExpanded ? 'Hide Actions' : 'Show Actions'}
+          aria-label={drawerExpanded ? 'Hide Actions' : 'Show Actions'}
         >
-          <FaWhatsapp size={22} />
-        </a>
+          <FaPlus 
+            size={16} 
+            className={`transition-transform duration-300 ${drawerExpanded ? 'rotate-45' : 'rotate-0'}`} 
+          />
+        </button>
 
         {/* Back to Top */}
         <button
           onClick={scrollToTop}
-          className={`w-12 h-12 bg-primary-blue text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300 cursor-pointer ${
+          className={`w-12 h-12 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full flex items-center justify-center shadow-lg shadow-[#C2272D]/25 hover:scale-110 transition-all duration-300 cursor-pointer ${
             showBackToTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
           }`}
           aria-label="Scroll back to top"
+          title="Back to Top"
         >
           <FaChevronUp size={16} />
         </button>
       </div>
+
+      {/* Global Command Palette */}
+      <Suspense fallback={null}>
+        <CommandPalette 
+          isOpen={commandPaletteOpen} 
+          onClose={() => setCommandPaletteOpen(false)} 
+          isDark={isDark} 
+          toggleTheme={toggleTheme} 
+        />
+      </Suspense>
 
       {/* Toast Notifications */}
       <div
@@ -310,7 +535,7 @@ const App = () => {
           <div className="flex justify-end gap-3">
             <button
               onClick={handleAcceptCookies}
-              className="px-4 py-2 bg-primary-blue hover:bg-accent-blue text-white rounded-xl text-xs font-bold transition-all cursor-pointer"
+              className="px-4 py-2 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-xl text-xs font-bold transition-all cursor-pointer"
             >
               Accept All
             </button>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FaGithub, FaCodeBranch, FaStar, FaHistory, FaCode, FaHeart } from 'react-icons/fa';
+import { FaGithub, FaCodeBranch, FaStar, FaHistory, FaCode } from 'react-icons/fa';
 
 const GitHubStats = () => {
   const username = 'TauhidShekhar';
@@ -27,26 +27,33 @@ const GitHubStats = () => {
   ];
 
   const fallbackStats = [
-    { label: 'Total Stars', value: '18', icon: <FaStar className="text-yellow-500" size={18} /> },
-    { label: 'Total Commits', value: '412', icon: <FaCodeBranch className="text-primary-blue" size={18} /> },
-    { label: 'PRs Merged', value: '34', icon: <FaHistory className="text-primary-purple" size={18} /> },
-    { label: 'Repositories', value: '12', icon: <FaGithub className="text-slate-600 dark:text-slate-400" size={18} /> }
+    { label: 'Total Stars', value: '18', icon: <FaStar className="text-amber-400" size={18} /> },
+    { label: 'Total Commits', value: '412', icon: <FaCodeBranch className="text-[#C2272D] dark:text-[#00FFFF]" size={18} /> },
+    { label: 'PRs Merged', value: '34', icon: <FaHistory className="text-[#00FFFF]" size={18} /> },
+    { label: 'Repositories', value: '12', icon: <FaGithub className="text-[#525252] dark:text-[#D1D5DB]" size={18} /> }
   ];
 
   const fallbackStreak = [
-    { label: 'Total Contributions', value: '66', desc: 'Feb 24 - Present' },
-    { label: 'Current Streak', value: '0', desc: 'Jul 2' },
-    { label: 'Longest Streak', value: '5', desc: 'Oct 20 - Oct 24' }
+    { label: 'Total Contributions', value: '66', desc: 'Active Dev Cycle' },
+    { label: 'Current Streak', value: '0', desc: 'Code Submissions' },
+    { label: 'Longest Streak', value: '5', desc: 'Consecutive Days' }
   ];
 
   return (
-    <section id="github" className="py-24 bg-slate-50 dark:bg-[#09090b] relative">
+    <section id="github" className="py-24 bg-white dark:bg-[#000000] relative text-left">
       <div className="max-w-[1280px] mx-auto px-6 md:px-12">
         
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <h3 className="text-sm font-bold uppercase tracking-widest text-primary-blue font-title mb-2">Code Activity</h3>
-          <h2 className="text-3xl md:text-5xl font-black font-title tracking-tight text-black dark:text-white">GitHub Contributions</h2>
+        <div className="text-center mb-14 sm:mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs sm:text-sm font-semibold uppercase tracking-wider bg-[#C2272D]/10 text-[#C2272D] border border-[#C2272D]/20 mb-3">
+            Open Source & Git
+          </div>
+          <h2 className="text-2xl md:text-[32px] font-bold font-title tracking-tight text-[#171717] dark:text-white">
+            GitHub Contributions
+          </h2>
+          <p className="mt-3 text-base text-[#525252] dark:text-[#D1D5DB] max-w-2xl mx-auto leading-relaxed">
+            Continuous development activity, code commits, repositories, and technical contributions.
+          </p>
         </div>
 
         <motion.div
@@ -60,13 +67,13 @@ const GitHubStats = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
             {/* Top Languages Card */}
-            <div className="glass p-6 rounded-[24px] border border-slate-200/50 dark:border-white/5 shadow-sm flex flex-col items-center min-h-[220px] justify-between">
-              <h3 className="text-lg font-bold font-title text-black dark:text-white mb-4 w-full text-left flex items-center gap-2">
-                <FaCode size={16} className="text-primary-cyan" /> Top Languages
+            <div className="bg-[#F8FAFC] dark:bg-[#111111] p-6 md:p-8 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm flex flex-col items-center min-h-[220px] justify-between">
+              <h3 className="text-xl font-bold font-title text-[#171717] dark:text-white mb-4 w-full text-left flex items-center gap-2">
+                <FaCode size={18} className="text-[#00FFFF]" /> Top Languages
               </h3>
               
               {!imgErrors.langs ? (
-                <div className="w-full flex justify-center select-none filter dark:drop-shadow-[0_0_15px_rgba(0,210,255,0.05)]">
+                <div className="w-full flex justify-center select-none filter dark:drop-shadow-[0_0_15px_rgba(0,255,255,0.05)]">
                   <img
                     src={langsUrl}
                     alt={`${username} GitHub Top Languages`}
@@ -76,15 +83,15 @@ const GitHubStats = () => {
                   />
                 </div>
               ) : (
-                /* Beautiful CSS progress-bar rendering if Vercel server fails */
+                /* CSS progress-bar rendering if external badge server fails */
                 <div className="w-full flex flex-col gap-3 py-2 px-1">
                   {fallbackLangs.map((item, idx) => (
                     <div key={idx} className="flex flex-col gap-1">
-                      <div className="flex justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
+                      <div className="flex justify-between text-xs font-bold text-[#525252] dark:text-[#D1D5DB]">
                         <span>{item.name}</span>
                         <span>{item.percentage}%</span>
                       </div>
-                      <div className="w-full bg-slate-100 dark:bg-white/5 h-2 rounded-full overflow-hidden">
+                      <div className="w-full bg-slate-200 dark:bg-white/10 h-2.5 rounded-full overflow-hidden">
                         <div style={{ width: `${item.percentage}%` }} className={`h-full ${item.color} rounded-full`} />
                       </div>
                     </div>
@@ -94,13 +101,13 @@ const GitHubStats = () => {
             </div>
 
             {/* Streak Counter Card */}
-            <div className="glass p-6 rounded-[24px] border border-slate-200/50 dark:border-white/5 shadow-sm flex flex-col items-center min-h-[220px] justify-between">
-              <h3 className="text-lg font-bold font-title text-black dark:text-white mb-4 w-full text-left flex items-center gap-2">
-                <FaHistory size={16} className="text-primary-purple" /> GitHub Streak
+            <div className="bg-[#F8FAFC] dark:bg-[#111111] p-6 md:p-8 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm flex flex-col items-center min-h-[220px] justify-between">
+              <h3 className="text-xl font-bold font-title text-[#171717] dark:text-white mb-4 w-full text-left flex items-center gap-2">
+                <FaHistory size={18} className="text-[#C2272D] dark:text-[#00FFFF]" /> GitHub Streak
               </h3>
               
               {!imgErrors.streak ? (
-                <div className="w-full flex justify-center select-none filter dark:drop-shadow-[0_0_15px_rgba(134,59,251,0.05)]">
+                <div className="w-full flex justify-center select-none filter dark:drop-shadow-[0_0_15px_rgba(194,39,45,0.05)]">
                   <img
                     src={streakUrl}
                     alt={`${username} GitHub Streak Stats`}
@@ -110,13 +117,13 @@ const GitHubStats = () => {
                   />
                 </div>
               ) : (
-                /* Premium stats grid fallback */
+                /* Fallback streak metrics */
                 <div className="grid grid-cols-3 gap-3 w-full py-4 text-center">
                   {fallbackStreak.map((item, idx) => (
-                    <div key={idx} className="flex flex-col gap-1 p-3 bg-slate-100/50 dark:bg-white/5 rounded-xl border border-slate-200/40 dark:border-white/5">
-                      <span className="text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider">{item.label}</span>
-                      <span className="text-xl font-black text-black dark:text-white">{item.value}</span>
-                      <span className="text-[9px] text-slate-400">{item.desc}</span>
+                    <div key={idx} className="flex flex-col gap-1 p-3.5 bg-white dark:bg-white/5 rounded-xl border border-[#E5E7EB] dark:border-white/10">
+                      <span className="text-[10px] font-bold text-[#525252] dark:text-[#D1D5DB] uppercase tracking-wider">{item.label}</span>
+                      <span className="text-xl font-black text-[#171717] dark:text-white">{item.value}</span>
+                      <span className="text-[10px] text-slate-400">{item.desc}</span>
                     </div>
                   ))}
                 </div>
@@ -124,13 +131,13 @@ const GitHubStats = () => {
             </div>
 
             {/* General Profile Stats Card */}
-            <div className="glass p-6 rounded-[24px] border border-slate-200/50 dark:border-white/5 shadow-sm flex flex-col items-center lg:col-span-2 min-h-[220px] justify-between">
-              <h3 className="text-lg font-bold font-title text-black dark:text-white mb-4 w-full text-left flex items-center gap-2">
-                <FaGithub size={16} className="text-primary-blue" /> Profile Overview
+            <div className="bg-[#F8FAFC] dark:bg-[#111111] p-6 md:p-8 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm flex flex-col items-center lg:col-span-2 min-h-[220px] justify-between">
+              <h3 className="text-xl font-bold font-title text-[#171717] dark:text-white mb-4 w-full text-left flex items-center gap-2">
+                <FaGithub size={20} className="text-[#C2272D] dark:text-[#00FFFF]" /> Profile Overview
               </h3>
               
               {!imgErrors.stats ? (
-                <div className="w-full flex justify-center select-none filter dark:drop-shadow-[0_0_20px_rgba(0,113,227,0.05)]">
+                <div className="w-full flex justify-center select-none filter dark:drop-shadow-[0_0_20px_rgba(194,39,45,0.05)]">
                   <img
                     src={statsUrl}
                     alt={`${username} GitHub Profile Stats`}
@@ -140,13 +147,13 @@ const GitHubStats = () => {
                   />
                 </div>
               ) : (
-                /* Premium cards grid fallback */
+                /* Fallback stats cards */
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full py-4 text-center">
                   {fallbackStats.map((item, idx) => (
-                    <div key={idx} className="flex flex-col items-center justify-center p-4 bg-slate-100/50 dark:bg-white/5 rounded-2xl border border-slate-200/40 dark:border-white/5">
-                      <div className="mb-2 p-2 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center">{item.icon}</div>
-                      <span className="text-xl font-black text-black dark:text-white mb-0.5">{item.value}</span>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{item.label}</span>
+                    <div key={idx} className="flex flex-col items-center justify-center p-4 bg-white dark:bg-white/5 rounded-xl border border-[#E5E7EB] dark:border-white/10">
+                      <div className="mb-2 p-2 rounded-xl bg-slate-50 dark:bg-white/5 flex items-center justify-center">{item.icon}</div>
+                      <span className="text-2xl font-black text-[#171717] dark:text-white mb-0.5">{item.value}</span>
+                      <span className="text-xs font-bold text-[#525252] dark:text-[#D1D5DB] uppercase tracking-wider">{item.label}</span>
                     </div>
                   ))}
                 </div>
@@ -160,9 +167,9 @@ const GitHubStats = () => {
               href={`https://github.com/${username}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-slate-900 hover:bg-slate-850 dark:bg-white/10 dark:hover:bg-white/15 text-white rounded-full font-bold text-sm shadow-md transition-all duration-300 hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full font-bold text-base shadow-md shadow-[#C2272D]/20 transition-all duration-300 hover:-translate-y-0.5 cursor-pointer"
             >
-              <FaGithub size={16} /> Explore GitHub Profile
+              <FaGithub size={18} /> Explore GitHub Profile
             </a>
           </div>
         </motion.div>

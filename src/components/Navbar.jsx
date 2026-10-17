@@ -1,22 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 import { 
-  FaBars, FaTimes, FaSun, FaMoon, FaDownload, 
+  FaHome, FaUser, FaCode, FaBriefcase, FaBookOpen, FaEnvelope,
+  FaSun, FaMoon, FaPaperPlane, FaBars, FaTimes, FaChevronRight,
   FaUserCircle, FaSignOutAlt, FaTachometerAlt, FaChevronDown,
   FaGlobe, FaCog
 } from 'react-icons/fa';
 
-const Navbar = ({ activeSection, toggleTheme, isDark }) => {
+const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const rawAdminUrl = import.meta.env.VITE_ADMIN_URL;
+  const VITE_ADMIN_URL = (rawAdminUrl && rawAdminUrl !== 'undefined' && rawAdminUrl !== 'null') 
+    ? rawAdminUrl 
+    : (window.location.port === '5173' || window.location.port === '5174'
+        ? `${window.location.protocol}//${window.location.hostname}:5174`
+        : 'https://tauhidshekhar-admin.vercel.app');
+
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [settings, setSettings] = useState(null);
+  const [settings, setSettings] = useState(settingsData || null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
+    if (settingsData) {
+      setSettings(settingsData);
+    }
+  }, [settingsData]);
+
+  useEffect(() => {
+    if (settingsData) return;
     const loadSettings = async () => {
       try {
         const res = await api.getSettings();
@@ -28,8 +45,9 @@ const Navbar = ({ activeSection, toggleTheme, isDark }) => {
       }
     };
     loadSettings();
-  }, []);
+  }, [settingsData]);
 
+  // Handle outside clicks for account profile dropdown
   useEffect(() => {
     const handleOutsideClick = (e) => {
       if (dropdownOpen && !e.target.closest('.profile-dropdown-container')) {
@@ -40,32 +58,60 @@ const Navbar = ({ activeSection, toggleTheme, isDark }) => {
     return () => window.removeEventListener('click', handleOutsideClick);
   }, [dropdownOpen]);
 
-  const navItems = [
-    { name: 'Home', href: '#home' },
-    { name: 'About', href: '#about' },
-    { name: 'Skills', href: '#skills' },
-    { name: 'Projects', href: '#projects' },
-    { name: 'Experience', href: '#experience' },
-    { name: 'Education', href: '#education' },
-    { name: 'Achievements', href: '#achievements' },
-    { name: 'Contact', href: '#contact' },
-    { name: 'Community', to: '/community' }
-  ];
-
+  // Scroll detection for navbar elevation
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 40);
+      setScrolled(window.scrollY > 30);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Keyboard escape listener to close mobile menu
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
+
+  // Lock background scroll when mobile drawer is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  // Essential primary navigation links matching brand design reference
+  const navItems = [
+    { name: 'Home', href: '#home', icon: FaHome },
+    { name: 'About', href: '#about', icon: FaUser },
+    { name: 'Projects', href: '#projects', icon: FaCode },
+    { name: 'Experience', href: '#experience', icon: FaBriefcase },
+    { name: 'Blog', to: '/community', icon: FaBookOpen },
+    { name: 'Contact', href: '#contact', icon: FaEnvelope }
+  ];
+
   const handleNavClick = (e, href) => {
     e.preventDefault();
     setIsOpen(false);
+
+    if (location.pathname !== '/') {
+      navigate('/' + href);
+      return;
+    }
+
     const element = document.querySelector(href);
     if (element) {
-      const offset = 80;
+      const offset = 96;
       const bodyRect = document.body.getBoundingClientRect().top;
       const elementRect = element.getBoundingClientRect().top;
       const elementPosition = elementRect - bodyRect;
@@ -78,277 +124,360 @@ const Navbar = ({ activeSection, toggleTheme, isDark }) => {
     }
   };
 
+  const AdminLink = ({ to, children, className }) => {
+    const isUnified = !VITE_ADMIN_URL || VITE_ADMIN_URL.includes(window.location.host);
+    if (isUnified) {
+      return (
+        <Link to={to} onClick={() => setDropdownOpen(false)} className={className}>
+          {children}
+        </Link>
+      );
+    }
+    return (
+      <a href={`${VITE_ADMIN_URL}${to}`} onClick={() => setDropdownOpen(false)} className={className}>
+        {children}
+      </a>
+    );
+  };
+
+  // Logo asset based on theme
+  const logoSrc = isDark ? '/assits/ts-logo-dark.jpg' : '/assits/ts-logo-red.jpg';
+
   return (
-    <header
-      className={`fixed top-0 left-0 w-full z-[999] transition-all duration-300 ${
-        scrolled
-          ? 'glass shadow-lg border-b border-slate-200/50 dark:border-white/5 py-4'
-          : 'bg-transparent py-5'
-      }`}
-    >
-      <nav className="max-w-full mx-auto px-6 md:px-12 xl:px-16 flex items-center justify-between">
-        
-        {/* Section 1: Logo (Left) */}
-        <div className="text-lg md:text-xl font-black font-title tracking-wider text-black dark:text-white shrink-0">
-          <a href="#home" onClick={(e) => handleNavClick(e, '#home')} className="hover:text-primary-blue transition-colors flex items-center gap-2">
-            {settings?.logo?.url && (
-              <img src={settings.logo.url} alt={settings?.siteName || 'Logo'} className="h-8 w-auto object-contain" />
-            )}
-            <span className="uppercase">{settings?.siteName || 'TAUHID SHEKHAR'}</span>
-          </a>
-        </div>
-
-        {/* Section 2: Navigation Links (Middle) */}
-        <ul className="hidden xl:flex items-center gap-6 xl:gap-8 mx-6">
-          {navItems.map((item) => (
-            <li key={item.name}>
-              {item.to ? (
-                <Link
-                  to={item.to}
-                  className="relative text-sm font-bold tracking-wide transition-colors duration-300 py-1.5 text-slate-600 dark:text-slate-350 hover:text-primary-blue dark:hover:text-primary-blue"
-                >
-                  {item.name}
-                </Link>
-              ) : (
-                <a
-                  href={item.href}
-                  onClick={(e) => handleNavClick(e, item.href)}
-                  className={`relative text-sm font-bold tracking-wide transition-colors duration-300 py-1.5 ${
-                    activeSection === item.href.substring(1)
-                      ? 'text-primary-blue'
-                      : 'text-slate-600 dark:text-slate-300 hover:text-primary-blue dark:hover:text-primary-blue'
-                  }`}
-                >
-                  {item.name}
-                  {activeSection === item.href.substring(1) && (
-                    <span className="absolute bottom-0 left-0 w-full h-[2.5px] bg-gradient-to-r from-primary-blue to-primary-cyan rounded-full" />
-                  )}
-                </a>
-              )}
-            </li>
-          ))}
-        </ul>
-
-        {/* Section 3: Action Buttons (Right) */}
-        <div className="hidden xl:flex items-center gap-4 shrink-0">
-          {/* Theme Toggle */}
-          <button
-            onClick={toggleTheme}
-            className="w-10 h-10 rounded-full flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors duration-300 cursor-pointer border border-slate-200/40 dark:border-white/5"
-            aria-label="Toggle Theme"
-          >
-            {isDark ? <FaSun size={16} /> : <FaMoon size={16} />}
-          </button>
-
-          {/* Session Auth display */}
-          {isAuthenticated ? (
-            <div className="flex items-center gap-3.5 border-l border-slate-200/50 dark:border-white/10 pl-4 py-1 profile-dropdown-container relative">
-              <button
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center gap-2 hover:text-primary-blue dark:hover:text-primary-blue text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
-                title="Account Menu"
-              >
-                {user?.avatar?.url ? (
-                  <img src={user.avatar.url} alt="Profile" className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-white/10" />
-                ) : (
-                  <FaUserCircle size={22} className="text-slate-400 dark:text-slate-350" />
-                )}
-                <span className="text-xs font-bold max-w-[80px] truncate">
-                  {user?.fullName.split(' ')[0]}
-                </span>
-                <FaChevronDown size={10} className={`transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {dropdownOpen && (
-                <div className="absolute right-0 top-11 w-52 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-white/5 rounded-2xl shadow-xl py-2.5 z-[1000] text-left animate-in fade-in slide-in-from-top-2 duration-200">
-                  <div className="px-4 py-2 border-b border-slate-100 dark:border-white/5 mb-1.5">
-                    <p className="text-xs font-black text-black dark:text-white truncate">{user?.fullName}</p>
-                    <p className="text-[9px] text-slate-400 font-semibold truncate">@{user?.username}</p>
-                  </div>
-                  {user?.role === 'Admin' ? (
-                    <>
-                      <Link to="/admin/dashboard" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-blue transition-colors">
-                        <FaTachometerAlt /> Admin Dashboard
-                      </Link>
-                      <Link to="/admin/cms" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-blue transition-colors">
-                        <FaGlobe /> Website CMS
-                      </Link>
-                      <Link to="/admin/users" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-blue transition-colors">
-                        <FaUserCircle /> User Management
-                      </Link>
-                      <Link to="/admin/settings" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-blue transition-colors">
-                        <FaCog /> Settings
-                      </Link>
-                    </>
-                  ) : (
-                    <>
-                      <Link to="/dashboard" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-blue transition-colors">
-                        <FaTachometerAlt /> Dashboard
-                      </Link>
-                      <Link to="/dashboard" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-blue transition-colors">
-                        <FaUserCircle /> My Profile
-                      </Link>
-                    </>
-                  )}
-                  <div className="border-t border-slate-100 dark:border-white/5 mt-1.5 pt-1.5">
-                    <button onClick={async () => { await logout(); setDropdownOpen(false); navigate('/login'); }} className="flex items-center gap-2.5 w-full text-left px-4 py-2 text-xs font-bold text-red-500 hover:bg-red-500/5 transition-colors cursor-pointer">
-                      <FaSignOutAlt /> Logout
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 border-l border-slate-200/50 dark:border-white/10 pl-4 py-1">
-              <Link
-                to="/login"
-                className="px-4.5 py-2 bg-primary-blue hover:bg-accent-blue text-white rounded-full text-xs font-bold tracking-wider uppercase transition-all duration-300 hover:-translate-y-0.5 shadow-md shadow-primary-blue/20"
-              >
-                Login
-              </Link>
-            </div>
-          )}
-
-          {/* Hire Me Button */}
-          <a
-            href="#contact"
-            onClick={(e) => handleNavClick(e, '#contact')}
-            className="px-4.5 py-2 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 text-slate-800 dark:text-white border border-slate-200 dark:border-white/5 rounded-full text-xs font-bold tracking-wider uppercase transition-all duration-300 hover:-translate-y-0.5"
-          >
-            Hire Me
-          </a>
-        </div>
-
-        {/* Mobile Controls (Triggered below xl screen size) */}
-        <div className="flex xl:hidden items-center gap-4">
-          <button
-            onClick={toggleTheme}
-            className="w-10 h-10 rounded-full flex items-center justify-center text-slate-700 dark:text-slate-200 transition-colors border border-slate-200/40 dark:border-white/5"
-            aria-label="Toggle Theme"
-          >
-            {isDark ? <FaSun size={16} /> : <FaMoon size={16} />}
-          </button>
-
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="text-2xl text-black dark:text-white transition-colors cursor-pointer"
-            aria-label="Open Menu"
-          >
-            {isOpen ? <FaTimes /> : <FaBars />}
-          </button>
-        </div>
-      </nav>
-
-      {/* Mobile Drawer backdrop overlay */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-[997] bg-slate-950/60 backdrop-blur-sm xl:hidden"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
-
-      {/* Mobile Drawer (Responsive Drawer below xl screen size) */}
-      <div
-        className={`fixed inset-y-0 right-0 w-[280px] h-full bg-white dark:bg-slate-950 shadow-2xl z-[998] flex flex-col transition-transform duration-300 transform xl:hidden ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
-        style={{
-          paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.5rem)',
-          paddingTop: 'calc(env(safe-area-inset-top) + 0.5rem)'
-        }}
+    <header className="fixed top-0 left-0 w-full z-[999] px-3 sm:px-6 lg:px-8 pt-3 sm:pt-4 transition-all duration-300">
+      <nav
+        aria-label="Main Navigation"
+        className={`max-w-[1400px] mx-auto rounded-2xl px-4 sm:px-6 lg:px-8 py-3 transition-all duration-300 ${
+          isDark
+            ? 'bg-[#000000] border border-white/10 shadow-2xl shadow-black/80'
+            : 'bg-[#FFFFFF] border border-[#E5E7EB] shadow-lg shadow-slate-200/60'
+        } ${scrolled ? 'backdrop-blur-md bg-opacity-95 dark:bg-opacity-95' : ''}`}
       >
-        <div className="flex justify-between items-center px-6 py-4 border-b border-slate-100 dark:border-white/5 shrink-0">
-          <span className="text-base font-black font-title tracking-wider text-black dark:text-white">TAUHID SHEKHAR</span>
-          <button onClick={() => setIsOpen(false)} className="text-2xl text-black dark:text-white cursor-pointer p-1">
-            <FaTimes />
-          </button>
-        </div>
-        
-        {/* Scrollable middle container */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 text-left flex flex-col justify-start">
-          {/* auth-section directly below navbar header */}
-          <div className="auth-section mb-5 pb-5 border-b border-slate-100 dark:border-white/5 flex flex-col gap-3 w-full max-w-[320px] mx-auto">
-            {isAuthenticated ? (
-              <>
-                {user?.role === 'Admin' ? (
-                  <a
-                    href={`${VITE_ADMIN_URL}/admin`}
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center justify-center gap-2 w-full h-[50px] rounded-[12px] font-bold text-sm bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-white border border-slate-200 dark:border-white/5 transition-all duration-300"
-                  >
-                    <FaTachometerAlt /> Dashboard
-                  </a>
-                ) : (
-                  <Link
-                    to="/user/dashboard"
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center justify-center gap-2 w-full h-[50px] rounded-[12px] font-bold text-sm bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-white border border-slate-200 dark:border-white/5 transition-all duration-300"
-                  >
-                    <FaUserCircle /> Dashboard
-                  </Link>
-                )}
-                <button
-                  onClick={async () => {
-                    await logout();
-                    setIsOpen(false);
-                    navigate('/login');
-                  }}
-                  className="flex items-center justify-center gap-2 w-full h-[50px] rounded-[12px] font-bold text-sm bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 cursor-pointer transition-all duration-300"
-                >
-                  <FaSignOutAlt /> Logout
-                </button>
-              </>
-            ) : (
-              <Link
-                to="/login"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center justify-center w-full h-[50px] rounded-[12px] font-bold text-sm bg-primary-blue hover:bg-accent-blue text-white shadow-md transition-all duration-300"
-              >
-                Login
-              </Link>
-            )}
+        <div className="flex items-center justify-between gap-4">
+          
+          {/* ── Brand Logo & Text (Left) ── */}
+          <a
+            href="#home"
+            onClick={(e) => handleNavClick(e, '#home')}
+            className="flex items-center gap-3 shrink-0 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF] rounded-xl"
+            aria-label="Tauhid Shekhar Home"
+          >
+            <img
+              src={logoSrc}
+              alt="Tauhid Shekhar TS Logo"
+              className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-cover shadow-sm transition-transform duration-200 group-hover:scale-105"
+            />
+            <div className="flex flex-col text-left">
+              <div className="flex items-center text-lg sm:text-xl font-black font-title tracking-tight leading-tight">
+                <span className={isDark ? 'text-white' : 'text-[#171717]'}>TAUHID&nbsp;</span>
+                <span className="text-[#C2272D]">SHEKHAR</span>
+                <span className="text-[#00FFFF] font-bold mx-2 select-none text-base">|</span>
+              </div>
+              <span className="text-[10px] font-bold tracking-widest uppercase text-[#525252] dark:text-[#9CA3AF]">
+                DEVELOPER | CREATOR | LEARNER
+              </span>
+            </div>
+          </a>
 
-            <a
-              href="#contact"
-              onClick={(e) => handleNavClick(e, '#contact')}
-              className="flex items-center justify-center w-full h-[50px] rounded-[12px] font-bold text-sm bg-slate-100 dark:bg-white/5 text-slate-800 dark:text-white border border-slate-200 dark:border-white/5 transition-all duration-300"
-            >
-              Hire Me
-            </a>
-          </div>
+          {/* ── Desktop Primary Links (Center) ── */}
+          <ul className="hidden xl:flex items-center gap-6 2xl:gap-8 mx-auto" role="menubar">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isItemActive = item.href 
+                ? (activeSection === item.href.substring(1) && location.pathname === '/')
+                : (location.pathname.startsWith(item.to));
 
-          {/* nav-links container */}
-          <div className="nav-links">
-            <ul className="flex flex-col gap-4">
-              {navItems.map((item) => (
-                <li key={item.name}>
+              return (
+                <li key={item.name} role="none" className="relative py-2">
                   {item.to ? (
                     <Link
                       to={item.to}
-                      onClick={() => setIsOpen(false)}
-                      className="text-[15px] font-bold block py-1.5 transition-colors text-slate-655 dark:text-slate-300 hover:text-primary-blue"
+                      role="menuitem"
+                      className={`relative flex items-center gap-2 text-[16px] font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF] rounded-md px-1 ${
+                        isItemActive
+                          ? (isDark ? 'text-[#00FFFF]' : 'text-[#C2272D]')
+                          : (isDark ? 'text-[#D1D5DB] hover:text-[#00FFFF]' : 'text-[#171717] hover:text-[#C2272D]')
+                      }`}
                     >
-                      {item.name}
+                      <Icon size={16} className={isItemActive ? (isDark ? 'text-[#00FFFF]' : 'text-[#C2272D]') : 'opacity-80'} />
+                      <span>{item.name}</span>
+                      {isItemActive && (
+                        <span 
+                          className={`absolute -bottom-2 left-0 w-full h-[2.5px] rounded-full ${
+                            isDark ? 'bg-[#00FFFF]' : 'bg-[#C2272D]'
+                          }`} 
+                        />
+                      )}
                     </Link>
                   ) : (
                     <a
                       href={item.href}
                       onClick={(e) => handleNavClick(e, item.href)}
-                      className={`text-[15px] font-bold block py-1.5 transition-colors ${
-                        activeSection === item.href.substring(1)
-                          ? 'text-primary-blue'
-                          : 'text-slate-655 dark:text-slate-300 hover:text-primary-blue'
+                      role="menuitem"
+                      className={`relative flex items-center gap-2 text-[16px] font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF] rounded-md px-1 ${
+                        isItemActive
+                          ? (isDark ? 'text-[#00FFFF]' : 'text-[#C2272D]')
+                          : (isDark ? 'text-[#D1D5DB] hover:text-[#00FFFF]' : 'text-[#171717] hover:text-[#C2272D]')
                       }`}
                     >
-                      {item.name}
+                      <Icon size={16} className={isItemActive ? (isDark ? 'text-[#00FFFF]' : 'text-[#C2272D]') : 'opacity-80'} />
+                      <span>{item.name}</span>
+                      {isItemActive && (
+                        <span 
+                          className={`absolute -bottom-2 left-0 w-full h-[2.5px] rounded-full ${
+                            isDark ? 'bg-[#00FFFF]' : 'bg-[#C2272D]'
+                          }`} 
+                        />
+                      )}
                     </a>
                   )}
                 </li>
-              ))}
-            </ul>
+              );
+            })}
+          </ul>
+
+          {/* ── Actions (Right): Theme Toggle, Auth, and Let's Talk CTA ── */}
+          <div className="hidden xl:flex items-center gap-4 shrink-0">
+            {/* Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer ${
+                isDark 
+                  ? 'text-white hover:bg-white/10 hover:text-[#00FFFF]' 
+                  : 'text-[#171717] hover:bg-slate-100 hover:text-[#C2272D]'
+              }`}
+              aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
+              title={isDark ? "Light theme" : "Dark theme"}
+            >
+              {isDark ? <FaSun size={20} /> : <FaMoon size={20} />}
+            </button>
+
+            {/* Authenticated User Session Dropdown */}
+            {isAuthenticated ? (
+              <div className="flex items-center gap-3 border-l border-slate-200 dark:border-white/10 pl-4 py-1 profile-dropdown-container relative">
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className={`flex items-center gap-2 text-sm font-bold transition-colors cursor-pointer ${
+                    isDark ? 'text-white hover:text-[#00FFFF]' : 'text-[#171717] hover:text-[#C2272D]'
+                  }`}
+                  aria-expanded={dropdownOpen}
+                  aria-label="User Account Menu"
+                >
+                  {user?.avatar?.url ? (
+                    <img 
+                      src={user.avatar.url} 
+                      alt={user?.fullName || 'User'} 
+                      className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-white/20" 
+                    />
+                  ) : (
+                    <FaUserCircle size={22} className="text-slate-400" />
+                  )}
+                  <span className="max-w-[90px] truncate text-sm font-bold">
+                    {user?.fullName?.split(' ')[0] || 'Account'}
+                  </span>
+                  <FaChevronDown size={11} className={`transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {dropdownOpen && (
+                  <div className="absolute right-0 top-12 w-56 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl py-2 z-[1000] text-left animate-in fade-in slide-in-from-top-2 duration-150">
+                    <div className="px-4 py-2.5 border-b border-slate-100 dark:border-white/10 mb-1">
+                      <p className="text-sm font-extrabold text-black dark:text-white truncate">{user?.fullName}</p>
+                      <p className="text-xs text-slate-400 font-medium truncate">@{user?.username}</p>
+                    </div>
+
+                    {user?.role === 'Admin' ? (
+                      <>
+                        <AdminLink to="/admin/dashboard" className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#C2272D] dark:hover:text-[#00FFFF]">
+                          <FaTachometerAlt /> Admin Dashboard
+                        </AdminLink>
+                        <AdminLink to="/admin/cms" className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#C2272D] dark:hover:text-[#00FFFF]">
+                          <FaGlobe /> Website CMS
+                        </AdminLink>
+                        <AdminLink to="/admin/settings" className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#C2272D] dark:hover:text-[#00FFFF]">
+                          <FaCog /> Settings
+                        </AdminLink>
+                      </>
+                    ) : (
+                      <>
+                        <Link to="/dashboard" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#C2272D] dark:hover:text-[#00FFFF]">
+                          <FaTachometerAlt /> My Dashboard
+                        </Link>
+                      </>
+                    )}
+
+                    <div className="border-t border-slate-100 dark:border-white/10 mt-1 pt-1">
+                      <button 
+                        onClick={async () => { await logout(); setDropdownOpen(false); navigate('/login'); }} 
+                        className="flex items-center gap-2.5 w-full text-left px-4 py-2.5 text-sm font-bold text-[#C2272D] hover:bg-[#C2272D]/5 transition-colors cursor-pointer"
+                      >
+                        <FaSignOutAlt /> Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : null}
+
+            {/* Red Primary CTA: "Let's Talk" */}
+            <a
+              href="#contact"
+              onClick={(e) => handleNavClick(e, '#contact')}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] font-semibold shadow-md shadow-[#C2272D]/25 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+            >
+              <FaPaperPlane size={14} />
+              <span>Let's Talk</span>
+            </a>
+          </div>
+
+          {/* ── Mobile Controls (Below xl) ── */}
+          <div className="flex xl:hidden items-center gap-3">
+            <button
+              onClick={toggleTheme}
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
+                isDark 
+                  ? 'text-white hover:bg-white/10' 
+                  : 'text-[#171717] hover:bg-slate-100'
+              }`}
+              aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
+            >
+              {isDark ? <FaSun size={18} /> : <FaMoon size={18} />}
+            </button>
+
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className={`w-11 h-11 rounded-xl flex items-center justify-center cursor-pointer transition-colors text-xl ${
+                isDark 
+                  ? 'text-white hover:bg-white/10' 
+                  : 'text-[#171717] hover:bg-slate-100'
+              }`}
+              aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-expanded={isOpen}
+            >
+              {isOpen ? <FaTimes /> : <FaBars />}
+            </button>
           </div>
         </div>
-      </div>
+      </nav>
+
+      {/* ── Mobile Modal Drawer Overlay (Matching Reference Design) ── */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-[1000] bg-black/60 backdrop-blur-sm flex items-start justify-end p-4 sm:p-6 xl:hidden animate-in fade-in duration-200"
+          onClick={() => setIsOpen(false)}
+        >
+          <div
+            className={`w-full max-w-[360px] rounded-2xl p-6 shadow-2xl border transition-all duration-300 ${
+              isDark 
+                ? 'bg-[#111111] text-white border-white/10' 
+                : 'bg-[#FFFFFF] text-[#171717] border-[#E5E7EB]'
+            }`}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Mobile Navigation Menu"
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-white/10 mb-5">
+              <div className="flex items-center gap-2.5">
+                <img
+                  src={logoSrc}
+                  alt="TS Logo"
+                  className="w-9 h-9 rounded-lg object-cover"
+                />
+                <div className="flex flex-col text-left">
+                  <div className="flex items-center text-base font-black font-title">
+                    <span className={isDark ? 'text-white' : 'text-[#171717]'}>TAUHID&nbsp;</span>
+                    <span className="text-[#C2272D]">SHEKHAR</span>
+                  </div>
+                  <span className="text-[9px] font-bold tracking-widest uppercase text-[#525252] dark:text-[#9CA3AF]">
+                    DEVELOPER | CREATOR | LEARNER
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-500 hover:text-black dark:hover:text-white cursor-pointer"
+                aria-label="Close menu"
+              >
+                <FaTimes size={20} />
+              </button>
+            </div>
+
+            {/* Modal Nav Items */}
+            <ul className="flex flex-col gap-2 mb-6">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isItemActive = item.href 
+                  ? (activeSection === item.href.substring(1) && location.pathname === '/')
+                  : (location.pathname.startsWith(item.to));
+
+                const content = (
+                  <div className={`flex items-center justify-between w-full px-4 py-3 rounded-xl transition-all duration-200 ${
+                    isItemActive
+                      ? (isDark 
+                          ? 'bg-[#00FFFF]/10 text-[#00FFFF] font-bold' 
+                          : 'bg-[#C2272D]/10 text-[#C2272D] font-bold')
+                      : (isDark 
+                          ? 'text-[#D1D5DB] hover:bg-white/5 font-semibold' 
+                          : 'text-[#171717] hover:bg-slate-50 font-semibold')
+                  }`}>
+                    <div className="flex items-center gap-3 text-[16px]">
+                      <Icon size={17} className={isItemActive ? (isDark ? 'text-[#00FFFF]' : 'text-[#C2272D]') : 'opacity-70'} />
+                      <span>{item.name}</span>
+                    </div>
+                    <FaChevronRight size={13} className={isItemActive ? (isDark ? 'text-[#00FFFF]' : 'text-[#C2272D]') : 'opacity-40'} />
+                  </div>
+                );
+
+                return (
+                  <li key={item.name}>
+                    {item.to ? (
+                      <Link
+                        to={item.to}
+                        onClick={() => setIsOpen(false)}
+                        className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF] rounded-xl"
+                      >
+                        {content}
+                      </Link>
+                    ) : (
+                      <a
+                        href={item.href}
+                        onClick={(e) => handleNavClick(e, item.href)}
+                        className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF] rounded-xl"
+                      >
+                        {content}
+                      </a>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+
+            {/* Auth / Account Quick Link for Mobile */}
+            {isAuthenticated ? (
+              <div className="mb-4 pt-3 border-t border-slate-100 dark:border-white/10 flex items-center justify-between px-2 text-sm">
+                <span className="font-medium text-slate-500 dark:text-slate-400">Signed in as {user?.fullName?.split(' ')[0]}</span>
+                <button
+                  onClick={async () => { await logout(); setIsOpen(false); navigate('/login'); }}
+                  className="text-xs font-semibold text-[#C2272D] hover:underline"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : null}
+
+            {/* Bottom Full-Width "Let's Talk" CTA */}
+            <a
+              href="#contact"
+              onClick={(e) => handleNavClick(e, '#contact')}
+              className="w-full flex items-center justify-center gap-2 py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] font-semibold shadow-md shadow-[#C2272D]/25 transition-all duration-200 cursor-pointer"
+            >
+              <FaPaperPlane size={14} />
+              <span>Let's Talk</span>
+            </a>
+          </div>
+        </div>
+      )}
     </header>
   );
 };

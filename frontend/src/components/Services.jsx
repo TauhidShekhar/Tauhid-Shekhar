@@ -42,15 +42,15 @@ const Services = ({ servicesData }) => {
   const getIcon = (iconName) => {
     switch (iconName) {
       case 'FaLaptopCode':
-        return <FaLaptopCode size={26} className="text-primary-blue" />;
+        return <FaLaptopCode size={26} className="text-[#C2272D]" />;
       case 'FaReact':
-        return <FaReact size={26} className="text-primary-cyan" />;
+        return <FaReact size={26} className="text-[#00FFFF]" />;
       case 'FaServer':
-        return <FaServer size={26} className="text-primary-purple" />;
+        return <FaServer size={26} className="text-[#00FFFF]" />;
       case 'FaPaintBrush':
-        return <FaPaintBrush size={24} className="text-pink-500" />;
+        return <FaPaintBrush size={24} className="text-[#C2272D]" />;
       default:
-        return <FaLaptopCode size={26} className="text-primary-blue" />;
+        return <FaLaptopCode size={26} className="text-[#C2272D]" />;
     }
   };
 
@@ -206,9 +206,13 @@ const Services = ({ servicesData }) => {
       <div className="max-w-[1280px] mx-auto px-6 md:px-12">
         
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <h3 className="text-sm font-bold uppercase tracking-widest text-primary-blue font-title mb-2">What I Offer</h3>
-          <h2 className="text-3xl md:text-5xl font-black font-title tracking-tight text-black dark:text-white">Design & Dev Services</h2>
+        <div className="text-center mb-14 sm:mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#C2272D]/10 dark:bg-[#00FFFF]/10 border border-[#C2272D]/20 dark:border-[#00FFFF]/30 text-[#C2272D] dark:text-[#00FFFF] text-xs sm:text-sm font-semibold tracking-wider uppercase mb-3">
+            <span>What I Deliver</span>
+          </div>
+          <h2 className="text-2xl md:text-[32px] font-bold font-title tracking-tight text-[#171717] dark:text-white">
+            Design & Development Services
+          </h2>
         </div>
 
         {/* Services Grid */}
@@ -217,58 +221,58 @@ const Services = ({ servicesData }) => {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-50px' }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-8"
+          className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10"
         >
           {services.map((service, idx) => (
             <motion.div
               key={idx}
               variants={cardVariants}
-              className="glass p-8 rounded-[24px] border border-slate-100 dark:border-white/5 shadow-sm hover:scale-[1.01] hover:shadow-md transition-all duration-300 flex flex-col justify-between"
+              className="bg-[#F8FAFC] dark:bg-[#111111] p-6 sm:p-7 rounded-3xl border border-[#E5E7EB] dark:border-white/10 shadow-sm hover:scale-[1.01] hover:shadow-2xl hover:border-[#C2272D] dark:hover:border-[#00FFFF] transition-all duration-300 flex flex-col justify-between"
             >
               <div>
                  {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 flex items-center justify-center shadow-inner">
+                <div className="flex items-center justify-between mb-5">
+                  <div className="p-3.5 rounded-2xl bg-white dark:bg-[#1A1A1A] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center shadow-sm">
                     {getIcon(service.iconName)}
                   </div>
                   <div className="text-right">
-                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-0.5">Starting From</span>
-                    <span className="text-3xl font-black text-primary-blue font-title">{service.price}</span>
+                    <span className="text-xs font-semibold text-[#525252] dark:text-[#9CA3AF] uppercase tracking-wider block mb-0.5">Starting From</span>
+                    <span className="text-2xl sm:text-[26px] font-bold text-[#C2272D] dark:text-[#00FFFF] font-title">{service.price}</span>
                   </div>
                 </div>
 
                 {/* Title */}
-                <h3 className="text-xl md:text-2xl font-black font-title text-black dark:text-white mb-3">
+                <h3 className="text-[20px] md:text-[22px] font-bold font-title text-[#171717] dark:text-white mb-2.5">
                   {service.title}
                 </h3>
 
                 {/* Description */}
-                <p className="text-sm text-slate-655 dark:text-slate-400 mb-6 leading-relaxed">
+                <p className="text-base text-[#525252] dark:text-[#D1D5DB] mb-5 leading-relaxed">
                   {service.desc}
                 </p>
 
                 {/* Features */}
-                <ul className="grid grid-cols-2 gap-3 mb-8">
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-7">
                   {(service.features || []).map((feat, fIdx) => (
-                    <li key={fIdx} className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary-blue shrink-0" />
-                      {feat}
+                    <li key={fIdx} className="flex items-center gap-2 text-sm font-medium text-[#525252] dark:text-[#D1D5DB]">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#C2272D] dark:bg-[#00FFFF] shrink-0" />
+                      <span>{feat}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
               {/* Actions */}
-              <div className="flex gap-4 border-t border-slate-100 dark:border-white/5 pt-6">
+              <div className="flex gap-3.5 border-t border-[#E5E7EB] dark:border-white/10 pt-5">
                 <button
                   onClick={() => openOrderModal(service.title)}
-                  className="flex-1 py-3 bg-primary-blue hover:bg-accent-blue text-white rounded-xl text-center text-sm font-extrabold shadow-lg shadow-primary-blue/10 transition-all cursor-pointer"
+                  className="flex-1 py-2.5 sm:py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-xl text-center text-[15px] font-semibold shadow-md shadow-[#C2272D]/20 transition-all cursor-pointer"
                 >
                   Order Service
                 </button>
                 <a
                   href="#contact"
-                  className="flex-1 py-3 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 text-slate-800 dark:text-white rounded-xl text-center text-sm font-extrabold border border-slate-200 dark:border-white/5 transition-all"
+                  className="flex-1 py-2.5 sm:py-3 bg-white dark:bg-[#1A1A1A] hover:bg-slate-100 dark:hover:bg-white/10 text-[#171717] dark:text-white rounded-xl text-center text-[15px] font-semibold border border-[#E5E7EB] dark:border-white/10 transition-all"
                 >
                   Inquire Info
                 </a>

@@ -77,12 +77,12 @@ const EducationCertificates = ({ educationData, certificatesData, achievementsDa
 
   if (educationData === null && certificatesData === null) {
     return (
-      <section id="education" className="py-24 bg-white dark:bg-slate-900/40 relative animate-pulse">
+      <section id="education" className="py-24 bg-white dark:bg-black relative animate-pulse">
         <div className="max-w-[960px] mx-auto px-6 md:px-12">
           <div className="h-10 w-64 bg-slate-200 dark:bg-white/10 rounded mx-auto mb-16 animate-pulse" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {[1, 2].map(n => (
-              <div key={n} className="h-48 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-white/5 animate-pulse" />
+              <div key={n} className="h-48 bg-slate-50 dark:bg-[#111111] rounded-2xl border border-slate-200 dark:border-white/10 animate-pulse" />
             ))}
           </div>
         </div>
@@ -115,7 +115,7 @@ const EducationCertificates = ({ educationData, certificatesData, achievementsDa
   }, [achievementsData]);
 
   const getAchievementIcon = (iconName) => {
-    return <FaAward className="text-primary-blue" />;
+    return <FaAward className="text-[#C2272D] dark:text-[#00FFFF]" />;
   };
 
   const containerVariants = {
@@ -136,7 +136,7 @@ const EducationCertificates = ({ educationData, certificatesData, achievementsDa
   };
 
   return (
-    <section className="py-24 bg-white dark:bg-slate-900/40 relative">
+    <section className="py-24 bg-white dark:bg-[#000000] relative text-left">
       {/* Anchors for routing link jumps */}
       <div id="education" className="absolute top-0" />
       <div id="achievements" className="absolute top-[35%]" />
@@ -144,14 +144,27 @@ const EducationCertificates = ({ educationData, certificatesData, achievementsDa
 
       <div className="max-w-[1280px] mx-auto px-6 md:px-12">
         
+        {/* Section Header */}
+        <div className="text-center mb-12 sm:mb-14">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs sm:text-sm font-semibold uppercase tracking-wider bg-[#C2272D]/10 text-[#C2272D] border border-[#C2272D]/20 mb-3">
+            Academic & Honors
+          </div>
+          <h2 className="text-2xl md:text-[32px] font-bold font-title tracking-tight text-[#171717] dark:text-white">
+            Education & Certifications
+          </h2>
+          <p className="mt-3 text-base text-[#525252] dark:text-[#D1D5DB] max-w-2xl mx-auto leading-relaxed">
+            Formal computer applications degree, professional verified certifications, and core milestones.
+          </p>
+        </div>
+
         {/* Tab Headers */}
-        <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10 mb-16 select-none border-b border-slate-200/50 dark:border-white/5 pb-4">
+        <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10 mb-14 select-none border-b border-slate-200 dark:border-white/10 pb-4">
           <button
             onClick={() => setActiveTab('education')}
-            className={`flex items-center gap-2.5 pb-3 text-lg md:text-xl font-black font-title tracking-tight border-b-2 transition-all cursor-pointer ${
+            className={`flex items-center gap-2.5 pb-3 text-base md:text-lg font-semibold font-title tracking-tight border-b-2 transition-all cursor-pointer ${
               activeTab === 'education'
-                ? 'text-primary-blue border-primary-blue'
-                : 'text-slate-450 border-transparent hover:text-slate-700 dark:hover:text-slate-200'
+                ? 'text-[#C2272D] border-[#C2272D] dark:text-[#00FFFF] dark:border-[#00FFFF]'
+                : 'text-[#525252] dark:text-[#D1D5DB] border-transparent hover:text-[#171717] dark:hover:text-white'
             }`}
           >
             <FaGraduationCap size={18} /> Education
@@ -159,24 +172,24 @@ const EducationCertificates = ({ educationData, certificatesData, achievementsDa
           
           <button
             onClick={() => setActiveTab('achievements')}
-            className={`flex items-center gap-2.5 pb-3 text-lg md:text-xl font-black font-title tracking-tight border-b-2 transition-all cursor-pointer ${
+            className={`flex items-center gap-2.5 pb-3 text-base md:text-lg font-semibold font-title tracking-tight border-b-2 transition-all cursor-pointer ${
               activeTab === 'achievements'
-                ? 'text-primary-blue border-primary-blue'
-                : 'text-slate-450 border-transparent hover:text-slate-700 dark:hover:text-slate-200'
+                ? 'text-[#C2272D] border-[#C2272D] dark:text-[#00FFFF] dark:border-[#00FFFF]'
+                : 'text-[#525252] dark:text-[#D1D5DB] border-transparent hover:text-[#171717] dark:hover:text-white'
             }`}
           >
-            <FaCheckCircle size={15} /> Achievements
+            <FaCheckCircle size={16} /> Achievements
           </button>
 
           <button
             onClick={() => setActiveTab('certificates')}
-            className={`flex items-center gap-2.5 pb-3 text-lg md:text-xl font-black font-title tracking-tight border-b-2 transition-all cursor-pointer ${
+            className={`flex items-center gap-2.5 pb-3 text-base md:text-lg font-semibold font-title tracking-tight border-b-2 transition-all cursor-pointer ${
               activeTab === 'certificates'
-                ? 'text-primary-blue border-primary-blue'
-                : 'text-slate-450 border-transparent hover:text-slate-700 dark:hover:text-slate-200'
+                ? 'text-[#C2272D] border-[#C2272D] dark:text-[#00FFFF] dark:border-[#00FFFF]'
+                : 'text-[#525252] dark:text-[#D1D5DB] border-transparent hover:text-[#171717] dark:hover:text-white'
             }`}
           >
-            <FaAward size={16} /> Certifications
+            <FaAward size={17} /> Certifications
           </button>
         </div>
 
@@ -190,39 +203,39 @@ const EducationCertificates = ({ educationData, certificatesData, achievementsDa
                 initial="hidden"
                 animate="visible"
                 exit={{ opacity: 0, y: -20 }}
-                className="relative pl-6 md:pl-12 border-l-2 border-slate-200 dark:border-white/5 flex flex-col gap-10 text-left"
+                className="relative pl-6 md:pl-12 border-l-2 border-slate-200 dark:border-white/10 flex flex-col gap-10 text-left"
               >
                 {educationList.map((edu, idx) => (
                   <motion.div key={idx} variants={itemVariants} className="relative">
                     {/* Bullet */}
-                    <div className="absolute -left-[42px] md:-left-[66px] top-1.5 w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 flex items-center justify-center shadow-md z-10">
-                      <FaGraduationCap className="text-primary-blue" size={18} />
+                    <div className="absolute -left-[42px] md:-left-[66px] top-1.5 w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 flex items-center justify-center shadow-md z-10">
+                      <FaGraduationCap className="text-[#C2272D] dark:text-[#00FFFF]" size={20} />
                     </div>
 
                     {/* Card */}
-                    <div className="glass p-6 md:p-8 rounded-[24px] border border-slate-100 dark:border-white/5 shadow-sm">
+                    <div className="bg-[#F8FAFC] dark:bg-[#111111] p-6 md:p-8 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3">
                         <div>
-                          <h3 className="text-xl md:text-2xl font-black font-title text-black dark:text-white leading-tight">
+                          <h3 className="text-lg md:text-[20px] font-bold font-title text-[#171717] dark:text-white leading-tight">
                             {edu.degree}
                           </h3>
-                          <span className="text-sm font-bold text-slate-550 dark:text-slate-400">
+                          <span className="text-sm font-semibold text-[#525252] dark:text-[#D1D5DB]">
                             {edu.school}
                           </span>
                         </div>
-                        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-50 dark:bg-white/5 border border-slate-200/60 dark:border-white/5 text-xs font-bold text-slate-550 dark:text-slate-400 font-title shrink-0 w-fit">
-                          <FaCalendarAlt size={12} className="text-primary-blue" />
+                        <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 text-xs font-semibold text-[#525252] dark:text-[#D1D5DB] font-title shrink-0 w-fit">
+                          <FaCalendarAlt size={12} className="text-[#C2272D] dark:text-[#00FFFF]" />
                           {edu.duration}
                         </span>
                       </div>
 
                       {edu.grade && (
-                        <div className="text-sm font-extrabold text-primary-blue font-title mb-3">
+                        <div className="text-sm font-bold text-[#C2272D] dark:text-[#00FFFF] font-title mb-2.5">
                           {edu.grade}
                         </div>
                       )}
 
-                      <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                      <p className="text-base text-[#525252] dark:text-[#D1D5DB] leading-relaxed">
                         {edu.description}
                       </p>
                     </div>
@@ -244,16 +257,16 @@ const EducationCertificates = ({ educationData, certificatesData, achievementsDa
                   <motion.div
                     key={idx}
                     variants={itemVariants}
-                    className="glass p-6 md:p-8 rounded-[24px] border border-slate-100 dark:border-white/5 shadow-sm flex items-start gap-5 hover:scale-[1.01] transition-transform duration-300"
+                    className="bg-[#F8FAFC] dark:bg-[#111111] p-6 md:p-8 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm flex items-start gap-5 hover:scale-[1.01] transition-transform duration-300"
                   >
-                    <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 flex items-center justify-center shrink-0 shadow-inner">
+                    <div className="p-4 rounded-2xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center shrink-0 shadow-inner">
                       {getAchievementIcon(ach.icon)}
                     </div>
                     <div>
-                      <h3 className="text-lg md:text-xl font-black font-title text-black dark:text-white mb-2">
+                      <h3 className="text-lg md:text-xl font-bold font-title text-[#171717] dark:text-white mb-2">
                         {ach.title}
                       </h3>
-                      <p className="text-sm text-slate-650 dark:text-slate-400 leading-relaxed">
+                      <p className="text-base text-[#525252] dark:text-[#D1D5DB] leading-relaxed">
                         {ach.description || ach.desc}
                       </p>
                     </div>
@@ -273,22 +286,22 @@ const EducationCertificates = ({ educationData, certificatesData, achievementsDa
               >
                 {certsList.map((cert, idx) => (
                   <motion.div key={idx} variants={itemVariants}>
-                    <div className="glass p-6 rounded-[24px] border border-slate-100 dark:border-white/5 shadow-sm flex flex-col justify-between h-full hover:scale-[1.02] transition-transform duration-300">
+                    <div className="bg-[#F8FAFC] dark:bg-[#111111] p-6 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm flex flex-col justify-between h-full hover:scale-[1.02] transition-transform duration-300">
                       <div>
                         {/* Rating decoration logo */}
                         <div className="aspect-[4/1] w-32 overflow-hidden mb-6 filter dark:invert">
                           <img src={getCacheBustedUrl(cert.image?.url || 'assits/Star_rating_4.5.png', cert.updatedAt)} alt="Certificate Badge" className="w-full h-full object-contain" />
                         </div>
-                        <h3 className="text-lg md:text-xl font-black font-title text-black dark:text-white mb-2 leading-tight">
+                        <h3 className="text-lg md:text-xl font-bold font-title text-[#171717] dark:text-white mb-2 leading-tight">
                           {cert.title || cert.name}
                         </h3>
-                        <div className="text-xs font-bold text-primary-blue font-title mb-4">
+                        <div className="text-xs font-bold text-[#C2272D] dark:text-[#00FFFF] font-title mb-4">
                           {cert.issuer}
                         </div>
                       </div>
                       
-                      <div className="flex items-center justify-between border-t border-slate-100 dark:border-white/5 pt-4 mt-6">
-                        <span className="text-[11px] font-bold text-slate-400">
+                      <div className="flex items-center justify-between border-t border-[#E5E7EB] dark:border-white/10 pt-4 mt-6">
+                        <span className="text-xs font-bold text-slate-400">
                           {cert.date ? new Date(cert.date).toLocaleDateString() : ''}
                         </span>
                         {(cert.credentialUrl || cert.link) && (
@@ -296,7 +309,7 @@ const EducationCertificates = ({ educationData, certificatesData, achievementsDa
                             href={cert.credentialUrl || cert.link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-primary-blue transition-colors"
+                            className="flex items-center gap-1.5 text-xs font-bold text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors"
                           >
                             Credential <FaExternalLinkAlt size={10} />
                           </a>
