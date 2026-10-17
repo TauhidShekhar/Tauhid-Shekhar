@@ -215,9 +215,9 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
             {contactDetails.map((detail, idx) => (
               <div
                 key={idx}
-                className="bg-white dark:bg-[#111111] p-5 sm:p-6 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm flex items-center gap-4 hover:border-[#C2272D] dark:hover:border-[#00FFFF] transition-all duration-200 text-left"
+                className="bg-white dark:bg-[#111111] p-5 sm:p-6 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm flex items-center gap-4 hover:border-[#C2272D] dark:hover:border-[#00FFFF] hover:-translate-y-1 hover:shadow-lg hover:shadow-[#C2272D]/10 dark:hover:shadow-[#00FFFF]/10 transition-all duration-300 text-left card-interactive group cursor-pointer"
               >
-                <div className="w-12 h-12 rounded-2xl bg-[#F8FAFC] dark:bg-[#1A1A1A] flex items-center justify-center shrink-0 border border-[#E5E7EB] dark:border-white/10 text-[#C2272D] dark:text-[#00FFFF] text-xl shadow-sm">
+                <div className="w-12 h-12 rounded-2xl bg-[#F8FAFC] dark:bg-[#1A1A1A] flex items-center justify-center shrink-0 border border-[#E5E7EB] dark:border-white/10 text-[#C2272D] dark:text-[#00FFFF] text-xl shadow-sm group-hover:scale-115 group-hover:rotate-6 transition-transform duration-300">
                   {detail.icon}
                 </div>
                 <div>
@@ -362,13 +362,13 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full py-3.5 px-8 bg-[#C2272D] hover:bg-[#A51E23] disabled:bg-slate-400 text-white rounded-full font-semibold text-[16px] shadow-md shadow-[#C2272D]/20 transition-all flex items-center justify-center gap-2.5 cursor-pointer mt-3 hover:scale-[1.01] active:scale-[0.99]"
+                className="w-full py-4 px-8 bg-[#C2272D] hover:bg-[#A51E23] disabled:bg-slate-400 text-white rounded-full font-semibold text-[16px] shadow-md shadow-[#C2272D]/25 hover:shadow-xl hover:shadow-[#C2272D]/40 transition-all duration-200 flex items-center justify-center gap-2.5 cursor-pointer mt-3 hover:scale-[1.03] active:scale-[0.97] btn-shine-effect group"
               >
                 {submitting ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
-                    <FaPaperPlane size={15} />
+                    <FaPaperPlane size={15} className="transition-transform duration-200 group-hover:translate-x-1 group-hover:-translate-y-1" />
                     <span>Send Message</span>
                   </>
                 )}

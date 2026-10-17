@@ -319,7 +319,7 @@ const Projects = ({ projectsData }) => {
               onClick={() => setActiveFilter(f.id)}
               role="tab"
               aria-selected={activeFilter === f.id}
-              className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-[14px] font-medium tracking-wider uppercase border transition-all duration-200 cursor-pointer ${
+              className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-[14px] font-medium tracking-wider uppercase border transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer ${
                 activeFilter === f.id
                   ? 'bg-[#C2272D] border-[#C2272D] text-white shadow-md shadow-[#C2272D]/20 -translate-y-0.5'
                   : 'bg-white dark:bg-[#111111] border-[#E5E7EB] dark:border-white/10 text-[#525252] dark:text-[#D1D5DB] hover:border-[#C2272D] dark:hover:border-[#00FFFF]'
@@ -344,7 +344,7 @@ const Projects = ({ projectsData }) => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                className="bg-white dark:bg-[#111111] rounded-3xl overflow-hidden border border-[#E5E7EB] dark:border-white/10 shadow-md hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group"
+                className="bg-white dark:bg-[#111111] rounded-3xl overflow-hidden border border-[#E5E7EB] dark:border-white/10 shadow-md hover:shadow-2xl hover:shadow-[#C2272D]/10 dark:hover:shadow-[#00FFFF]/10 transition-all duration-300 flex flex-col justify-between group hover:-translate-y-2 card-interactive"
               >
                 {/* Image & Overlay */}
                 <div className="relative aspect-[16/9] overflow-hidden">
@@ -373,7 +373,7 @@ const Projects = ({ projectsData }) => {
                   <div className="absolute inset-0 bg-[#000000]/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
                     <button
                       onClick={() => setActiveCaseStudy(project)}
-                      className="w-12 h-12 rounded-full bg-white text-[#171717] hover:bg-[#00FFFF] flex items-center justify-center shadow-lg hover:scale-110 transition-all cursor-pointer"
+                      className="w-12 h-12 rounded-full bg-white text-[#171717] hover:bg-[#00FFFF] flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all cursor-pointer"
                       title="Case Study"
                       aria-label="Open Project Case Study"
                     >
@@ -384,7 +384,7 @@ const Projects = ({ projectsData }) => {
                         href={project.github}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-12 h-12 rounded-full bg-white text-[#171717] hover:bg-[#C2272D] hover:text-white flex items-center justify-center shadow-lg hover:scale-110 transition-all"
+                        className="w-12 h-12 rounded-full bg-white text-[#171717] hover:bg-[#C2272D] hover:text-white flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all"
                         title="Source Code"
                         aria-label="GitHub Repository"
                       >
@@ -421,7 +421,7 @@ const Projects = ({ projectsData }) => {
                   <div className="flex gap-3.5 border-t border-[#E5E7EB] dark:border-white/10 pt-5">
                     <button
                       onClick={() => setActiveCaseStudy(project)}
-                      className="flex-1 py-2.5 sm:py-3 bg-[#F8FAFC] dark:bg-[#1A1A1A] hover:bg-slate-200 dark:hover:bg-white/10 text-[#171717] dark:text-white rounded-xl text-center text-[15px] font-semibold border border-[#E5E7EB] dark:border-white/10 transition-all cursor-pointer flex items-center justify-center gap-2"
+                      className="flex-1 py-2.5 sm:py-3 bg-[#F8FAFC] dark:bg-[#1A1A1A] hover:bg-slate-200 dark:hover:bg-white/10 text-[#171717] dark:text-white rounded-xl text-center text-[15px] font-semibold border border-[#E5E7EB] dark:border-white/10 hover:border-[#00FFFF] hover:shadow-md hover:shadow-[#00FFFF]/10 transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] cursor-pointer flex items-center justify-center gap-2"
                     >
                       Case Study
                     </button>
@@ -430,7 +430,7 @@ const Projects = ({ projectsData }) => {
                         href={project.demo}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 py-2.5 sm:py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-xl text-center text-[15px] font-semibold shadow-md shadow-[#C2272D]/20 transition-all flex items-center justify-center gap-2"
+                        className="flex-1 py-2.5 sm:py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-xl text-center text-[15px] font-semibold shadow-md shadow-[#C2272D]/20 hover:shadow-xl hover:shadow-[#C2272D]/35 transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] cursor-pointer flex items-center justify-center gap-2 btn-shine-effect"
                       >
                         Live Demo <FaExternalLinkAlt size={12} />
                       </a>

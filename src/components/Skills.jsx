@@ -258,7 +258,7 @@ const Skills = ({ skillsData }) => {
               onClick={() => setActiveFilter(cat.id)}
               role="tab"
               aria-selected={activeFilter.toLowerCase() === cat.id.toLowerCase()}
-              className={`flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-[14px] font-medium tracking-wider uppercase border transition-all duration-200 cursor-pointer ${
+              className={`flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-[14px] font-medium tracking-wider uppercase border transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer ${
                 activeFilter.toLowerCase() === cat.id.toLowerCase()
                   ? 'bg-[#C2272D] border-[#C2272D] text-white shadow-md shadow-[#C2272D]/20 -translate-y-0.5'
                   : 'bg-[#F8FAFC] dark:bg-[#111111] border-[#E5E7EB] dark:border-white/10 text-[#525252] dark:text-[#D1D5DB] hover:border-[#C2272D] dark:hover:border-[#00FFFF]'
@@ -290,15 +290,15 @@ const Skills = ({ skillsData }) => {
                   initial="hidden"
                   animate="visible"
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className="bg-[#F8FAFC] dark:bg-[#111111] p-5 sm:p-6 rounded-2xl flex flex-col justify-between shadow-sm border border-[#E5E7EB] dark:border-white/10 hover:border-[#C2272D] dark:hover:border-[#00FFFF] hover:scale-[1.02] transition-all duration-200 relative group overflow-hidden"
+                  className="bg-[#F8FAFC] dark:bg-[#111111] p-5 sm:p-6 rounded-2xl flex flex-col justify-between shadow-sm border border-[#E5E7EB] dark:border-white/10 hover:border-[#C2272D] dark:hover:border-[#00FFFF] hover:-translate-y-1.5 hover:shadow-lg hover:shadow-[#C2272D]/10 dark:hover:shadow-[#00FFFF]/10 transition-all duration-300 relative group overflow-hidden card-interactive"
                   title={`${skill.name} - ${cats.join(', ')}`}
                 >
                   {/* Left Accent indicator */}
-                  <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-[#C2272D] to-[#00FFFF] opacity-90" />
+                  <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-[#C2272D] to-[#00FFFF] opacity-90 group-hover:w-2 transition-all duration-300" />
 
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3.5">
-                      <div className="relative w-12 h-12 flex items-center justify-center shrink-0 bg-white dark:bg-[#1A1A1A] rounded-xl overflow-hidden border border-[#E5E7EB] dark:border-white/10">
+                      <div className="relative w-12 h-12 flex items-center justify-center shrink-0 bg-white dark:bg-[#1A1A1A] rounded-xl overflow-hidden border border-[#E5E7EB] dark:border-white/10 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
                         {logoSrc && (
                           <img 
                             src={logoSrc} 

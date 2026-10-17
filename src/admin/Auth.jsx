@@ -176,13 +176,13 @@ const Auth = () => {
               setError('');
               setSuccess('');
             }}
-            className={`flex-1 pb-3 text-center text-sm font-black font-title tracking-wider border-b-2 cursor-pointer transition-colors ${
+            className={`flex-1 pb-3 text-center text-sm font-black font-title tracking-wider border-b-2 cursor-pointer transition-all duration-200 ${
               activeTab === 'login'
                 ? 'text-primary-blue border-primary-blue'
                 : 'text-slate-400 border-transparent hover:text-slate-600 dark:hover:text-slate-300'
             }`}
           >
-            Login
+            Sign In
           </button>
           <button
             onClick={() => {
@@ -190,7 +190,7 @@ const Auth = () => {
               setError('');
               setSuccess('');
             }}
-            className={`flex-1 pb-3 text-center text-sm font-black font-title tracking-wider border-b-2 cursor-pointer transition-colors ${
+            className={`flex-1 pb-3 text-center text-sm font-black font-title tracking-wider border-b-2 cursor-pointer transition-all duration-200 ${
               activeTab === 'register'
                 ? 'text-primary-blue border-primary-blue'
                 : 'text-slate-400 border-transparent hover:text-slate-600 dark:hover:text-slate-300'
@@ -286,12 +286,12 @@ const Auth = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-primary-blue hover:bg-accent-blue text-white rounded-xl font-bold text-sm shadow-lg shadow-primary-blue/15 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
+              className="w-full py-3.5 bg-primary-blue hover:bg-accent-blue text-white rounded-xl font-bold text-sm shadow-lg shadow-primary-blue/20 hover:shadow-xl hover:shadow-primary-blue/30 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer mt-2 btn-shine-effect"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
-                'Login'
+                'Sign In'
               )}
             </button>
           </form>
@@ -418,12 +418,12 @@ const Auth = () => {
             <button
               type="submit"
               disabled={loading || !isUsernameValid || isCheckingUsername}
-              className="w-full py-3.5 bg-primary-blue hover:bg-accent-blue disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-bold text-sm shadow-lg shadow-primary-blue/15 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
+              className="w-full py-3.5 bg-primary-blue hover:bg-accent-blue disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-bold text-sm shadow-lg shadow-primary-blue/20 hover:shadow-xl hover:shadow-primary-blue/30 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer mt-2 btn-shine-effect"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
-                'Register'
+                'Create Account'
               )}
             </button>
           </form>

@@ -250,10 +250,10 @@ const Hero = ({ heroData, resumeData }) => {
             <a
               href="#contact"
               onClick={(e) => handleScrollTo(e, '#contact')}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] sm:text-[16px] font-semibold shadow-md shadow-[#C2272D]/25 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF]"
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] sm:text-[16px] font-semibold shadow-md shadow-[#C2272D]/25 hover:shadow-xl hover:shadow-[#C2272D]/40 transition-all duration-200 hover:scale-[1.04] active:scale-[0.96] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF] btn-shine-effect group"
               aria-label="Let's Talk - Jump to contact section"
             >
-              <FaPaperPlane size={15} />
+              <FaPaperPlane size={15} className="transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               <span>Let's Talk</span>
             </a>
 
@@ -261,7 +261,7 @@ const Hero = ({ heroData, resumeData }) => {
               <a
                 href="#projects"
                 onClick={(e) => handleScrollTo(e, '#projects')}
-                className="flex items-center justify-center px-6 py-3 bg-[#F8FAFC] dark:bg-[#1A1A1A] hover:bg-slate-200 dark:hover:bg-white/10 text-[#171717] dark:text-white rounded-full text-[15px] sm:text-[16px] font-semibold border border-[#E5E7EB] dark:border-white/10 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                className="flex items-center justify-center px-6 py-3 bg-[#F8FAFC] dark:bg-[#1A1A1A] hover:bg-slate-200 dark:hover:bg-white/10 text-[#171717] dark:text-white rounded-full text-[15px] sm:text-[16px] font-semibold border border-[#E5E7EB] dark:border-white/10 hover:border-[#00FFFF] hover:shadow-lg hover:shadow-[#00FFFF]/20 transition-all duration-200 hover:scale-[1.04] active:scale-[0.96] cursor-pointer"
               >
                 Explore Projects
               </a>
@@ -271,7 +271,7 @@ const Hero = ({ heroData, resumeData }) => {
               <a
                 href={resumeLink}
                 onClick={handleViewResume}
-                className="flex items-center justify-center px-6 py-3 bg-transparent border-2 border-slate-300 dark:border-white/20 hover:border-[#00FFFF] text-[#171717] dark:text-white rounded-full text-[15px] sm:text-[16px] font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                className="flex items-center justify-center px-6 py-3 bg-transparent border-2 border-slate-300 dark:border-white/20 hover:border-[#C2272D] hover:text-[#C2272D] dark:hover:border-[#00FFFF] dark:hover:text-[#00FFFF] text-[#171717] dark:text-white rounded-full text-[15px] sm:text-[16px] font-semibold transition-all duration-200 hover:scale-[1.04] active:scale-[0.96] cursor-pointer hover:shadow-lg hover:shadow-[#C2272D]/20"
               >
                 View Resume
               </a>

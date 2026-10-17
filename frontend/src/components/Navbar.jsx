@@ -25,6 +25,7 @@ const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
   const [scrolled, setScrolled] = useState(false);
   const [settings, setSettings] = useState(settingsData || null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [authDropdownOpen, setAuthDropdownOpen] = useState(false);
 
   useEffect(() => {
     if (settingsData) {
@@ -47,16 +48,19 @@ const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
     loadSettings();
   }, [settingsData]);
 
-  // Handle outside clicks for account profile dropdown
+  // Handle outside clicks for account profile and auth dropdowns
   useEffect(() => {
     const handleOutsideClick = (e) => {
       if (dropdownOpen && !e.target.closest('.profile-dropdown-container')) {
         setDropdownOpen(false);
       }
+      if (authDropdownOpen && !e.target.closest('.auth-dropdown-container')) {
+        setAuthDropdownOpen(false);
+      }
     };
     window.addEventListener('click', handleOutsideClick);
     return () => window.removeEventListener('click', handleOutsideClick);
-  }, [dropdownOpen]);
+  }, [dropdownOpen, authDropdownOpen]);
 
   // Scroll detection for navbar elevation
   useEffect(() => {
@@ -318,7 +322,7 @@ const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
               user?.role === 'Admin' ? (
                 <AdminLink
                   to="/admin/dashboard"
-                  className="hidden md:inline-flex items-center gap-2 px-5 py-2.5 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] font-semibold shadow-md shadow-[#C2272D]/25 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                  className="hidden md:inline-flex items-center gap-2 px-5 py-2.5 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] font-semibold shadow-md shadow-[#C2272D]/25 hover:shadow-lg hover:shadow-[#C2272D]/40 transition-all duration-200 hover:scale-[1.04] active:scale-[0.96] cursor-pointer btn-shine-effect"
                 >
                   <FaTachometerAlt size={14} />
                   <span>Admin Panel</span>
@@ -326,30 +330,74 @@ const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
               ) : (
                 <Link
                   to="/dashboard"
-                  className="hidden md:inline-flex items-center gap-2 px-5 py-2.5 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] font-semibold shadow-md shadow-[#C2272D]/25 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                  className="hidden md:inline-flex items-center gap-2 px-5 py-2.5 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] font-semibold shadow-md shadow-[#C2272D]/25 hover:shadow-lg hover:shadow-[#C2272D]/40 transition-all duration-200 hover:scale-[1.04] active:scale-[0.96] cursor-pointer btn-shine-effect"
                 >
                   <FaTachometerAlt size={14} />
                   <span>Dashboard</span>
                 </Link>
               )
             ) : (
-              <div className="flex items-center gap-3">
+              <div className="relative auth-dropdown-container flex items-center gap-3">
                 <Link
                   to="/register"
-                  className={`hidden 2xl:inline-flex text-[15px] font-semibold transition-colors ${
+                  className={`hidden 2xl:inline-flex text-[15px] font-semibold transition-all duration-200 hover:scale-105 ${
                     isDark ? 'text-slate-300 hover:text-[#00FFFF]' : 'text-slate-700 hover:text-[#C2272D]'
                   }`}
                 >
                   Register
                 </Link>
-                <Link
-                  to="/login"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] font-semibold shadow-md shadow-[#C2272D]/25 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-                  aria-label="Login to account"
+                
+                <button
+                  type="button"
+                  onClick={() => setAuthDropdownOpen(!authDropdownOpen)}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] font-semibold shadow-md shadow-[#C2272D]/25 hover:shadow-lg hover:shadow-[#C2272D]/40 transition-all duration-200 hover:scale-[1.04] active:scale-[0.96] cursor-pointer btn-shine-effect group"
+                  aria-expanded={authDropdownOpen}
+                  aria-label="Sign In or Register options"
                 >
-                  <FaSignInAlt size={14} />
-                  <span>Login</span>
-                </Link>
+                  <FaSignInAlt size={14} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+                  <span>Sign In</span>
+                  <FaChevronDown size={10} className={`transition-transform duration-200 opacity-80 ${authDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {authDropdownOpen && (
+                  <div className="absolute right-0 top-12 w-64 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl p-2 z-[1000] text-left animate-in fade-in slide-in-from-top-2 duration-150">
+                    <Link
+                      to="/login"
+                      onClick={() => setAuthDropdownOpen(false)}
+                      className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 transition-all duration-200 hover:translate-x-1 group"
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-[#C2272D]/10 text-[#C2272D] flex items-center justify-center font-bold text-sm shrink-0 group-hover:scale-110 group-hover:bg-[#C2272D] group-hover:text-white transition-all duration-200">
+                        <FaSignInAlt size={15} />
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-[#171717] dark:text-white group-hover:text-[#C2272D] dark:group-hover:text-[#00FFFF] transition-colors">
+                          Sign In / Login
+                        </div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                          Access your account & dashboard
+                        </div>
+                      </div>
+                    </Link>
+
+                    <Link
+                      to="/register"
+                      onClick={() => setAuthDropdownOpen(false)}
+                      className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 transition-all duration-200 hover:translate-x-1 group border-t border-slate-100 dark:border-white/5 mt-1"
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-[#00FFFF]/10 text-[#00FFFF] flex items-center justify-center font-bold text-sm shrink-0 group-hover:scale-110 group-hover:bg-[#00FFFF] group-hover:text-black transition-all duration-200">
+                        <FaUserPlus size={15} />
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-[#171717] dark:text-white group-hover:text-[#C2272D] dark:group-hover:text-[#00FFFF] transition-colors">
+                          Create Account / Register
+                        </div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                          Join the TS community for free
+                        </div>
+                      </div>
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -358,7 +406,7 @@ const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
           <div className="flex xl:hidden items-center gap-3">
             <button
               onClick={toggleTheme}
-              className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 hover:rotate-45 active:scale-90 cursor-pointer ${
                 isDark 
                   ? 'text-white hover:bg-white/10' 
                   : 'text-[#171717] hover:bg-slate-100'
@@ -525,22 +573,22 @@ const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
                 <Link
                   to="/login"
                   onClick={() => setIsOpen(false)}
-                  className="w-full flex items-center justify-center gap-2 py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] font-semibold shadow-md shadow-[#C2272D]/25 transition-all duration-200 cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] font-semibold shadow-md shadow-[#C2272D]/25 hover:shadow-lg hover:shadow-[#C2272D]/40 transition-all duration-200 active:scale-[0.98] cursor-pointer btn-shine-effect"
                 >
                   <FaSignInAlt size={15} />
-                  <span>Login</span>
+                  <span>Sign In</span>
                 </Link>
                 <Link
                   to="/register"
                   onClick={() => setIsOpen(false)}
-                  className={`w-full flex items-center justify-center gap-2 py-2.5 border rounded-full text-[14px] font-semibold transition-colors ${
+                  className={`w-full flex items-center justify-center gap-2 py-2.5 border rounded-full text-[14px] font-semibold transition-all duration-200 active:scale-[0.98] ${
                     isDark 
-                      ? 'border-white/20 text-white hover:bg-white/5' 
-                      : 'border-slate-300 text-slate-800 hover:bg-slate-100'
+                      ? 'border-white/20 text-white hover:bg-white/5 hover:border-[#00FFFF]' 
+                      : 'border-slate-300 text-slate-800 hover:bg-slate-100 hover:border-[#C2272D]'
                   }`}
                 >
                   <FaUserPlus size={14} />
-                  <span>Create an Account</span>
+                  <span>Register / Create Account</span>
                 </Link>
               </div>
             )}

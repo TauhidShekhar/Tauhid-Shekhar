@@ -175,12 +175,12 @@ const About = ({ aboutData, resumeData }) => {
               {stats.map((stat, idx) => (
                 <div 
                   key={idx} 
-                  className="bg-white dark:bg-[#111111] p-4 sm:p-5 rounded-2xl flex flex-col items-center justify-center text-center shadow-md border border-[#E5E7EB] dark:border-white/10 hover:border-[#C2272D] dark:hover:border-[#00FFFF] hover:scale-[1.02] transition-all duration-200"
+                  className="bg-white dark:bg-[#111111] p-4 sm:p-5 rounded-2xl flex flex-col items-center justify-center text-center shadow-md border border-[#E5E7EB] dark:border-white/10 hover:border-[#C2272D] dark:hover:border-[#00FFFF] hover:-translate-y-2 hover:shadow-xl hover:shadow-[#C2272D]/15 dark:hover:shadow-[#00FFFF]/15 transition-all duration-300 group cursor-pointer"
                 >
-                  <div className="mb-2 p-2.5 rounded-xl bg-[#F8FAFC] dark:bg-white/5 flex items-center justify-center">
+                  <div className="mb-2 p-2.5 rounded-xl bg-[#F8FAFC] dark:bg-white/5 flex items-center justify-center group-hover:scale-125 group-hover:rotate-6 transition-all duration-300">
                     {stat.icon}
                   </div>
-                  <span className="text-2xl sm:text-[28px] font-bold font-title text-[#171717] dark:text-white mb-0.5">
+                  <span className="text-2xl sm:text-[28px] font-bold font-title text-[#171717] dark:text-white mb-0.5 group-hover:text-[#C2272D] dark:group-hover:text-[#00FFFF] transition-colors">
                     {stat.value}
                   </span>
                   <span className="text-xs sm:text-[13px] font-medium text-[#525252] dark:text-[#9CA3AF] leading-tight">
@@ -265,14 +265,14 @@ const About = ({ aboutData, resumeData }) => {
                 <a 
                   href={resumeLink} 
                   onClick={handleViewResume}
-                  className="px-6 py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] sm:text-[16px] font-semibold shadow-md shadow-[#C2272D]/20 transition-all duration-200 hover:scale-[1.02] cursor-pointer"
+                  className="px-6 py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] sm:text-[16px] font-semibold shadow-md shadow-[#C2272D]/20 hover:shadow-xl hover:shadow-[#C2272D]/40 transition-all duration-200 hover:scale-[1.04] active:scale-[0.96] cursor-pointer btn-shine-effect"
                 >
                   View Resume
                 </a>
               )}
               <a 
                 href="#contact" 
-                className="px-6 py-3 bg-white dark:bg-[#1A1A1A] hover:bg-slate-100 dark:hover:bg-white/10 text-[#171717] dark:text-white border border-[#E5E7EB] dark:border-white/10 rounded-full text-[15px] sm:text-[16px] font-semibold transition-all duration-200 hover:scale-[1.02] cursor-pointer"
+                className="px-6 py-3 bg-white dark:bg-[#1A1A1A] hover:bg-slate-100 dark:hover:bg-white/10 text-[#171717] dark:text-white border border-[#E5E7EB] dark:border-white/10 hover:border-[#00FFFF] hover:shadow-lg hover:shadow-[#00FFFF]/20 rounded-full text-[15px] sm:text-[16px] font-semibold transition-all duration-200 hover:scale-[1.04] active:scale-[0.96] cursor-pointer"
               >
                 Let's Talk
               </a>
