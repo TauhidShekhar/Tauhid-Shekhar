@@ -6,7 +6,7 @@ import {
   FaHome, FaGlobe, FaUsers, FaFolderOpen, FaBriefcase, FaCrown, 
   FaBell, FaComments, FaUser, FaCog, FaPlus, FaTimes, FaBars, 
   FaCheckCircle, FaHashtag, FaAngleDown, FaTachometerAlt, FaCompass, FaQuestionCircle, FaCode,
-  FaGift, FaBrain, FaTasks, FaCoins
+  FaGift, FaBrain, FaTasks, FaCoins, FaSun, FaMoon, FaArrowLeft, FaCalendarAlt
 } from 'react-icons/fa';
 
 const CommunityLayout = () => {
@@ -21,6 +21,42 @@ const CommunityLayout = () => {
       return false;
     }
   });
+
+  // Theme synchronization with main website
+  const [isDark, setIsDark] = useState(() => {
+    try {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme) return savedTheme === 'dark';
+      return document.documentElement.classList.contains('darkmode') || 
+        window.matchMedia('(prefers-color-scheme: dark)').matches;
+    } catch {
+      return true;
+    }
+  });
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('darkmode');
+      document.body.classList.add('darkmode');
+    } else {
+      document.documentElement.classList.remove('darkmode');
+      document.body.classList.remove('darkmode');
+    }
+  }, [isDark]);
+
+  const toggleTheme = () => {
+    const nextDark = !isDark;
+    setIsDark(nextDark);
+    if (nextDark) {
+      document.documentElement.classList.add('darkmode');
+      document.body.classList.add('darkmode');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('darkmode');
+      document.body.classList.remove('darkmode');
+      localStorage.setItem('theme', 'light');
+    }
+  };
 
   useEffect(() => {
     try {
@@ -62,48 +98,48 @@ const CommunityLayout = () => {
     };
 
     return (
-      <div className="flex flex-col gap-5.5 w-full">
+      <div className="flex flex-col gap-5 w-full">
         
         {/* SECTION: QUICK ACTIONS */}
-        <div className="bg-[#121217] border border-white/5 rounded-2xl flex flex-col shadow-lg shadow-black/25 overflow-hidden hover:scale-[1.01] hover:border-purple-500/25 transition-all duration-300 text-left">
+        <div className="bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 rounded-2xl flex flex-col shadow-sm overflow-hidden hover:border-[#C2272D]/40 transition-all duration-300 text-left card-interactive">
           <button 
             type="button"
             disabled={!isMobile}
             onClick={() => toggleMobileSection('actions')}
-            className="w-full p-4 flex items-center justify-between border-b border-white/5 bg-[#17171e]/40 select-none cursor-pointer text-left"
+            className="w-full p-3.5 sm:p-4 flex items-center justify-between border-b border-[#E5E7EB] dark:border-white/10 bg-[#F8FAFC] dark:bg-[#17171e]/50 select-none cursor-pointer text-left"
           >
             <div className="flex items-center gap-2">
-              <span className="p-1.5 bg-purple-500/10 rounded-lg text-purple-400">
+              <span className="p-1.5 bg-[#C2272D]/10 rounded-lg text-[#C2272D]">
                 <FaPlus size={10} />
               </span>
-              <span className="text-[10px] font-black text-slate-350 uppercase tracking-widest">Quick Actions</span>
+              <span className="text-[11px] font-black text-[#171717] dark:text-slate-300 uppercase tracking-wider font-title">Quick Actions</span>
             </div>
             {isMobile && (
-              <span className={`text-slate-400 transition-transform duration-250 ${isSectionExpanded('actions') ? 'rotate-180' : ''}`}>
+              <span className={`text-[#525252] dark:text-slate-400 transition-transform duration-250 ${isSectionExpanded('actions') ? 'rotate-180' : ''}`}>
                 <FaAngleDown size={14} />
               </span>
             )}
           </button>
 
           {isSectionExpanded('actions') && (
-            <div className="p-4 flex flex-col gap-2.5">
+            <div className="p-3.5 sm:p-4 flex flex-col gap-2">
               {[
                 { name: 'Create Post', icon: <FaPlus />, path: '/community' },
                 { name: 'Upload Resource', icon: <FaFolderOpen />, path: '/community/resources' },
                 { name: 'Ask AI Assistant', icon: <FaBrain />, path: '/community/ai-assistant' },
                 { name: 'Create Community Group', icon: <FaUsers />, path: '/community/groups' },
-                { name: 'Find Top Developers', icon: <FaCrown />, path: '/community/leaderboard' }
+                { name: 'Top Developers', icon: <FaCrown />, path: '/community/leaderboard' }
               ].map((action, idx) => (
                 <Link
                   key={idx}
                   to={action.path}
-                  className="flex items-center justify-between p-2.5 bg-[#181820]/45 hover:bg-[#20202c] border border-white/5 hover:border-purple-500/15 rounded-xl transition-all duration-200 group"
+                  className="flex items-center justify-between p-2.5 bg-[#F8FAFC] dark:bg-[#181820]/60 hover:bg-[#F1F5F9] dark:hover:bg-[#20202c] border border-[#E5E7EB] dark:border-white/5 hover:border-[#C2272D]/30 rounded-xl transition-all duration-200 group"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-slate-450 group-hover:text-purple-400 transition-colors text-xs">{action.icon}</span>
-                    <span className="text-[11px] font-bold text-slate-300 group-hover:text-white transition-colors">{action.name}</span>
+                    <span className="text-[#525252] dark:text-slate-400 group-hover:text-[#C2272D] transition-colors text-xs">{action.icon}</span>
+                    <span className="text-[11px] font-bold text-[#171717] dark:text-slate-200 group-hover:text-[#C2272D] dark:group-hover:text-white transition-colors">{action.name}</span>
                   </div>
-                  <span className="text-[10px] text-slate-550 group-hover:text-slate-300 transition-transform group-hover:translate-x-0.5">→</span>
+                  <span className="text-[11px] text-[#737373] dark:text-slate-500 group-hover:text-[#C2272D] group-hover:translate-x-1 transition-all">→</span>
                 </Link>
               ))}
             </div>
@@ -111,58 +147,58 @@ const CommunityLayout = () => {
         </div>
 
         {/* SECTION: SUGGESTED DEVELOPERS */}
-        <div className="bg-[#121217] border border-white/5 rounded-2xl flex flex-col shadow-lg shadow-black/25 overflow-hidden hover:scale-[1.01] hover:border-purple-500/25 transition-all duration-300 text-left">
+        <div className="bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 rounded-2xl flex flex-col shadow-sm overflow-hidden hover:border-[#C2272D]/40 transition-all duration-300 text-left card-interactive">
           <button
             type="button"
             disabled={!isMobile}
             onClick={() => toggleMobileSection('suggested')}
-            className="w-full p-4 flex items-center justify-between border-b border-white/5 bg-[#17171e]/40 select-none cursor-pointer text-left"
+            className="w-full p-3.5 sm:p-4 flex items-center justify-between border-b border-[#E5E7EB] dark:border-white/10 bg-[#F8FAFC] dark:bg-[#17171e]/50 select-none cursor-pointer text-left"
           >
             <div className="flex items-center gap-2">
-              <span className="p-1.5 bg-purple-500/10 rounded-lg text-purple-400">
+              <span className="p-1.5 bg-[#C2272D]/10 rounded-lg text-[#C2272D]">
                 <FaUser size={10} />
               </span>
-              <span className="text-[10px] font-black text-slate-350 uppercase tracking-widest">Suggested Developers</span>
+              <span className="text-[11px] font-black text-[#171717] dark:text-slate-300 uppercase tracking-wider font-title">Suggested Developers</span>
             </div>
             {isMobile && (
-              <span className={`text-slate-400 transition-transform duration-250 ${isSectionExpanded('suggested') ? 'rotate-180' : ''}`}>
+              <span className={`text-[#525252] dark:text-slate-400 transition-transform duration-250 ${isSectionExpanded('suggested') ? 'rotate-180' : ''}`}>
                 <FaAngleDown size={14} />
               </span>
             )}
           </button>
 
           {isSectionExpanded('suggested') && (
-            <div className="p-4 flex flex-col gap-3">
-              {suggestedDevs.filter(Boolean).slice(0, 5).map((dev, idx) => {
+            <div className="p-3.5 sm:p-4 flex flex-col gap-3">
+              {suggestedDevs.filter(Boolean).slice(0, 5).map((dev) => {
                 const currentUserId = (user?.id || user?._id)?.toString();
                 const isFollowing = dev.followers?.some(fid => fid && fid.toString() === currentUserId);
                 
                 const isVerified = dev.xp >= 300;
-                const devRole = dev.role === 'Admin' ? 'Administrator' : 
-                                dev.xp >= 300 ? 'Core Contributor' : 'Member';
+                const devRole = dev.role === 'Admin' ? 'Admin' : 
+                                dev.xp >= 300 ? 'Contributor' : 'Member';
 
                 return (
                   <div key={dev._id} className="flex items-center justify-between gap-3 p-1 rounded-xl">
-                    <Link to={`/community/profile/${dev._id}`} className="flex items-center gap-3 min-w-0 flex-1 hover:opacity-90">
+                    <Link to={`/community/profile/${dev._id}`} className="flex items-center gap-2.5 min-w-0 flex-1 hover:opacity-90">
                       <div className="relative shrink-0">
-                        <div className="w-10 h-10 rounded-xl overflow-hidden bg-[#1e1e24] border border-white/10 flex items-center justify-center shadow-inner">
+                        <div className="w-9 h-9 rounded-xl overflow-hidden bg-[#E5E7EB] dark:bg-[#1e1e24] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center shadow-inner">
                           {dev.avatar?.url ? (
                             <img src={dev.avatar.url} alt="Profile" className="w-full h-full object-cover" loading="lazy" />
                           ) : (
-                            <FaUser className="text-slate-500" size={14} />
+                            <FaUser className="text-[#737373] dark:text-slate-500" size={13} />
                           )}
                         </div>
                         {dev.isActive !== false && (
-                          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border border-[#121217]" />
+                          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border border-white dark:border-[#111111]" />
                         )}
                       </div>
                       
                       <div className="flex flex-col text-left min-w-0">
-                        <h5 className="text-[11px] font-black text-white flex items-center gap-1 leading-snug">
+                        <h5 className="text-[11px] font-black text-[#171717] dark:text-white flex items-center gap-1 leading-snug">
                           <span className="truncate">{dev.fullName}</span>
-                          {isVerified && <FaCheckCircle size={10} className="text-purple-400 shrink-0" title="Verified Creator" />}
+                          {isVerified && <FaCheckCircle size={10} className="text-[#00FFFF] shrink-0" title="Verified Creator" />}
                         </h5>
-                        <span className="text-[9px] text-slate-450 truncate">{devRole} • {dev.xp || 0} XP</span>
+                        <span className="text-[9px] text-[#525252] dark:text-slate-400 truncate">{devRole} • {dev.xp || 0} XP</span>
                       </div>
                     </Link>
 
@@ -171,11 +207,11 @@ const CommunityLayout = () => {
                       disabled={followDeveloperLoading[dev._id]}
                       className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider border cursor-pointer transition-all duration-200 shrink-0 flex items-center gap-1 ${
                         isFollowing 
-                          ? 'bg-transparent border-slate-700 text-slate-400' 
-                          : 'bg-gradient-to-r from-purple-500/20 to-indigo-500/20 hover:from-purple-600 hover:to-indigo-600 border-purple-500/30 hover:border-transparent text-purple-300 hover:text-white shadow-md active:scale-95'
+                          ? 'bg-transparent border-[#E5E7EB] dark:border-slate-700 text-[#525252] dark:text-slate-400 hover:border-red-500 hover:text-red-500' 
+                          : 'bg-[#C2272D] hover:bg-[#A51E23] border-[#C2272D] text-white shadow-sm active:scale-95'
                       } ${followDeveloperLoading[dev._id] ? 'opacity-60 cursor-not-allowed' : ''}`}
                     >
-                      {followDeveloperLoading[dev._id] && <div className="w-2 h-2 rounded-full border border-white/20 border-t-white animate-spin shrink-0" />}
+                      {followDeveloperLoading[dev._id] && <div className="w-2 h-2 rounded-full border border-white/30 border-t-white animate-spin shrink-0" />}
                       {isFollowing ? 'Following' : 'Follow'}
                     </button>
                   </div>
@@ -183,12 +219,12 @@ const CommunityLayout = () => {
               })}
 
               {suggestedDevs.length === 0 && (
-                <div className="text-[10px] text-slate-550 italic text-center py-4">No recommendations.</div>
+                <div className="text-[10px] text-[#737373] dark:text-slate-500 italic text-center py-3">No recommendations yet.</div>
               )}
 
               <Link 
                 to="/community/leaderboard"
-                className="mt-2 w-full py-2.5 bg-[#181820] hover:bg-[#20202c] border border-white/5 hover:border-purple-500/20 rounded-xl text-[9px] font-black uppercase tracking-wider text-slate-350 hover:text-purple-300 transition-all text-center flex items-center justify-center gap-1.5"
+                className="mt-1 w-full py-2 bg-[#F8FAFC] dark:bg-[#181820] hover:bg-[#C2272D] hover:text-white text-[#171717] dark:text-slate-300 border border-[#E5E7EB] dark:border-white/5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all text-center flex items-center justify-center gap-1.5"
               >
                 <FaCrown size={10} /> View Full Leaderboard
               </Link>
@@ -197,37 +233,37 @@ const CommunityLayout = () => {
         </div>
 
         {/* SECTION: TOP LEADERBOARD HIGHLIGHTS */}
-        <div className="bg-[#121217] border border-white/5 rounded-2xl flex flex-col shadow-lg shadow-black/25 overflow-hidden hover:scale-[1.01] hover:border-purple-500/25 transition-all duration-300 text-left">
+        <div className="bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 rounded-2xl flex flex-col shadow-sm overflow-hidden hover:border-[#C2272D]/40 transition-all duration-300 text-left card-interactive">
           <button
             type="button"
             disabled={!isMobile}
             onClick={() => toggleMobileSection('leaderboard')}
-            className="w-full p-4 flex items-center justify-between border-b border-white/5 bg-[#17171e]/40 select-none cursor-pointer text-left"
+            className="w-full p-3.5 sm:p-4 flex items-center justify-between border-b border-[#E5E7EB] dark:border-white/10 bg-[#F8FAFC] dark:bg-[#17171e]/50 select-none cursor-pointer text-left"
           >
             <div className="flex items-center gap-2">
-              <span className="p-1.5 bg-purple-500/10 rounded-lg text-purple-400">
+              <span className="p-1.5 bg-[#C2272D]/10 rounded-lg text-[#C2272D]">
                 <FaCrown size={10} />
               </span>
-              <span className="text-[10px] font-black text-slate-350 uppercase tracking-widest">Global Leaderboard</span>
+              <span className="text-[11px] font-black text-[#171717] dark:text-slate-300 uppercase tracking-wider font-title">Global Leaderboard</span>
             </div>
             {isMobile && (
-              <span className={`text-slate-400 transition-transform duration-250 ${isSectionExpanded('leaderboard') ? 'rotate-180' : ''}`}>
+              <span className={`text-[#525252] dark:text-slate-400 transition-transform duration-250 ${isSectionExpanded('leaderboard') ? 'rotate-180' : ''}`}>
                 <FaAngleDown size={14} />
               </span>
             )}
           </button>
 
           {isSectionExpanded('leaderboard') && (
-            <div className="p-4 flex flex-col gap-4">
-              <div className="flex bg-[#181820] p-1 rounded-xl border border-white/5">
+            <div className="p-3.5 sm:p-4 flex flex-col gap-3">
+              <div className="flex bg-[#F8FAFC] dark:bg-[#181820] p-1 rounded-xl border border-[#E5E7EB] dark:border-white/5">
                 {['weekly', 'all-time'].map((timeframe) => (
                   <button
                     key={timeframe}
                     onClick={() => setLeaderboardTimeframe(timeframe)}
                     className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${
                       leaderboardTimeframe === timeframe
-                        ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-sm'
-                        : 'text-slate-455 hover:text-slate-200'
+                        ? 'bg-[#C2272D] text-white shadow-sm'
+                        : 'text-[#525252] dark:text-slate-400 hover:text-[#171717] dark:hover:text-white'
                     }`}
                   >
                     {timeframe.replace('-', ' ')}
@@ -235,16 +271,14 @@ const CommunityLayout = () => {
                 ))}
               </div>
 
-              <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-2">
                 {suggestedDevs.filter(Boolean).slice(0, 3).map((dev, idx) => {
                   const medalColors = 
-                    idx === 0 ? 'bg-amber-400/10 border-amber-400/30 text-amber-400 shadow-amber-400/5' :
-                    idx === 1 ? 'bg-slate-300/10 border-slate-300/30 text-slate-300 shadow-slate-300/5' :
-                    'bg-amber-700/10 border-amber-750/30 text-amber-700 shadow-amber-700/5';
+                    idx === 0 ? 'bg-amber-400/10 border-amber-400/30 text-amber-500' :
+                    idx === 1 ? 'bg-slate-300/10 border-slate-400/30 text-slate-400' :
+                    'bg-amber-700/10 border-amber-700/30 text-amber-700';
 
                   const medalLabel = idx === 0 ? 'Gold' : idx === 1 ? 'Silver' : 'Bronze';
-                  const change = idx === 0 ? '↑1' : idx === 1 ? '↓1' : '•';
-                  const changeColor = idx === 0 ? 'text-green-500' : idx === 1 ? 'text-red-500' : 'text-slate-500';
 
                   const displayedXP = leaderboardTimeframe === 'weekly' 
                     ? Math.max(20, Math.floor(dev.xp * 0.4)) 
@@ -253,28 +287,25 @@ const CommunityLayout = () => {
                   return (
                     <div 
                       key={dev._id} 
-                      className={`flex items-center justify-between p-2.5 rounded-xl border ${medalColors} shadow-md`}
+                      className={`flex items-center justify-between p-2.5 rounded-xl border ${medalColors} shadow-sm`}
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
                         <span className="text-[10px] font-black w-4 text-center shrink-0">#{idx + 1}</span>
-                        <div className="w-7 h-7 rounded-lg overflow-hidden bg-[#1e1e24] border border-white/10 shrink-0">
+                        <div className="w-7 h-7 rounded-lg overflow-hidden bg-[#E5E7EB] dark:bg-[#1e1e24] border border-[#E5E7EB] dark:border-white/10 shrink-0">
                           {dev.avatar?.url ? (
                             <img src={dev.avatar.url} alt="medal user" className="w-full h-full object-cover" loading="lazy" />
                           ) : (
-                            <div className="w-full h-full bg-purple-900/20 text-purple-400 font-extrabold flex items-center justify-center text-[10px]">
-                              {dev.fullName[0]}
+                            <div className="w-full h-full bg-[#C2272D]/10 text-[#C2272D] font-extrabold flex items-center justify-center text-[10px]">
+                              {dev.fullName ? dev.fullName[0] : 'U'}
                             </div>
                           )}
                         </div>
                         <div className="flex flex-col text-left min-w-0">
-                          <span className="text-[10px] font-black text-white truncate">{dev.fullName}</span>
-                          <span className="text-[8px] text-slate-455 mt-0.5">{displayedXP} XP this period</span>
+                          <span className="text-[10px] font-black text-[#171717] dark:text-white truncate">{dev.fullName}</span>
+                          <span className="text-[8px] text-[#525252] dark:text-slate-400">{displayedXP || 0} XP</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <span className={`text-[8px] font-black font-mono ${changeColor}`} title="Rank Movement">{change}</span>
-                        <span className="text-[7px] font-black tracking-widest uppercase bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-slate-400">{medalLabel}</span>
-                      </div>
+                      <span className="text-[7px] font-black tracking-widest uppercase bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 px-1.5 py-0.5 rounded text-[#525252] dark:text-slate-400 shrink-0">{medalLabel}</span>
                     </div>
                   );
                 })}
@@ -284,41 +315,41 @@ const CommunityLayout = () => {
         </div>
 
         {/* SECTION: COMMUNITY STATISTICS */}
-        <div className="bg-[#121217] border border-white/5 rounded-2xl flex flex-col shadow-lg shadow-black/25 overflow-hidden hover:scale-[1.01] hover:border-purple-500/25 transition-all duration-300 text-left">
+        <div className="bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 rounded-2xl flex flex-col shadow-sm overflow-hidden hover:border-[#C2272D]/40 transition-all duration-300 text-left card-interactive">
           <button
             type="button"
             disabled={!isMobile}
             onClick={() => toggleMobileSection('stats')}
-            className="w-full p-4 flex items-center justify-between border-b border-white/5 bg-[#17171e]/40 select-none cursor-pointer text-left"
+            className="w-full p-3.5 sm:p-4 flex items-center justify-between border-b border-[#E5E7EB] dark:border-white/10 bg-[#F8FAFC] dark:bg-[#17171e]/50 select-none cursor-pointer text-left"
           >
             <div className="flex items-center gap-2">
-              <span className="p-1.5 bg-purple-500/10 rounded-lg text-purple-400">
+              <span className="p-1.5 bg-[#C2272D]/10 rounded-lg text-[#C2272D]">
                 <FaTachometerAlt size={10} />
               </span>
-              <span className="text-[10px] font-black text-slate-350 uppercase tracking-widest">Community Statistics</span>
+              <span className="text-[11px] font-black text-[#171717] dark:text-slate-300 uppercase tracking-wider font-title">Community Statistics</span>
             </div>
             {isMobile && (
-              <span className={`text-slate-400 transition-transform duration-250 ${isSectionExpanded('stats') ? 'rotate-180' : ''}`}>
+              <span className={`text-[#525252] dark:text-slate-400 transition-transform duration-250 ${isSectionExpanded('stats') ? 'rotate-180' : ''}`}>
                 <FaAngleDown size={14} />
               </span>
             )}
           </button>
 
           {isSectionExpanded('stats') && (
-            <div className="p-4 grid grid-cols-2 gap-3.5">
+            <div className="p-3.5 sm:p-4 grid grid-cols-2 gap-2.5">
               {[
-                { name: 'Total Members', val: '2,482', change: '+12% this wk' },
-                { name: 'Online Right Now', val: '318', change: 'Live updates', isOnline: true },
-                { name: 'Knowledge Posts', val: '12,840', change: '24 new today' },
-                { name: 'Shared Resources', val: '1,192', change: 'ZIPs, PDFs, cheatsheets' }
+                { name: 'Total Members', val: '2,480+', change: '+14% this mo' },
+                { name: 'Online Now', val: '180+', change: 'Active developers', isOnline: true },
+                { name: 'Discussions', val: '8,420', change: 'Solutions shared' },
+                { name: 'Resources', val: '1,240', change: 'Open repos & guides' }
               ].map((stat, idx) => (
-                <div key={idx} className="p-3 bg-[#181820]/45 border border-white/5 rounded-xl flex flex-col text-left gap-1">
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">{stat.name}</span>
+                <div key={idx} className="p-2.5 bg-[#F8FAFC] dark:bg-[#181820]/60 border border-[#E5E7EB] dark:border-white/5 rounded-xl flex flex-col text-left gap-0.5">
+                  <span className="text-[9px] font-black text-[#525252] dark:text-slate-400 uppercase tracking-wider">{stat.name}</span>
                   <div className="flex items-center gap-1.5">
-                    {stat.isOnline && <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shrink-0" />}
-                    <h4 className="text-sm font-black text-white leading-tight">{stat.val}</h4>
+                    {stat.isOnline && <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shrink-0" />}
+                    <h4 className="text-sm font-black text-[#171717] dark:text-white leading-tight">{stat.val}</h4>
                   </div>
-                  <span className="text-[8px] text-slate-500 font-semibold">{stat.change}</span>
+                  <span className="text-[8px] text-[#737373] dark:text-slate-500 font-medium">{stat.change}</span>
                 </div>
               ))}
             </div>
@@ -326,195 +357,111 @@ const CommunityLayout = () => {
         </div>
 
         {/* SECTION: POPULAR TAGS */}
-        <div className="bg-[#121217] border border-white/5 rounded-2xl flex flex-col shadow-lg shadow-black/25 overflow-hidden hover:scale-[1.01] hover:border-purple-500/25 transition-all duration-300 text-left">
+        <div className="bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 rounded-2xl flex flex-col shadow-sm overflow-hidden hover:border-[#C2272D]/40 transition-all duration-300 text-left card-interactive">
           <button
             type="button"
             disabled={!isMobile}
             onClick={() => toggleMobileSection('tags')}
-            className="w-full p-4 flex items-center justify-between border-b border-white/5 bg-[#17171e]/40 select-none cursor-pointer text-left"
+            className="w-full p-3.5 sm:p-4 flex items-center justify-between border-b border-[#E5E7EB] dark:border-white/10 bg-[#F8FAFC] dark:bg-[#17171e]/50 select-none cursor-pointer text-left"
           >
             <div className="flex items-center gap-2">
-              <span className="p-1.5 bg-purple-500/10 rounded-lg text-purple-400">
+              <span className="p-1.5 bg-[#C2272D]/10 rounded-lg text-[#C2272D]">
                 <FaHashtag size={10} />
               </span>
-              <span className="text-[10px] font-black text-slate-350 uppercase tracking-widest">Trending Tech Topics</span>
+              <span className="text-[11px] font-black text-[#171717] dark:text-slate-300 uppercase tracking-wider font-title">Trending Tech Topics</span>
             </div>
             {isMobile && (
-              <span className={`text-slate-400 transition-transform duration-250 ${isSectionExpanded('tags') ? 'rotate-180' : ''}`}>
+              <span className={`text-[#525252] dark:text-slate-400 transition-transform duration-250 ${isSectionExpanded('tags') ? 'rotate-180' : ''}`}>
                 <FaAngleDown size={14} />
               </span>
             )}
           </button>
 
           {isSectionExpanded('tags') && (
-            <div className="p-4 flex flex-col gap-4">
-              <div className="flex flex-wrap gap-2 pt-1">
+            <div className="p-3.5 sm:p-4 flex flex-col gap-3">
+              <div className="flex flex-wrap gap-1.5">
                 {[
                   { tag: 'react', count: '1.2k', trending: true },
+                  { tag: 'fullstack', count: '980', trending: true },
                   { tag: 'nodejs', count: '890', trending: false },
-                  { tag: 'webdev', count: '2.4k', trending: true },
                   { tag: 'ai', count: '3.1k', trending: true },
-                  { tag: 'mongodb', count: '450', trending: false },
-                  { tag: 'javascript', count: '1.9k', trending: false },
+                  { tag: 'javascript', count: '2.4k', trending: false },
                   { tag: 'tailwind', count: '780', trending: false },
-                  { tag: 'nextjs', count: '1.5k', trending: true }
+                  { tag: 'career', count: '1.5k', trending: true }
                 ].map(item => (
                   <Link
                     key={item.tag}
                     to={`/community?search=${item.tag}`}
-                    className="px-2.5 py-1 bg-purple-600/10 border border-purple-550/15 text-purple-400 hover:bg-purple-600 hover:text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition-all duration-200 flex items-center gap-1 group shadow-sm active:scale-95"
+                    className="px-2.5 py-1 bg-[#F8FAFC] dark:bg-[#181820] border border-[#E5E7EB] dark:border-white/10 text-[#171717] dark:text-slate-300 hover:bg-[#C2272D] hover:text-white hover:border-[#C2272D] rounded-lg text-[9px] font-black uppercase tracking-wider transition-all duration-200 flex items-center gap-1 group shadow-sm active:scale-95"
                   >
                     <span>#{item.tag}</span>
-                    <span className="text-[8px] opacity-75 font-semibold font-mono bg-purple-500/10 group-hover:bg-white/10 px-1 py-0.5 rounded">{item.count}</span>
-                    {item.trending && <span className="text-[9px]" title="Trending 🔥">🔥</span>}
+                    <span className="text-[8px] opacity-75 font-semibold font-mono bg-black/5 dark:bg-white/10 group-hover:bg-white/20 px-1 py-0.5 rounded">{item.count}</span>
+                    {item.trending && <span className="text-[9px]">🔥</span>}
                   </Link>
                 ))}
-              </div>
-
-              {/* Active Contributors Stack */}
-              <div className="border-t border-white/5 pt-3.5 flex items-center justify-between text-[10px]">
-                <span className="font-bold text-slate-500 uppercase tracking-wider text-[9px]">Active Contributors</span>
-                <div className="flex items-center">
-                  {suggestedDevs.slice(0, 3).map((d, i) => (
-                    <div 
-                      key={d._id} 
-                      className="w-5.5 h-5.5 rounded-full overflow-hidden border border-[#121217] -ml-1.5 first:ml-0 shadow bg-slate-900"
-                      title={d.fullName}
-                    >
-                      {d.avatar?.url ? (
-                        <img src={d.avatar.url} alt="contr" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full bg-purple-900/50 flex items-center justify-center text-[7px] text-white font-extrabold uppercase">
-                          {d.fullName[0]}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                  <span className="text-[8px] font-black text-purple-400 ml-2 uppercase tracking-wide">+18 others</span>
-                </div>
               </div>
             </div>
           )}
         </div>
 
         {/* SECTION: ANNOUNCEMENTS */}
-        <div className="bg-[#121217] border border-white/5 rounded-2xl flex flex-col shadow-lg shadow-black/25 overflow-hidden hover:scale-[1.01] hover:border-purple-500/25 transition-all duration-300 text-left">
+        <div className="bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 rounded-2xl flex flex-col shadow-sm overflow-hidden hover:border-[#C2272D]/40 transition-all duration-300 text-left card-interactive">
           <button
             type="button"
             disabled={!isMobile}
             onClick={() => toggleMobileSection('announcements')}
-            className="w-full p-4 flex items-center justify-between border-b border-white/5 bg-[#17171e]/40 select-none cursor-pointer text-left"
+            className="w-full p-3.5 sm:p-4 flex items-center justify-between border-b border-[#E5E7EB] dark:border-white/10 bg-[#F8FAFC] dark:bg-[#17171e]/50 select-none cursor-pointer text-left"
           >
             <div className="flex items-center gap-2">
-              <span className="p-1.5 bg-purple-500/10 rounded-lg text-purple-400">
+              <span className="p-1.5 bg-[#C2272D]/10 rounded-lg text-[#C2272D]">
                 <FaBell size={10} />
               </span>
-              <span className="text-[10px] font-black text-slate-350 uppercase tracking-widest">Platform Announcements</span>
+              <span className="text-[11px] font-black text-[#171717] dark:text-slate-300 uppercase tracking-wider font-title">Announcements</span>
             </div>
             {isMobile && (
-              <span className={`text-slate-400 transition-transform duration-250 ${isSectionExpanded('announcements') ? 'rotate-180' : ''}`}>
+              <span className={`text-[#525252] dark:text-slate-400 transition-transform duration-250 ${isSectionExpanded('announcements') ? 'rotate-180' : ''}`}>
                 <FaAngleDown size={14} />
               </span>
             )}
           </button>
 
           {isSectionExpanded('announcements') && (
-            <div className="p-4 flex flex-col gap-3.5 pt-1">
+            <div className="p-3.5 sm:p-4 flex flex-col gap-3">
               {[
                 { 
-                  title: '🚀 Hackathon July 2026', 
-                  desc: 'Showcase your AI projects by July 25 to win custom profile badges & reputation XP!',
-                  date: 'July 14, 2026',
+                  title: '🚀 DevCommunity 2027 Rebirth', 
+                  desc: 'Modernized with Tauhid Shekhar visual branding, fast navigation, and streamlined developer hubs.',
+                  date: 'Today',
                   unread: true
                 },
                 { 
-                  title: '⚙️ Platform Updates', 
-                  desc: 'Gemini 2.5 real-time memory consultant, voice transcription, and Kanban trackers are now live.',
-                  date: 'July 12, 2026',
+                  title: '💡 AI Consultant & Career Hub Live', 
+                  desc: 'Prepare for software engineering interviews and generate tailored tech roadmaps in one click.',
+                  date: 'Active',
                   unread: false
                 }
               ].map((ann, idx) => (
                 <div 
                   key={idx} 
-                  className="p-3 bg-[#181820]/45 rounded-xl border border-white/5 text-[10px] leading-relaxed flex flex-col gap-1.5 relative group/ann"
+                  className="p-3 bg-[#F8FAFC] dark:bg-[#181820]/60 rounded-xl border border-[#E5E7EB] dark:border-white/5 text-[10px] leading-relaxed flex flex-col gap-1 relative"
                 >
                   {ann.unread && (
-                    <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse" title="New Announcement" />
+                    <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-[#C2272D] rounded-full animate-pulse" title="New" />
                   )}
-                  <div className="flex flex-col text-left">
-                    <span className="text-purple-400 font-black text-[11px] leading-snug group-hover/ann:text-purple-300 transition-colors">{ann.title}</span>
-                    <span className="text-[8px] text-slate-500 font-bold mt-0.5">{ann.date}</span>
-                  </div>
-                  <p className="text-slate-350 font-semibold">{ann.desc}</p>
-                  <button 
-                    type="button" 
-                    onClick={() => alert(`Details for: ${ann.title}\n\n${ann.desc}`)}
-                    className="text-[8px] text-purple-400 hover:text-purple-300 font-black uppercase tracking-wider mt-1 text-left w-fit cursor-pointer hover:underline"
-                  >
-                    Read More &rarr;
-                  </button>
+                  <span className="text-[#C2272D] font-black text-[11px] leading-snug">{ann.title}</span>
+                  <p className="text-[#525252] dark:text-slate-300 font-medium">{ann.desc}</p>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        {/* SECTION: UPCOMING EVENTS */}
-        <div className="bg-[#121217] border border-white/5 rounded-2xl flex flex-col shadow-lg shadow-black/25 overflow-hidden hover:scale-[1.01] hover:border-purple-500/25 transition-all duration-300 text-left">
-          <button
-            type="button"
-            disabled={!isMobile}
-            onClick={() => toggleMobileSection('events')}
-            className="w-full p-4 flex items-center justify-between border-b border-white/5 bg-[#17171e]/40 select-none cursor-pointer text-left"
-          >
-            <div className="flex items-center gap-2">
-              <span className="p-1.5 bg-purple-500/10 rounded-lg text-purple-400">
-                <FaTasks size={10} />
-              </span>
-              <span className="text-[10px] font-black text-slate-350 uppercase tracking-widest">Upcoming Events</span>
-            </div>
-            {isMobile && (
-              <span className={`text-slate-400 transition-transform duration-250 ${isSectionExpanded('events') ? 'rotate-180' : ''}`}>
-                <FaAngleDown size={14} />
-              </span>
-            )}
-          </button>
-
-          {isSectionExpanded('events') && (
-            <div className="p-4 flex flex-col gap-3">
-              {[
-                { name: 'AI Hackathon Submission Deadline', date: 'July 25, 2026', time: '11:59 PM IST' },
-                { name: 'Google Developer Summit 2026', date: 'Aug 12, 2026', time: '9:00 AM IST' },
-                { name: 'Weekly Live Group Code Review', date: 'Every Saturday', time: '6:00 PM IST' }
-              ].map((ev, idx) => (
-                <div key={idx} className="flex gap-3 items-start p-2 bg-[#181820]/45 rounded-xl border border-white/5">
-                  <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-400 shrink-0 font-mono text-[9px] font-black flex flex-col items-center justify-center w-9.5 h-9.5 leading-none border border-indigo-500/15">
-                    <span>{ev.date.split(' ')[1]?.replace(',', '') || '25'}</span>
-                    <span className="text-[7px] text-slate-500 uppercase mt-0.5">{ev.date.split(' ')[0]?.substring(0, 3) || 'SAT'}</span>
-                  </div>
-                  <div className="flex flex-col min-w-0 text-left">
-                    <span className="text-[10px] font-bold text-white leading-snug truncate">{ev.name}</span>
-                    <span className="text-[8px] text-slate-500 font-semibold mt-1">{ev.date} • {ev.time}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
       </div>
     );
   };
 
-  const rawAdminUrl = import.meta.env.VITE_ADMIN_URL;
-  const VITE_ADMIN_URL = (rawAdminUrl && rawAdminUrl !== 'undefined' && rawAdminUrl !== 'null')
-    ? rawAdminUrl
-    : (window.location.port === '5173' || window.location.port === '5174'
-        ? `${window.location.protocol}//${window.location.hostname}:5174`
-        : 'https://tauhidshekhar-admin.vercel.app');
-
   const fetchData = async () => {
     try {
-      // 1. Fetch notifications (skip if guest)
       if (user) {
         const notifRes = await api.getCommunityNotifications();
         if (notifRes.success) {
@@ -523,21 +470,18 @@ const CommunityLayout = () => {
         }
       }
 
-      // 2. Fetch groups
       const groupsRes = await api.getCommunityGroups();
       if (groupsRes.success) {
         const allGroups = groupsRes.data || [];
         const currentUserId = user?.id || user?._id;
         
         if (currentUserId) {
-          // Groups joined by current user
           const joined = allGroups.filter(g => 
             g.members?.some(m => m && (m._id || m.user || m).toString() === currentUserId.toString()) ||
             (g.owner?._id || g.owner)?.toString() === currentUserId.toString()
           );
           setMyGroups(joined);
 
-          // Suggested groups (not joined by current user)
           const unjoined = allGroups.filter(g => 
             !g.members?.some(m => m && (m._id || m.user || m).toString() === currentUserId.toString()) &&
             (g.owner?._id || g.owner)?.toString() !== currentUserId.toString()
@@ -549,18 +493,16 @@ const CommunityLayout = () => {
         }
       }
 
-      // 3. Fetch leaderboard users for suggested developers
       const leadRes = await api.getCommunityLeaderboard();
       if (leadRes.success) {
         const currentUserId = user?.id || user?._id;
-        // Filter out current user and map follows
         const candidates = currentUserId
           ? (leadRes.data || []).filter(u => u && u._id?.toString() !== currentUserId?.toString())
           : (leadRes.data || []);
-        setSuggestedDevs(candidates.slice(0, 4));
+        setSuggestedDevs(candidates.slice(0, 5));
       }
     } catch (err) {
-      console.warn('Community suggestions error:', err.message);
+      console.warn('Community data fetch notice:', err.message);
     } finally {
       setLoadingSuggestions(false);
     }
@@ -569,7 +511,6 @@ const CommunityLayout = () => {
   useEffect(() => {
     fetchData();
 
-    // Listen for real-time updates and refresh sidebar content
     const handleCmsUpdate = () => {
       fetchData();
     };
@@ -581,7 +522,7 @@ const CommunityLayout = () => {
         if (document.visibilityState === 'visible') {
           fetchData();
         }
-      }, 15000);
+      }, 20000);
     }
 
     return () => {
@@ -593,8 +534,7 @@ const CommunityLayout = () => {
 
   const handleFollowDeveloper = async (userId) => {
     if (!user) {
-      alert('Please log in to follow developers.');
-      window.location.href = '/login';
+      navigate('/login');
       return;
     }
     if (followDeveloperLoading[userId]) return;
@@ -633,22 +573,6 @@ const CommunityLayout = () => {
     }
   };
 
-  const handleJoinGroup = async (groupId) => {
-    if (!user) {
-      alert('Please log in to perform this action.');
-      return;
-    }
-    try {
-      const res = await api.joinLeaveCommunityGroup(groupId);
-      if (res.success) {
-        alert(res.message || 'Joined group successfully');
-        fetchData(); // reload groups list
-      }
-    } catch (err) {
-      alert(err.message || 'Failed to join group.');
-    }
-  };
-
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -656,136 +580,193 @@ const CommunityLayout = () => {
     }
   };
 
-  const navItems = [
-    { name: 'Home', path: '/community', icon: <FaHome />, prefetch: () => import('./CommunityFeed') },
-    { name: 'Explore', path: '/community/projects', icon: <FaCompass />, prefetch: () => import('./CommunityProjectDiscussions') },
-    { name: 'Communities', path: '/community/doubts', icon: <FaQuestionCircle />, prefetch: () => import('./CommunityDoubts') },
-    { name: 'Groups', path: '/community/groups', icon: <FaUsers />, prefetch: () => import('./CommunityGroups') },
-    { name: 'Resources', path: '/community/resources', icon: <FaFolderOpen />, prefetch: () => import('./CommunityResources') },
-    { name: 'Messages', path: '/community/chat', icon: <FaComments />, prefetch: () => import('./CommunityChat') },
-    { name: 'Notifications', path: '/community/notifications', icon: <FaBell />, badge: notifCount, prefetch: () => import('./CommunityNotifications') },
-    { name: 'Profile', path: user ? `/community/profile/${user?.id || user?._id}` : '/login', icon: <FaUser />, prefetch: () => import('./CommunityProfile') },
-    { name: 'Rewards Hub', path: '/community/rewards', icon: <FaTasks />, prefetch: () => import('./RewardsDashboard') },
-    { name: 'Daily Arena', path: '/community/challenges', icon: <FaCode />, prefetch: () => import('./CodingChallenges') },
-    { name: 'Ecosystem Shop', path: '/community/store', icon: <FaGift />, prefetch: () => import('./CommunityStore') },
-    { name: 'AI Consultant', path: '/community/ai-assistant', icon: <FaBrain />, prefetch: () => import('./AIConsultant') },
-    { name: 'Career Hub', path: '/community/career-hub', icon: <FaBriefcase />, prefetch: () => import('./CareerHub') },
-    { name: 'Settings', path: user ? `/user/dashboard` : '/login', icon: <FaCog />, prefetch: () => import('../admin/UserDashboard') }
+  // Structured 4-Group Navigation System
+  const navSections = [
+    {
+      group: 'Main',
+      items: [
+        { name: 'Feed', path: '/community', icon: <FaHome size={15} />, prefetch: () => import('./CommunityFeed') },
+        { name: 'Explore', path: '/community/projects', icon: <FaCompass size={15} />, prefetch: () => import('./CommunityProjectDiscussions') },
+        { name: 'Doubts & Q&A', path: '/community/doubts', icon: <FaQuestionCircle size={15} />, prefetch: () => import('./CommunityDoubts') },
+        { name: 'Groups', path: '/community/groups', icon: <FaUsers size={15} />, prefetch: () => import('./CommunityGroups') }
+      ]
+    },
+    {
+      group: 'Communication',
+      items: [
+        { name: 'Messages', path: '/community/chat', icon: <FaComments size={15} />, prefetch: () => import('./CommunityChat') },
+        { name: 'Notifications', path: '/community/notifications', icon: <FaBell size={15} />, badge: notifCount, prefetch: () => import('./CommunityNotifications') }
+      ]
+    },
+    {
+      group: 'Developer',
+      items: [
+        { name: 'Resources', path: '/community/resources', icon: <FaFolderOpen size={15} />, prefetch: () => import('./CommunityResources') },
+        { name: 'Daily Arena', path: '/community/challenges', icon: <FaCode size={15} />, prefetch: () => import('./CodingChallenges') },
+        { name: 'Career Hub', path: '/community/career-hub', icon: <FaBriefcase size={15} />, prefetch: () => import('./CareerHub') },
+        { name: 'AI Consultant', path: '/community/ai-assistant', icon: <FaBrain size={15} />, prefetch: () => import('./AIConsultant') }
+      ]
+    },
+    {
+      group: 'Account',
+      items: [
+        { name: 'Profile', path: user ? `/community/profile/${user?.id || user?._id}` : '/login', icon: <FaUser size={15} />, prefetch: () => import('./CommunityProfile') },
+        { name: 'Rewards Hub', path: '/community/rewards', icon: <FaTasks size={15} />, prefetch: () => import('./RewardsDashboard') },
+        { name: 'Ecosystem Shop', path: '/community/store', icon: <FaGift size={15} />, prefetch: () => import('./CommunityStore') },
+        { name: 'Settings', path: user ? `/user/dashboard` : '/login', icon: <FaCog size={15} />, prefetch: () => import('../admin/UserDashboard') }
+      ]
+    }
   ];
 
+  const allNavItems = navSections.flatMap(s => s.items);
+
   return (
-    <div className="min-h-screen bg-[#09090c] text-[#f1f1f5] flex flex-col font-sans selection:bg-purple-600/30 selection:text-purple-300">
+    <div className="min-h-screen bg-white dark:bg-[#000000] text-[#171717] dark:text-[#F1F1F5] flex flex-col font-sans transition-colors duration-200">
       
-      {/* Top Navbar */}
-      <header className="sticky top-0 z-[100] border-b border-white/5 bg-[#121217]/90 backdrop-blur-md px-3 py-2.5 sm:px-6 sm:py-3 flex items-center justify-between shadow-lg shadow-black/10">
-        <div className="flex items-center gap-3 sm:gap-6 flex-1 max-w-lg min-w-0">
-          {/* Hamburger Menu Toggle */}
+      {/* Top Navbar Header */}
+      <header className="sticky top-0 z-[100] border-b border-[#E5E7EB] dark:border-white/10 bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md px-3 py-2.5 sm:px-6 sm:py-3 flex items-center justify-between shadow-sm transition-colors duration-200">
+        
+        {/* Left: Mobile Toggle + TS Brand Logo + Search */}
+        <div className="flex items-center gap-3 sm:gap-5 flex-1 max-w-xl min-w-0">
           <button
             onClick={() => setMobileMenuOpen(true)}
-            className="text-lg text-slate-300 hover:text-white lg:hidden cursor-pointer shrink-0"
-            title="Open Navigation Menu"
+            className="text-lg text-[#525252] dark:text-slate-300 hover:text-[#C2272D] lg:hidden cursor-pointer shrink-0 p-1"
+            title="Open Navigation"
           >
             <FaBars />
           </button>
           
-          {/* logo */}
-          <Link to="/community" className="text-[15px] sm:text-lg font-black font-title tracking-wider text-white hover:text-purple-400 transition-colors shrink-0">
-            DevCommunity
+          {/* TS Crowned Logo & DevCommunity Title */}
+          <Link to="/community" className="flex items-center gap-2.5 group shrink-0">
+            <img 
+              src={isDark ? "/assits/ts-logo-dark.jpg" : "/assits/ts-logo-red.jpg"} 
+              alt="Tauhid Shekhar Logo" 
+              className="w-8 h-8 rounded-lg object-cover shadow-sm border border-[#E5E7EB] dark:border-white/10 group-hover:scale-105 transition-transform" 
+            />
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm sm:text-base font-black font-title tracking-tight text-[#171717] dark:text-white group-hover:text-[#C2272D] transition-colors">
+                DevCommunity
+              </span>
+              <span className="px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider rounded bg-[#C2272D]/10 text-[#C2272D] border border-[#C2272D]/20">
+                TS
+              </span>
+            </div>
           </Link>
           
           {/* Header search bar */}
-          <form onSubmit={handleSearchSubmit} className="relative w-full hidden sm:block">
+          <form onSubmit={handleSearchSubmit} className="relative w-full hidden md:block max-w-xs">
             <input
               type="text"
-              placeholder="Search users, posts, groups..."
+              placeholder="Search users, posts, topics..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-4 pr-10 py-2 rounded-xl bg-[#1e1e24] border border-white/5 text-xs text-white placeholder-slate-450 focus:outline-none focus:border-purple-500 focus:bg-[#23232a] transition-all"
+              className="w-full pl-3.5 pr-8 py-1.5 rounded-xl bg-[#F8FAFC] dark:bg-[#1E1E24] border border-[#E5E7EB] dark:border-white/10 text-xs text-[#171717] dark:text-white placeholder-[#737373] dark:placeholder-slate-400 focus:outline-none focus:border-[#C2272D] transition-all"
             />
           </form>
         </div>
 
-        {/* Action Controls */}
-        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+        {/* Right: Actions, Theme Toggle, Auth, Back to Portfolio */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          
+          {/* Theme Toggle Button */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="p-2 sm:p-2.5 rounded-xl bg-[#F8FAFC] dark:bg-[#1C1C24] hover:bg-[#E5E7EB] dark:hover:bg-[#252530] text-[#525252] dark:text-slate-300 border border-[#E5E7EB] dark:border-white/10 transition-all cursor-pointer"
+            title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          >
+            {isDark ? <FaSun size={12} className="text-amber-400" /> : <FaMoon size={12} className="text-slate-600" />}
+          </button>
+
           {user && (
             <>
               <Link 
                 to="/community" 
-                className="hidden md:flex px-4 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-xs font-black shadow-md shadow-purple-600/10 items-center gap-1.5 transition-all active:scale-[0.98]"
+                className="hidden sm:flex px-3.5 py-1.5 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-xl text-xs font-black shadow-md shadow-[#C2272D]/20 items-center gap-1.5 transition-all active:scale-95 btn-shine-effect"
               >
                 <FaPlus size={10} /> Create
               </Link>
-              <Link to="/community/notifications" className="relative p-2 sm:p-2.5 rounded-xl bg-[#1c1c24] hover:bg-[#252530] text-slate-400 hover:text-white transition-colors border border-white/5">
-                <FaBell size={12} className="sm:text-[13px]" />
+              <Link 
+                to="/community/notifications" 
+                className="relative p-2 sm:p-2.5 rounded-xl bg-[#F8FAFC] dark:bg-[#1C1C24] hover:bg-[#E5E7EB] dark:hover:bg-[#252530] text-[#525252] dark:text-slate-300 hover:text-[#C2272D] transition-colors border border-[#E5E7EB] dark:border-white/10"
+                title="Notifications"
+              >
+                <FaBell size={12} />
                 {notifCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-[8px] font-black text-white flex items-center justify-center border-2 border-[#121217]">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#C2272D] text-[8px] font-black text-white flex items-center justify-center border-2 border-white dark:border-[#111111]">
                     {notifCount}
                   </span>
                 )}
               </Link>
-              <Link to="/community/chat" className="p-2 sm:p-2.5 rounded-xl bg-[#1c1c24] hover:bg-[#252530] text-slate-400 hover:text-white transition-colors border border-white/5">
-                <FaComments size={12} className="sm:text-[13px]" />
+              <Link 
+                to="/community/chat" 
+                className="p-2 sm:p-2.5 rounded-xl bg-[#F8FAFC] dark:bg-[#1C1C24] hover:bg-[#E5E7EB] dark:hover:bg-[#252530] text-[#525252] dark:text-slate-300 hover:text-[#C2272D] transition-colors border border-[#E5E7EB] dark:border-white/10"
+                title="Direct Messages"
+              >
+                <FaComments size={12} />
               </Link>
             </>
           )}
           
-          <span className="hidden sm:inline h-4 w-px bg-white/10" />
+          <span className="hidden sm:inline h-4 w-px bg-[#E5E7EB] dark:bg-white/10" />
 
-          {/* User Block */}
+          {/* User Profile or Sign In */}
           {user ? (
-            <Link to={`/community/profile/${user?.id || user?._id}`} className="flex items-center gap-1.5 sm:gap-2.5">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl overflow-hidden bg-[#1e1e24] border border-white/10 flex items-center justify-center shrink-0">
+            <Link to={`/community/profile/${user?.id || user?._id}`} className="flex items-center gap-2 hover:opacity-90 transition-opacity">
+              <div className="w-8 h-8 rounded-xl overflow-hidden bg-[#E5E7EB] dark:bg-[#1E1E24] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center shrink-0">
                 {user?.avatar?.url ? (
                   <img src={user.avatar.url} alt="Profile" className="w-full h-full object-cover" loading="lazy" />
                 ) : (
-                  <FaUser className="text-slate-400" size={12} />
+                  <FaUser className="text-[#737373] dark:text-slate-400" size={12} />
                 )}
               </div>
               <div className="hidden lg:flex flex-col text-left">
-                <span className="text-[11px] font-black text-white leading-tight flex items-center gap-1">
-                  {user?.fullName} <FaCheckCircle size={10} className="text-purple-400" />
+                <span className="text-[11px] font-black text-[#171717] dark:text-white leading-tight flex items-center gap-1 font-title">
+                  {user?.fullName} <FaCheckCircle size={10} className="text-[#00FFFF]" />
                 </span>
-                <span className="text-[9px] font-bold text-slate-400 mt-0.5">@{user?.username}</span>
+                <span className="text-[9px] font-semibold text-[#525252] dark:text-slate-400">@{user?.username}</span>
               </div>
             </Link>
           ) : (
             <Link
               to="/login"
-              className="px-3.5 py-1.5 sm:px-4 sm:py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-[10px] sm:text-xs font-black shadow-md shadow-purple-600/10 flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
+              className="px-3.5 py-1.5 sm:px-4 sm:py-2 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-xl text-[11px] sm:text-xs font-black shadow-md shadow-[#C2272D]/20 flex items-center gap-1.5 transition-all cursor-pointer shrink-0 btn-shine-effect"
             >
-              Join Community
+              Sign In
             </Link>
           )}
           
+          {/* Back to Portfolio Link */}
           <Link
             to="/"
-            className="flex items-center gap-1 px-2 py-1.5 sm:px-3 sm:py-1.5 bg-[#1c1c24] hover:bg-[#252530] text-slate-300 rounded-xl text-[10px] sm:text-xs font-bold transition-all border border-white/5"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 bg-[#F8FAFC] dark:bg-[#1C1C24] hover:bg-[#E5E7EB] dark:hover:bg-[#252530] text-[#171717] dark:text-slate-300 hover:text-[#C2272D] rounded-xl text-[11px] sm:text-xs font-bold transition-all border border-[#E5E7EB] dark:border-white/10 shrink-0"
+            title="Return to main portfolio"
           >
-            <span className="hidden sm:inline">&larr; Back</span>
-            <span className="sm:hidden">&larr;</span>
+            <FaArrowLeft size={10} />
+            <span className="hidden sm:inline">Portfolio</span>
           </Link>
         </div>
       </header>
 
       {/* Main Flex Wrapper */}
-      <div className="flex-1 max-w-[1400px] w-full mx-auto flex flex-col lg:flex-row gap-6 p-6 pb-24 lg:pb-6 min-h-0">
+      <div className="flex-1 max-w-[1400px] w-full mx-auto flex flex-col lg:flex-row gap-6 p-4 sm:p-6 pb-24 lg:pb-6 min-h-0">
         
         {/* Left Sidebar Navigator */}
         <aside
-          className={`hidden lg:flex flex-col gap-6 shrink-0 sticky top-[72px] h-[calc(100vh-100px)] overflow-y-auto pr-1 text-left scrollbar-none transition-all duration-200 ease-in-out ${
+          className={`hidden lg:flex flex-col gap-5 shrink-0 sticky top-[72px] h-[calc(100vh-92px)] overflow-y-auto pr-1 text-left scrollbar-none transition-all duration-200 ease-in-out ${
             sidebarCollapsed ? 'w-[72px]' : 'w-[260px]'
           }`}
         >
-          {/* ChatGPT-style Sidebar Collapse Toggle */}
-          <div className={`flex items-center px-1 shrink-0 ${sidebarCollapsed ? 'justify-center' : 'justify-between pl-4'}`}>
+          {/* Sidebar Collapse Toggle */}
+          <div className={`flex items-center px-1 shrink-0 ${sidebarCollapsed ? 'justify-center' : 'justify-between pl-3'}`}>
             {!sidebarCollapsed && (
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+              <span className="text-[10px] font-black text-[#525252] dark:text-slate-400 uppercase tracking-widest font-title">
                 Navigation
               </span>
             )}
             <button
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="relative group flex items-center justify-center p-2 rounded-xl bg-[#121217] hover:bg-[#1c1c24] text-slate-400 hover:text-white transition-all border border-white/5 cursor-pointer active:scale-95 shadow-sm"
+              className="relative group flex items-center justify-center p-2 rounded-xl bg-white dark:bg-[#111111] hover:bg-[#F8FAFC] dark:hover:bg-[#1c1c24] text-[#525252] dark:text-slate-400 hover:text-[#C2272D] dark:hover:text-white transition-all border border-[#E5E7EB] dark:border-white/10 cursor-pointer active:scale-95 shadow-sm"
               title={sidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
             >
               <svg 
@@ -795,92 +776,91 @@ const CommunityLayout = () => {
                 viewBox="0 0 24 24" 
                 strokeLinecap="round" 
                 strokeLinejoin="round" 
-                className={`w-4.5 h-4.5 transition-transform duration-300 ${sidebarCollapsed ? 'rotate-180' : ''}`}
+                className={`w-4 h-4 transition-transform duration-300 ${sidebarCollapsed ? 'rotate-180' : ''}`}
               >
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
                 <line x1="9" y1="3" x2="9" y2="21" />
                 <path d="M14 15l-3-3 3-3" />
               </svg>
               
-              {/* Floating Tooltip when collapsed */}
               {sidebarCollapsed && (
-                <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#121217] border border-white/5 text-[10px] font-black text-white uppercase tracking-wider rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 whitespace-nowrap shadow-xl z-[999] shadow-black/40">
+                <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#111111] border border-white/10 text-[10px] font-black text-white uppercase tracking-wider rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 whitespace-nowrap shadow-xl z-[999]">
                   Expand Sidebar
                 </div>
               )}
             </button>
           </div>
 
-          {/* Main Menu Links */}
-          <div className="bg-[#121217] border border-white/5 p-4 rounded-3xl flex flex-col gap-1 shadow-sm">
-            {navItems.map(item => {
-              const active = location.pathname === item.path;
-              const tourId = item.name === 'Home' ? 'tour-community' :
-                             item.name === 'Profile' ? 'tour-profile' :
-                             item.name === 'Notifications' ? 'tour-notifications' :
-                             item.name === 'Rewards Hub' ? 'tour-rewards' :
-                             item.name === 'AI Consultant' ? 'tour-ai-tools' :
-                             item.name === 'Career Hub' ? 'tour-ats' :
-                             item.name === 'Explore' ? 'tour-resume-preview' :
-                             item.name === 'Ecosystem Shop' ? 'tour-portfolio' :
-                             item.name === 'Daily Arena' ? 'tour-services' :
-                             item.name === 'Groups' ? 'tour-orders' :
-                             item.name === 'Settings' ? 'tour-settings' : undefined;
-              return (
-                <Link
-                  key={item.name}
-                  to={item.path}
-                  id={tourId}
-                  onMouseEnter={item.prefetch}
-                  className={`relative group flex items-center rounded-2xl text-xs font-bold transition-all ${
-                    sidebarCollapsed ? 'justify-center p-2.5' : 'justify-between px-4 py-2.5'
-                  } ${
-                    active 
-                      ? 'bg-purple-600/10 text-purple-400 border border-purple-600/15' 
-                      : 'text-slate-400 hover:bg-[#1a1a22] hover:text-white border border-transparent'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className={`text-sm ${active ? 'text-purple-400' : 'text-slate-500'}`}>{item.icon}</span>
-                    {!sidebarCollapsed && <span>{item.name}</span>}
-                  </div>
-                  
-                  {item.badge > 0 && (
-                    sidebarCollapsed ? (
-                      <span className="absolute top-1 right-1 w-3.5 h-3.5 text-[8px] font-black bg-purple-600 text-white rounded-full flex items-center justify-center border border-[#121217] leading-none scale-90">
-                        {item.badge}
-                      </span>
-                    ) : (
-                      <span className="px-1.5 py-0.5 text-[9px] font-black bg-purple-600 text-white rounded-full leading-none shrink-0">
-                        {item.badge}
-                      </span>
-                    )
-                  )}
+          {/* Grouped Navigation Links */}
+          <div className="bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 p-3.5 rounded-3xl flex flex-col gap-4 shadow-sm">
+            {navSections.map(section => (
+              <div key={section.group} className="flex flex-col gap-1">
+                {!sidebarCollapsed && (
+                  <span className="text-[9px] font-black uppercase tracking-widest text-[#737373] dark:text-slate-400 px-3 py-1 font-title">
+                    {section.group}
+                  </span>
+                )}
+                {section.items.map(item => {
+                  const active = location.pathname === item.path;
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.path}
+                      onMouseEnter={item.prefetch}
+                      className={`relative group flex items-center rounded-xl text-xs font-bold transition-all ${
+                        sidebarCollapsed ? 'justify-center p-2.5' : 'justify-between px-3.5 py-2.5'
+                      } ${
+                        active 
+                          ? 'bg-[#C2272D] text-white shadow-md shadow-[#C2272D]/20' 
+                          : 'text-[#525252] dark:text-slate-300 hover:bg-[#F8FAFC] dark:hover:bg-[#1A1A22] hover:text-[#C2272D] dark:hover:text-white'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className={`shrink-0 ${active ? 'text-white' : 'text-[#737373] dark:text-slate-400 group-hover:text-[#C2272D]'}`}>
+                          {item.icon}
+                        </span>
+                        {!sidebarCollapsed && <span>{item.name}</span>}
+                      </div>
+                      
+                      {item.badge > 0 && (
+                        sidebarCollapsed ? (
+                          <span className="absolute top-1 right-1 w-3.5 h-3.5 text-[8px] font-black bg-[#C2272D] text-white rounded-full flex items-center justify-center border border-white dark:border-[#111111]">
+                            {item.badge}
+                          </span>
+                        ) : (
+                          <span className={`px-1.5 py-0.5 text-[9px] font-black rounded-full leading-none shrink-0 ${
+                            active ? 'bg-white text-[#C2272D]' : 'bg-[#C2272D] text-white'
+                          }`}>
+                            {item.badge}
+                          </span>
+                        )
+                      )}
 
-                  {/* Floating Tooltip when collapsed */}
-                  {sidebarCollapsed && (
-                    <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#121217] border border-white/5 text-[10px] font-black text-white uppercase tracking-wider rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 whitespace-nowrap shadow-xl z-[999] shadow-black/40">
-                      {item.name} {item.badge > 0 ? `(${item.badge})` : ''}
-                    </div>
-                  )}
-                </Link>
-              );
-            })}
+                      {sidebarCollapsed && (
+                        <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#111111] border border-white/10 text-[10px] font-black text-white uppercase tracking-wider rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 whitespace-nowrap shadow-xl z-[999]">
+                          {item.name} {item.badge > 0 ? `(${item.badge})` : ''}
+                        </div>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            ))}
           </div>
 
-          {/* Groups collapsible list */}
-          <div className="bg-[#121217] border border-white/5 p-4 rounded-3xl flex flex-col gap-3 shadow-sm">
-            <div className={`flex items-center border-b border-white/5 pb-2 ${sidebarCollapsed ? 'justify-center border-none' : 'justify-between'}`}>
+          {/* Groups list */}
+          <div className="bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 p-3.5 rounded-3xl flex flex-col gap-2.5 shadow-sm">
+            <div className={`flex items-center border-b border-[#E5E7EB] dark:border-white/10 pb-2 ${sidebarCollapsed ? 'justify-center border-none' : 'justify-between'}`}>
               {sidebarCollapsed ? (
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider" title="Your Groups">
+                <span className="text-[10px] font-black text-[#525252] dark:text-slate-400 uppercase tracking-wider" title="Your Groups">
                   <FaUsers size={16} />
                 </span>
               ) : (
                 <>
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <FaUsers /> Your Groups
+                  <span className="text-[10px] font-black text-[#171717] dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5 font-title">
+                    <FaUsers className="text-[#C2272D]" /> Your Groups
                   </span>
-                  {user && <Link to="/community/groups" className="text-[9px] text-purple-400 font-black uppercase hover:underline">View All</Link>}
+                  {user && <Link to="/community/groups" className="text-[9px] text-[#C2272D] font-black uppercase hover:underline">View All</Link>}
                 </>
               )}
             </div>
@@ -892,27 +872,26 @@ const CommunityLayout = () => {
                     <Link
                       key={group._id}
                       to="/community/groups"
-                      className={`relative group flex items-center rounded-xl hover:bg-white/5 transition-colors ${
+                      className={`relative group flex items-center rounded-xl hover:bg-[#F8FAFC] dark:hover:bg-white/5 transition-colors ${
                         sidebarCollapsed ? 'justify-center p-1' : 'gap-2.5 p-1'
                       }`}
                     >
-                      <div className="w-8 h-8 rounded-lg overflow-hidden bg-purple-600/10 text-purple-400 border border-purple-500/15 flex items-center justify-center shrink-0 font-black text-xs uppercase">
+                      <div className="w-8 h-8 rounded-lg overflow-hidden bg-[#C2272D]/10 text-[#C2272D] border border-[#C2272D]/20 flex items-center justify-center shrink-0 font-black text-xs uppercase">
                         {group.logo?.url ? (
                           <img src={group.logo.url} alt="logo" className="w-full h-full object-cover" loading="lazy" />
                         ) : (
-                          (group.name || '').substring(0, 2)
+                          (group.name || 'GP').substring(0, 2)
                         )}
                       </div>
                       {!sidebarCollapsed && (
                         <div className="flex flex-col text-left min-w-0">
-                          <span className="text-[11px] font-bold text-white group-hover:text-purple-400 transition-colors truncate">{group.name || 'Unnamed Group'}</span>
-                          <span className="text-[9px] text-slate-500 mt-0.5">{group.members?.length || 0} members</span>
+                          <span className="text-[11px] font-bold text-[#171717] dark:text-white group-hover:text-[#C2272D] transition-colors truncate">{group.name || 'Unnamed Group'}</span>
+                          <span className="text-[9px] text-[#525252] dark:text-slate-400 mt-0.5">{group.members?.length || 0} members</span>
                         </div>
                       )}
 
-                      {/* Tooltip for Groups when collapsed */}
                       {sidebarCollapsed && (
-                        <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#121217] border border-white/5 text-[10px] font-black text-white uppercase tracking-wider rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 whitespace-nowrap shadow-xl z-[999] shadow-black/40">
+                        <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#111111] border border-white/10 text-[10px] font-black text-white uppercase tracking-wider rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 whitespace-nowrap shadow-xl z-[999]">
                           {group.name} ({group.members?.length || 0} members)
                         </div>
                       )}
@@ -922,14 +901,14 @@ const CommunityLayout = () => {
                   {!sidebarCollapsed && (
                     <Link 
                       to="/community/groups" 
-                      className="mt-2 w-full py-2.5 bg-[#181820] hover:bg-[#20202a] text-slate-300 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 border border-white/5 transition-colors cursor-pointer"
+                      className="mt-1 w-full py-2 bg-[#F8FAFC] dark:bg-[#181820] hover:bg-[#C2272D] hover:text-white text-[#171717] dark:text-slate-300 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 border border-[#E5E7EB] dark:border-white/5 transition-all cursor-pointer"
                     >
                       <FaPlus size={8} /> Create Group
                     </Link>
                   )}
                 </>
               ) : (
-                !sidebarCollapsed && <div className="text-[10px] text-slate-500 py-2 text-center">Log in to view your groups</div>
+                !sidebarCollapsed && <div className="text-[10px] text-[#737373] dark:text-slate-500 py-2 text-center">Log in to view your groups</div>
               )}
             </div>
           </div>
@@ -939,27 +918,27 @@ const CommunityLayout = () => {
             sidebarCollapsed ? (
               <Link
                 to={`/community/profile/${user?.id || user?._id}`}
-                className="relative group bg-[#121217] border border-white/5 p-3 rounded-3xl flex items-center justify-center shadow-sm hover:bg-white/5 transition-colors cursor-pointer"
+                className="relative group bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 p-3 rounded-3xl flex items-center justify-center shadow-sm hover:border-[#C2272D]/40 transition-colors cursor-pointer"
               >
-                <FaCrown className="text-amber-400" size={16} />
-                <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#121217] border border-white/5 text-[10px] font-black text-white uppercase tracking-wider rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 whitespace-nowrap shadow-xl z-[999] shadow-black/40">
+                <FaCrown className="text-amber-500" size={16} />
+                <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#111111] border border-white/10 text-[10px] font-black text-white uppercase tracking-wider rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 whitespace-nowrap shadow-xl z-[999]">
                   Level {user?.level || Math.floor((user?.xp || 0) / 100) + 1} ({user?.xp || 0} XP)
                 </div>
               </Link>
             ) : (
-              <div className="bg-[#121217] border border-white/5 p-4 rounded-3xl flex flex-col gap-2.5 shadow-sm">
-                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block">Developer Status</span>
+              <div className="bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 p-4 rounded-3xl flex flex-col gap-2 shadow-sm">
+                <span className="text-[9px] font-black text-[#525252] dark:text-slate-400 uppercase tracking-widest block font-title">Developer Status</span>
                 <div className="flex justify-between items-baseline mb-0.5">
-                  <h4 className="text-base font-black text-white">{user?.xp || 0} <span className="text-[9px] text-slate-500 font-bold uppercase">XP</span></h4>
-                  <span className="text-[10px] text-amber-400 font-black flex items-center gap-1"><FaCoins size={10} /> {user?.coins || 0}</span>
+                  <h4 className="text-base font-black text-[#171717] dark:text-white">{user?.xp || 0} <span className="text-[9px] text-[#525252] dark:text-slate-400 font-bold uppercase">XP</span></h4>
+                  <span className="text-[10px] text-amber-500 font-black flex items-center gap-1"><FaCoins size={10} /> {user?.coins || 0}</span>
                 </div>
-                <div className="w-full h-1 bg-[#1c1c24] rounded-full overflow-hidden">
+                <div className="w-full h-1.5 bg-[#E5E7EB] dark:bg-[#1c1c24] rounded-full overflow-hidden">
                   <div 
-                    className="h-full bg-gradient-to-r from-purple-500 to-indigo-500"
-                    style={{ width: `${(user?.xp || 0) % 100}%` }}
+                    className="h-full bg-gradient-to-r from-[#C2272D] to-[#00FFFF]"
+                    style={{ width: `${Math.min(100, (user?.xp || 0) % 100 || 15)}%` }}
                   />
                 </div>
-                <div className="flex justify-between items-center text-[8px] text-slate-500 mt-0.5 uppercase font-bold tracking-wider">
+                <div className="flex justify-between items-center text-[8px] text-[#525252] dark:text-slate-400 mt-0.5 uppercase font-bold tracking-wider">
                   <span>Level {user?.level || Math.floor((user?.xp || 0) / 100) + 1}</span>
                   <span>Rep: {user?.reputation || 0}</span>
                 </div>
@@ -969,20 +948,20 @@ const CommunityLayout = () => {
             sidebarCollapsed ? (
               <Link
                 to="/login"
-                className="relative group bg-[#121217] border border-white/5 p-3 rounded-3xl flex items-center justify-center shadow-sm hover:bg-white/5 transition-colors cursor-pointer"
+                className="relative group bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 p-3 rounded-3xl flex items-center justify-center shadow-sm hover:border-[#C2272D]/40 transition-colors cursor-pointer"
               >
-                <FaUser className="text-slate-400" size={16} />
-                <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#121217] border border-white/5 text-[10px] font-black text-white uppercase tracking-wider rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 whitespace-nowrap shadow-xl z-[999] shadow-black/40">
+                <FaUser className="text-[#525252] dark:text-slate-400" size={16} />
+                <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#111111] border border-white/10 text-[10px] font-black text-white uppercase tracking-wider rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 whitespace-nowrap shadow-xl z-[999]">
                   Log In to track progress
                 </div>
               </Link>
             ) : (
-              <div className="bg-[#121217] border border-white/5 p-5 rounded-3xl flex flex-col gap-3 shadow-sm text-center">
-                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block">Developer Status</span>
-                <p className="text-[10px] text-slate-400 leading-relaxed">Join DevCommunity to earn XP, coins, and track your streaks!</p>
+              <div className="bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 p-4 rounded-3xl flex flex-col gap-2.5 shadow-sm text-center">
+                <span className="text-[9px] font-black text-[#525252] dark:text-slate-400 uppercase tracking-widest block font-title">Developer Status</span>
+                <p className="text-[10px] text-[#525252] dark:text-slate-400 leading-relaxed">Join DevCommunity to earn XP, badges, and collaborate on projects!</p>
                 <Link
                   to="/login"
-                  className="w-full py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors cursor-pointer text-center"
+                  className="w-full py-2 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer text-center shadow-sm btn-shine-effect"
                 >
                   Log In
                 </Link>
@@ -1002,7 +981,7 @@ const CommunityLayout = () => {
         </main>
 
         {/* Right Sidebar Navigator */}
-        <aside className="hidden xl:flex flex-col gap-6 w-[320px] shrink-0 sticky top-[72px] h-[calc(100vh-100px)] overflow-y-auto pl-1 text-left scrollbar-none">
+        <aside className="hidden xl:flex flex-col gap-5 w-[320px] shrink-0 sticky top-[72px] h-[calc(100vh-92px)] overflow-y-auto pl-1 text-left scrollbar-none">
           {renderRightSidebar(false)}
         </aside>
 
@@ -1018,71 +997,79 @@ const CommunityLayout = () => {
 
       {/* Mobile Sidebar Drawer */}
       <aside
-        className={`fixed top-0 left-0 w-64 h-screen bg-[#121217] z-[1000] border-r border-white/5 flex flex-col transition-transform duration-200 ease-out lg:hidden overflow-y-auto ${
+        className={`fixed top-0 left-0 w-72 h-screen bg-white dark:bg-[#111111] z-[1000] border-r border-[#E5E7EB] dark:border-white/10 flex flex-col transition-transform duration-200 ease-out lg:hidden overflow-y-auto ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="p-5 border-b border-white/5 flex items-center justify-between">
-          <span className="text-sm font-black font-title tracking-wider text-white uppercase">DevCommunity</span>
-          <button onClick={() => setMobileMenuOpen(false)} className="text-xl text-white cursor-pointer">
-            <FaTimes />
+        <div className="p-4 border-b border-[#E5E7EB] dark:border-white/10 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <img 
+              src={isDark ? "/assits/ts-logo-dark.jpg" : "/assits/ts-logo-red.jpg"} 
+              alt="Logo" 
+              className="w-7 h-7 rounded-lg object-cover" 
+            />
+            <span className="text-sm font-black font-title tracking-tight text-[#171717] dark:text-white uppercase">DevCommunity</span>
+          </div>
+          <button onClick={() => setMobileMenuOpen(false)} className="p-1.5 text-[#525252] dark:text-white cursor-pointer hover:text-[#C2272D]">
+            <FaTimes size={16} />
           </button>
         </div>
-        <nav className="flex-1 p-4 flex flex-col gap-1 text-left">
-          {navItems.map(item => {
-            const active = location.pathname === item.path;
-            const tourId = item.name === 'Home' ? 'tour-community' :
-                           item.name === 'Profile' ? 'tour-profile' :
-                           item.name === 'Notifications' ? 'tour-notifications' :
-                           item.name === 'Rewards Hub' ? 'tour-rewards' :
-                           item.name === 'AI Consultant' ? 'tour-ai-tools' :
-                           item.name === 'Career Hub' ? 'tour-ats' :
-                           item.name === 'Explore' ? 'tour-resume-preview' :
-                           item.name === 'Ecosystem Shop' ? 'tour-portfolio' :
-                           item.name === 'Daily Arena' ? 'tour-services' :
-                           item.name === 'Groups' ? 'tour-orders' :
-                           item.name === 'Settings' ? 'tour-settings' : undefined;
-            return (
-              <Link
-                key={item.name}
-                to={item.path}
-                id={tourId}
-                onClick={() => setMobileMenuOpen(false)}
-                onMouseEnter={item.prefetch}
-                className={`flex items-center gap-3 px-4.5 py-3 rounded-2xl text-xs font-bold transition-all ${
-                  active 
-                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md' 
-                    : 'text-slate-400 hover:bg-[#1e1e24] hover:text-white'
-                }`}
-              >
-                <span className="text-sm">{item.icon}</span>
-                <span>{item.name}</span>
-              </Link>
-            );
-          })}
+
+        <nav className="flex-1 p-3.5 flex flex-col gap-4 text-left">
+          {navSections.map(section => (
+            <div key={section.group} className="flex flex-col gap-1">
+              <span className="text-[9px] font-black uppercase tracking-widest text-[#737373] dark:text-slate-400 px-3 py-1 font-title">
+                {section.group}
+              </span>
+              {section.items.map(item => {
+                const active = location.pathname === item.path;
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.path}
+                    onClick={() => setMobileMenuOpen(false)}
+                    onMouseEnter={item.prefetch}
+                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                      active 
+                        ? 'bg-[#C2272D] text-white shadow-md' 
+                        : 'text-[#525252] dark:text-slate-300 hover:bg-[#F8FAFC] dark:hover:bg-[#1E1E24] hover:text-[#C2272D] dark:hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm">{item.icon}</span>
+                      <span>{item.name}</span>
+                    </div>
+                    {item.badge > 0 && (
+                      <span className="px-1.5 py-0.5 text-[9px] font-black bg-[#C2272D] text-white rounded-full leading-none">
+                        {item.badge}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
         </nav>
       </aside>
 
       {/* Mobile Bottom Navigation Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[99] bg-[#121217]/95 backdrop-blur-lg border-t border-white/5 py-2 px-4 flex items-center justify-around shadow-2xl">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[99] bg-white/95 dark:bg-[#111111]/95 backdrop-blur-lg border-t border-[#E5E7EB] dark:border-white/10 py-2 px-3 flex items-center justify-around shadow-2xl">
         {[
-          { name: 'Feed', path: '/community', icon: <FaHome size={16} />, prefetch: () => import('./CommunityFeed') },
-          { name: 'Doubts', path: '/community/doubts', icon: <FaQuestionCircle size={16} />, prefetch: () => import('./CommunityDoubts') },
-          { name: 'Projects', path: '/community/projects', icon: <FaCompass size={16} />, prefetch: () => import('./CommunityProjectDiscussions') },
-          { name: 'Careers', path: '/community/career-hub', icon: <FaBriefcase size={16} />, prefetch: () => import('./CareerHub') },
-          { name: 'Ecosystem', path: '/community/store', icon: <FaGift size={16} />, prefetch: () => import('./CommunityStore') }
+          { name: 'Feed', path: '/community', icon: <FaHome size={16} /> },
+          { name: 'Doubts', path: '/community/doubts', icon: <FaQuestionCircle size={16} /> },
+          { name: 'Explore', path: '/community/projects', icon: <FaCompass size={16} /> },
+          { name: 'Career', path: '/community/career-hub', icon: <FaBriefcase size={16} /> },
+          { name: 'Store', path: '/community/store', icon: <FaGift size={16} /> }
         ].map(item => {
           const active = location.pathname === item.path;
           return (
             <Link
               key={item.name}
               to={item.path}
-              onMouseEnter={item.prefetch}
-              onTouchStart={item.prefetch}
-              className={`flex flex-col items-center justify-center gap-1 py-1 px-3.5 rounded-xl transition-all ${
+              className={`flex flex-col items-center justify-center gap-0.5 py-1 px-2.5 rounded-xl transition-all ${
                 active 
-                  ? 'text-purple-400 font-black' 
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'text-[#C2272D] font-black' 
+                  : 'text-[#525252] dark:text-slate-400 hover:text-[#171717] dark:hover:text-white'
               }`}
             >
               <span>{item.icon}</span>

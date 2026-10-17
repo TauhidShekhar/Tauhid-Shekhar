@@ -824,46 +824,54 @@ const CommunityFeed = () => {
     <div className="flex flex-col gap-6 w-full text-left">
       
       {/* Top Banner Card */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-900/60 to-indigo-900/40 border border-purple-500/20 p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-2xl">
-        <div className="absolute -top-12 -right-12 w-48 h-48 bg-purple-500/20 rounded-full blur-3xl" />
-        <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-indigo-500/20 rounded-full blur-3xl" />
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#171717] via-[#111111] to-[#0A0A0A] border border-[#C2272D]/30 p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-xl card-interactive">
+        <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#C2272D]/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-[#00FFFF]/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="z-10 text-left">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-[#C2272D] text-white">
+              DevCommunity
+            </span>
+            <span className="text-[10px] text-[#00FFFF] font-bold font-mono">
+              Tauhid Shekhar Ecosystem
+            </span>
+          </div>
           <h2 className="text-xl md:text-2xl font-black text-white font-title tracking-tight leading-tight">
             Build Projects, Learn Together
           </h2>
-          <p className="text-xs md:text-sm text-slate-350 mt-1 max-w-md font-medium leading-relaxed">
-            Join coding challenges, resolve doubts, and unlock rewards with other developers.
+          <p className="text-xs md:text-sm text-slate-300 mt-1 max-w-md font-medium leading-relaxed">
+            Collaborate on full-stack code, resolve development doubts, and unlock rewards with top software engineers.
           </p>
         </div>
 
-        <div className="z-10 flex flex-wrap gap-4 sm:gap-6 shrink-0">
-          <div className="px-4 py-2.5 rounded-2xl bg-[#121217]/60 border border-white/5 flex flex-col items-start min-w-[90px]">
+        <div className="z-10 flex flex-wrap gap-3 sm:gap-4 shrink-0">
+          <div className="px-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-start min-w-[90px]">
             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Members</span>
-            <span className="text-base font-black text-white mt-0.5">4.5K</span>
+            <span className="text-base font-black text-white mt-0.5">2,480+</span>
           </div>
-          <div className="px-4 py-2.5 rounded-2xl bg-[#121217]/60 border border-white/5 flex flex-col items-start min-w-[90px]">
+          <div className="px-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-start min-w-[90px]">
             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Active</span>
-            <span className="text-base font-black text-white mt-0.5">250+</span>
+            <span className="text-base font-black text-[#00FFFF] mt-0.5">180+</span>
           </div>
-          <div className="px-4 py-2.5 rounded-2xl bg-[#121217]/60 border border-white/5 flex flex-col items-start min-w-[90px]">
+          <div className="px-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-start min-w-[90px]">
             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Rewards</span>
-            <span className="text-base font-black text-purple-400 mt-0.5">$500+</span>
+            <span className="text-base font-black text-[#C2272D] mt-0.5">10k+ XP</span>
           </div>
         </div>
       </div>
 
       {/* Search & Category Filter Header */}
-      <div className="bg-[#121217] border border-white/5 p-4 rounded-3xl flex flex-col md:flex-row gap-4 items-center justify-between shadow-sm">
-        <div className="flex flex-nowrap items-center gap-2 overflow-x-auto w-full md:w-auto scrollbar-none py-1.5">
+      <div className="bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 p-3.5 sm:p-4 rounded-3xl flex flex-col md:flex-row gap-3 items-center justify-between shadow-sm">
+        <div className="flex flex-nowrap items-center gap-2 overflow-x-auto w-full md:w-auto scrollbar-none py-1">
           {categories.map(c => (
             <button
               key={c}
               onClick={() => setActiveCategory(c)}
               className={`whitespace-nowrap flex-shrink-0 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
                 activeCategory === c 
-                  ? 'bg-purple-600 text-white shadow-md shadow-purple-600/15' 
-                  : 'bg-[#1c1c24] text-slate-400 hover:text-white border border-white/5'
+                  ? 'bg-[#C2272D] text-white shadow-md shadow-[#C2272D]/20' 
+                  : 'bg-[#F8FAFC] dark:bg-[#1C1C24] text-[#525252] dark:text-slate-300 hover:text-[#C2272D] dark:hover:text-white border border-[#E5E7EB] dark:border-white/5'
               }`}
             >
               {c}
@@ -874,41 +882,41 @@ const CommunityFeed = () => {
         {searchUrlQuery && (
           <button 
             onClick={() => navigate('/community')}
-            className="text-[10px] font-black uppercase text-purple-400 hover:underline shrink-0"
+            className="text-[10px] font-black uppercase text-[#C2272D] hover:underline shrink-0"
           >
             Clear Search Filter
           </button>
         )}
       </div>
 
-      {/* LinkedIn/Facebook styled "Create Post" Card */}
+      {/* Create Post Card */}
       {user && (
-        <div className="bg-[#121217] border border-white/5 p-5 rounded-3xl flex flex-col gap-4 shadow-sm">
+        <div className="bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 p-5 rounded-3xl flex flex-col gap-4 shadow-sm">
           <div className="flex gap-3">
-             <div className="w-10 h-10 rounded-xl overflow-hidden bg-[#1c1c24] border border-white/10 shrink-0 flex items-center justify-center">
+             <div className="w-10 h-10 rounded-xl overflow-hidden bg-[#F8FAFC] dark:bg-[#1c1c24] border border-[#E5E7EB] dark:border-white/10 shrink-0 flex items-center justify-center">
               {user?.avatar?.url ? (
                 <img src={user.avatar.url} alt="Profile" className="w-full h-full object-cover" loading="lazy" />
               ) : (
-                <FaUser className="text-slate-400" size={14} />
+                <FaUser className="text-[#525252] dark:text-slate-400" size={14} />
               )}
             </div>
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Share your coding projects, doubts, or tips with the community..."
+              placeholder="Share your coding projects, technical questions, or tips with the community..."
               rows={2}
-              className="w-full px-4 py-3 rounded-2xl bg-[#1e1e24] border border-white/5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 transition-all resize-none leading-relaxed"
+              className="w-full px-4 py-3 rounded-2xl bg-[#F8FAFC] dark:bg-[#1e1e24] border border-[#E5E7EB] dark:border-white/10 text-xs text-[#171717] dark:text-white placeholder-[#737373] dark:placeholder-slate-400 focus:outline-none focus:border-[#C2272D] transition-all resize-none leading-relaxed"
             />
           </div>
 
           {/* Media Attach Preview */}
           {selectedImages.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-2.5 bg-[#181820]/40 border border-white/5 rounded-2xl">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-2.5 bg-[#F8FAFC] dark:bg-[#181820]/40 border border-[#E5E7EB] dark:border-white/5 rounded-2xl">
               {selectedImages.map((img, idx) => (
                 <div 
                   key={img.id} 
-                  className={`relative aspect-square rounded-xl overflow-hidden bg-[#181820] border ${
-                    img.error ? 'border-red-500' : img.remoteUrl ? 'border-emerald-500/50' : 'border-white/5'
+                  className={`relative aspect-square rounded-xl overflow-hidden bg-[#F8FAFC] dark:bg-[#181820] border ${
+                    img.error ? 'border-red-500' : img.remoteUrl ? 'border-emerald-500/50' : 'border-[#E5E7EB] dark:border-white/5'
                   } group`}
                 >
                   <img src={img.previewUrl} alt="Preview" className="w-full h-full object-cover" />
@@ -929,7 +937,7 @@ const CommunityFeed = () => {
                   <button
                     type="button"
                     onClick={() => handleRecropImage(img, idx)}
-                    className="absolute top-1.5 left-1.5 p-1 bg-black/75 hover:bg-cyan-550 text-white rounded-full text-[10px] cursor-pointer transition-colors z-10 opacity-0 group-hover:opacity-100"
+                    className="absolute top-1.5 left-1.5 p-1 bg-black/75 hover:bg-cyan-500 text-white rounded-full text-[10px] cursor-pointer transition-colors z-10 opacity-0 group-hover:opacity-100"
                     title="Recrop Image"
                   >
                     <FaCrop size={8} />
@@ -948,7 +956,7 @@ const CommunityFeed = () => {
                             return copy;
                           });
                         }}
-                        className="text-white hover:text-purple-400 p-0.5 cursor-pointer text-[10px]"
+                        className="text-white hover:text-[#00FFFF] p-0.5 cursor-pointer text-[10px]"
                         title="Move Left"
                       >
                         ←
@@ -966,7 +974,7 @@ const CommunityFeed = () => {
                             return copy;
                           });
                         }}
-                        className="text-white hover:text-purple-400 p-0.5 cursor-pointer text-[10px]"
+                        className="text-white hover:text-[#00FFFF] p-0.5 cursor-pointer text-[10px]"
                         title="Move Right"
                       >
                         →
@@ -976,7 +984,7 @@ const CommunityFeed = () => {
 
                   {img.uploading && (
                     <div className="absolute inset-0 bg-black/70 flex items-center justify-center flex-col gap-1 z-20">
-                      <div className="w-5 h-5 rounded-full border border-purple-500/20 border-t-purple-500 animate-spin" />
+                      <div className="w-5 h-5 rounded-full border border-[#C2272D]/20 border-t-[#C2272D] animate-spin" />
                       <span className="text-[8px] font-black text-white">{img.progress}%</span>
                     </div>
                   )}
@@ -992,7 +1000,7 @@ const CommunityFeed = () => {
                           ));
                           uploadSingleFeedImage(img);
                         }}
-                        className="px-1.5 py-0.5 bg-red-600 hover:bg-red-750 text-white rounded text-[8px] font-bold mt-1 cursor-pointer"
+                        className="px-1.5 py-0.5 bg-red-600 hover:bg-red-700 text-white rounded text-[8px] font-bold mt-1 cursor-pointer"
                       >
                         Retry
                       </button>
@@ -1010,7 +1018,7 @@ const CommunityFeed = () => {
           )}
 
           {(localPreviewUrl || mediaUrl) && (
-            <div className="relative rounded-2xl overflow-hidden border border-white/5 bg-[#181820] max-h-[300px]">
+            <div className="relative rounded-2xl overflow-hidden border border-[#E5E7EB] dark:border-white/5 bg-[#F8FAFC] dark:bg-[#181820] max-h-[300px]">
               <button
                 type="button"
                 onClick={() => { setMediaUrl(''); setLocalPreviewUrl(''); setMediaType('none'); setAttachedFileName(''); }}
@@ -1022,31 +1030,31 @@ const CommunityFeed = () => {
               {mediaType === 'video' && <video src={localPreviewUrl || mediaUrl} controls className="w-full h-full max-h-[300px]" />}
               {mediaType === 'pdf' && (
                 <div className="p-4 flex items-center gap-3 text-xs">
-                  <FaFilePdf size={20} className="text-red-500" />
-                  <span className="font-bold text-white">{attachedFileName || 'Attachment.pdf'}</span>
+                  <FaFilePdf size={20} className="text-[#C2272D]" />
+                  <span className="font-bold text-[#171717] dark:text-white">{attachedFileName || 'Attachment.pdf'}</span>
                 </div>
               )}
               {uploading && (
                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center flex-col gap-2">
-                  <div className="w-8 h-8 rounded-full border-2 border-purple-500/20 border-t-purple-500 animate-spin" />
+                  <div className="w-8 h-8 rounded-full border-2 border-[#C2272D]/20 border-t-[#C2272D] animate-spin" />
                   <span className="text-[10px] font-black text-white uppercase tracking-widest animate-pulse">Uploading...</span>
                 </div>
               )}
             </div>
           )}
 
-          <div className="flex flex-col xs:flex-row justify-between xs:items-center gap-3 border-t border-white/5 pt-3">
+          <div className="flex flex-col xs:flex-row justify-between xs:items-center gap-3 border-t border-[#E5E7EB] dark:border-white/5 pt-3">
             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-              <label className="p-2 bg-[#1c1c24] hover:bg-[#252530] text-purple-400 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider border border-white/5 shrink-0">
-                <FaImage size={12} /> Image
+              <label className="p-2 bg-[#F8FAFC] dark:bg-[#1c1c24] hover:bg-[#E5E7EB] dark:hover:bg-[#252530] text-[#171717] dark:text-slate-300 hover:text-[#C2272D] rounded-xl transition-all cursor-pointer flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider border border-[#E5E7EB] dark:border-white/5 shrink-0">
+                <FaImage size={12} className="text-[#C2272D]" /> Image
                 <input type="file" accept="image/*" multiple onChange={handleMediaUpload} className="hidden" />
               </label>
-              <label className="p-2 bg-[#1c1c24] hover:bg-[#252530] text-purple-400 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider border border-white/5 shrink-0">
-                <FaVideo size={12} /> Video
+              <label className="p-2 bg-[#F8FAFC] dark:bg-[#1c1c24] hover:bg-[#E5E7EB] dark:hover:bg-[#252530] text-[#171717] dark:text-slate-300 hover:text-[#C2272D] rounded-xl transition-all cursor-pointer flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider border border-[#E5E7EB] dark:border-white/5 shrink-0">
+                <FaVideo size={12} className="text-[#C2272D]" /> Video
                 <input type="file" accept="video/*" onChange={handleMediaUpload} className="hidden" />
               </label>
-              <label className="p-2 bg-[#1c1c24] hover:bg-[#252530] text-purple-400 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider border border-white/5 shrink-0">
-                <FaFilePdf size={12} /> PDF
+              <label className="p-2 bg-[#F8FAFC] dark:bg-[#1c1c24] hover:bg-[#E5E7EB] dark:hover:bg-[#252530] text-[#171717] dark:text-slate-300 hover:text-[#C2272D] rounded-xl transition-all cursor-pointer flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider border border-[#E5E7EB] dark:border-white/5 shrink-0">
+                <FaFilePdf size={12} className="text-[#C2272D]" /> PDF
                 <input type="file" accept="application/pdf" onChange={handleMediaUpload} className="hidden" />
               </label>
               <button
@@ -1060,8 +1068,8 @@ const CommunityFeed = () => {
                 }}
                 className={`p-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider border ${
                   showPollCreator
-                    ? 'bg-purple-600 text-white border-purple-500/20 shadow-md shadow-purple-600/10'
-                    : 'bg-[#1c1c24] hover:bg-[#252530] text-purple-400 border-white/5'
+                    ? 'bg-[#C2272D] text-white border-[#C2272D] shadow-sm'
+                    : 'bg-[#F8FAFC] dark:bg-[#1c1c24] hover:bg-[#E5E7EB] dark:hover:bg-[#252530] text-[#171717] dark:text-slate-300 border-[#E5E7EB] dark:border-white/5'
                 }`}
               >
                 <FaPoll size={12} /> Poll
@@ -1069,7 +1077,7 @@ const CommunityFeed = () => {
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="px-2.5 py-2 bg-[#1c1c24] hover:bg-[#252530] text-slate-400 border border-white/5 rounded-xl text-[10px] font-bold uppercase tracking-wider focus:outline-none focus:border-purple-500 cursor-pointer shrink-0"
+                className="px-2.5 py-2 bg-[#F8FAFC] dark:bg-[#1c1c24] hover:bg-[#E5E7EB] dark:hover:bg-[#252530] text-[#171717] dark:text-slate-300 border border-[#E5E7EB] dark:border-white/5 rounded-xl text-[10px] font-bold uppercase tracking-wider focus:outline-none focus:border-[#C2272D] cursor-pointer shrink-0"
               >
                 <option value="General">General</option>
                 <option value="Tutorials">Tutorials</option>
@@ -1082,22 +1090,22 @@ const CommunityFeed = () => {
             <button
               onClick={handlePostSubmit}
               disabled={!content.trim() || uploading}
-              className="px-5 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-xl text-[10px] font-black uppercase tracking-wider shadow-md shadow-purple-600/10 cursor-pointer transition-colors self-end xs:self-auto"
+              className="px-5 py-2 bg-[#C2272D] hover:bg-[#A51E23] disabled:opacity-50 text-white rounded-xl text-[10px] font-black uppercase tracking-wider shadow-md shadow-[#C2272D]/20 cursor-pointer transition-colors self-end xs:self-auto btn-shine-effect"
             >
               {uploading ? 'Uploading...' : 'Post'}
             </button>
           </div>
 
           {showPollCreator && (
-            <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col gap-3">
-              <span className="text-[10px] font-black uppercase text-purple-400">Create Poll Questionnaire</span>
+            <div className="p-4 rounded-2xl bg-[#F8FAFC] dark:bg-white/5 border border-[#E5E7EB] dark:border-white/5 flex flex-col gap-3">
+              <span className="text-[10px] font-black uppercase text-[#C2272D] font-title">Create Poll Questionnaire</span>
               <div>
                 <input
                   type="text"
                   placeholder="Ask a question..."
                   value={pollQuestion}
                   onChange={(e) => setPollQuestion(e.target.value)}
-                  className="w-full px-3.5 py-2 bg-[#1e1e24] border border-white/5 rounded-xl text-xs text-white focus:outline-none"
+                  className="w-full px-3.5 py-2 bg-white dark:bg-[#1e1e24] border border-[#E5E7EB] dark:border-white/10 rounded-xl text-xs text-[#171717] dark:text-white focus:outline-none focus:border-[#C2272D]"
                 />
               </div>
               <div className="flex flex-col gap-2">
@@ -1112,13 +1120,13 @@ const CommunityFeed = () => {
                         updated[idx] = e.target.value;
                         setPollOptions(updated);
                       }}
-                      className="flex-1 px-3.5 py-2 bg-[#1e1e24] border border-white/5 rounded-xl text-xs text-white focus:outline-none"
+                      className="flex-1 px-3.5 py-2 bg-white dark:bg-[#1e1e24] border border-[#E5E7EB] dark:border-white/10 rounded-xl text-xs text-[#171717] dark:text-white focus:outline-none focus:border-[#C2272D]"
                     />
                     {pollOptions.length > 2 && (
                       <button
                         type="button"
                         onClick={() => setPollOptions(prev => prev.filter((_, i) => i !== idx))}
-                        className="text-slate-500 hover:text-red-400 text-xs shrink-0 cursor-pointer"
+                        className="text-[#525252] dark:text-slate-400 hover:text-red-500 text-xs shrink-0 cursor-pointer"
                       >
                         Remove
                       </button>
@@ -1130,7 +1138,7 @@ const CommunityFeed = () => {
                 <button
                   type="button"
                   onClick={() => setPollOptions(prev => [...prev, ''])}
-                  className="text-left text-[9px] font-black uppercase text-purple-400 hover:underline cursor-pointer"
+                  className="text-left text-[9px] font-black uppercase text-[#C2272D] hover:underline cursor-pointer"
                 >
                   + Add Option Choice
                 </button>
@@ -1143,11 +1151,11 @@ const CommunityFeed = () => {
       {/* Feed Timeline list */}
       <div className="flex flex-col gap-6">
         {loading ? (
-          <div className="p-16 flex items-center justify-center bg-[#121217] border border-white/5 rounded-3xl">
-            <div className="w-8 h-8 rounded-full border-3 border-purple-500/20 border-t-purple-500 animate-spin" />
+          <div className="p-16 flex items-center justify-center bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 rounded-3xl">
+            <div className="w-8 h-8 rounded-full border-3 border-[#C2272D]/20 border-t-[#C2272D] animate-spin" />
           </div>
         ) : posts.length === 0 ? (
-          <div className="p-16 border border-dashed border-white/10 text-center text-slate-450 rounded-3xl bg-[#121217] text-xs italic">
+          <div className="p-16 border border-dashed border-[#E5E7EB] dark:border-white/10 text-center text-[#525252] dark:text-slate-400 rounded-3xl bg-white dark:bg-[#111111] text-xs italic">
             No active discussions found. Be the first to start a thread!
           </div>
         ) : (
@@ -1161,21 +1169,21 @@ const CommunityFeed = () => {
               <div 
                 key={post._id} 
                 id={`post-${post._id}`}
-                className="bg-[#121217] border border-white/5 p-5 rounded-3xl flex flex-col gap-4 shadow-sm hover:border-white/10 transition-colors"
+                className="bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 p-5 rounded-3xl flex flex-col gap-4 shadow-sm hover:border-[#C2272D]/30 transition-all card-interactive text-left"
               >
                 {/* Creator Header block */}
                 <div className="flex justify-between items-start">
                   <div className="flex gap-3">
                     <Link to={`/community/profile/${post.author?._id || post.author}`}>
-                      <div className={`w-10 h-10 rounded-xl overflow-hidden bg-[#1c1c24] flex items-center justify-center shrink-0 transition-all ${
+                      <div className={`w-10 h-10 rounded-xl overflow-hidden bg-[#F8FAFC] dark:bg-[#1c1c24] flex items-center justify-center shrink-0 transition-all ${
                         post.author?.avatarBorder === 'gold' 
                           ? 'border-2 border-amber-400 shadow-md shadow-amber-500/25' 
-                          : 'border border-white/10'
+                          : 'border border-[#E5E7EB] dark:border-white/10'
                       }`}>
                         {post.author?.avatar?.url ? (
                           <img src={post.author.avatar.url} alt="Profile" className="w-full h-full object-cover" loading="lazy" />
                         ) : (
-                          <span className="font-black text-xs text-slate-455 uppercase">{post.author?.username?.slice(0,2)}</span>
+                          <span className="font-black text-xs text-[#525252] dark:text-slate-400 uppercase">{post.author?.username?.slice(0,2)}</span>
                         )}
                       </div>
                     </Link>
@@ -1183,26 +1191,26 @@ const CommunityFeed = () => {
                       <div className="flex items-center gap-1.5">
                         <Link 
                           to={`/community/profile/${post.author?._id || post.author}`} 
-                          className={`text-xs font-black hover:text-purple-400 transition-colors ${
+                          className={`text-xs font-black hover:text-[#C2272D] transition-colors font-title ${
                             post.author?.profileTheme === 'neon' 
-                              ? 'text-pink-400 drop-shadow-[0_0_2px_rgba(244,114,182,0.45)]' 
-                              : 'text-white'
+                              ? 'text-pink-500 drop-shadow-[0_0_2px_rgba(244,114,182,0.45)]' 
+                              : 'text-[#171717] dark:text-white'
                           }`}
                         >
                           {post.author?.fullName}
                         </Link>
                         {post.author?.role === 'Admin' && (
-                          <FaCheckCircle className="text-purple-400" size={11} />
+                          <FaCheckCircle className="text-[#00FFFF]" size={11} title="Admin" />
                         )}
                       </div>
-                      <span className="text-[9px] text-slate-500 mt-0.5 font-bold uppercase tracking-wider">
+                      <span className="text-[9px] text-[#525252] dark:text-slate-400 mt-0.5 font-bold uppercase tracking-wider">
                         @{post.author?.username} &bull; {getRelativeTime(post.createdAt)}
                       </span>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 bg-[#1c1c24] text-purple-400 border border-purple-500/10 rounded-md text-[8px] font-black uppercase tracking-wider">
+                    <span className="px-2.5 py-0.5 bg-[#C2272D]/10 text-[#C2272D] border border-[#C2272D]/20 rounded-md text-[8px] font-black uppercase tracking-wider">
                       {post.category}
                     </span>
                     {(isPostAuthor || user?.role === 'Admin') && (
@@ -1213,14 +1221,14 @@ const CommunityFeed = () => {
                             setEditPostContent(post.content);
                             setEditPostImages(post.mediaUrls || (post.mediaUrl ? [post.mediaUrl] : []));
                           }}
-                          className="p-1.5 bg-[#1c1c24] hover:bg-[#252530] text-slate-400 hover:text-purple-400 rounded-lg transition-colors cursor-pointer border border-white/5"
+                          className="p-1.5 bg-[#F8FAFC] dark:bg-[#1c1c24] hover:bg-[#E5E7EB] dark:hover:bg-[#252530] text-[#525252] dark:text-slate-400 hover:text-[#C2272D] rounded-lg transition-colors cursor-pointer border border-[#E5E7EB] dark:border-white/5"
                           title="Edit Post"
                         >
                           <FaEdit size={10} />
                         </button>
                         <button
                           onClick={() => handleDeletePost(post._id)}
-                          className="p-1.5 bg-[#1c1c24] hover:bg-[#252530] text-slate-400 hover:text-red-500 rounded-lg transition-colors cursor-pointer border border-white/5"
+                          className="p-1.5 bg-[#F8FAFC] dark:bg-[#1c1c24] hover:bg-[#E5E7EB] dark:hover:bg-[#252530] text-[#525252] dark:text-slate-400 hover:text-red-500 rounded-lg transition-colors cursor-pointer border border-[#E5E7EB] dark:border-white/5"
                           title="Delete Post"
                         >
                           <FaTrash size={10} />
@@ -1237,7 +1245,7 @@ const CommunityFeed = () => {
                       <textarea
                         value={editPostContent}
                         onChange={(e) => setEditPostContent(e.target.value)}
-                        className="w-full px-3 py-2 bg-[#1e1e24] border border-white/5 rounded-xl text-xs text-white focus:outline-none focus:border-purple-500"
+                        className="w-full px-3 py-2 bg-[#F8FAFC] dark:bg-[#1e1e24] border border-[#E5E7EB] dark:border-white/10 rounded-xl text-xs text-[#171717] dark:text-white focus:outline-none focus:border-[#C2272D]"
                         rows={3}
                       />
                       
@@ -1249,7 +1257,7 @@ const CommunityFeed = () => {
                           const isUploading = isTemp && img.uploading;
 
                           return (
-                            <div key={isTemp ? img.id : idx} className="relative w-16 h-16 rounded-xl overflow-hidden border border-white/5 bg-[#181820] group">
+                            <div key={isTemp ? img.id : idx} className="relative w-16 h-16 rounded-xl overflow-hidden border border-[#E5E7EB] dark:border-white/5 bg-[#F8FAFC] dark:bg-[#181820] group">
                               <img src={src} alt="" className="w-full h-full object-cover" />
                               
                               <button
@@ -1257,7 +1265,7 @@ const CommunityFeed = () => {
                                 onClick={() => {
                                   setEditPostImages(prev => prev.filter((_, i) => i !== idx));
                                 }}
-                                className="absolute top-1 right-1 p-0.5 bg-black/75 hover:bg-red-650 text-white rounded-full text-[8px] cursor-pointer"
+                                className="absolute top-1 right-1 p-0.5 bg-black/75 hover:bg-red-600 text-white rounded-full text-[8px] cursor-pointer"
                                 title="Remove Image"
                               >
                                 <FaTimes size={6} />
@@ -1276,7 +1284,7 @@ const CommunityFeed = () => {
                                         return copy;
                                       });
                                     }}
-                                    className="text-white text-[8px] hover:text-purple-400 cursor-pointer"
+                                    className="text-white text-[8px] hover:text-[#00FFFF] cursor-pointer"
                                   >
                                     ←
                                   </button>
@@ -1293,7 +1301,7 @@ const CommunityFeed = () => {
                                         return copy;
                                       });
                                     }}
-                                    className="text-white text-[8px] hover:text-purple-400 cursor-pointer"
+                                    className="text-white text-[8px] hover:text-[#00FFFF] cursor-pointer"
                                   >
                                     →
                                   </button>
@@ -1302,14 +1310,14 @@ const CommunityFeed = () => {
 
                               {isUploading && (
                                 <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
-                                  <div className="w-4 h-4 rounded-full border border-purple-500/20 border-t-purple-500 animate-spin" />
+                                  <div className="w-4 h-4 rounded-full border border-[#C2272D]/20 border-t-[#C2272D] animate-spin" />
                                 </div>
                               )}
                             </div>
                           );
                         })}
 
-                        <label className="w-16 h-16 rounded-xl border border-dashed border-white/20 hover:border-purple-500/50 flex flex-col items-center justify-center gap-1 cursor-pointer bg-[#1c1c24] hover:bg-[#252530] text-purple-400 transition-colors">
+                        <label className="w-16 h-16 rounded-xl border border-dashed border-[#E5E7EB] dark:border-white/20 hover:border-[#C2272D]/50 flex flex-col items-center justify-center gap-1 cursor-pointer bg-[#F8FAFC] dark:bg-[#1c1c24] hover:bg-[#E5E7EB] dark:hover:bg-[#252530] text-[#C2272D] transition-colors">
                           <FaPlus size={10} />
                           <span className="text-[8px] font-black uppercase">Add</span>
                           <input type="file" accept="image/*" multiple onChange={handleAddEditPostImage} className="hidden" />
@@ -1319,28 +1327,28 @@ const CommunityFeed = () => {
                       <div className="flex gap-2 justify-end">
                         <button
                           onClick={() => setEditingPostId(null)}
-                          className="px-3 py-1.5 bg-[#1c1c24] hover:bg-[#252530] text-slate-400 rounded-lg text-[9px] font-black uppercase tracking-wider cursor-pointer"
+                          className="px-3 py-1.5 bg-[#F8FAFC] dark:bg-[#1c1c24] hover:bg-[#E5E7EB] dark:hover:bg-[#252530] text-[#525252] dark:text-slate-400 rounded-lg text-[9px] font-black uppercase tracking-wider cursor-pointer"
                         >
                           Cancel
                         </button>
                         <button
                           onClick={() => handleUpdatePost(post._id)}
-                          className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-[9px] font-black uppercase tracking-wider cursor-pointer"
+                          className="px-3 py-1.5 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-lg text-[9px] font-black uppercase tracking-wider cursor-pointer"
                         >
                           Save
                         </button>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-xs sm:text-sm text-slate-200 leading-relaxed whitespace-pre-wrap break-words">
+                    <p className="text-xs sm:text-sm text-[#171717] dark:text-slate-200 leading-relaxed whitespace-pre-wrap break-words font-sans">
                       {post.content}
                     </p>
                   )}
 
                   {/* Poll View Component */}
                   {post.poll && post.poll.options && post.poll.options.length > 0 && (
-                    <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col gap-3 my-2">
-                      <span className="text-xs font-black text-white">{post.poll.question}</span>
+                    <div className="p-4 rounded-2xl bg-[#F8FAFC] dark:bg-white/5 border border-[#E5E7EB] dark:border-white/5 flex flex-col gap-3 my-2">
+                      <span className="text-xs font-black text-[#171717] dark:text-white font-title">{post.poll.question}</span>
                       
                       {(() => {
                         const totalVotes = post.poll.options.reduce((sum, o) => sum + (o.votes || []).length, 0);
@@ -1356,16 +1364,16 @@ const CommunityFeed = () => {
                               if (hasVoted) {
                                 return (
                                   <div key={opt._id} className="relative flex flex-col gap-1">
-                                    <div className="flex justify-between items-center text-[10px] font-bold text-slate-300 z-10 px-3 py-2">
+                                    <div className="flex justify-between items-center text-[10px] font-bold text-[#171717] dark:text-slate-300 z-10 px-3 py-2">
                                       <span className="flex items-center gap-1.5">
                                         {opt.optionText}
-                                        {userVotedForThis && <span className="text-[8px] bg-purple-650 text-white px-1.5 py-0.5 rounded-full uppercase font-black">Your Vote</span>}
+                                        {userVotedForThis && <span className="text-[8px] bg-[#C2272D] text-white px-1.5 py-0.5 rounded-full uppercase font-black">Your Vote</span>}
                                       </span>
                                       <span>{percent}% ({voteCount})</span>
                                     </div>
-                                    <div className="absolute inset-0 bg-white/5 rounded-xl" />
+                                    <div className="absolute inset-0 bg-[#E5E7EB]/50 dark:bg-white/5 rounded-xl" />
                                     <div 
-                                      className={`absolute left-0 top-0 bottom-0 rounded-xl transition-all duration-500 ${userVotedForThis ? 'bg-purple-650/20 border border-purple-500/20' : 'bg-white/10'}`}
+                                      className={`absolute left-0 top-0 bottom-0 rounded-xl transition-all duration-500 ${userVotedForThis ? 'bg-[#C2272D]/20 border border-[#C2272D]/30' : 'bg-black/5 dark:bg-white/10'}`}
                                       style={{ width: `${percent}%` }}
                                     />
                                   </div>
@@ -1376,14 +1384,14 @@ const CommunityFeed = () => {
                                 <button
                                   key={opt._id}
                                   onClick={() => handleVotePoll(post._id, opt._id)}
-                                  className="w-full text-left px-4 py-2.5 rounded-xl bg-white/5 hover:bg-purple-650/10 border border-white/5 hover:border-purple-500/30 text-xs font-bold text-slate-350 hover:text-white transition-all cursor-pointer"
+                                  className="w-full text-left px-4 py-2.5 rounded-xl bg-white dark:bg-white/5 hover:bg-[#C2272D]/10 border border-[#E5E7EB] dark:border-white/5 hover:border-[#C2272D]/30 text-xs font-bold text-[#171717] dark:text-slate-300 hover:text-[#C2272D] dark:hover:text-white transition-all cursor-pointer"
                                 >
                                   {opt.optionText}
                                 </button>
                               );
                             })}
                             
-                            <div className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mt-1">
+                            <div className="text-[9px] text-[#525252] dark:text-slate-400 font-bold uppercase tracking-wider mt-1">
                               Total: {totalVotes} Votes
                             </div>
                           </div>
@@ -1398,22 +1406,22 @@ const CommunityFeed = () => {
                       <ImageGallery images={post.mediaUrls && post.mediaUrls.length > 0 ? post.mediaUrls : [post.mediaUrl]} />
                     </div>
                   ) : post.mediaUrl ? (
-                    <div className="rounded-2xl overflow-hidden border border-white/5 bg-[#181820] max-h-[360px] w-full flex items-center justify-center my-2">
+                    <div className="rounded-2xl overflow-hidden border border-[#E5E7EB] dark:border-white/5 bg-[#F8FAFC] dark:bg-[#181820] max-h-[360px] w-full flex items-center justify-center my-2">
                       {post.mediaType === 'video' && <video src={post.mediaUrl} controls className="w-full h-full max-h-[360px]" />}
                       {post.mediaType === 'pdf' && (
-                        <div className="w-full p-4 flex items-center justify-between bg-slate-900/50 rounded-2xl border border-white/5 m-3">
+                        <div className="w-full p-4 flex items-center justify-between bg-[#F8FAFC] dark:bg-slate-900/50 rounded-2xl border border-[#E5E7EB] dark:border-white/5 m-3">
                           <div className="flex items-center gap-2">
-                            <FaFilePdf className="text-red-400" size={24} />
+                            <FaFilePdf className="text-[#C2272D]" size={24} />
                             <div className="text-left">
-                              <span className="text-xs font-black text-white block">Document Attachment</span>
-                              <span className="text-[9px] text-slate-500 block">PDF File</span>
+                              <span className="text-xs font-black text-[#171717] dark:text-white block">Document Attachment</span>
+                              <span className="text-[9px] text-[#525252] dark:text-slate-400 block">PDF File</span>
                             </div>
                           </div>
                           <a
                             href={post.mediaUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-colors"
+                            className="px-3.5 py-1.5 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-colors"
                           >
                             View / Download
                           </a>
@@ -1424,9 +1432,9 @@ const CommunityFeed = () => {
                 </div>
 
                 {/* Interaction Row counters */}
-                <div className="flex items-center justify-between border-t border-white/5 pt-3 text-[10px] text-slate-500 font-bold">
-                  <div className="flex items-center gap-1">
-                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-purple-600/20 text-purple-400 text-[8px]">👍</span>
+                <div className="flex items-center justify-between border-t border-[#E5E7EB] dark:border-white/5 pt-3 text-[10px] text-[#525252] dark:text-slate-400 font-bold">
+                  <div className="flex items-center gap-1.5">
+                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#C2272D]/15 text-[#C2272D] text-[9px]">👍</span>
                     <span>{post.reactions?.length || 0} Likes</span>
                   </div>
                   <div className="flex gap-4">
@@ -1436,28 +1444,28 @@ const CommunityFeed = () => {
                 </div>
 
                 {/* Interaction Buttons */}
-                <div className="grid grid-cols-4 border-t border-white/5 pt-2 text-[10px] font-black uppercase tracking-wider text-slate-400">
+                <div className="grid grid-cols-4 border-t border-[#E5E7EB] dark:border-white/5 pt-2 text-[10px] font-black uppercase tracking-wider text-[#525252] dark:text-slate-400">
                   <button
                     onClick={() => handleReaction(post._id, 'Like')}
-                    className={`py-2 hover:bg-white/5 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
-                      hasReacted ? 'text-purple-400' : ''
+                    className={`py-2 hover:bg-[#F8FAFC] dark:hover:bg-white/5 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
+                      hasReacted ? 'text-[#C2272D]' : 'hover:text-[#C2272D]'
                     }`}
                   >
-                    {hasReacted ? <FaHeart /> : <FaRegHeart />} Like
+                    {hasReacted ? <FaHeart className="text-[#C2272D]" /> : <FaRegHeart />} Like
                   </button>
                   <button
                     onClick={() => toggleComments(post._id)}
-                    className="py-2 hover:bg-white/5 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                    className="py-2 hover:bg-[#F8FAFC] dark:hover:bg-white/5 hover:text-[#C2272D] rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
                   >
                     <FaComment /> Comment
                   </button>
                   <button
                     onClick={() => handleBookmark(post._id)}
-                    className={`py-2 hover:bg-white/5 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
-                      isBookmarked ? 'text-purple-400' : ''
+                    className={`py-2 hover:bg-[#F8FAFC] dark:hover:bg-white/5 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
+                      isBookmarked ? 'text-[#C2272D]' : 'hover:text-[#C2272D]'
                     }`}
                   >
-                    {isBookmarked ? <FaBookmark /> : <FaRegBookmark />} Save
+                    {isBookmarked ? <FaBookmark className="text-[#C2272D]" /> : <FaRegBookmark />} Save
                   </button>
                   <ShareButton 
                     contentType="post"
@@ -1465,7 +1473,7 @@ const CommunityFeed = () => {
                     title={post.title || 'Community Post'}
                     description={post.content ? post.content.replace(/<[^>]*>/g, '').substring(0, 160) : ''}
                     imageUrl={post.mediaUrl || (post.mediaUrls && post.mediaUrls[0]) || ''}
-                    className="py-2 hover:bg-white/5 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                    className="py-2 hover:bg-[#F8FAFC] dark:hover:bg-white/5 hover:text-[#C2272D] rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
                     btnText="Share"
                   />
                 </div>
@@ -1473,14 +1481,14 @@ const CommunityFeed = () => {
 
                 {/* Comments Section */}
                 {showComments[post._id] && (
-                  <div className="border-t border-white/5 pt-4 flex flex-col gap-4 animate-fade-in">
+                  <div className="border-t border-[#E5E7EB] dark:border-white/5 pt-4 flex flex-col gap-4 animate-fade-in">
                     {/* Add Comment Input */}
                     <form onSubmit={(e) => handleAddComment(e, post._id)} className="flex gap-3">
-                      <div className="w-8 h-8 rounded-lg overflow-hidden bg-[#1c1c24] border border-white/10 flex items-center justify-center shrink-0">
+                      <div className="w-8 h-8 rounded-lg overflow-hidden bg-[#F8FAFC] dark:bg-[#1c1c24] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center shrink-0">
                         {user?.avatar?.url ? (
                           <img src={user.avatar.url} alt="Profile" className="w-full h-full object-cover" loading="lazy" />
                         ) : (
-                          <FaUser className="text-slate-400" size={12} />
+                          <FaUser className="text-[#525252] dark:text-slate-400" size={12} />
                         )}
                       </div>
                       <div className="flex-1 flex gap-2">
@@ -1489,9 +1497,9 @@ const CommunityFeed = () => {
                           placeholder="Write a comment..."
                           value={commentInputs[post._id] || ''}
                           onChange={(e) => setCommentInputs(prev => ({ ...prev, [post._id]: e.target.value }))}
-                          className="w-full px-4 py-2 rounded-xl bg-[#1c1c24] border border-white/5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-[#202028] transition-all"
+                          className="w-full px-4 py-2 rounded-xl bg-[#F8FAFC] dark:bg-[#1c1c24] border border-[#E5E7EB] dark:border-white/5 text-xs text-[#171717] dark:text-white placeholder-[#737373] dark:placeholder-slate-400 focus:outline-none focus:border-[#C2272D] transition-all"
                         />
-                        <button type="submit" className="p-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer">
+                        <button type="submit" className="p-2.5 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-xl text-xs font-bold transition-all cursor-pointer">
                           <FaPaperPlane size={11} />
                         </button>
                       </div>
@@ -1506,24 +1514,24 @@ const CommunityFeed = () => {
                           const replies = (comments[post._id] || []).filter(r => r && r.parentCommentId === comment._id);
                           
                           return (
-                            <div key={comment._id} className="flex flex-col gap-2.5 pl-1.5 border-l border-white/5">
+                            <div key={comment._id} className="flex flex-col gap-2.5 pl-1.5 border-l-2 border-[#E5E7EB] dark:border-white/10">
                               {/* Top Level Comment Card */}
                               <div className="flex gap-2.5 items-start">
-                                <div className="w-7.5 h-7.5 rounded-lg overflow-hidden bg-[#1c1c24] border border-white/10 flex items-center justify-center shrink-0">
+                                <div className="w-7.5 h-7.5 rounded-lg overflow-hidden bg-[#F8FAFC] dark:bg-[#1c1c24] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center shrink-0">
                                   {comment.author?.avatar?.url ? (
                                     <img src={comment.author.avatar.url} alt="Avatar" className="w-full h-full object-cover" loading="lazy" />
                                   ) : (
-                                    <FaUser className="text-slate-500" size={10} />
+                                    <FaUser className="text-[#525252] dark:text-slate-400" size={10} />
                                   )}
                                 </div>
-                                <div className="flex-1 bg-[#181820] border border-white/5 p-3 rounded-2xl text-left">
+                                <div className="flex-1 bg-[#F8FAFC] dark:bg-[#181820] border border-[#E5E7EB] dark:border-white/5 p-3 rounded-2xl text-left">
                                   <div className="flex justify-between items-start">
-                                    <div className="flex items-center gap-1">
-                                      <span className="text-[10px] font-black text-white">{comment.author?.fullName}</span>
-                                      <span className="text-[8px] text-slate-500">@{comment.author?.username}</span>
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[10px] font-black text-[#171717] dark:text-white font-title">{comment.author?.fullName}</span>
+                                      <span className="text-[8px] text-[#525252] dark:text-slate-400">@{comment.author?.username}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                      <span className="text-[8px] text-slate-500">{getRelativeTime(comment.createdAt)}</span>
+                                      <span className="text-[8px] text-[#525252] dark:text-slate-400">{getRelativeTime(comment.createdAt)}</span>
                                       {(comment.author?._id === currentUserId || user?.role === 'Admin') && (
                                         <div className="flex items-center gap-1.5">
                                           <button
@@ -1531,14 +1539,14 @@ const CommunityFeed = () => {
                                               setEditingCommentId(comment._id);
                                               setEditCommentContent(comment.content);
                                             }}
-                                            className="text-slate-500 hover:text-purple-400 transition-colors"
+                                            className="text-[#525252] dark:text-slate-400 hover:text-[#C2272D] transition-colors"
                                             title="Edit Comment"
                                           >
                                             <FaEdit size={8} />
                                           </button>
                                           <button 
                                             onClick={() => handleDeleteComment(post._id, comment._id)}
-                                            className="text-slate-500 hover:text-red-500 transition-colors"
+                                            className="text-[#525252] dark:text-slate-400 hover:text-red-500 transition-colors"
                                             title="Delete Comment"
                                           >
                                             <FaTrash size={8} />
@@ -1554,31 +1562,31 @@ const CommunityFeed = () => {
                                         type="text"
                                         value={editCommentContent}
                                         onChange={(e) => setEditCommentContent(e.target.value)}
-                                        className="w-full px-2 py-1 bg-[#1e1e24] border border-white/5 rounded-lg text-[10px] text-white focus:outline-none focus:border-purple-500"
+                                        className="w-full px-2 py-1 bg-white dark:bg-[#1e1e24] border border-[#E5E7EB] dark:border-white/10 rounded-lg text-[10px] text-[#171717] dark:text-white focus:outline-none focus:border-[#C2272D]"
                                       />
                                       <div className="flex gap-1.5 justify-end">
                                         <button
                                           onClick={() => setEditingCommentId(null)}
-                                          className="px-2 py-1 bg-[#1c1c24] text-slate-400 rounded-lg text-[8px] font-black uppercase tracking-wider"
+                                          className="px-2 py-1 bg-[#F8FAFC] dark:bg-[#1c1c24] text-[#525252] dark:text-slate-400 rounded-lg text-[8px] font-black uppercase tracking-wider"
                                         >
                                           Cancel
                                         </button>
                                         <button
                                           onClick={() => handleUpdateComment(post._id, comment._id)}
-                                          className="px-2 py-1 bg-purple-600 text-white rounded-lg text-[8px] font-black uppercase tracking-wider"
+                                          className="px-2 py-1 bg-[#C2272D] text-white rounded-lg text-[8px] font-black uppercase tracking-wider"
                                         >
                                           Save
                                         </button>
                                       </div>
                                     </div>
                                   ) : (
-                                    <p className="text-[11px] text-slate-200 mt-1 leading-relaxed">{comment.content}</p>
+                                    <p className="text-[11px] text-[#171717] dark:text-slate-200 mt-1 leading-relaxed font-sans">{comment.content}</p>
                                   )}
                                   
                                   {/* Reply Trigger */}
                                   <button
                                     onClick={() => setActiveReplyBox(activeReplyBox === comment._id ? null : comment._id)}
-                                    className="text-[9px] font-black text-purple-400 hover:underline mt-2 flex items-center gap-1 cursor-pointer"
+                                    className="text-[9px] font-black text-[#C2272D] hover:underline mt-2 flex items-center gap-1 cursor-pointer"
                                   >
                                     Reply
                                   </button>
@@ -1588,32 +1596,32 @@ const CommunityFeed = () => {
                               {/* Indented Replies Section */}
                               {replies.filter(Boolean).map(reply => (
                                 <div key={reply._id} className="flex gap-2.5 items-start pl-8">
-                                  <div className="w-6.5 h-6.5 rounded-lg overflow-hidden bg-[#1c1c24] border border-white/10 flex items-center justify-center shrink-0">
+                                  <div className="w-6.5 h-6.5 rounded-lg overflow-hidden bg-[#F8FAFC] dark:bg-[#1c1c24] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center shrink-0">
                                     {reply.author?.avatar?.url ? (
                                       <img src={reply.author.avatar.url} alt="Avatar" className="w-full h-full object-cover" loading="lazy" />
                                     ) : (
-                                      <FaUser className="text-slate-500" size={8} />
+                                      <FaUser className="text-[#525252] dark:text-slate-400" size={8} />
                                     )}
                                   </div>
-                                  <div className="flex-1 bg-[#1a1a24] border border-white/5 p-2.5 rounded-2xl text-left">
+                                  <div className="flex-1 bg-[#F8FAFC] dark:bg-[#1a1a24] border border-[#E5E7EB] dark:border-white/5 p-2.5 rounded-2xl text-left">
                                     <div className="flex justify-between items-start">
                                       <div className="flex items-center gap-1">
-                                        <span className="text-[9px] font-black text-white">{reply.author?.fullName}</span>
-                                        <span className="text-[8px] text-slate-500">@{reply.author?.username}</span>
+                                        <span className="text-[9px] font-black text-[#171717] dark:text-white font-title">{reply.author?.fullName}</span>
+                                        <span className="text-[8px] text-[#525252] dark:text-slate-400">@{reply.author?.username}</span>
                                       </div>
                                       <div className="flex items-center gap-2">
-                                        <span className="text-[8px] text-slate-500">{getRelativeTime(reply.createdAt)}</span>
+                                        <span className="text-[8px] text-[#525252] dark:text-slate-400">{getRelativeTime(reply.createdAt)}</span>
                                         {(reply.author?._id === currentUserId || user?.role === 'Admin') && (
                                           <button 
                                             onClick={() => handleDeleteComment(post._id, reply._id)}
-                                            className="text-slate-500 hover:text-red-500 transition-colors"
+                                            className="text-[#525252] dark:text-slate-400 hover:text-red-500 transition-colors"
                                           >
                                             <FaTrash size={8} />
                                           </button>
                                         )}
                                       </div>
                                     </div>
-                                    <p className="text-[10px] text-slate-200 mt-1 leading-relaxed">{reply.content}</p>
+                                    <p className="text-[10px] text-[#171717] dark:text-slate-200 mt-1 leading-relaxed font-sans">{reply.content}</p>
                                   </div>
                                 </div>
                               ))}
@@ -1626,9 +1634,9 @@ const CommunityFeed = () => {
                                     placeholder="Write a reply..."
                                     value={replyInputs[comment._id] || ''}
                                     onChange={(e) => setReplyInputs(prev => ({ ...prev, [comment._id]: e.target.value }))}
-                                    className="w-full px-3 py-1.5 rounded-lg bg-[#181822] border border-white/5 text-[10px] text-white focus:outline-none focus:border-purple-500"
+                                    className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-[#181822] border border-[#E5E7EB] dark:border-white/5 text-[10px] text-[#171717] dark:text-white focus:outline-none focus:border-[#C2272D]"
                                   />
-                                  <button type="submit" className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-[10px] font-bold cursor-pointer">
+                                  <button type="submit" className="px-3 py-1.5 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-lg text-[10px] font-bold cursor-pointer">
                                     Reply
                                   </button>
                                 </form>
@@ -1639,7 +1647,7 @@ const CommunityFeed = () => {
                         })}
                       
                       {comments[post._id]?.length === 0 && (
-                        <div className="text-[9px] text-slate-500 italic text-center py-1">No comments on this thread yet.</div>
+                        <div className="text-[9px] text-[#525252] dark:text-slate-400 italic text-center py-1">No comments on this thread yet.</div>
                       )}
                     </div>
                   </div>
