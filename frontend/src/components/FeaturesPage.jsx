@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { 
   FaRocket, FaSearch, FaMagic, FaGift, FaUsers, FaUser, 
-  FaBriefcase, FaCog, FaCheckCircle, FaExclamationCircle, FaShieldAlt
+  FaBriefcase, FaCog, FaCheckCircle, FaExclamationCircle, FaShieldAlt,
+  FaSun, FaMoon 
 } from 'react-icons/fa';
 
 const CATEGORIES = ['All', 'Portfolio', 'Community', 'ATS Checker', 'AI Suite', 'Services', 'Management'];
@@ -96,6 +98,7 @@ const DEFAULT_FEATURES = [
 
 const FeaturesPage = () => {
   const { user } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const rawAdminUrl = import.meta.env.VITE_ADMIN_URL;
   const VITE_ADMIN_URL = (rawAdminUrl && rawAdminUrl !== 'undefined' && rawAdminUrl !== 'null')
@@ -170,36 +173,44 @@ const FeaturesPage = () => {
   };
 
   return (
-    <section className="min-h-screen bg-[#09090c] pt-24 pb-20 px-6 sm:px-12 relative overflow-hidden text-left">
+    <section className="min-h-screen bg-[#F8FAFC] dark:bg-[#09090c] text-[#171717] dark:text-white pt-24 pb-20 px-6 sm:px-12 relative overflow-hidden text-left transition-colors duration-300">
       {/* Background radial effects */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-1/4 left-1/4 w-[300px] h-[300px] bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="max-w-6xl mx-auto flex flex-col gap-8 relative z-10">
         
-        {/* Back Button (Top) */}
-        <div className="flex justify-start">
+        {/* Back Button & Theme Toggle (Top) */}
+        <div className="flex items-center justify-between">
           <button
             onClick={handleBack}
-            className="flex items-center gap-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all duration-305 cursor-pointer shadow-md"
+            className="flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:text-black dark:hover:text-white border border-slate-200 dark:border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all duration-305 cursor-pointer shadow-md"
           >
             &larr; Back to Website
+          </button>
+          <button
+            onClick={toggleTheme}
+            className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 rounded-2xl text-xs font-bold transition-all cursor-pointer shadow-md"
+            title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          >
+            {isDark ? <FaSun className="text-amber-400" /> : <FaMoon className="text-[#C2272D]" />}
+            <span className="hidden sm:inline">{isDark ? 'Light Mode' : 'Dark Mode'}</span>
           </button>
         </div>
 
         {/* Header Block */}
         <div className="flex flex-col gap-2 max-w-2xl animate-fade-in">
-          <span className="text-[10px] font-black text-purple-500 uppercase tracking-widest block">System Features</span>
-          <h1 className="text-3xl sm:text-4xl font-black text-white uppercase tracking-tight leading-none mt-1">
+          <span className="text-[10px] font-black text-[#C2272D] dark:text-purple-500 uppercase tracking-widest block">System Features</span>
+          <h1 className="text-3xl sm:text-4xl font-black text-[#171717] dark:text-white uppercase tracking-tight leading-none mt-1">
             Explore DevPortfolio Features
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 leading-relaxed mt-2">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed mt-2">
             Discover the modules, workflows, and integrations built into this portfolio platform. Filter categories or search specifically to find login options and release details.
           </p>
         </div>
 
         {/* Search & Category Filter Controls */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#121217]/50 border border-white/5 p-4 rounded-3xl backdrop-blur-md">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#121217]/50 border border-slate-200 dark:border-white/5 p-4 rounded-3xl backdrop-blur-md shadow-sm">
           {/* Categories Selector */}
           <div className="flex gap-2 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
             {CATEGORIES.map(cat => (
@@ -208,8 +219,8 @@ const FeaturesPage = () => {
                 onClick={() => setActiveCategory(cat)}
                 className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap border ${
                   activeCategory === cat 
-                    ? 'bg-purple-600/10 border-purple-500/30 text-purple-400 shadow-md shadow-purple-600/5' 
-                    : 'bg-transparent border-transparent text-slate-400 hover:bg-white/5 hover:text-white'
+                    ? 'bg-[#C2272D]/10 dark:bg-purple-600/10 border-[#C2272D]/30 dark:border-purple-500/30 text-[#C2272D] dark:text-purple-400 shadow-sm' 
+                    : 'bg-transparent border-transparent text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-black dark:hover:text-white'
                 }`}
               >
                 {cat}
@@ -225,7 +236,7 @@ const FeaturesPage = () => {
               placeholder="Search features..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-[#181822]/80 border border-white/5 focus:border-purple-500 rounded-xl text-xs text-white placeholder-slate-400 focus:outline-none transition-all"
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-[#181822]/80 border border-slate-200 dark:border-white/5 focus:border-[#C2272D] dark:focus:border-purple-500 rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none transition-all"
             />
           </div>
         </div>
@@ -233,10 +244,10 @@ const FeaturesPage = () => {
         {/* Feature Cards Grid */}
         {loading ? (
           <div className="p-20 flex justify-center items-center">
-            <div className="w-10 h-10 rounded-full border-4 border-purple-550/20 border-t-purple-500 animate-spin" />
+            <div className="w-10 h-10 rounded-full border-4 border-[#C2272D]/20 border-t-[#C2272D] animate-spin" />
           </div>
         ) : filteredFeatures.length === 0 ? (
-          <div className="p-16 text-center border border-dashed border-white/10 rounded-3xl bg-[#121217]/30 text-slate-500 text-sm italic">
+          <div className="p-16 text-center border border-dashed border-slate-200 dark:border-white/10 rounded-3xl bg-white/50 dark:bg-[#121217]/30 text-slate-500 text-sm italic">
             No features found matching the criteria.
           </div>
         ) : (
@@ -244,31 +255,31 @@ const FeaturesPage = () => {
             {filteredFeatures.map((feat, index) => (
               <div 
                 key={feat._id || index}
-                className="bg-[#121217]/60 border border-white/5 rounded-3xl p-5 flex flex-col gap-4 shadow-sm hover:border-white/10 transition-all hover:-translate-y-1 duration-300 relative overflow-hidden group glassmorphism"
+                className="bg-white dark:bg-[#121217]/60 border border-slate-200 dark:border-white/5 rounded-3xl p-5 flex flex-col gap-4 shadow-sm hover:border-slate-300 dark:hover:border-white/10 transition-all hover:-translate-y-1 duration-300 relative overflow-hidden group glassmorphism"
               >
                 {/* Visual hover border glow */}
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-600/5 to-indigo-600/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#C2272D]/5 to-[#00FFFF]/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
                 {/* Top Badge Row */}
                 <div className="flex justify-between items-start z-10">
-                  <div className="w-10 h-10 rounded-2xl bg-purple-600/10 border border-purple-500/15 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-2xl bg-[#C2272D]/10 dark:bg-purple-600/10 border border-[#C2272D]/15 dark:border-purple-500/15 flex items-center justify-center">
                     {renderIcon(feat.icon)}
                   </div>
                   
                   <div className="flex flex-col items-end gap-1.5">
                     {feat.isComingSoon ? (
-                      <span className="px-2 py-0.5 text-[8px] bg-amber-600/20 text-amber-400 border border-amber-500/20 rounded-md font-bold uppercase">
+                      <span className="px-2 py-0.5 text-[8px] bg-amber-600/20 text-amber-500 dark:text-amber-400 border border-amber-500/20 rounded-md font-bold uppercase">
                         Coming Soon
                       </span>
                     ) : (
                       <>
                         {feat.isNewFeature && (
-                          <span className="px-2 py-0.5 text-[8px] bg-purple-600/20 text-purple-400 border border-purple-500/20 rounded-md font-bold uppercase">
+                          <span className="px-2 py-0.5 text-[8px] bg-[#C2272D]/15 text-[#C2272D] dark:bg-purple-600/20 dark:text-purple-400 border border-[#C2272D]/20 dark:border-purple-500/20 rounded-md font-bold uppercase">
                             New Release
                           </span>
                         )}
                         {feat.loginRequired && (
-                          <span className="px-2 py-0.5 text-[8px] bg-slate-655/20 text-slate-400 border border-white/10 rounded-md font-bold uppercase">
+                          <span className="px-2 py-0.5 text-[8px] bg-slate-200 dark:bg-slate-655/20 text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-white/10 rounded-md font-bold uppercase">
                             Login Required
                           </span>
                         )}
@@ -282,10 +293,10 @@ const FeaturesPage = () => {
                   <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
                     {feat.category} &bull; v{feat.version || '1.0.0'}
                   </span>
-                  <h3 className="text-sm font-black text-white tracking-wider group-hover:text-purple-400 transition-colors uppercase mt-1">
+                  <h3 className="text-sm font-black text-[#171717] dark:text-white tracking-wider group-hover:text-[#C2272D] dark:group-hover:text-purple-400 transition-colors uppercase mt-1">
                     {feat.name}
                   </h3>
-                  <p className="text-[10px] text-slate-400 leading-relaxed mt-2 h-[72px] overflow-hidden line-clamp-4">
+                  <p className="text-[10px] text-slate-600 dark:text-slate-400 leading-relaxed mt-2 h-[72px] overflow-hidden line-clamp-4">
                     {feat.description}
                   </p>
                 </div>

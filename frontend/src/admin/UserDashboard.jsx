@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { api } from '../services/api';
 import { 
   FaUserCircle, FaLock, FaHistory, FaGlobe, FaSignOutAlt, 
-  FaUserEdit, FaShieldAlt, FaHeart, FaShoppingBag, FaExclamationTriangle, FaUsers 
+  FaUserEdit, FaShieldAlt, FaHeart, FaShoppingBag, FaExclamationTriangle, FaUsers,
+  FaSun, FaMoon 
 } from 'react-icons/fa';
 import { useUsernameValidator } from '../hooks/useUsernameValidator';
 
 const UserDashboard = () => {
   const { user, logout, updateProfile, isAuthenticated, isLoading } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('profile'); // profile, saved, orders, security, history, account
@@ -343,6 +346,19 @@ const UserDashboard = () => {
 
         {/* Sidebar Footer */}
         <div className="flex flex-col gap-2 mt-8 pt-6 border-t border-slate-100 dark:border-white/5">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 transition-all text-left cursor-pointer"
+          >
+            <div className="flex items-center gap-2.5">
+              {isDark ? <FaSun className="text-amber-400" /> : <FaMoon className="text-[#C2272D]" />}
+              <span>{isDark ? 'Switch to Light' : 'Switch to Dark'}</span>
+            </div>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#C2272D]/10 text-[#C2272D] dark:text-[#00FFFF] uppercase">
+              {isDark ? 'Dark' : 'Light'}
+            </span>
+          </button>
           <Link
             to="/"
             className="flex items-center gap-3 px-4 py-2 rounded-xl text-xs font-bold text-slate-550 dark:text-slate-400 hover:text-primary-blue transition-colors text-left"
@@ -370,12 +386,22 @@ const UserDashboard = () => {
           {/* Breadcrumbs & Back Button */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             {getBreadcrumbs()}
-            <Link
-              to="/"
-              className="w-fit flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-330 rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-white/5"
-            >
-              <span>&larr; Back to Website</span>
-            </Link>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="p-2 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 transition-all border border-slate-200 dark:border-white/5 cursor-pointer"
+                title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              >
+                {isDark ? <FaSun size={13} className="text-amber-400" /> : <FaMoon size={13} className="text-[#C2272D]" />}
+              </button>
+              <Link
+                to="/"
+                className="w-fit flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-white/5"
+              >
+                <span>&larr; Back to Website</span>
+              </Link>
+            </div>
           </div>
 
           <h2 className="text-2xl font-black font-title tracking-tight text-black dark:text-white mb-1">

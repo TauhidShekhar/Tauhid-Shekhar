@@ -10,6 +10,7 @@ import socket from './services/socket';
 import { useAuth } from './contexts/AuthContext';
 import { api } from './services/api';
 import { useLoading } from './contexts/LoadingContext';
+import { useTheme } from './contexts/ThemeContext';
 
 // Lazy load below-the-fold components
 const ParticlesBackground = lazy(() => import('./components/ParticlesBackground'));
@@ -54,49 +55,7 @@ const App = () => {
   const settings = portfolioData.settings;
   const [showCookieNotice, setShowCookieNotice] = useState(false);
 
-  const [isDark, setIsDark] = useState(() => {
-    try {
-      const savedTheme = localStorage.getItem('theme');
-      if (savedTheme) {
-        return savedTheme === 'dark';
-      }
-      return document.documentElement.classList.contains('darkmode') || 
-        window.matchMedia('(prefers-color-scheme: dark)').matches;
-    } catch (_) {
-      return false;
-    }
-  });
-
-  // Keep DOM and localStorage strictly in sync with theme state
-  useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add('darkmode');
-      if (document.body) document.body.classList.add('darkmode');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('darkmode');
-      if (document.body) document.body.classList.remove('darkmode');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [isDark]);
-
-  // Listen for external or cross-component theme changes
-  useEffect(() => {
-    const syncTheme = () => {
-      try {
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme) {
-          setIsDark(savedTheme === 'dark');
-        }
-      } catch (_) {}
-    };
-    window.addEventListener('storage', syncTheme);
-    window.addEventListener('theme-change', syncTheme);
-    return () => {
-      window.removeEventListener('storage', syncTheme);
-      window.removeEventListener('theme-change', syncTheme);
-    };
-  }, []);
+  const { isDark, toggleTheme: contextToggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [activeSection, setActiveSection] = useState('home');
@@ -333,10 +292,9 @@ const App = () => {
 
 
   const toggleTheme = () => {
-    const newTheme = !isDark;
-    setIsDark(newTheme);
-    triggerToast(newTheme ? 'Dark mode enabled!' : 'Light mode enabled!');
-    window.dispatchEvent(new Event('theme-change'));
+    const nextTheme = !isDark;
+    contextToggleTheme();
+    triggerToast(nextTheme ? 'Dark mode enabled!' : 'Light mode enabled!');
   };
 
 

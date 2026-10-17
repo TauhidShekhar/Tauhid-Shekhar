@@ -5,17 +5,32 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import './index.css';
 import App from './App.jsx';
 import monitorWebVitals from './utils/webVitals';
+import { ThemeProvider } from './contexts/ThemeContext.jsx';
 
 // Instant theme synchronization from localStorage
 try {
   const saved = localStorage.getItem('theme');
   const isDark = saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const root = document.documentElement;
+  const body = document.body;
   if (isDark) {
-    document.documentElement.classList.add('darkmode');
-    if (document.body) document.body.classList.add('darkmode');
+    root.classList.add('dark', 'darkmode');
+    root.setAttribute('data-theme', 'dark');
+    root.style.colorScheme = 'dark';
+    if (body) {
+      body.classList.add('dark', 'darkmode');
+      body.setAttribute('data-theme', 'dark');
+      body.style.colorScheme = 'dark';
+    }
   } else {
-    document.documentElement.classList.remove('darkmode');
-    if (document.body) document.body.classList.remove('darkmode');
+    root.classList.remove('dark', 'darkmode');
+    root.setAttribute('data-theme', 'light');
+    root.style.colorScheme = 'light';
+    if (body) {
+      body.classList.remove('dark', 'darkmode');
+      body.setAttribute('data-theme', 'light');
+      body.style.colorScheme = 'light';
+    }
   }
 } catch (_) {}
 
@@ -115,9 +130,10 @@ import GlobalLoader from './components/ui/GlobalLoader.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <AuthProvider>
-      <LoadingProvider>
-        <BrowserRouter>
+    <ThemeProvider>
+      <AuthProvider>
+        <LoadingProvider>
+          <BrowserRouter>
           <DynamicSEOHelper />
           <FeatureDiscoveryTour />
           <Suspense fallback={<LoadingScreen />}>
@@ -301,5 +317,6 @@ createRoot(document.getElementById('root')).render(
       </BrowserRouter>
       </LoadingProvider>
     </AuthProvider>
+    </ThemeProvider>
   </StrictMode>
 );

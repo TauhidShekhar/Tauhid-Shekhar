@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { api } from '../services/api';
 import { PasswordStrength } from '../components/ui/PasswordStrength';
-import { FaUserShield, FaLock, FaUser, FaEnvelope, FaEye, FaEyeSlash, FaArrowLeft, FaUserPlus, FaGoogle, FaGithub } from 'react-icons/fa';
+import { FaUserShield, FaLock, FaUser, FaEnvelope, FaEye, FaEyeSlash, FaArrowLeft, FaUserPlus, FaGoogle, FaGithub, FaSun, FaMoon } from 'react-icons/fa';
 import { useUsernameValidator } from '../hooks/useUsernameValidator';
 
 const Auth = () => {
+  const { isDark, toggleTheme } = useTheme();
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   const clientUrl = (import.meta.env.VITE_CLIENT_URL && import.meta.env.VITE_CLIENT_URL !== 'undefined' && import.meta.env.VITE_CLIENT_URL !== 'null')
     ? import.meta.env.VITE_CLIENT_URL
@@ -163,10 +165,20 @@ const Auth = () => {
 
       <div className="glass p-5 sm:p-8 md:p-10 rounded-[20px] sm:rounded-[30px] border border-slate-200/60 dark:border-white/5 shadow-xl w-full max-w-[440px] relative z-10 text-left">
         
-        {/* Back Link */}
-        <Link to="/" className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors mb-6">
-          <FaArrowLeft /> Back to Website
-        </Link>
+        {/* Top Controls: Back Link & Theme Toggle */}
+        <div className="flex items-center justify-between mb-6">
+          <Link to="/" className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors">
+            <FaArrowLeft /> Back to Website
+          </Link>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="p-2 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 transition-all border border-slate-200 dark:border-white/5 cursor-pointer"
+            title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          >
+            {isDark ? <FaSun size={13} className="text-amber-400" /> : <FaMoon size={13} className="text-[#C2272D]" />}
+          </button>
+        </div>
 
         {/* Tab Headers */}
         <div className="flex border-b border-slate-200 dark:border-white/5 mb-6 select-none">

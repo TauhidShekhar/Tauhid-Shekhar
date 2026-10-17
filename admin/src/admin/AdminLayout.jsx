@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { api } from '../services/api';
 import { 
   FaTachometerAlt, FaBriefcase, FaCode, FaEnvelope, FaCog, FaSignOutAlt, 
@@ -14,6 +15,7 @@ const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const { user, logout, isAuthenticated, isLoading } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   
   const navigate = useNavigate();
   const location = useLocation();
@@ -422,6 +424,15 @@ const AdminLayout = () => {
               Welcome back, <span className="text-black dark:text-white font-black">{user?.fullName || 'Admin'}</span>
             </div>
             
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="p-2 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 transition-all border border-slate-200 dark:border-white/5 cursor-pointer"
+              title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >
+              {isDark ? <FaSun size={14} className="text-amber-400" /> : <FaMoon size={14} className="text-[#C2272D]" />}
+            </button>
+
             <div className="hidden sm:block text-[10px] font-extrabold px-3 py-1.5 rounded-lg bg-green-500/10 text-green-500 border border-green-500/25">
               SYSTEM ONLINE
             </div>

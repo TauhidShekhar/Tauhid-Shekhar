@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.darkmode, .darkmode *));
+@custom-variant dark (&:where(.dark, .dark *, .darkmode, .darkmode *, [data-theme="dark"], [data-theme="dark"] *));
 
 @theme {
   /* TS Official Brand Colors */
@@ -72,7 +72,9 @@ html {
   --mouse-y: 0px;
 }
 
-.darkmode {
+.dark,
+.darkmode,
+[data-theme="dark"] {
   /* Central Theme Variables - Dark Mode */
   --bg-primary: #000000;
   --bg-secondary: #111111;

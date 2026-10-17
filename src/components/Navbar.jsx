@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { api } from '../services/api';
 import { 
   FaHome, FaUser, FaCode, FaBriefcase, FaBookOpen, FaEnvelope,
@@ -9,8 +10,11 @@ import {
   FaGlobe, FaCog, FaSignInAlt, FaUserPlus
 } from 'react-icons/fa';
 
-const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
+const Navbar = ({ activeSection, toggleTheme: propsToggleTheme, isDark: propsIsDark, settingsData }) => {
   const { user, isAuthenticated, logout } = useAuth();
+  const { isDark: contextIsDark, toggleTheme: contextToggleTheme } = useTheme();
+  const isDark = propsIsDark !== undefined ? propsIsDark : contextIsDark;
+  const toggleTheme = propsToggleTheme || contextToggleTheme;
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -457,6 +461,27 @@ const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
                 );
               })}
             </ul>
+
+            {/* Quick Theme Switcher in Mobile Drawer */}
+            <div className="mb-4 pt-2 border-t border-slate-100 dark:border-white/10">
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className={`flex items-center justify-between w-full px-4 py-3 rounded-xl transition-all duration-200 cursor-pointer ${
+                  isDark 
+                    ? 'bg-white/5 hover:bg-white/10 text-white' 
+                    : 'bg-slate-100 hover:bg-slate-200 text-[#171717]'
+                }`}
+              >
+                <div className="flex items-center gap-3 text-[15px] font-semibold">
+                  {isDark ? <FaSun size={17} className="text-amber-400" /> : <FaMoon size={17} className="text-[#C2272D]" />}
+                  <span>{isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}</span>
+                </div>
+                <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md bg-[#C2272D]/10 text-[#C2272D] dark:text-[#00FFFF] border border-[#C2272D]/20 dark:border-[#00FFFF]/20">
+                  {isDark ? 'Dark Mode' : 'Light Mode'}
+                </span>
+              </button>
+            </div>
 
             {/* Auth / Account Controls for Mobile Drawer */}
             {isAuthenticated ? (
