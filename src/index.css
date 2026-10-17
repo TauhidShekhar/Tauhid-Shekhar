@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *, .darkmode, .darkmode *, [data-theme="dark"], [data-theme="dark"] *));
+@custom-variant dark (&:is(.dark, .dark *, .darkmode, .darkmode *, [data-theme="dark"], [data-theme="dark"] *));
 
 @theme {
   /* TS Official Brand Colors */
@@ -154,10 +154,12 @@ p {
   pointer-events: none;
 }
 
-.darkmode .mouse-glow-bg {
+.dark .mouse-glow-bg,
+.darkmode .mouse-glow-bg,
+[data-theme="dark"] .mouse-glow-bg {
   background: radial-gradient(
     600px circle at var(--mouse-x) var(--mouse-y),
-    rgba(0, 255, 255, 0.06),
+    rgba(0, 255, 255, 0.08),
     transparent 80%
   );
 }

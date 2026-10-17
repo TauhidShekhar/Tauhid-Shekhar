@@ -175,7 +175,7 @@ const Skills = ({ skillsData }) => {
 
   if (skillsData === null) {
     return (
-      <section id="skills" className="py-24 bg-slate-50 dark:bg-slate-950/20 relative">
+      <section id="skills" className="py-24 bg-white dark:bg-[#000000] relative">
         <div className="max-w-[960px] mx-auto px-6 md:px-12">
           <div className="text-center mb-16 animate-pulse">
             <div className="h-4 w-24 bg-purple-500/20 rounded mx-auto mb-2" />

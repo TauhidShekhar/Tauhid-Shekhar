@@ -200,7 +200,7 @@ const Projects = ({ projectsData }) => {
 
   if (projectsData === null) {
     return (
-      <section id="projects" className="py-24 bg-slate-50 dark:bg-slate-900/20 relative">
+      <section id="projects" className="py-24 bg-[#F8FAFC] dark:bg-[#000000] relative">
         <div className="max-w-[1140px] mx-auto px-6 md:px-12">
           <div className="text-center mb-16">
             <div className="h-4 w-28 bg-purple-500/20 animate-pulse rounded mx-auto mb-2.5" />

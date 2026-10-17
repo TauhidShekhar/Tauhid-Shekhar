@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const ThemeContext = createContext();
 
-const applyThemeToDOM = (isDark) => {
+export const applyThemeToDOM = (isDark) => {
   try {
     const root = document.documentElement;
     const body = document.body;
@@ -46,7 +46,7 @@ export const ThemeProvider = ({ children }) => {
     }
   });
 
-  // Keep DOM and localStorage strictly in sync whenever isDark changes
+  // Ensure DOM classes and localStorage are strictly in sync
   useEffect(() => {
     applyThemeToDOM(isDark);
     try {
@@ -54,7 +54,7 @@ export const ThemeProvider = ({ children }) => {
     } catch (_) {}
   }, [isDark]);
 
-  // Synchronize across browser tabs and external events
+  // Synchronize across browser tabs
   useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.key === 'theme') {
@@ -64,22 +64,9 @@ export const ThemeProvider = ({ children }) => {
       }
     };
 
-    const handleCustomThemeChange = (e) => {
-      if (e.detail?.isDark !== undefined) {
-        setIsDark(e.detail.isDark);
-      } else {
-        try {
-          const saved = localStorage.getItem('theme');
-          if (saved) setIsDark(saved === 'dark');
-        } catch (_) {}
-      }
-    };
-
     window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('theme-change', handleCustomThemeChange);
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('theme-change', handleCustomThemeChange);
     };
   }, []);
 
@@ -87,10 +74,6 @@ export const ThemeProvider = ({ children }) => {
     setIsDark((prev) => {
       const next = !prev;
       applyThemeToDOM(next);
-      try {
-        localStorage.setItem('theme', next ? 'dark' : 'light');
-      } catch (_) {}
-      window.dispatchEvent(new CustomEvent('theme-change', { detail: { isDark: next } }));
       return next;
     });
   };
@@ -99,10 +82,6 @@ export const ThemeProvider = ({ children }) => {
     const next = mode === 'dark';
     setIsDark(next);
     applyThemeToDOM(next);
-    try {
-      localStorage.setItem('theme', mode);
-    } catch (_) {}
-    window.dispatchEvent(new CustomEvent('theme-change', { detail: { isDark: next } }));
   };
 
   return (
@@ -115,7 +94,7 @@ export const ThemeProvider = ({ children }) => {
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (!context) {
-    // Graceful fallback if component is outside ThemeProvider
+    // Graceful fallback if component is rendered outside ThemeProvider
     const isDarkFallback = typeof document !== 'undefined' 
       ? (document.documentElement.classList.contains('dark') || document.documentElement.classList.contains('darkmode'))
       : false;
@@ -126,14 +105,14 @@ export const useTheme = () => {
         const next = !isDarkFallback;
         applyThemeToDOM(next);
         try { localStorage.setItem('theme', next ? 'dark' : 'light'); } catch (_) {}
-        window.dispatchEvent(new CustomEvent('theme-change', { detail: { isDark: next } }));
       },
       setTheme: (mode) => {
         applyThemeToDOM(mode === 'dark');
         try { localStorage.setItem('theme', mode); } catch (_) {}
-        window.dispatchEvent(new CustomEvent('theme-change', { detail: { isDark: mode === 'dark' } }));
       }
     };
   }
   return context;
 };
+
+export default ThemeContext;

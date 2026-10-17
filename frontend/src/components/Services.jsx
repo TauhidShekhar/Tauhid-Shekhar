@@ -56,7 +56,7 @@ const Services = ({ servicesData }) => {
 
   if (servicesData === null) {
     return (
-      <section id="services" className="py-24 bg-slate-50 dark:bg-slate-950/20 relative animate-pulse">
+      <section id="services" className="py-24 bg-white dark:bg-[#000000] relative animate-pulse">
         <div className="max-w-[1140px] mx-auto px-6 md:px-12">
           <div className="text-center mb-16">
             <div className="h-4 w-24 bg-purple-500/20 rounded mx-auto mb-2" />
@@ -202,7 +202,7 @@ const Services = ({ servicesData }) => {
   };
 
   return (
-    <section id="services" className="py-24 bg-slate-50 dark:bg-black relative">
+    <section id="services" className="py-24 bg-white dark:bg-[#000000] relative">
       <div className="max-w-[1280px] mx-auto px-6 md:px-12">
         
         {/* Section Header */}

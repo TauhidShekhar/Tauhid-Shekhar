@@ -224,7 +224,7 @@ const Resume = ({ resumeData, settingsData }) => {
   ];
 
   return (
-    <section id="resume" className="py-24 bg-slate-50 dark:bg-[#07070a] relative text-left">
+    <section id="resume" className="py-24 bg-[#F8FAFC] dark:bg-[#000000] relative text-left">
       <div className="max-w-[1280px] mx-auto px-6 md:px-12">
         
         {/* Section Header */}

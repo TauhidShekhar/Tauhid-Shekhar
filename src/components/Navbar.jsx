@@ -226,7 +226,12 @@ const Navbar = ({ activeSection, toggleTheme: propsToggleTheme, isDark: propsIsD
           <div className="hidden xl:flex items-center gap-4 shrink-0">
             {/* Theme Toggle Button */}
             <button
-              onClick={toggleTheme}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleTheme();
+              }}
               className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer ${
                 isDark 
                   ? 'text-white hover:bg-white/10 hover:text-[#00FFFF]' 
@@ -341,7 +346,12 @@ const Navbar = ({ activeSection, toggleTheme: propsToggleTheme, isDark: propsIsD
           {/* ── Mobile Controls (Below xl) ── */}
           <div className="flex xl:hidden items-center gap-3">
             <button
-              onClick={toggleTheme}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleTheme();
+              }}
               className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 hover:rotate-45 active:scale-90 cursor-pointer ${
                 isDark 
                   ? 'text-white hover:bg-white/10' 
@@ -466,7 +476,11 @@ const Navbar = ({ activeSection, toggleTheme: propsToggleTheme, isDark: propsIsD
             <div className="mb-4 pt-2 border-t border-slate-100 dark:border-white/10">
               <button
                 type="button"
-                onClick={toggleTheme}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggleTheme();
+                }}
                 className={`flex items-center justify-between w-full px-4 py-3 rounded-xl transition-all duration-200 cursor-pointer ${
                   isDark 
                     ? 'bg-white/5 hover:bg-white/10 text-white' 

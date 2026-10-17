@@ -77,7 +77,7 @@ const EducationCertificates = ({ educationData, certificatesData, achievementsDa
 
   if (educationData === null && certificatesData === null) {
     return (
-      <section id="education" className="py-24 bg-white dark:bg-black relative animate-pulse">
+      <section id="education" className="py-24 bg-white dark:bg-[#000000] relative animate-pulse">
         <div className="max-w-[960px] mx-auto px-6 md:px-12">
           <div className="h-10 w-64 bg-slate-200 dark:bg-white/10 rounded mx-auto mb-16 animate-pulse" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

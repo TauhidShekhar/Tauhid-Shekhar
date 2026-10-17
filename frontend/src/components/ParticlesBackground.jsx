@@ -60,7 +60,7 @@ const ParticlesBackground = () => {
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const isDark = document.body.classList.contains('darkmode');
+      const isDark = document.documentElement.classList.contains('dark') || document.body?.classList.contains('darkmode');
       const maxDistance = 90;
       const maxDistSq = maxDistance * maxDistance;
 
@@ -78,8 +78,8 @@ const ParticlesBackground = () => {
             const alpha = (1 - dist / maxDistance) * 0.35;
             ctx.beginPath();
             ctx.strokeStyle = isDark 
-              ? `rgba(134, 59, 251, ${alpha * 0.15})` 
-              : `rgba(0, 113, 227, ${alpha * 0.1})`;
+              ? `rgba(0, 255, 255, ${alpha * 0.18})` 
+              : `rgba(194, 39, 45, ${alpha * 0.12})`;
             ctx.lineWidth = 0.7;
             ctx.moveTo(p1.x, p1.y);
             ctx.lineTo(p2.x, p2.y);
