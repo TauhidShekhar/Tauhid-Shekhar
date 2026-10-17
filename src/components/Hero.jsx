@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { api } from '../services/api';
 import { 
   FaGithub, FaLinkedin, FaEnvelope, FaChevronDown, FaCode, FaServer, FaDatabase, FaReact,
-  FaTwitter, FaInstagram, FaYoutube, FaFacebook 
+  FaTwitter, FaInstagram, FaYoutube, FaFacebook, FaPaperPlane 
 } from 'react-icons/fa';
 
 const getAbsolutePdfUrl = (url) => {
@@ -246,16 +246,17 @@ const Hero = ({ heroData, resumeData }) => {
 
           {/* Primary Action Buttons */}
           <motion.div variants={itemVariants} className="flex flex-wrap gap-3.5 mb-9 w-full sm:w-auto">
-            {showResume && resumeLink && (
-              <a
-                href={resumeLink}
-                onClick={handleViewResume}
-                className="flex items-center justify-center gap-2 px-6 py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] sm:text-[16px] font-semibold shadow-md shadow-[#C2272D]/20 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-              >
-                View Resume
-              </a>
-            )}
-            
+            {/* Prominent Let's Talk CTA */}
+            <a
+              href="#contact"
+              onClick={(e) => handleScrollTo(e, '#contact')}
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] sm:text-[16px] font-semibold shadow-md shadow-[#C2272D]/25 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF]"
+              aria-label="Let's Talk - Jump to contact section"
+            >
+              <FaPaperPlane size={15} />
+              <span>Let's Talk</span>
+            </a>
+
             {showHireMe && (
               <a
                 href="#projects"
@@ -266,13 +267,13 @@ const Hero = ({ heroData, resumeData }) => {
               </a>
             )}
 
-            {showContactMe && (
+            {showResume && resumeLink && (
               <a
-                href="#contact"
-                onClick={(e) => handleScrollTo(e, '#contact')}
-                className="flex items-center justify-center px-6 py-3 bg-transparent border-2 border-[#C2272D] hover:bg-[#C2272D]/10 text-[#C2272D] rounded-full text-[15px] sm:text-[16px] font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                href={resumeLink}
+                onClick={handleViewResume}
+                className="flex items-center justify-center px-6 py-3 bg-transparent border-2 border-slate-300 dark:border-white/20 hover:border-[#00FFFF] text-[#171717] dark:text-white rounded-full text-[15px] sm:text-[16px] font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
               >
-                Contact Me
+                View Resume
               </a>
             )}
           </motion.div>

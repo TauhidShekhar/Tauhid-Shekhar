@@ -169,7 +169,7 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
   ].filter(p => socialLinks[p.key]);
 
   return (
-    <section id="contact" className="py-24 sm:py-28 bg-[#F8FAFC] dark:bg-[#000000] relative">
+    <section id="contact" className="scroll-mt-24 py-24 sm:py-28 bg-[#F8FAFC] dark:bg-[#000000] relative">
       <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12">
         
         {/* Section Header */}

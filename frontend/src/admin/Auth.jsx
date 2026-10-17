@@ -66,13 +66,14 @@ const Auth = () => {
       if (externalRedirect) {
         window.location.href = externalRedirect;
       } else if (user?.role === 'Admin') {
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const adminUrl = (import.meta.env.VITE_ADMIN_URL && import.meta.env.VITE_ADMIN_URL !== 'undefined')
-          ? import.meta.env.VITE_ADMIN_URL
-          : (isLocal ? 'http://localhost:5174' : 'https://tauhidshekhar-admin.vercel.app');
-        window.location.href = `${adminUrl}/admin/dashboard`;
+        const adminUrl = import.meta.env.VITE_ADMIN_URL;
+        if (adminUrl && adminUrl !== 'undefined' && !adminUrl.includes('localhost:5174')) {
+          window.location.href = `${adminUrl}/admin/dashboard`;
+        } else {
+          navigate(redirectPath && redirectPath !== '/dashboard' ? redirectPath : '/admin/dashboard');
+        }
       } else {
-        navigate('/dashboard');
+        navigate(redirectPath || '/dashboard');
       }
     }
   }, [isAuthenticated, user, navigate, redirectPath, externalRedirect, isLoading]);
@@ -83,24 +84,20 @@ const Auth = () => {
     setSuccess('');
     setLoading(true);
 
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const clientUrl = (import.meta.env.VITE_CLIENT_URL && import.meta.env.VITE_CLIENT_URL !== 'undefined' && import.meta.env.VITE_CLIENT_URL !== 'null')
-      ? import.meta.env.VITE_CLIENT_URL
-      : (isLocal ? 'http://localhost:5173' : 'https://tauhidshekhar.vercel.app');
-
     try {
       const res = await login(loginIdentifier, loginPassword, rememberMe);
       if (res.success) {
         if (externalRedirect) {
           window.location.href = externalRedirect;
         } else if (res.user.role === 'Admin') {
-          const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-          const adminUrl = (import.meta.env.VITE_ADMIN_URL && import.meta.env.VITE_ADMIN_URL !== 'undefined')
-            ? import.meta.env.VITE_ADMIN_URL
-            : (isLocal ? 'http://localhost:5174' : 'https://tauhidshekhar-admin.vercel.app');
-          window.location.href = `${adminUrl}/admin/dashboard`;
+          const adminUrl = import.meta.env.VITE_ADMIN_URL;
+          if (adminUrl && adminUrl !== 'undefined' && !adminUrl.includes('localhost:5174')) {
+            window.location.href = `${adminUrl}/admin/dashboard`;
+          } else {
+            navigate(redirectPath && redirectPath !== '/dashboard' ? redirectPath : '/admin/dashboard');
+          }
         } else {
-          navigate('/dashboard');
+          navigate(redirectPath || '/dashboard');
         }
       }
     } catch (err) {

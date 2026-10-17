@@ -6,7 +6,7 @@ import {
   FaHome, FaUser, FaCode, FaBriefcase, FaBookOpen, FaEnvelope,
   FaSun, FaMoon, FaPaperPlane, FaBars, FaTimes, FaChevronRight,
   FaUserCircle, FaSignOutAlt, FaTachometerAlt, FaChevronDown,
-  FaGlobe, FaCog
+  FaGlobe, FaCog, FaSignInAlt, FaUserPlus
 } from 'react-icons/fa';
 
 const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
@@ -96,7 +96,7 @@ const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
     { name: 'About', href: '#about', icon: FaUser },
     { name: 'Projects', href: '#projects', icon: FaCode },
     { name: 'Experience', href: '#experience', icon: FaBriefcase },
-    { name: 'Blog', to: '/community', icon: FaBookOpen },
+    { name: 'Community', to: '/community', icon: FaBookOpen },
     { name: 'Contact', href: '#contact', icon: FaEnvelope }
   ];
 
@@ -125,18 +125,10 @@ const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
   };
 
   const AdminLink = ({ to, children, className }) => {
-    const isUnified = !VITE_ADMIN_URL || VITE_ADMIN_URL.includes(window.location.host);
-    if (isUnified) {
-      return (
-        <Link to={to} onClick={() => setDropdownOpen(false)} className={className}>
-          {children}
-        </Link>
-      );
-    }
     return (
-      <a href={`${VITE_ADMIN_URL}${to}`} onClick={() => setDropdownOpen(false)} className={className}>
+      <Link to={to} onClick={() => setDropdownOpen(false)} className={className}>
         {children}
-      </a>
+      </Link>
     );
   };
 
@@ -302,6 +294,9 @@ const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
                         <Link to="/dashboard" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#C2272D] dark:hover:text-[#00FFFF]">
                           <FaTachometerAlt /> My Dashboard
                         </Link>
+                        <Link to="/community" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#C2272D] dark:hover:text-[#00FFFF]">
+                          <FaBookOpen /> Community Hub
+                        </Link>
                       </>
                     )}
 
@@ -318,15 +313,45 @@ const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
               </div>
             ) : null}
 
-            {/* Red Primary CTA: "Let's Talk" */}
-            <a
-              href="#contact"
-              onClick={(e) => handleNavClick(e, '#contact')}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] font-semibold shadow-md shadow-[#C2272D]/25 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-            >
-              <FaPaperPlane size={14} />
-              <span>Let's Talk</span>
-            </a>
+            {/* Authenticated vs Guest Action CTA */}
+            {isAuthenticated ? (
+              user?.role === 'Admin' ? (
+                <AdminLink
+                  to="/admin/dashboard"
+                  className="hidden md:inline-flex items-center gap-2 px-5 py-2.5 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] font-semibold shadow-md shadow-[#C2272D]/25 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                >
+                  <FaTachometerAlt size={14} />
+                  <span>Admin Panel</span>
+                </AdminLink>
+              ) : (
+                <Link
+                  to="/dashboard"
+                  className="hidden md:inline-flex items-center gap-2 px-5 py-2.5 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] font-semibold shadow-md shadow-[#C2272D]/25 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                >
+                  <FaTachometerAlt size={14} />
+                  <span>Dashboard</span>
+                </Link>
+              )
+            ) : (
+              <div className="flex items-center gap-3">
+                <Link
+                  to="/register"
+                  className={`hidden 2xl:inline-flex text-[15px] font-semibold transition-colors ${
+                    isDark ? 'text-slate-300 hover:text-[#00FFFF]' : 'text-slate-700 hover:text-[#C2272D]'
+                  }`}
+                >
+                  Register
+                </Link>
+                <Link
+                  to="/login"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] font-semibold shadow-md shadow-[#C2272D]/25 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                  aria-label="Login to account"
+                >
+                  <FaSignInAlt size={14} />
+                  <span>Login</span>
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* ── Mobile Controls (Below xl) ── */}
@@ -453,28 +478,72 @@ const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
               })}
             </ul>
 
-            {/* Auth / Account Quick Link for Mobile */}
+            {/* Auth / Account Controls for Mobile Drawer */}
             {isAuthenticated ? (
-              <div className="mb-4 pt-3 border-t border-slate-100 dark:border-white/10 flex items-center justify-between px-2 text-sm">
-                <span className="font-medium text-slate-500 dark:text-slate-400">Signed in as {user?.fullName?.split(' ')[0]}</span>
+              <div className="pt-3 border-t border-slate-100 dark:border-white/10 flex flex-col gap-3">
+                <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                  {user?.avatar?.url ? (
+                    <img src={user.avatar.url} alt={user?.fullName || 'User'} className="w-10 h-10 rounded-full object-cover shrink-0" />
+                  ) : (
+                    <FaUserCircle size={28} className="text-slate-400 shrink-0" />
+                  )}
+                  <div className="overflow-hidden text-left">
+                    <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{user?.fullName}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">@{user?.username} &bull; <span className="text-[#C2272D] dark:text-[#00FFFF] font-semibold">{user?.role}</span></p>
+                  </div>
+                </div>
+
+                {user?.role === 'Admin' ? (
+                  <AdminLink
+                    to="/admin/dashboard"
+                    onClick={() => setIsOpen(false)}
+                    className="w-full flex items-center justify-center gap-2 py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] font-semibold shadow-md shadow-[#C2272D]/25 transition-all"
+                  >
+                    <FaTachometerAlt size={15} />
+                    <span>Admin Dashboard</span>
+                  </AdminLink>
+                ) : (
+                  <Link
+                    to="/dashboard"
+                    onClick={() => setIsOpen(false)}
+                    className="w-full flex items-center justify-center gap-2 py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] font-semibold shadow-md shadow-[#C2272D]/25 transition-all"
+                  >
+                    <FaTachometerAlt size={15} />
+                    <span>My Dashboard</span>
+                  </Link>
+                )}
+
                 <button
                   onClick={async () => { await logout(); setIsOpen(false); navigate('/login'); }}
-                  className="text-xs font-semibold text-[#C2272D] hover:underline"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-[#C2272D] hover:bg-[#C2272D]/10 rounded-full transition-colors cursor-pointer"
                 >
-                  Logout
+                  <FaSignOutAlt /> Sign Out
                 </button>
               </div>
-            ) : null}
-
-            {/* Bottom Full-Width "Let's Talk" CTA */}
-            <a
-              href="#contact"
-              onClick={(e) => handleNavClick(e, '#contact')}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] font-semibold shadow-md shadow-[#C2272D]/25 transition-all duration-200 cursor-pointer"
-            >
-              <FaPaperPlane size={14} />
-              <span>Let's Talk</span>
-            </a>
+            ) : (
+              <div className="pt-3 border-t border-slate-100 dark:border-white/10 flex flex-col gap-2.5">
+                <Link
+                  to="/login"
+                  onClick={() => setIsOpen(false)}
+                  className="w-full flex items-center justify-center gap-2 py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] font-semibold shadow-md shadow-[#C2272D]/25 transition-all duration-200 cursor-pointer"
+                >
+                  <FaSignInAlt size={15} />
+                  <span>Login</span>
+                </Link>
+                <Link
+                  to="/register"
+                  onClick={() => setIsOpen(false)}
+                  className={`w-full flex items-center justify-center gap-2 py-2.5 border rounded-full text-[14px] font-semibold transition-colors ${
+                    isDark 
+                      ? 'border-white/20 text-white hover:bg-white/5' 
+                      : 'border-slate-300 text-slate-800 hover:bg-slate-100'
+                  }`}
+                >
+                  <FaUserPlus size={14} />
+                  <span>Create an Account</span>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}

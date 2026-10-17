@@ -3,9 +3,15 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 import { PasswordStrength } from '../components/ui/PasswordStrength';
-import { FaUserShield, FaLock, FaUser, FaEnvelope, FaEye, FaEyeSlash, FaArrowLeft, FaUserPlus } from 'react-icons/fa';
+import { FaUserShield, FaLock, FaUser, FaEnvelope, FaEye, FaEyeSlash, FaArrowLeft, FaUserPlus, FaGoogle, FaGithub } from 'react-icons/fa';
+import { useUsernameValidator } from '../hooks/useUsernameValidator';
 
 const Auth = () => {
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const clientUrl = (import.meta.env.VITE_CLIENT_URL && import.meta.env.VITE_CLIENT_URL !== 'undefined' && import.meta.env.VITE_CLIENT_URL !== 'null')
+    ? import.meta.env.VITE_CLIENT_URL
+    : (isLocal ? 'http://localhost:5173' : 'https://tauhidshekhar.vercel.app');
+
   // Login fields
   const [loginIdentifier, setLoginIdentifier] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -15,6 +21,13 @@ const Auth = () => {
   // Register fields
   const [regFullName, setRegFullName] = useState('');
   const [regEmail, setRegEmail] = useState('');
+  const {
+    username: regUsername,
+    setUsername: setRegUsername,
+    error: usernameError,
+    isValid: isUsernameValid,
+    isChecking: isCheckingUsername
+  } = useUsernameValidator('');
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
   const [showRegPassword, setShowRegPassword] = useState(false);
@@ -23,23 +36,47 @@ const Auth = () => {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { login, isAuthenticated, user } = useAuth();
+  const { login, isAuthenticated, user, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const activeTab = location.pathname.includes('register') ? 'register' : 'login';
-  const redirectPath = location.state?.from?.pathname || '/admin';
+  const redirectPath = location.state?.from?.pathname || '/dashboard';
+
+  const queryParams = new URLSearchParams(location.search);
+  const externalRedirect = queryParams.get('redirect');
 
   useEffect(() => {
+    const errorParam = queryParams.get('error');
+    if (errorParam) {
+      setError(errorParam);
+    }
+  }, [location.search]);
+
+  useEffect(() => {
+    if (isLoading) return; // Wait for active session check to finish
+
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const clientUrl = (import.meta.env.VITE_CLIENT_URL && import.meta.env.VITE_CLIENT_URL !== 'undefined' && import.meta.env.VITE_CLIENT_URL !== 'null')
+      ? import.meta.env.VITE_CLIENT_URL
+      : (isLocal ? 'http://localhost:5173' : 'https://tauhidshekhar.vercel.app');
+
     // If already authenticated, redirect
     if (isAuthenticated) {
-      if (user?.role === 'Admin') {
-        navigate(redirectPath);
+      if (externalRedirect) {
+        window.location.href = externalRedirect;
+      } else if (user?.role === 'Admin') {
+        const adminUrl = import.meta.env.VITE_ADMIN_URL;
+        if (adminUrl && adminUrl !== 'undefined' && !adminUrl.includes('localhost:5174')) {
+          window.location.href = `${adminUrl}/admin/dashboard`;
+        } else {
+          navigate(redirectPath && redirectPath !== '/dashboard' ? redirectPath : '/admin/dashboard');
+        }
       } else {
-        navigate('/user/dashboard');
+        navigate(redirectPath || '/dashboard');
       }
     }
-  }, [isAuthenticated, user, navigate, redirectPath]);
+  }, [isAuthenticated, user, navigate, redirectPath, externalRedirect, isLoading]);
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
@@ -50,10 +87,17 @@ const Auth = () => {
     try {
       const res = await login(loginIdentifier, loginPassword, rememberMe);
       if (res.success) {
-        if (res.user.role === 'Admin') {
-          navigate(redirectPath);
+        if (externalRedirect) {
+          window.location.href = externalRedirect;
+        } else if (res.user.role === 'Admin') {
+          const adminUrl = import.meta.env.VITE_ADMIN_URL;
+          if (adminUrl && adminUrl !== 'undefined' && !adminUrl.includes('localhost:5174')) {
+            window.location.href = `${adminUrl}/admin/dashboard`;
+          } else {
+            navigate(redirectPath && redirectPath !== '/dashboard' ? redirectPath : '/admin/dashboard');
+          }
         } else {
-          navigate('/user/dashboard');
+          navigate(redirectPath || '/dashboard');
         }
       }
     } catch (err) {
@@ -72,32 +116,40 @@ const Auth = () => {
       return setError('Passwords do not match');
     }
 
+    if (!isUsernameValid) {
+      return setError(usernameError || 'Please choose a valid and unique username.');
+    }
+
     setLoading(true);
     try {
       const payload = {
         fullName: regFullName,
         email: regEmail,
-        username: regEmail.split('@')[0], // generate fallback username
+        username: regUsername,
         password: regPassword,
         confirmPassword: regConfirmPassword
       };
       
       const res = await api.register(payload);
       if (res.success) {
-        setSuccess(res.message || 'Registration successful! Verification link sent to email.');
-        // Reset registration fields
+        setSuccess('Registration successful! Redirecting to login...');
         setRegFullName('');
         setRegEmail('');
+        setRegUsername('');
         setRegPassword('');
         setRegConfirmPassword('');
-        // Toggle back to login tab
         setTimeout(() => {
-          navigate('/admin/login');
+          navigate('/login');
           setSuccess('');
-        }, 5000);
+        }, 1500);
       }
     } catch (err) {
-      setError(err.message || 'Registration failed.');
+      if (err.errors && Array.isArray(err.errors)) {
+        const errorMsg = err.errors.map(e => e.message).join(', ');
+        setError(errorMsg);
+      } else {
+        setError(err.message || 'Registration failed.');
+      }
     } finally {
       setLoading(false);
     }
@@ -109,18 +161,18 @@ const Auth = () => {
       <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-primary-blue/10 blur-[100px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-primary-purple/10 blur-[100px] pointer-events-none" />
 
-      <div className="glass p-8 md:p-10 rounded-[30px] border border-slate-200/60 dark:border-white/5 shadow-xl w-full max-w-[440px] relative z-10 text-left">
+      <div className="glass p-5 sm:p-8 md:p-10 rounded-[20px] sm:rounded-[30px] border border-slate-200/60 dark:border-white/5 shadow-xl w-full max-w-[440px] relative z-10 text-left">
         
         {/* Back Link */}
-        <Link to="/" className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-primary-blue transition-colors mb-6">
+        <a href={clientUrl} className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-primary-blue transition-colors mb-6">
           <FaArrowLeft /> Back to Website
-        </Link>
+        </a>
 
         {/* Tab Headers */}
         <div className="flex border-b border-slate-200 dark:border-white/5 mb-6 select-none">
           <button
             onClick={() => {
-              navigate('/admin/login');
+              navigate('/login');
               setError('');
               setSuccess('');
             }}
@@ -134,7 +186,7 @@ const Auth = () => {
           </button>
           <button
             onClick={() => {
-              navigate('/admin/register');
+              navigate('/register');
               setError('');
               setSuccess('');
             }}
@@ -184,9 +236,15 @@ const Auth = () => {
             <div className="flex flex-col gap-1.5">
               <div className="flex justify-between items-center">
                 <label htmlFor="loginPassword" className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Password</label>
-                <Link to="/admin/forgot-password" className="text-xs font-bold text-primary-blue hover:text-accent-blue transition-colors">
-                  Forgot Password?
-                </Link>
+                <div className="flex items-center gap-2">
+                  <Link to="/recover-account" className="text-xs font-bold text-primary-purple hover:text-purple-400 transition-colors">
+                    Recover Account
+                  </Link>
+                  <span className="text-slate-300 dark:text-white/10 text-xs">|</span>
+                  <Link to="/forgot-password" className="text-xs font-bold text-primary-blue hover:text-accent-blue transition-colors">
+                    Forgot Password?
+                  </Link>
+                </div>
               </div>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
@@ -259,6 +317,33 @@ const Auth = () => {
             </div>
 
             <div className="flex flex-col gap-1.5">
+              <label htmlFor="regUsername" className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Username</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                  <FaUser size={12} />
+                </span>
+                <input
+                  type="text"
+                  id="regUsername"
+                  value={regUsername}
+                  onChange={(e) => setRegUsername(e.target.value)}
+                  required
+                  placeholder="e.g. tauhid_shekhar"
+                  className={`w-full pl-11 pr-5 py-3 rounded-xl border bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none text-xs transition-colors ${
+                    regUsername && usernameError ? 'border-red-500 focus:border-red-500' : regUsername && isUsernameValid ? 'border-green-500 focus:border-green-500' : 'border-slate-200 dark:border-white/5 focus:border-primary-blue'
+                  }`}
+                />
+              </div>
+              {regUsername && (
+                <div className="text-[10px] font-medium leading-tight mt-0.5 px-1">
+                  {isCheckingUsername && <span className="text-slate-400 animate-pulse">Checking availability...</span>}
+                  {!isCheckingUsername && usernameError && <span className="text-red-500">{usernameError}</span>}
+                  {!isCheckingUsername && !usernameError && isUsernameValid && <span className="text-green-500">Username is available!</span>}
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-1.5">
               <label htmlFor="regEmail" className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Email Address</label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
@@ -276,7 +361,7 @@ const Auth = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="regPassword" className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Password</label>
                 <div className="relative">
@@ -332,8 +417,8 @@ const Auth = () => {
 
             <button
               type="submit"
-              disabled={loading}
-              className="w-full py-3.5 bg-primary-blue hover:bg-accent-blue text-white rounded-xl font-bold text-sm shadow-lg shadow-primary-blue/15 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
+              disabled={loading || !isUsernameValid || isCheckingUsername}
+              className="w-full py-3.5 bg-primary-blue hover:bg-accent-blue disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-bold text-sm shadow-lg shadow-primary-blue/15 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -343,6 +428,37 @@ const Auth = () => {
             </button>
           </form>
         )}
+
+        {/* Divider */}
+        <div className="relative flex py-3 items-center select-none mt-2">
+          <div className="flex-grow border-t border-slate-200 dark:border-white/5"></div>
+          <span className="flex-shrink mx-4 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Or Continue With</span>
+          <div className="flex-grow border-t border-slate-200 dark:border-white/5"></div>
+        </div>
+
+        {/* Social Actions Grid */}
+        <div className="grid grid-cols-2 gap-3 mt-1">
+          <button
+            onClick={() => {
+              const apiBase = import.meta.env.VITE_API_URL || (window.location.port === '5173' || window.location.port === '5174' ? 'http://localhost:5000/api' : 'https://tauhid-shekhar-portfolio.onrender.com/api');
+              window.location.href = `${apiBase}/auth/google`;
+            }}
+            className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/60 dark:hover:bg-slate-900 text-slate-800 dark:text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer"
+          >
+            <FaGoogle className="text-red-500 text-sm" />
+            <span>Google</span>
+          </button>
+          <button
+            onClick={() => {
+              const apiBase = import.meta.env.VITE_API_URL || (window.location.port === '5173' || window.location.port === '5174' ? 'http://localhost:5000/api' : 'https://tauhid-shekhar-portfolio.onrender.com/api');
+              window.location.href = `${apiBase}/auth/github`;
+            }}
+            className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/60 dark:hover:bg-slate-900 text-slate-800 dark:text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer"
+          >
+            <FaGithub className="text-slate-900 dark:text-white text-sm" />
+            <span>GitHub</span>
+          </button>
+        </div>
       </div>
     </div>
   );
