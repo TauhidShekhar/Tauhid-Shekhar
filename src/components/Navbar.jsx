@@ -157,22 +157,21 @@ const Navbar = ({ activeSection, toggleTheme: propsToggleTheme, isDark: propsIsD
           <a
             href="#home"
             onClick={(e) => handleNavClick(e, '#home')}
-            className="flex items-center gap-3 shrink-0 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF] rounded-xl"
+            className="flex items-center gap-2.5 sm:gap-3 shrink-0 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF] rounded-xl"
             aria-label="Tauhid Shekhar Home"
           >
             <img
               src={logoSrc}
               alt="Tauhid Shekhar TS Logo"
-              className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-cover shadow-sm transition-transform duration-200 group-hover:scale-105"
+              className="w-9 h-9 xs:w-10 xs:h-10 sm:w-11 sm:h-11 rounded-xl object-cover shadow-sm transition-transform duration-200 group-hover:scale-105 shrink-0"
             />
-            <div className="flex flex-col text-left">
-              <div className="flex items-center text-base sm:text-lg md:text-xl font-black font-title tracking-tight leading-tight">
+            <div className="flex flex-col text-left justify-center">
+              <div className="flex items-center text-[15px] xs:text-base sm:text-lg md:text-xl font-black font-title tracking-tight leading-none">
                 <span className={isDark ? 'text-white' : 'text-[#171717]'}>TAUHID&nbsp;</span>
                 <span className="text-[#C2272D]">SHEKHAR</span>
-                <span className="text-[#00FFFF] font-bold mx-1.5 sm:mx-2 select-none text-base hidden xs:inline">|</span>
               </div>
-              <span className="text-[9px] sm:text-[10px] font-bold tracking-widest uppercase text-[#525252] dark:text-[#9CA3AF] hidden xs:block">
-                DEVELOPER | CREATOR | LEARNER
+              <span className="text-[8px] xs:text-[9px] sm:text-[10px] font-bold tracking-wider sm:tracking-widest uppercase text-[#525252] dark:text-[#9CA3AF] mt-1 sm:mt-1.5 flex items-center gap-1 sm:gap-1.5 whitespace-nowrap select-none">
+                DEVELOPER <span className="text-[#00FFFF] font-black">|</span> CREATOR <span className="text-[#00FFFF] font-black">|</span> LEARNER
               </span>
             </div>
           </a>
