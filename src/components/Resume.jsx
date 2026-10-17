@@ -181,9 +181,7 @@ const Resume = ({ resumeData, settingsData }) => {
 
   const handleDownloadResume = (e) => {
     if (e) e.preventDefault();
-    const linkToDownload = resumePdfUrl || getAbsolutePdfUrl(activeResume?.fileUrl || settings?.resumeUrl || '');
-    if (!linkToDownload) return;
-
+    const linkToDownload = resumePdfUrl || '/assits/Resume-file.pdf';
     let downloadUrl = linkToDownload;
     if (downloadUrl.includes('/image/upload/')) {
       downloadUrl = downloadUrl.replace('/image/upload/', '/image/upload/fl_attachment/');
@@ -191,20 +189,19 @@ const Resume = ({ resumeData, settingsData }) => {
       downloadUrl = downloadUrl.replace('/raw/upload/', '/raw/upload/fl_attachment/');
     }
 
-    const win = window.open(downloadUrl, '_blank', 'noopener,noreferrer');
-    if (!win) {
-      window.location.href = downloadUrl;
-    }
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.setAttribute('download', 'Tauhid_Shekhar_Resume.pdf');
+    a.setAttribute('target', '_blank');
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   const handleViewResume = (e) => {
     if (e) e.preventDefault();
-    const linkToOpen = resumePdfUrl || getAbsolutePdfUrl(activeResume?.fileUrl || settings?.resumeUrl || '');
-    if (!linkToOpen) return;
-    const win = window.open(linkToOpen, '_blank', 'noopener,noreferrer');
-    if (!win) {
-      window.location.href = linkToOpen;
-    }
+    const linkToOpen = resumePdfUrl || '/assits/Resume-file.pdf';
+    window.open(linkToOpen, '_blank', 'noopener,noreferrer');
   };
 
   const getScoreColor = (score) => {
@@ -269,105 +266,55 @@ const Resume = ({ resumeData, settingsData }) => {
               transition={{ duration: 0.8 }}
               className="lg:col-span-4 flex flex-col gap-6"
             >
-              <div className="glass p-2.5 rounded-[28px] border border-slate-100 dark:border-white/5 shadow-md w-full aspect-[1/1.41] relative overflow-hidden bg-white dark:bg-[#121217]">
-                {resumePdfUrl ? (
-                  !isMobile && previewBlobUrl ? (
-                    /* Natively render PDF pages on desktop using local CORS-safe blob URL */
-                    <object
-                      data={previewBlobUrl}
-                      type="application/pdf"
-                      className="w-full h-full rounded-2xl border-0 bg-white"
-                    >
-                      {/* Fallback card if browser plugin fails to render inline */}
-                      <a 
-                        href={resumePdfUrl}
-                        onClick={handleViewResume}
-                        className="w-full h-full rounded-2xl flex flex-col items-center justify-center p-6 text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-all group relative border border-dashed border-slate-200 dark:border-white/10 block"
-                      >
-                        <div className="absolute inset-0 bg-gradient-to-tr from-primary-blue/5 to-primary-purple/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl" />
-                        <div className="w-20 h-20 rounded-3xl bg-red-500/10 dark:bg-red-500/15 text-red-500 flex items-center justify-center mb-6 shadow-inner transform group-hover:scale-110 transition-all duration-300 relative z-10">
-                          <FaFilePdf size={40} />
-                        </div>
-                        <div className="relative z-10">
-                          <h4 className="text-sm font-black text-slate-800 dark:text-white mb-2 truncate max-w-[240px]">
-                            {settings?.siteName ? `${settings.siteName.replace(/\s+/g, '_')}_CV.pdf` : 'Tauhid_Shekhar_CV.pdf'}
-                          </h4>
-                          <p className="text-[11px] text-slate-550 dark:text-slate-400 font-bold uppercase tracking-wider mb-4">
-                            Click to View Document
-                          </p>
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-[9px] font-black uppercase tracking-wider">
-                            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                            Verified PDF
-                          </span>
-                        </div>
-                      </a>
-                    </object>
-                  ) : (
-                    /* Premium interactive card for mobile or during loading fallback */
-                    <a 
-                      href={resumePdfUrl}
-                      onClick={handleViewResume}
-                      className="w-full h-full rounded-2xl flex flex-col items-center justify-center p-6 text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-all group relative border border-dashed border-slate-200 dark:border-white/10 block"
-                    >
-                      {/* Glowing background gradient on hover */}
-                      <div className="absolute inset-0 bg-gradient-to-tr from-primary-blue/5 to-primary-purple/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl" />
-                      
-                      <div className="w-20 h-20 rounded-3xl bg-red-500/10 dark:bg-red-500/15 text-red-500 flex items-center justify-center mb-6 shadow-inner transform group-hover:scale-110 transition-all duration-300 relative z-10">
-                        <FaFilePdf size={40} />
-                      </div>
-                      
-                      <div className="relative z-10">
-                        <h4 className="text-sm font-black text-slate-800 dark:text-white mb-2 truncate max-w-[240px]">
-                          {settings?.siteName ? `${settings.siteName.replace(/\s+/g, '_')}_CV.pdf` : 'Tauhid_Shekhar_CV.pdf'}
-                        </h4>
-                        <p className="text-[11px] text-slate-550 dark:text-slate-400 font-bold uppercase tracking-wider mb-4">
-                          Click to View Document
-                        </p>
-                        
-                        {/* Premium Badge */}
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-[9px] font-black uppercase tracking-wider">
-                          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                          Verified PDF
-                        </span>
-                      </div>
-                    </a>
-                  )
-                ) : (
-                  <div className="flex flex-col items-center justify-center p-8 text-center h-full w-full">
-                    <div className="w-16 h-16 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center mb-5">
-                      <FaFilePdf size={32} />
-                    </div>
-                    <h4 className="text-sm font-bold text-slate-800 dark:text-white mb-1.5">No Resume Available</h4>
-                    <p className="text-[11px] text-slate-550 dark:text-slate-400 max-w-[220px] leading-relaxed">
-                      Administrator has not uploaded an active resume yet.
-                    </p>
+              <div 
+                onClick={() => setShowFullPreview(true)}
+                className="glass p-2.5 rounded-[28px] border border-slate-150 dark:border-white/10 shadow-lg w-full aspect-[1/1.41] relative overflow-hidden bg-white dark:bg-[#121217] cursor-pointer group transition-all duration-300 hover:shadow-xl hover:border-[#C2272D]/30"
+              >
+                <img 
+                  src="/assits/Resume-file.png" 
+                  alt="Tauhid Shekhar - Resume Preview" 
+                  className="w-full h-full object-cover object-top rounded-2xl transition-transform duration-500 group-hover:scale-[1.03]"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+
+                {/* Hover overlay with preview prompt */}
+                <div className="absolute inset-2.5 rounded-2xl bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center p-6 text-center backdrop-blur-[2px]">
+                  <div className="w-14 h-14 rounded-full bg-[#C2272D] text-white flex items-center justify-center mb-3 shadow-lg transform group-hover:scale-110 transition-transform">
+                    <FaEye size={22} />
                   </div>
-                )}
+                  <h4 className="text-sm font-bold text-white mb-1">
+                    Tauhid Shekhar - Resume
+                  </h4>
+                  <p className="text-xs text-white/80 font-medium">
+                    Click to view full screen & details
+                  </p>
+                  <span className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/20 border border-green-500/40 text-green-300 text-[10px] font-bold uppercase tracking-wider">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                    Verified ATS 98%
+                  </span>
+                </div>
               </div>
 
               <div className="flex flex-col gap-2.5">
-                {resumePdfUrl ? (
-                  <div className="flex flex-wrap gap-2.5">
-                    <a
-                      href={resumePdfUrl}
-                      onClick={handleViewResume}
-                      className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 sm:py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full font-semibold text-[15px] shadow-md shadow-[#C2272D]/20 transition-all active:scale-[0.98] cursor-pointer"
-                    >
-                      <FaEye /> View Resume PDF
-                    </a>
-                    <a
-                      href={resumePdfUrl}
-                      onClick={handleDownloadResume}
-                      className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 sm:py-3 bg-[#F8FAFC] dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-[#171717] dark:text-white rounded-full font-semibold text-[15px] border border-[#E5E7EB] dark:border-white/10 transition-all cursor-pointer"
-                    >
-                      <FaDownload /> Download CV
-                    </a>
-                  </div>
-                ) : (
-                  <div className="text-xs text-slate-500 font-bold p-3 bg-slate-100/50 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/5 w-full text-center">
-                    Administrator resume is currently not available.
-                  </div>
-                )}
+                <div className="flex flex-wrap gap-2.5">
+                  <a
+                    href={resumePdfUrl || '/assits/Resume-file.pdf'}
+                    onClick={handleViewResume}
+                    className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 sm:py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full font-semibold text-[15px] shadow-md shadow-[#C2272D]/20 transition-all active:scale-[0.98] cursor-pointer btn-shine-effect"
+                  >
+                    <FaEye /> View Resume PDF
+                  </a>
+                  <a
+                    href={resumePdfUrl || '/assits/Resume-file.pdf'}
+                    download="Tauhid_Shekhar_Resume.pdf"
+                    onClick={handleDownloadResume}
+                    className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 sm:py-3 bg-[#F8FAFC] dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-[#171717] dark:text-white rounded-full font-semibold text-[15px] border border-[#E5E7EB] dark:border-white/10 transition-all cursor-pointer"
+                  >
+                    <FaDownload /> Download CV
+                  </a>
+                </div>
 
                 {isAdmin && (
                   <div className="flex gap-2">
@@ -487,7 +434,7 @@ const Resume = ({ resumeData, settingsData }) => {
                     <FaBook size={12} className="text-[#C2272D] dark:text-[#00FFFF]" /> Career Summary
                   </span>
                   <p className="text-sm text-[#525252] dark:text-[#D1D5DB] leading-relaxed italic bg-slate-50 dark:bg-[#181822] p-3.5 rounded-2xl border border-slate-150 dark:border-white/5">
-                    {activeResume?.parsedData?.summary ? `"${activeResume.parsedData.summary}"` : `"Full stack software engineer with extensive experience in the MERN stack ecosystem. Specialized in constructing high-performance REST APIs, stateful interfaces, and database architectures."`}
+                    {activeResume?.parsedData?.summary ? `"${activeResume.parsedData.summary}"` : `"Results-driven Full-Stack MERN Developer passionate about building robust, scalable web applications with seamless user experiences. Experienced in developing responsive frontends with React and designing high-performance REST APIs with Node.js and Express. Proficient in database modeling with MongoDB and MySQL."`}
                   </p>
                 </div>
 
@@ -502,7 +449,7 @@ const Resume = ({ resumeData, settingsData }) => {
                   <div className="p-3.5 bg-slate-50 dark:bg-[#181822] border border-slate-150 dark:border-white/5 rounded-2xl">
                     <span className="text-[11px] font-black text-[#525252] dark:text-[#D1D5DB] uppercase tracking-wider block mb-1">Career Level</span>
                     <span className="text-sm font-bold text-[#171717] dark:text-white capitalize">
-                      {activeResume?.aiAnalysis?.careerLevel || 'Mid to Senior'}
+                      {activeResume?.aiAnalysis?.careerLevel || 'Full-Stack MERN Developer'}
                     </span>
                   </div>
                 </div>
@@ -520,7 +467,7 @@ const Resume = ({ resumeData, settingsData }) => {
                         </span>
                       ))
                     ) : (
-                      ['React', 'Node.js', 'Express', 'MongoDB', 'REST API', 'GraphQL', 'JWT', 'TypeScript', 'Docker', 'AWS'].map((s, idx) => (
+                      ['React.js', 'Node.js', 'Express.js', 'MongoDB', 'JavaScript', 'REST APIs', 'JWT', 'MySQL', 'Java', 'Python', 'Tailwind CSS', 'Git', 'GitHub'].map((s, idx) => (
                         <span key={idx} className="px-3 py-1.5 bg-[#F8FAFC] dark:bg-white/5 border border-[#E5E7EB] dark:border-white/10 text-[#171717] dark:text-[#D1D5DB] rounded-xl text-xs font-bold">
                           {s}
                         </span>
@@ -532,30 +479,19 @@ const Resume = ({ resumeData, settingsData }) => {
                 {/* Audit Key Weak Bullet Points or Suggestions */}
                 <div className="flex flex-col gap-1.5 text-left">
                   <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                    <FaTasks size={10} className="text-amber-500 animate-pulse" /> Recommended Improvements
+                    <FaTasks size={10} className="text-[#C2272D] dark:text-[#00FFFF] animate-pulse" /> Verified Credentials & Education
                   </span>
                   <div className="flex flex-col gap-2">
-                    {activeResume?.aiSuggestions && activeResume.aiSuggestions.length > 0 ? (
-                      activeResume.aiSuggestions.slice(0, 2).map((s, idx) => (
-                        <div key={idx} className="p-2.5 bg-amber-500/5 border border-amber-500/10 rounded-xl flex flex-col gap-1">
-                          <span className="text-[9px] font-black text-amber-500 uppercase">Change in {s.section}:</span>
-                          {s.currentText && <span className="text-[10px] line-through text-slate-400">{s.currentText}</span>}
-                          <span className="text-[10px] text-slate-800 dark:text-slate-200 font-bold">{s.improvedText}</span>
-                        </div>
-                      ))
-                    ) : (
-                      <>
-                        <div className="p-2.5 bg-amber-500/5 border border-amber-500/10 rounded-xl flex flex-col gap-1">
-                          <span className="text-[9px] font-black text-amber-500 uppercase">Change in Projects:</span>
-                          <span className="text-[10px] line-through text-slate-400">Worked on MERN Project</span>
-                          <span className="text-[10px] text-slate-800 dark:text-slate-200 font-bold">Designed a scalable portfolio CMS stack serving 1,000+ active users.</span>
-                        </div>
-                        <div className="p-2.5 bg-amber-500/5 border border-amber-500/10 rounded-xl flex flex-col gap-1">
-                          <span className="text-[9px] font-black text-amber-500 uppercase">Change in Skills:</span>
-                          <span className="text-[10px] text-slate-800 dark:text-slate-200 font-bold">Integrate CI/CD pipelines and microservices deployments.</span>
-                        </div>
-                      </>
-                    )}
+                    <div className="p-3 bg-slate-50 dark:bg-[#181822] border border-slate-150 dark:border-white/5 rounded-xl flex flex-col gap-1">
+                      <span className="text-[10px] font-bold text-[#C2272D] dark:text-[#00FFFF] uppercase tracking-wider">Education</span>
+                      <span className="text-xs text-[#171717] dark:text-white font-semibold">Bachelor of Computer Applications (BCA)</span>
+                      <span className="text-[11px] text-[#525252] dark:text-[#D1D5DB]">Global Group of Institutes, Amritsar (2023–2026) • CGPA 8.0/10</span>
+                    </div>
+                    <div className="p-3 bg-slate-50 dark:bg-[#181822] border border-slate-150 dark:border-white/5 rounded-xl flex flex-col gap-1">
+                      <span className="text-[10px] font-bold text-[#C2272D] dark:text-[#00FFFF] uppercase tracking-wider">Featured Projects</span>
+                      <span className="text-xs text-[#171717] dark:text-white font-semibold">Course sellingPlatform (MERN LMS)</span>
+                      <span className="text-[11px] text-[#525252] dark:text-[#D1D5DB]">Full-stack platform with JWT authentication & MongoDB schema modeling</span>
+                    </div>
                   </div>
                 </div>
 
@@ -567,7 +503,69 @@ const Resume = ({ resumeData, settingsData }) => {
 
       </div>
 
-      {/* Resume Section Ends */}
+      {/* Full Screen Resume Preview Modal */}
+      <AnimatePresence>
+        {showFullPreview && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 10 }}
+              transition={{ duration: 0.2 }}
+              className="relative bg-white dark:bg-[#121217] rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden shadow-2xl border border-slate-200 dark:border-white/10"
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#181822]">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-[#C2272D]/10 text-[#C2272D] flex items-center justify-center">
+                    <FaFilePdf size={18} />
+                  </div>
+                  <div>
+                    <h3 className="text-sm sm:text-base font-bold text-[#171717] dark:text-white">
+                      Tauhid Shekhar — Full-Stack MERN Developer Resume
+                    </h3>
+                    <p className="text-[11px] text-[#525252] dark:text-gray-400">
+                      Document Verification • ATS Index: 98%
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <a
+                    href={resumePdfUrl || '/assits/Resume-file.pdf'}
+                    onClick={handleDownloadResume}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#C2272D] hover:bg-[#A51E23] text-white text-xs font-semibold shadow-sm transition-colors cursor-pointer"
+                  >
+                    <FaDownload size={11} /> Download
+                  </a>
+                  <a
+                    href={resumePdfUrl || '/assits/Resume-file.pdf'}
+                    onClick={handleViewResume}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 text-[#171717] dark:text-white text-xs font-semibold transition-colors cursor-pointer"
+                  >
+                    <FaEye size={11} /> Open PDF
+                  </a>
+                  <button
+                    onClick={() => setShowFullPreview(false)}
+                    className="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 dark:text-slate-300 transition-colors ml-1"
+                    aria-label="Close modal"
+                  >
+                    <FaTimes size={18} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal Body: Document Preview */}
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex justify-center bg-slate-100 dark:bg-[#07070a]">
+                <img
+                  src="/assits/Resume-file.png"
+                  alt="Tauhid Shekhar Resume Full Preview"
+                  className="max-w-full h-auto rounded-xl shadow-xl border border-slate-200 dark:border-white/10"
+                />
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </section>
   );
