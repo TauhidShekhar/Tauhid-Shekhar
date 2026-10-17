@@ -6,6 +6,19 @@ import './index.css';
 import App from './App.jsx';
 import monitorWebVitals from './utils/webVitals';
 
+// Instant theme synchronization from localStorage
+try {
+  const saved = localStorage.getItem('theme');
+  const isDark = saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  if (isDark) {
+    document.documentElement.classList.add('darkmode');
+    if (document.body) document.body.classList.add('darkmode');
+  } else {
+    document.documentElement.classList.remove('darkmode');
+    if (document.body) document.body.classList.remove('darkmode');
+  }
+} catch (_) {}
+
 // Initialize Core Web Vitals performance tracker
 monitorWebVitals();
 

@@ -1,20 +1,25 @@
 {
   "name": "Tauhid Shekhar Portfolio",
-  "short_name": "Tauhid Portfolio",
-  "description": "Tauhid Shekhar - Graphic Designer, Frontend Developer, and Creative Content Creator Portfolio",
-  "start_url": "/index.html",
+  "short_name": "Tauhid Shekhar",
+  "description": "Tauhid Shekhar - Full Stack Developer, MERN Stack Specialist, and UI/UX Designer",
+  "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#0066cc",
+  "background_color": "#000000",
+  "theme_color": "#C2272D",
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "assits/tauhidshekhar.png",
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "assits/tauhidshekhar.png",
+      "src": "/android-chrome-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
     }

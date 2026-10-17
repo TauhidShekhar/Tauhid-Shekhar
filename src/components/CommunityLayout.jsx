@@ -37,25 +37,36 @@ const CommunityLayout = () => {
   useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add('darkmode');
-      document.body.classList.add('darkmode');
+      if (document.body) document.body.classList.add('darkmode');
+      localStorage.setItem('theme', 'dark');
     } else {
       document.documentElement.classList.remove('darkmode');
-      document.body.classList.remove('darkmode');
+      if (document.body) document.body.classList.remove('darkmode');
+      localStorage.setItem('theme', 'light');
     }
   }, [isDark]);
+
+  useEffect(() => {
+    const syncTheme = () => {
+      try {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+          setIsDark(savedTheme === 'dark');
+        }
+      } catch (_) {}
+    };
+    window.addEventListener('storage', syncTheme);
+    window.addEventListener('theme-change', syncTheme);
+    return () => {
+      window.removeEventListener('storage', syncTheme);
+      window.removeEventListener('theme-change', syncTheme);
+    };
+  }, []);
 
   const toggleTheme = () => {
     const nextDark = !isDark;
     setIsDark(nextDark);
-    if (nextDark) {
-      document.documentElement.classList.add('darkmode');
-      document.body.classList.add('darkmode');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('darkmode');
-      document.body.classList.remove('darkmode');
-      localStorage.setItem('theme', 'light');
-    }
+    window.dispatchEvent(new Event('theme-change'));
   };
 
   useEffect(() => {

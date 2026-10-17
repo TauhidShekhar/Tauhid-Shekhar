@@ -57,12 +57,46 @@ const App = () => {
   const [isDark, setIsDark] = useState(() => {
     try {
       const savedTheme = localStorage.getItem('theme');
-      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      return savedTheme === 'dark' || (!savedTheme && systemDark);
+      if (savedTheme) {
+        return savedTheme === 'dark';
+      }
+      return document.documentElement.classList.contains('darkmode') || 
+        window.matchMedia('(prefers-color-scheme: dark)').matches;
     } catch (_) {
       return false;
     }
   });
+
+  // Keep DOM and localStorage strictly in sync with theme state
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('darkmode');
+      if (document.body) document.body.classList.add('darkmode');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('darkmode');
+      if (document.body) document.body.classList.remove('darkmode');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDark]);
+
+  // Listen for external or cross-component theme changes
+  useEffect(() => {
+    const syncTheme = () => {
+      try {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+          setIsDark(savedTheme === 'dark');
+        }
+      } catch (_) {}
+    };
+    window.addEventListener('storage', syncTheme);
+    window.addEventListener('theme-change', syncTheme);
+    return () => {
+      window.removeEventListener('storage', syncTheme);
+      window.removeEventListener('theme-change', syncTheme);
+    };
+  }, []);
   const navigate = useNavigate();
   const location = useLocation();
   const [activeSection, setActiveSection] = useState('home');
@@ -301,17 +335,8 @@ const App = () => {
   const toggleTheme = () => {
     const newTheme = !isDark;
     setIsDark(newTheme);
-    if (newTheme) {
-      document.documentElement.classList.add('darkmode');
-      document.body.classList.add('darkmode');
-      localStorage.setItem('theme', 'dark');
-      triggerToast('Dark mode enabled!');
-    } else {
-      document.documentElement.classList.remove('darkmode');
-      document.body.classList.remove('darkmode');
-      localStorage.setItem('theme', 'light');
-      triggerToast('Light mode enabled!');
-    }
+    triggerToast(newTheme ? 'Dark mode enabled!' : 'Light mode enabled!');
+    window.dispatchEvent(new Event('theme-change'));
   };
 
 

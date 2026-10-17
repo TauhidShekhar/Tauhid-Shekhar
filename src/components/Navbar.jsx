@@ -136,16 +136,18 @@ const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
   const logoSrc = isDark ? '/assits/ts-logo-dark.jpg' : '/assits/ts-logo-red.jpg';
 
   return (
-    <header className="fixed top-0 left-0 w-full z-[999] px-3 sm:px-6 lg:px-8 pt-3 sm:pt-4 transition-all duration-300">
+    <header 
+      className={`fixed top-0 left-0 w-full z-[999] transition-all duration-300 border-b ${
+        isDark
+          ? 'bg-[#000000]/95 border-white/10 shadow-lg shadow-black/40'
+          : 'bg-[#FFFFFF]/95 border-[#E5E7EB] shadow-sm shadow-slate-200/50'
+      } ${scrolled ? 'backdrop-blur-md' : 'backdrop-blur-sm'}`}
+    >
       <nav
         aria-label="Main Navigation"
-        className={`max-w-[1400px] mx-auto rounded-2xl px-4 sm:px-6 lg:px-8 py-3 transition-all duration-300 ${
-          isDark
-            ? 'bg-[#000000] border border-white/10 shadow-2xl shadow-black/80'
-            : 'bg-[#FFFFFF] border border-[#E5E7EB] shadow-lg shadow-slate-200/60'
-        } ${scrolled ? 'backdrop-blur-md bg-opacity-95 dark:bg-opacity-95' : ''}`}
+        className="max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-8"
       >
-        <div className="flex items-center justify-between gap-4">
+        <div className={`flex items-center justify-between gap-4 transition-all duration-200 ${scrolled ? 'py-2.5 sm:py-3' : 'py-3.5 sm:py-4'}`}>
           
           {/* ── Brand Logo & Text (Left) ── */}
           <a
@@ -172,55 +174,43 @@ const Navbar = ({ activeSection, toggleTheme, isDark, settingsData }) => {
           </a>
 
           {/* ── Desktop Primary Links (Center) ── */}
-          <ul className="hidden xl:flex items-center gap-6 2xl:gap-8 mx-auto" role="menubar">
+          <ul className="hidden xl:flex items-center gap-1.5 2xl:gap-2 mx-auto" role="menubar">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isItemActive = item.href 
                 ? (activeSection === item.href.substring(1) && location.pathname === '/')
                 : (location.pathname.startsWith(item.to));
 
+              const linkClasses = `relative flex items-center gap-2 text-[15px] font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF] rounded-full px-3.5 py-1.5 ${
+                isItemActive
+                  ? (isDark 
+                      ? 'text-[#00FFFF] bg-[#00FFFF]/10 shadow-sm' 
+                      : 'text-[#C2272D] bg-[#C2272D]/10 shadow-sm')
+                  : (isDark 
+                      ? 'text-[#D1D5DB] hover:text-white hover:bg-white/5' 
+                      : 'text-[#171717] hover:text-[#C2272D] hover:bg-black/5')
+              }`;
+
               return (
-                <li key={item.name} role="none" className="relative py-2">
+                <li key={item.name} role="none" className="relative">
                   {item.to ? (
                     <Link
                       to={item.to}
                       role="menuitem"
-                      className={`relative flex items-center gap-2 text-[16px] font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF] rounded-md px-1 ${
-                        isItemActive
-                          ? (isDark ? 'text-[#00FFFF]' : 'text-[#C2272D]')
-                          : (isDark ? 'text-[#D1D5DB] hover:text-[#00FFFF]' : 'text-[#171717] hover:text-[#C2272D]')
-                      }`}
+                      className={linkClasses}
                     >
-                      <Icon size={16} className={isItemActive ? (isDark ? 'text-[#00FFFF]' : 'text-[#C2272D]') : 'opacity-80'} />
+                      <Icon size={15} className={isItemActive ? (isDark ? 'text-[#00FFFF]' : 'text-[#C2272D]') : 'opacity-70'} />
                       <span>{item.name}</span>
-                      {isItemActive && (
-                        <span 
-                          className={`absolute -bottom-2 left-0 w-full h-[2.5px] rounded-full ${
-                            isDark ? 'bg-[#00FFFF]' : 'bg-[#C2272D]'
-                          }`} 
-                        />
-                      )}
                     </Link>
                   ) : (
                     <a
                       href={item.href}
                       onClick={(e) => handleNavClick(e, item.href)}
                       role="menuitem"
-                      className={`relative flex items-center gap-2 text-[16px] font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF] rounded-md px-1 ${
-                        isItemActive
-                          ? (isDark ? 'text-[#00FFFF]' : 'text-[#C2272D]')
-                          : (isDark ? 'text-[#D1D5DB] hover:text-[#00FFFF]' : 'text-[#171717] hover:text-[#C2272D]')
-                      }`}
+                      className={linkClasses}
                     >
-                      <Icon size={16} className={isItemActive ? (isDark ? 'text-[#00FFFF]' : 'text-[#C2272D]') : 'opacity-80'} />
+                      <Icon size={15} className={isItemActive ? (isDark ? 'text-[#00FFFF]' : 'text-[#C2272D]') : 'opacity-70'} />
                       <span>{item.name}</span>
-                      {isItemActive && (
-                        <span 
-                          className={`absolute -bottom-2 left-0 w-full h-[2.5px] rounded-full ${
-                            isDark ? 'bg-[#00FFFF]' : 'bg-[#C2272D]'
-                          }`} 
-                        />
-                      )}
                     </a>
                   )}
                 </li>
