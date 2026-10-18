@@ -75,21 +75,6 @@ const EducationCertificates = ({ educationData, certificatesData, achievementsDa
     return (achievementsData && achievementsData.length > 0) ? achievementsData : [];
   });
 
-  if (educationData === null && certificatesData === null) {
-    return (
-      <section id="education" className="py-24 bg-white dark:bg-[#000000] relative animate-pulse">
-        <div className="max-w-[960px] mx-auto px-6 md:px-12">
-          <div className="h-10 w-64 bg-slate-200 dark:bg-white/10 rounded mx-auto mb-16 animate-pulse" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {[1, 2].map(n => (
-              <div key={n} className="h-48 bg-slate-50 dark:bg-[#111111] rounded-2xl border border-slate-200 dark:border-white/10 animate-pulse" />
-            ))}
-          </div>
-        </div>
-      </section>
-    );
-  }
-
   useEffect(() => {
     if (educationData && educationData.length > 0) {
       setEducationList(educationData);
@@ -114,6 +99,21 @@ const EducationCertificates = ({ educationData, certificatesData, achievementsDa
     }
   }, [achievementsData]);
 
+  if (educationData === null && certificatesData === null) {
+    return (
+      <section id="education" className="py-24 bg-white/70 dark:bg-transparent relative animate-pulse">
+        <div className="max-w-[960px] mx-auto px-4 xs:px-6 sm:px-8 md:px-12">
+          <div className="h-10 w-64 bg-slate-200 dark:bg-white/10 rounded mx-auto mb-16 animate-pulse" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {[1, 2].map(n => (
+              <div key={n} className="h-48 bg-slate-50 dark:bg-[#111111] rounded-2xl border border-slate-200 dark:border-white/10 animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   const getAchievementIcon = (iconName) => {
     return <FaAward className="text-[#C2272D] dark:text-[#00FFFF]" />;
   };
@@ -136,13 +136,13 @@ const EducationCertificates = ({ educationData, certificatesData, achievementsDa
   };
 
   return (
-    <section className="py-24 bg-white dark:bg-[#000000] relative text-left">
+    <section className="py-24 bg-white/70 dark:bg-transparent relative text-left">
       {/* Anchors for routing link jumps */}
       <div id="education" className="absolute top-0" />
       <div id="achievements" className="absolute top-[35%]" />
       <div id="certificates" className="absolute top-[70%]" />
 
-      <div className="max-w-[1280px] mx-auto px-6 md:px-12">
+      <div className="max-w-[1280px] mx-auto px-4 xs:px-6 sm:px-8 lg:px-12">
         
         {/* Section Header */}
         <div className="text-center mb-12 sm:mb-14">
@@ -158,38 +158,38 @@ const EducationCertificates = ({ educationData, certificatesData, achievementsDa
         </div>
 
         {/* Tab Headers */}
-        <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10 mb-14 select-none border-b border-slate-200 dark:border-white/10 pb-4">
+        <div className="flex flex-wrap items-center justify-center gap-2 xs:gap-5 md:gap-8 mb-10 sm:mb-14 select-none border-b border-slate-200 dark:border-white/10 pb-3 sm:pb-4">
           <button
             onClick={() => setActiveTab('education')}
-            className={`flex items-center gap-2.5 pb-3 text-base md:text-lg font-semibold font-title tracking-tight border-b-2 transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 xs:gap-2.5 pb-2.5 sm:pb-3 px-1.5 xs:px-2.5 text-xs xs:text-sm sm:text-base md:text-lg font-semibold font-title tracking-tight border-b-2 transition-all cursor-pointer ${
               activeTab === 'education'
                 ? 'text-[#C2272D] border-[#C2272D] dark:text-[#00FFFF] dark:border-[#00FFFF]'
                 : 'text-[#525252] dark:text-[#D1D5DB] border-transparent hover:text-[#171717] dark:hover:text-white'
             }`}
           >
-            <FaGraduationCap size={18} /> Education
+            <FaGraduationCap size={16} /> Education
           </button>
           
           <button
             onClick={() => setActiveTab('achievements')}
-            className={`flex items-center gap-2.5 pb-3 text-base md:text-lg font-semibold font-title tracking-tight border-b-2 transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 xs:gap-2.5 pb-2.5 sm:pb-3 px-1.5 xs:px-2.5 text-xs xs:text-sm sm:text-base md:text-lg font-semibold font-title tracking-tight border-b-2 transition-all cursor-pointer ${
               activeTab === 'achievements'
                 ? 'text-[#C2272D] border-[#C2272D] dark:text-[#00FFFF] dark:border-[#00FFFF]'
                 : 'text-[#525252] dark:text-[#D1D5DB] border-transparent hover:text-[#171717] dark:hover:text-white'
             }`}
           >
-            <FaCheckCircle size={16} /> Achievements
+            <FaCheckCircle size={15} /> Achievements
           </button>
 
           <button
             onClick={() => setActiveTab('certificates')}
-            className={`flex items-center gap-2.5 pb-3 text-base md:text-lg font-semibold font-title tracking-tight border-b-2 transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 xs:gap-2.5 pb-2.5 sm:pb-3 px-1.5 xs:px-2.5 text-xs xs:text-sm sm:text-base md:text-lg font-semibold font-title tracking-tight border-b-2 transition-all cursor-pointer ${
               activeTab === 'certificates'
                 ? 'text-[#C2272D] border-[#C2272D] dark:text-[#00FFFF] dark:border-[#00FFFF]'
                 : 'text-[#525252] dark:text-[#D1D5DB] border-transparent hover:text-[#171717] dark:hover:text-white'
             }`}
           >
-            <FaAward size={17} /> Certifications
+            <FaAward size={16} /> Certifications
           </button>
         </div>
 

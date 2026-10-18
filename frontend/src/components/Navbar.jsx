@@ -71,16 +71,17 @@ const Navbar = ({ activeSection, toggleTheme: propsToggleTheme, isDark: propsIsD
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Keyboard escape listener to close mobile menu
+  // Keyboard escape listener to close mobile menu or profile dropdown
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && isOpen) {
-        setIsOpen(false);
+      if (e.key === 'Escape') {
+        if (dropdownOpen) setDropdownOpen(false);
+        if (isOpen) setIsOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen]);
+  }, [isOpen, dropdownOpen]);
 
   // Lock background scroll when mobile drawer is open
   useEffect(() => {
@@ -244,96 +245,215 @@ const Navbar = ({ activeSection, toggleTheme: propsToggleTheme, isDark: propsIsD
 
             {/* Authenticated User Session Dropdown */}
             {isAuthenticated ? (
-              <div className="flex items-center gap-3 border-l border-slate-200 dark:border-white/10 pl-4 py-1 profile-dropdown-container relative">
+              <div className="flex items-center border-l border-slate-200 dark:border-white/10 pl-4 py-1 profile-dropdown-container relative">
                 <button
+                  type="button"
+                  id="user-menu-button"
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className={`flex items-center gap-2 text-sm font-bold transition-colors cursor-pointer ${
-                    isDark ? 'text-white hover:text-[#00FFFF]' : 'text-[#171717] hover:text-[#C2272D]'
-                  }`}
                   aria-expanded={dropdownOpen}
-                  aria-label="User Account Menu"
+                  aria-haspopup="true"
+                  aria-label="User profile and account options"
+                  className={`group flex items-center gap-2.5 px-3 py-1.5 rounded-full transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF] ${
+                    dropdownOpen 
+                      ? (isDark ? 'bg-white/10 text-white' : 'bg-slate-100 text-black')
+                      : (isDark ? 'text-white hover:bg-white/5 hover:text-[#00FFFF]' : 'text-[#171717] hover:bg-slate-100 hover:text-[#C2272D]')
+                  }`}
                 >
-                  {user?.avatar?.url ? (
-                    <img 
-                      src={user.avatar.url} 
-                      alt={user?.fullName || 'User'} 
-                      className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-white/20" 
-                    />
-                  ) : (
-                    <FaUserCircle size={22} className="text-slate-400" />
-                  )}
-                  <span className="max-w-[90px] truncate text-sm font-bold">
-                    {user?.fullName?.split(' ')[0] || 'Account'}
-                  </span>
-                  <FaChevronDown size={11} className={`transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
+                  {/* User Avatar */}
+                  <div className="relative">
+                    {user?.avatar?.url ? (
+                      <img 
+                        src={user.avatar.url} 
+                        alt={user?.fullName || 'User Avatar'} 
+                        className="w-9 h-9 rounded-full object-cover ring-2 ring-[#C2272D]/30 dark:ring-[#00FFFF]/30 shadow-sm" 
+                      />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#C2272D] to-[#00FFFF] p-[2px] flex items-center justify-center shadow-sm">
+                        <div className="w-full h-full rounded-full bg-white dark:bg-[#111111] flex items-center justify-center font-bold text-xs text-[#C2272D] dark:text-[#00FFFF]">
+                          {user?.fullName ? user.fullName.charAt(0).toUpperCase() : (user?.username ? user.username.charAt(0).toUpperCase() : 'U')}
+                        </div>
+                      </div>
+                    )}
+                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-black"></span>
+                  </div>
+
+                  {/* Name & Arrow */}
+                  <div className="flex flex-col text-left leading-tight hidden sm:flex">
+                    <span className="text-[13px] font-bold truncate max-w-[110px]">
+                      {user?.fullName?.split(' ')[0] || user?.username || 'Account'}
+                    </span>
+                    <span className="text-[10px] uppercase tracking-wider font-semibold opacity-60">
+                      {user?.role || 'Member'}
+                    </span>
+                  </div>
+
+                  <FaChevronDown 
+                    size={11} 
+                    className={`transition-transform duration-200 ml-0.5 opacity-70 group-hover:opacity-100 ${dropdownOpen ? 'rotate-180 text-[#C2272D] dark:text-[#00FFFF]' : ''}`} 
+                  />
                 </button>
 
+                {/* Premium Profile Dropdown Menu */}
                 {dropdownOpen && (
-                  <div className="absolute right-0 top-12 w-56 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl py-2 z-[1000] text-left animate-in fade-in slide-in-from-top-2 duration-150">
-                    <div className="px-4 py-2.5 border-b border-slate-100 dark:border-white/10 mb-1">
-                      <p className="text-sm font-extrabold text-black dark:text-white truncate">{user?.fullName}</p>
-                      <p className="text-xs text-slate-400 font-medium truncate">@{user?.username}</p>
+                  <div 
+                    role="menu"
+                    aria-orientation="vertical"
+                    aria-labelledby="user-menu-button"
+                    className="absolute right-0 top-14 w-72 bg-white dark:bg-[#0f0f11] border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl shadow-black/20 dark:shadow-black/60 py-2.5 z-[1000] text-left animate-in fade-in zoom-in-95 duration-150 backdrop-blur-md"
+                  >
+                    {/* User Info Header */}
+                    <div className="px-4 py-3 border-b border-slate-100 dark:border-white/10 mb-1.5 flex items-center gap-3">
+                      <div className="relative shrink-0">
+                        {user?.avatar?.url ? (
+                          <img 
+                            src={user.avatar.url} 
+                            alt={user?.fullName || 'User'} 
+                            className="w-11 h-11 rounded-full object-cover ring-2 ring-[#C2272D]/40 dark:ring-[#00FFFF]/40" 
+                          />
+                        ) : (
+                          <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-[#C2272D] to-[#00FFFF] p-[2px] flex items-center justify-center">
+                            <div className="w-full h-full rounded-full bg-white dark:bg-[#111111] flex items-center justify-center font-bold text-sm text-[#C2272D] dark:text-[#00FFFF]">
+                              {user?.fullName ? user.fullName.charAt(0).toUpperCase() : (user?.username ? user.username.charAt(0).toUpperCase() : 'U')}
+                            </div>
+                          </div>
+                        )}
+                        <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-black"></span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-sm font-black font-title text-slate-900 dark:text-white truncate">
+                            {user?.fullName || user?.username || 'User'}
+                          </p>
+                          {user?.role === 'Admin' && (
+                            <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-[#C2272D]/15 text-[#C2272D] dark:bg-[#C2272D]/25 dark:text-[#ff555b] border border-[#C2272D]/30 shrink-0">
+                              Admin
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
+                          @{user?.username || 'user'}
+                        </p>
+                        {user?.email && (
+                          <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                            {user.email}
+                          </p>
+                        )}
+                      </div>
                     </div>
 
-                    {user?.role === 'Admin' ? (
-                      <>
-                        <AdminLink to="/admin/dashboard" className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#C2272D] dark:hover:text-[#00FFFF]">
-                          <FaTachometerAlt /> Admin Dashboard
-                        </AdminLink>
-                        <AdminLink to="/admin/cms" className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#C2272D] dark:hover:text-[#00FFFF]">
-                          <FaGlobe /> Website CMS
-                        </AdminLink>
-                        <AdminLink to="/admin/settings" className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#C2272D] dark:hover:text-[#00FFFF]">
-                          <FaCog /> Settings
-                        </AdminLink>
-                      </>
-                    ) : (
-                      <>
-                        <Link to="/dashboard" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#C2272D] dark:hover:text-[#00FFFF]">
-                          <FaTachometerAlt /> My Dashboard
-                        </Link>
-                        <Link to="/community" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#C2272D] dark:hover:text-[#00FFFF]">
-                          <FaBookOpen /> Community Hub
-                        </Link>
-                      </>
-                    )}
-
-                    <div className="border-t border-slate-100 dark:border-white/10 mt-1 pt-1">
-                      <button 
-                        onClick={async () => { await logout(); setDropdownOpen(false); navigate('/login'); }} 
-                        className="flex items-center gap-2.5 w-full text-left px-4 py-2.5 text-sm font-bold text-[#C2272D] hover:bg-[#C2272D]/5 transition-colors cursor-pointer"
+                    {/* Menu Items */}
+                    <div className="px-1.5 py-1 space-y-0.5">
+                      {/* Profile Link */}
+                      <Link 
+                        to="/user/dashboard" 
+                        onClick={() => setDropdownOpen(false)} 
+                        role="menuitem"
+                        className="flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-[#C2272D] dark:hover:text-[#00FFFF] rounded-xl transition-colors"
                       >
-                        <FaSignOutAlt /> Logout
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-600 dark:text-slate-300">
+                          <FaUser size={14} />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-sm">Profile</span>
+                          <span className="text-[11px] text-slate-400 dark:text-slate-500 font-normal">Manage your account & credentials</span>
+                        </div>
+                      </Link>
+
+                      {/* Admin-only Links: Admin Dashboard & Website CMS */}
+                      {user?.role === 'Admin' && (
+                        <>
+                          <AdminLink 
+                            to="/admin/dashboard" 
+                            role="menuitem"
+                            className="flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-[#C2272D] dark:hover:text-[#00FFFF] rounded-xl transition-colors group"
+                          >
+                            <div className="w-8 h-8 rounded-lg bg-[#C2272D]/10 dark:bg-[#00FFFF]/10 flex items-center justify-center text-[#C2272D] dark:text-[#00FFFF]">
+                              <FaTachometerAlt size={14} />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="font-semibold text-sm flex items-center gap-1.5">
+                                Admin Dashboard
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#00FFFF]"></span>
+                              </span>
+                              <span className="text-[11px] text-slate-400 dark:text-slate-500 font-normal">Platform analytics & system metrics</span>
+                            </div>
+                          </AdminLink>
+
+                          <AdminLink 
+                            to="/admin/cms" 
+                            role="menuitem"
+                            className="flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-[#C2272D] dark:hover:text-[#00FFFF] rounded-xl transition-colors"
+                          >
+                            <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-600 dark:text-slate-300">
+                              <FaGlobe size={14} />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="font-semibold text-sm">Website CMS</span>
+                              <span className="text-[11px] text-slate-400 dark:text-slate-500 font-normal">Manage portfolio content & media</span>
+                            </div>
+                          </AdminLink>
+                        </>
+                      )}
+
+                      {/* Settings Link */}
+                      {user?.role === 'Admin' ? (
+                        <AdminLink 
+                          to="/admin/settings" 
+                          role="menuitem"
+                          className="flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-[#C2272D] dark:hover:text-[#00FFFF] rounded-xl transition-colors"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-600 dark:text-slate-300">
+                            <FaCog size={14} />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-sm">Settings</span>
+                            <span className="text-[11px] text-slate-400 dark:text-slate-500 font-normal">Platform & website configuration</span>
+                          </div>
+                        </AdminLink>
+                      ) : (
+                        <Link 
+                          to="/user/dashboard" 
+                          onClick={() => setDropdownOpen(false)} 
+                          role="menuitem"
+                          className="flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-[#C2272D] dark:hover:text-[#00FFFF] rounded-xl transition-colors"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-600 dark:text-slate-300">
+                            <FaCog size={14} />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-sm">Settings</span>
+                            <span className="text-[11px] text-slate-400 dark:text-slate-500 font-normal">Account preferences & security</span>
+                          </div>
+                        </Link>
+                      )}
+                    </div>
+
+                    {/* Logout Footer */}
+                    <div className="border-t border-slate-100 dark:border-white/10 mt-1.5 pt-1.5 px-1.5">
+                      <button 
+                        type="button"
+                        onClick={async () => { 
+                          await logout(); 
+                          setDropdownOpen(false); 
+                          navigate('/login'); 
+                        }} 
+                        role="menuitem"
+                        className="flex items-center gap-3 w-full text-left px-3 py-2.5 text-sm font-bold text-[#C2272D] hover:bg-[#C2272D]/10 rounded-xl transition-colors cursor-pointer group"
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-[#C2272D]/10 flex items-center justify-center text-[#C2272D] group-hover:scale-105 transition-transform">
+                          <FaSignOutAlt size={14} />
+                        </div>
+                        <span className="font-bold">Logout</span>
                       </button>
                     </div>
                   </div>
                 )}
               </div>
-            ) : null}
-
-            {/* Authenticated vs Guest Action CTA */}
-            {isAuthenticated ? (
-              user?.role === 'Admin' ? (
-                <AdminLink
-                  to="/admin/dashboard"
-                  className="hidden md:inline-flex items-center gap-2 px-5 py-2.5 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] font-semibold shadow-md shadow-[#C2272D]/25 hover:shadow-lg hover:shadow-[#C2272D]/40 transition-all duration-200 hover:scale-[1.04] active:scale-[0.96] cursor-pointer btn-shine-effect"
-                >
-                  <FaTachometerAlt size={14} />
-                  <span>Admin Panel</span>
-                </AdminLink>
-              ) : (
-                <Link
-                  to="/dashboard"
-                  className="hidden md:inline-flex items-center gap-2 px-5 py-2.5 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] font-semibold shadow-md shadow-[#C2272D]/25 hover:shadow-lg hover:shadow-[#C2272D]/40 transition-all duration-200 hover:scale-[1.04] active:scale-[0.96] cursor-pointer btn-shine-effect"
-                >
-                  <FaTachometerAlt size={14} />
-                  <span>Dashboard</span>
-                </Link>
-              )
             ) : (
+              /* Guest Sign In CTA Button */
               <Link
                 to="/login"
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] font-semibold shadow-md shadow-[#C2272D]/25 hover:shadow-lg hover:shadow-[#C2272D]/40 transition-all duration-200 hover:scale-[1.04] active:scale-[0.96] cursor-pointer btn-shine-effect"
+                className="inline-flex items-center gap-2 px-5 py-2 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-sm font-semibold shadow-md shadow-[#C2272D]/25 hover:shadow-lg hover:shadow-[#C2272D]/40 transition-all duration-200 hover:scale-[1.04] active:scale-[0.96] cursor-pointer btn-shine-effect"
                 aria-label="Sign In"
               >
                 <FaSignInAlt size={14} />
@@ -498,42 +618,93 @@ const Navbar = ({ activeSection, toggleTheme: propsToggleTheme, isDark: propsIsD
 
             {/* Auth / Account Controls for Mobile Drawer */}
             {isAuthenticated ? (
-              <div className="pt-3 border-t border-slate-100 dark:border-white/10 flex flex-col gap-3">
+              <div className="pt-3 border-t border-slate-100 dark:border-white/10 flex flex-col gap-2.5">
                 <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
-                  {user?.avatar?.url ? (
-                    <img src={user.avatar.url} alt={user?.fullName || 'User'} className="w-10 h-10 rounded-full object-cover shrink-0" />
-                  ) : (
-                    <FaUserCircle size={28} className="text-slate-400 shrink-0" />
-                  )}
-                  <div className="overflow-hidden text-left">
-                    <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{user?.fullName}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">@{user?.username} &bull; <span className="text-[#C2272D] dark:text-[#00FFFF] font-semibold">{user?.role}</span></p>
+                  <div className="relative shrink-0">
+                    {user?.avatar?.url ? (
+                      <img src={user.avatar.url} alt={user?.fullName || 'User'} className="w-11 h-11 rounded-full object-cover ring-2 ring-[#C2272D]/40 dark:ring-[#00FFFF]/40" />
+                    ) : (
+                      <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-[#C2272D] to-[#00FFFF] p-[2px] flex items-center justify-center">
+                        <div className="w-full h-full rounded-full bg-white dark:bg-[#111111] flex items-center justify-center font-bold text-sm text-[#C2272D] dark:text-[#00FFFF]">
+                          {user?.fullName ? user.fullName.charAt(0).toUpperCase() : (user?.username ? user.username.charAt(0).toUpperCase() : 'U')}
+                        </div>
+                      </div>
+                    )}
+                    <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-black"></span>
+                  </div>
+                  <div className="overflow-hidden text-left min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm font-black font-title text-slate-900 dark:text-white truncate">
+                        {user?.fullName || user?.username}
+                      </p>
+                      {user?.role === 'Admin' && (
+                        <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-[#C2272D]/15 text-[#C2272D] dark:bg-[#C2272D]/25 dark:text-[#ff555b] border border-[#C2272D]/30 shrink-0">
+                          Admin
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">@{user?.username}</p>
+                    {user?.email && (
+                      <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate">{user.email}</p>
+                    )}
                   </div>
                 </div>
 
-                {user?.role === 'Admin' ? (
-                  <AdminLink
-                    to="/admin/dashboard"
-                    onClick={() => setIsOpen(false)}
-                    className="w-full flex items-center justify-center gap-2 py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] font-semibold shadow-md shadow-[#C2272D]/25 transition-all"
-                  >
-                    <FaTachometerAlt size={15} />
-                    <span>Admin Dashboard</span>
-                  </AdminLink>
-                ) : (
+                {/* Mobile Drawer Menu Links */}
+                <div className="flex flex-col gap-1 py-1">
                   <Link
-                    to="/dashboard"
+                    to="/user/dashboard"
                     onClick={() => setIsOpen(false)}
-                    className="w-full flex items-center justify-center gap-2 py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] font-semibold shadow-md shadow-[#C2272D]/25 transition-all"
+                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-semibold text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors"
                   >
-                    <FaTachometerAlt size={15} />
-                    <span>My Dashboard</span>
+                    <FaUser size={14} className="opacity-70" />
+                    <span>Profile</span>
                   </Link>
-                )}
+
+                  {user?.role === 'Admin' && (
+                    <>
+                      <AdminLink
+                        to="/admin/dashboard"
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-semibold text-sm text-[#C2272D] dark:text-[#00FFFF] bg-[#C2272D]/5 dark:bg-[#00FFFF]/5 hover:bg-[#C2272D]/10 dark:hover:bg-[#00FFFF]/10 transition-colors"
+                      >
+                        <FaTachometerAlt size={14} />
+                        <span>Admin Dashboard</span>
+                      </AdminLink>
+                      <AdminLink
+                        to="/admin/cms"
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-semibold text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors"
+                      >
+                        <FaGlobe size={14} className="opacity-70" />
+                        <span>Website CMS</span>
+                      </AdminLink>
+                      <AdminLink
+                        to="/admin/settings"
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-semibold text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors"
+                      >
+                        <FaCog size={14} className="opacity-70" />
+                        <span>Settings</span>
+                      </AdminLink>
+                    </>
+                  )}
+
+                  {user?.role !== 'Admin' && (
+                    <Link
+                      to="/user/dashboard"
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-semibold text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors"
+                    >
+                      <FaCog size={14} className="opacity-70" />
+                      <span>Settings</span>
+                    </Link>
+                  )}
+                </div>
 
                 <button
                   onClick={async () => { await logout(); setIsOpen(false); navigate('/login'); }}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-[#C2272D] hover:bg-[#C2272D]/10 rounded-full transition-colors cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-[#C2272D] hover:bg-[#C2272D]/10 rounded-xl transition-colors cursor-pointer border border-[#C2272D]/20 mt-1"
                 >
                   <FaSignOutAlt /> Sign Out
                 </button>

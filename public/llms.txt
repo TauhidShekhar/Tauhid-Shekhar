@@ -1,0 +1,28 @@
+# Tauhid Shekhar - Full Stack Software Engineer & Creator
+
+> Professional portfolio, software engineering case studies, full-stack web applications, and developer community led by Tauhid Shekhar.
+
+## Overview
+Tauhid Shekhar is a Full Stack MERN Developer, Software Engineer, and UI/UX Designer specializing in building scalable web applications, performant RESTful APIs, and responsive digital products using React.js, Node.js, Express, MongoDB, and Tailwind CSS.
+
+## Primary Domain
+- Website: https://tauhidshekhar.com
+- Platform: https://tauhidshekhar.vercel.app
+- GitHub: https://github.com/tauhidshekhar
+- LinkedIn: https://linkedin.com/in/tauhidshekhar
+
+## Core Competencies & Skills
+- Frontend: React.js, Next.js, Redux Toolkit, HTML5, CSS3, JavaScript (ES6+), Tailwind CSS, Framer Motion, Responsive UI/UX.
+- Backend: Node.js, Express.js, RESTful APIs, JWT Authentication, WebSockets, Socket.IO, Middleware, Role-Based Access Control.
+- Databases: MongoDB, Mongoose, MySQL, Cloudinary Media CDN.
+- Tooling & Practices: Git, GitHub, Vite, Postman, Vercel, Render, Web Performance, Core Web Vitals, Technical SEO, W3C Accessibility (WCAG 2.1).
+
+## Featured Projects
+- Portfolio Website & CMS: Full-stack dynamic portfolio with real-time CMS management, ATS resume scoring, visitor analytics, and dark/light system adaptation.
+- DevCommunity Platform: Interactive collaborative ecosystem for developers featuring discussions, doubts lounge, code sharing, and tech resources.
+- E-Commerce & Service Portal: Secure storefront with order management, authentication, role enforcement, and REST API integration.
+
+## Contact & Inquiries
+- Email: shekhartauhid@gmail.com
+- Location: Delhi, India
+- Working Hours: Mon - Sat: 9:00 AM - 6:00 PM IST

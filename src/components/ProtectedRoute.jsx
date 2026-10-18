@@ -17,8 +17,11 @@ const ProtectedRoute = ({ children, allowedRoles = ['Admin'] }) => {
   }
 
   if (allowedRoles && !allowedRoles.includes(user?.role)) {
-    // If authenticated but role not authorized, redirect to homepage
-    return <Navigate to="/" replace />;
+    // If authenticated but role not authorized, strictly block access to admin panel
+    if (user?.role === 'User') {
+      return <Navigate to="/user/dashboard" replace />;
+    }
+    return <Navigate to="/login" replace />;
   }
 
   return children;

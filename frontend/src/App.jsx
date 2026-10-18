@@ -3,8 +3,8 @@ import AppLoader from './components/common/AppLoader';
 import Navbar from './components/Navbar';
 import CustomCursor from './components/CustomCursor';
 import Hero from './components/Hero';
-import { FaWhatsapp, FaChevronUp, FaCircleCheck } from 'react-icons/fa6';
-import { FaBrain, FaComments, FaPlus } from 'react-icons/fa';
+import { FaChevronUp, FaCircleCheck } from 'react-icons/fa6';
+import { FaBrain, FaComments, FaPlus, FaPaperPlane } from 'react-icons/fa';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import socket from './services/socket';
 import { useAuth } from './contexts/AuthContext';
@@ -13,7 +13,6 @@ import { useLoading } from './contexts/LoadingContext';
 import { useTheme } from './contexts/ThemeContext';
 
 // Lazy load below-the-fold components
-const ParticlesBackground = lazy(() => import('./components/ParticlesBackground'));
 const About = lazy(() => import('./components/About'));
 const Skills = lazy(() => import('./components/Skills'));
 const Projects = lazy(() => import('./components/Projects'));
@@ -64,7 +63,7 @@ const App = () => {
   const [showToast, setShowToast] = useState(false);
   const [loading, setLoading] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
-  const [drawerExpanded, setDrawerExpanded] = useState(true);
+  const [drawerExpanded, setDrawerExpanded] = useState(false);
 
   // Listen for Ctrl+K global keyboard shortcut
   useEffect(() => {
@@ -230,6 +229,31 @@ const App = () => {
     };
   }, [settings?.customFooterScripts]);
 
+  // 3. Scroll Event Listeners (Active menu and Back-to-Top CTA)
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPos = window.scrollY;
+      setShowBackToTop(scrollPos > 400);
+
+      // Section intersection observer
+      const sections = ['home', 'about', 'skills', 'projects', 'experience', 'education', 'resume', 'certificates', 'testimonials', 'blog', 'faq', 'contact'];
+      for (const sectionId of sections) {
+        const el = document.getElementById(sectionId);
+        if (el) {
+          const top = el.offsetTop - 120;
+          const height = el.offsetHeight;
+          if (scrollPos >= top && scrollPos < top + height) {
+            setActiveSection(sectionId);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   // Maintenance or Platform Offline check (with Admin bypass)
   if (settings) {
     const isMaintenance = settings.maintenanceMode;
@@ -299,30 +323,7 @@ const App = () => {
 
 
 
-  // 3. Scroll Event Listeners (Active menu and Back-to-Top CTA)
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollPos = window.scrollY;
-      setShowBackToTop(scrollPos > 400);
 
-      // Section intersection observer
-      const sections = ['home', 'about', 'skills', 'projects', 'experience', 'education', 'resume', 'certificates', 'testimonials', 'blog', 'faq', 'contact'];
-      for (const sectionId of sections) {
-        const el = document.getElementById(sectionId);
-        if (el) {
-          const top = el.offsetTop - 120;
-          const height = el.offsetHeight;
-          if (scrollPos >= top && scrollPos < top + height) {
-            setActiveSection(sectionId);
-            break;
-          }
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   const scrollToTop = () => {
     window.scrollTo({
@@ -349,11 +350,6 @@ const App = () => {
 
       {/* Custom Cursor Component (optimized, 0 re-renders) */}
       <CustomCursor />
-
-      {/* Interactive Node Background */}
-      <Suspense fallback={null}>
-        <ParticlesBackground />
-      </Suspense>
 
       {/* Announcement Banner */}
       {settings?.announcementBanner?.show && settings?.announcementBanner?.text && (
@@ -417,7 +413,7 @@ const App = () => {
       </Suspense>
 
       {/* Floating Actions Drawer */}
-      <div className="fixed bottom-5 right-4 sm:bottom-8 sm:right-6 z-[900] flex flex-col gap-2.5 sm:gap-3 items-center">
+      <div className="fixed bottom-4 right-3 sm:bottom-7 sm:right-6 z-[900] flex flex-col gap-2.5 sm:gap-3 items-center">
         {/* Expandable actions list with animation */}
         <div className={`flex flex-col gap-2.5 sm:gap-3 transition-all duration-300 transform ${
           drawerExpanded 
@@ -425,36 +421,49 @@ const App = () => {
             : 'opacity-0 translate-y-4 scale-75 pointer-events-none h-0 overflow-hidden'
         }`}>
           {/* Floating AI Assistant Trigger */}
-          <button
-            onClick={() => navigate('/community/ai-assistant')}
-            className="w-11 h-11 sm:w-12 sm:h-12 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full flex items-center justify-center shadow-lg shadow-[#C2272D]/25 hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer border border-[#C2272D]/30"
-            title="Open AI Consultant"
-            aria-label="Open AI Consultant"
-          >
-            <FaBrain size={17} />
-          </button>
+          <div className="relative group flex items-center justify-end">
+            <span className="hidden sm:block absolute right-full mr-2.5 px-2.5 py-1 rounded-lg bg-[#111111] dark:bg-[#1A1A1A] text-white text-xs font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity shadow-lg border border-white/10">
+              AI Consultant
+            </span>
+            <button
+              onClick={() => navigate('/community/ai-assistant')}
+              className="w-11 h-11 sm:w-12 sm:h-12 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full flex items-center justify-center shadow-lg shadow-[#C2272D]/25 hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer border border-[#C2272D]/40"
+              title="Open AI Consultant"
+              aria-label="Open AI Consultant"
+            >
+              <FaBrain size={17} />
+            </button>
+          </div>
 
           {/* Floating Community Link */}
-          <Link
-            to="/community"
-            className="w-11 h-11 sm:w-12 sm:h-12 bg-[#111111] hover:bg-[#1A1A1A] text-[#00FFFF] hover:text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all duration-300 border border-white/10"
-            title="Go to TS DevCommunity"
-            aria-label="Go to TS DevCommunity"
-          >
-            <FaComments size={17} />
-          </Link>
+          <div className="relative group flex items-center justify-end">
+            <span className="hidden sm:block absolute right-full mr-2.5 px-2.5 py-1 rounded-lg bg-[#111111] dark:bg-[#1A1A1A] text-white text-xs font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity shadow-lg border border-white/10">
+              TS DevCommunity
+            </span>
+            <Link
+              to="/community"
+              className="w-11 h-11 sm:w-12 sm:h-12 bg-[#111111] dark:bg-[#1A1A1A] hover:bg-[#1A1A1A] text-[#00FFFF] hover:text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all duration-300 border border-white/10"
+              title="Go to TS DevCommunity"
+              aria-label="Go to TS DevCommunity"
+            >
+              <FaComments size={17} />
+            </Link>
+          </div>
 
-          {/* WhatsApp */}
-          <a
-            href="https://wa.me/919142725562"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-11 h-11 sm:w-12 sm:h-12 bg-[#25d366] text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 hover:shadow-green-500/20 transition-all duration-300"
-            aria-label="Contact via WhatsApp"
-            title="WhatsApp Chat"
-          >
-            <FaWhatsapp size={20} />
-          </a>
+          {/* Floating Contact Link */}
+          <div className="relative group flex items-center justify-end">
+            <span className="hidden sm:block absolute right-full mr-2.5 px-2.5 py-1 rounded-lg bg-[#111111] dark:bg-[#1A1A1A] text-white text-xs font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity shadow-lg border border-white/10">
+              Contact & Inquiries
+            </span>
+            <a
+              href="#contact"
+              className="w-11 h-11 sm:w-12 sm:h-12 bg-[#111111] dark:bg-[#1A1A1A] hover:bg-[#C2272D] text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all duration-300 border border-white/10"
+              title="Contact & Inquiries"
+              aria-label="Contact & Inquiries"
+            >
+              <FaPaperPlane size={15} />
+            </a>
+          </div>
         </div>
 
         {/* Toggle Button */}
@@ -462,15 +471,15 @@ const App = () => {
           onClick={() => setDrawerExpanded(prev => !prev)}
           className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shadow-lg cursor-pointer transition-all duration-300 border ${
             drawerExpanded 
-              ? 'bg-[#1c1c24] text-slate-400 border-white/10 hover:text-white' 
-              : 'bg-[#C2272D] hover:bg-[#A51E23] text-white border-[#C2272D]/30 shadow-lg shadow-[#C2272D]/25 hover:scale-110 active:scale-95'
+              ? 'bg-[#111111] text-white border-white/20 hover:border-[#C2272D]' 
+              : 'bg-[#C2272D] hover:bg-[#A51E23] text-white border-[#C2272D]/40 shadow-lg shadow-[#C2272D]/25 hover:scale-110 active:scale-95'
           }`}
-          title={drawerExpanded ? 'Hide Actions' : 'Quick Actions'}
-          aria-label={drawerExpanded ? 'Hide Actions' : 'Quick Actions'}
+          title={drawerExpanded ? 'Close Quick Actions' : 'Explore Quick Actions'}
+          aria-label={drawerExpanded ? 'Close Quick Actions' : 'Explore Quick Actions'}
         >
           <FaPlus 
             size={15} 
-            className={`transition-transform duration-300 ${drawerExpanded ? 'rotate-45' : 'rotate-0'}`} 
+            className={`transition-transform duration-300 ${drawerExpanded ? 'rotate-45 text-[#00FFFF]' : 'rotate-0 text-white'}`} 
           />
         </button>
 

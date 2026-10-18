@@ -23,7 +23,7 @@ const Legal = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0B0F19] text-slate-800 dark:text-slate-100 py-20 px-6 transition-colors duration-350 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50/70 dark:bg-transparent text-slate-800 dark:text-slate-100 py-20 px-6 transition-colors duration-350 relative overflow-hidden">
       {/* Background Gradients */}
       <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-primary-blue/10 dark:bg-primary-blue/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-purple-600/10 dark:bg-purple-600/5 rounded-full blur-[120px] pointer-events-none" />

@@ -47,7 +47,17 @@ const aboutSchema = new mongoose.Schema(
       phone: { type: String, default: '+91 9142725562' },
       address: { type: String, default: 'Amritsar, Punjab, India' }
     },
-    resumeUrl: { type: String, default: 'assits/Resume-file.pdf' }
+    resumeUrl: { type: String, default: 'assits/Resume-file.pdf' },
+    currentWork: {
+      isEmployed: { type: Boolean, default: false },
+      companyName: { type: String, default: '' },
+      role: { type: String, default: '' },
+      joiningDate: { type: String, default: '' },
+      employmentType: { type: String, default: 'Full-time' },
+      location: { type: String, default: '' },
+      details: { type: String, default: '' },
+      companyUrl: { type: String, default: '' }
+    }
   },
   { timestamps: true }
 );

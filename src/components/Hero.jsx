@@ -168,12 +168,10 @@ const Hero = ({ heroData, resumeData }) => {
   const resumeLink = getAbsolutePdfUrl(activeResume?.fileUrl || settings?.resumeUrl || '');
 
   const handleViewResume = (e) => {
-    if (e) e.preventDefault();
     const linkToOpen = resumeLink || getAbsolutePdfUrl(activeResume?.fileUrl || settings?.resumeUrl || '');
-    if (!linkToOpen) return;
-    const win = window.open(linkToOpen, '_blank', 'noopener,noreferrer');
-    if (!win) {
-      window.location.href = linkToOpen;
+    if (!linkToOpen) {
+      if (e) e.preventDefault();
+      return;
     }
   };
 
@@ -193,7 +191,7 @@ const Hero = ({ heroData, resumeData }) => {
   return (
     <section 
       id="home" 
-      className="min-h-screen flex items-center justify-center pt-32 sm:pt-36 pb-20 relative overflow-hidden bg-white dark:bg-[#000000]"
+      className="min-h-screen flex items-center justify-center pt-32 sm:pt-36 pb-20 relative overflow-hidden bg-white/70 dark:bg-transparent"
     >
       {/* Brand Accent Ambient Blurs */}
       <div className="absolute top-[18%] left-[10%] w-[380px] h-[380px] bg-[#C2272D]/10 dark:bg-[#C2272D]/15 rounded-full blur-[140px] pointer-events-none" />
@@ -211,16 +209,16 @@ const Hero = ({ heroData, resumeData }) => {
           {/* Greeting Badge */}
           <motion.div
             variants={itemVariants}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#C2272D]/10 dark:bg-[#00FFFF]/10 border border-[#C2272D]/20 dark:border-[#00FFFF]/30 text-[#C2272D] dark:text-[#00FFFF] text-xs sm:text-sm font-semibold tracking-wider uppercase mb-3 sm:mb-4"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 lg:px-4 lg:py-2 rounded-full bg-[#C2272D]/10 dark:bg-[#00FFFF]/10 border border-[#C2272D]/20 dark:border-[#00FFFF]/30 text-[#C2272D] dark:text-[#00FFFF] text-xs sm:text-sm lg:text-[15px] font-semibold tracking-wider uppercase mb-3 sm:mb-4 lg:mb-5"
           >
-            <span className="w-2 h-2 rounded-full bg-[#C2272D] dark:bg-[#00FFFF] animate-ping" />
+            <span className="w-2 h-2 lg:w-2.5 lg:h-2.5 rounded-full bg-[#C2272D] dark:bg-[#00FFFF] animate-ping" />
             <span>{heroHeading}</span>
           </motion.div>
 
           {/* Primary Name Heading */}
           <motion.h1
             variants={itemVariants}
-            className="text-[28px] xs:text-[34px] sm:text-[38px] md:text-[42px] lg:text-[46px] font-bold font-title tracking-tight text-[#171717] dark:text-white mb-2.5 sm:mb-3 leading-[1.2]"
+            className="text-[28px] xs:text-[34px] sm:text-[38px] md:text-[42px] lg:text-[50px] xl:text-[58px] 2xl:text-[64px] font-bold font-title tracking-tight text-[#171717] dark:text-white mb-2.5 sm:mb-3 lg:mb-4 leading-[1.2] lg:leading-[1.12]"
           >
             <span>I'm </span>
             <span className="font-serif italic font-semibold text-[#C2272D] drop-shadow-sm">{siteName}</span>
@@ -229,33 +227,33 @@ const Hero = ({ heroData, resumeData }) => {
           {/* Dynamic Role Typer */}
           <motion.div
             variants={itemVariants}
-            className="min-h-[44px] sm:min-h-[50px] flex flex-wrap items-baseline gap-x-1.5 gap-y-1 mb-4 sm:mb-5 text-[18px] xs:text-[21px] sm:text-[24px] md:text-[28px] font-semibold font-title text-[#171717] dark:text-white leading-normal"
+            className="min-h-[44px] sm:min-h-[50px] lg:min-h-[56px] xl:min-h-[62px] flex flex-wrap items-baseline gap-x-2 gap-y-1 mb-4 sm:mb-5 lg:mb-6 text-[18px] xs:text-[21px] sm:text-[24px] md:text-[28px] lg:text-[32px] xl:text-[36px] font-semibold font-title text-[#171717] dark:text-white leading-normal"
           >
             <span className="shrink-0">I build as a</span>
             <span className="text-[#C2272D] dark:text-[#00FFFF] inline-flex items-center">
               {displayText}
-              <span className="inline-block w-[2.5px] sm:w-[3px] h-5 sm:h-6 bg-[#C2272D] dark:bg-[#00FFFF] ml-1.5 animate-pulse" />
+              <span className="inline-block w-[2.5px] sm:w-[3px] lg:w-[3.5px] h-5 sm:h-6 lg:h-8 xl:h-9 bg-[#C2272D] dark:bg-[#00FFFF] ml-1.5 animate-pulse" />
             </span>
           </motion.div>
 
           {/* Bio Description */}
           <motion.p
             variants={itemVariants}
-            className="text-sm sm:text-base text-[#525252] dark:text-[#D1D5DB] mb-6 sm:mb-8 max-w-[620px] leading-relaxed"
+            className="text-sm sm:text-base lg:text-[17px] xl:text-[18px] text-[#525252] dark:text-[#D1D5DB] mb-6 sm:mb-8 lg:mb-10 max-w-[620px] lg:max-w-[680px] leading-relaxed lg:leading-[1.7]"
           >
             {siteDescription}
           </motion.p>
 
           {/* Primary Action Buttons */}
-          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-3.5 mb-7 sm:mb-9 w-full sm:w-auto">
+          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-3.5 mb-7 sm:mb-9 lg:mb-11 w-full sm:w-auto">
             {/* Prominent Let's Talk CTA */}
             <a
               href="#contact"
               onClick={(e) => handleScrollTo(e, '#contact')}
-              className="w-full sm:w-auto min-h-[46px] sm:min-h-[50px] flex items-center justify-center gap-2 px-6 sm:px-7 py-3 sm:py-3.5 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] sm:text-[16px] font-semibold shadow-md shadow-[#C2272D]/25 hover:shadow-xl hover:shadow-[#C2272D]/40 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF] btn-shine-effect group text-center"
+              className="w-full sm:w-auto min-h-[46px] sm:min-h-[50px] lg:min-h-[54px] flex items-center justify-center gap-2 px-6 sm:px-7 lg:px-8 py-3 sm:py-3.5 lg:py-4 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full text-[15px] sm:text-[16px] lg:text-[17px] font-semibold shadow-md shadow-[#C2272D]/25 hover:shadow-xl hover:shadow-[#C2272D]/40 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF] btn-shine-effect group text-center"
               aria-label="Let's Talk - Jump to contact section"
             >
-              <FaPaperPlane size={14} className="transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              <FaPaperPlane size={15} className="transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               <span>Let's Talk</span>
             </a>
 
@@ -264,9 +262,9 @@ const Hero = ({ heroData, resumeData }) => {
                 <a
                   href="#projects"
                   onClick={(e) => handleScrollTo(e, '#projects')}
-                  className="w-full sm:w-auto min-h-[46px] sm:min-h-[50px] flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2.5 sm:py-3.5 bg-[#F8FAFC] dark:bg-[#1A1A1A] hover:bg-slate-200 dark:hover:bg-white/10 text-[#171717] dark:text-white rounded-full text-[13px] xs:text-[14px] sm:text-[15px] font-semibold border border-[#E5E7EB] dark:border-white/10 hover:border-[#00FFFF] hover:shadow-md transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-center whitespace-nowrap"
+                  className="w-full sm:w-auto min-h-[46px] sm:min-h-[50px] lg:min-h-[54px] flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-6 lg:px-7 py-2.5 sm:py-3.5 lg:py-4 bg-[#F8FAFC] dark:bg-[#1A1A1A] hover:bg-slate-200 dark:hover:bg-white/10 text-[#171717] dark:text-white rounded-full text-[13px] xs:text-[14px] sm:text-[15px] lg:text-[16px] font-semibold border border-[#E5E7EB] dark:border-white/10 hover:border-[#00FFFF] hover:shadow-md transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-center whitespace-nowrap"
                 >
-                  <FaCode size={13} className="text-[#00FFFF] shrink-0 hidden xs:inline" />
+                  <FaCode size={14} className="text-[#00FFFF] shrink-0 hidden xs:inline" />
                   <span>Explore Projects</span>
                 </a>
               )}
@@ -274,10 +272,12 @@ const Hero = ({ heroData, resumeData }) => {
               {showResume && resumeLink && (
                 <a
                   href={resumeLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   onClick={handleViewResume}
-                  className="w-full sm:w-auto min-h-[46px] sm:min-h-[50px] flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2.5 sm:py-3.5 bg-transparent border border-slate-300 dark:border-white/20 hover:border-[#C2272D] hover:text-[#C2272D] dark:hover:border-[#00FFFF] dark:hover:text-[#00FFFF] text-[#171717] dark:text-white rounded-full text-[13px] xs:text-[14px] sm:text-[15px] font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer hover:shadow-md text-center whitespace-nowrap"
+                  className="w-full sm:w-auto min-h-[46px] sm:min-h-[50px] lg:min-h-[54px] flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-6 lg:px-7 py-2.5 sm:py-3.5 lg:py-4 bg-transparent border border-slate-300 dark:border-white/20 hover:border-[#C2272D] hover:text-[#C2272D] dark:hover:border-[#00FFFF] dark:hover:text-[#00FFFF] text-[#171717] dark:text-white rounded-full text-[13px] xs:text-[14px] sm:text-[15px] lg:text-[16px] font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer hover:shadow-md text-center whitespace-nowrap"
                 >
-                  <FaFileAlt size={13} className="shrink-0 hidden xs:inline" />
+                  <FaFileAlt size={14} className="shrink-0 hidden xs:inline" />
                   <span>View Resume</span>
                 </a>
               )}
@@ -285,8 +285,8 @@ const Hero = ({ heroData, resumeData }) => {
           </motion.div>
 
           {/* Social Links Row */}
-          <motion.div variants={itemVariants} className="flex flex-wrap items-center gap-2.5 sm:gap-3">
-            <span className="text-xs sm:text-sm font-semibold tracking-wider uppercase text-slate-500 dark:text-gray-400 mr-1 sm:mr-1.5">
+          <motion.div variants={itemVariants} className="flex flex-wrap items-center gap-2.5 sm:gap-3 lg:gap-3.5">
+            <span className="text-xs sm:text-sm lg:text-[15px] font-semibold tracking-wider uppercase text-slate-500 dark:text-gray-400 mr-1 sm:mr-1.5 lg:mr-2">
               Connect:
             </span>
             {githubLink && (
@@ -294,10 +294,10 @@ const Hero = ({ heroData, resumeData }) => {
                 href={githubLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] hover:scale-110 shadow-sm transition-all duration-200"
+                className="w-10 h-10 sm:w-11 sm:h-11 lg:w-12 lg:h-12 rounded-full bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] hover:scale-110 shadow-sm transition-all duration-200"
                 aria-label="GitHub Profile"
               >
-                <FaGithub size={18} />
+                <FaGithub size={19} />
               </a>
             )}
             {linkedinLink && (
@@ -305,10 +305,10 @@ const Hero = ({ heroData, resumeData }) => {
                 href={linkedinLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] hover:scale-110 shadow-sm transition-all duration-200"
+                className="w-10 h-10 sm:w-11 sm:h-11 lg:w-12 lg:h-12 rounded-full bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] hover:scale-110 shadow-sm transition-all duration-200"
                 aria-label="LinkedIn Profile"
               >
-                <FaLinkedin size={18} />
+                <FaLinkedin size={19} />
               </a>
             )}
             {twitterLink && (
@@ -316,10 +316,10 @@ const Hero = ({ heroData, resumeData }) => {
                 href={twitterLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] hover:scale-110 shadow-sm transition-all duration-200"
+                className="w-10 h-10 sm:w-11 sm:h-11 lg:w-12 lg:h-12 rounded-full bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] hover:scale-110 shadow-sm transition-all duration-200"
                 aria-label="Twitter Profile"
               >
-                <FaTwitter size={18} />
+                <FaTwitter size={19} />
               </a>
             )}
             {instagramLink && (
@@ -327,10 +327,10 @@ const Hero = ({ heroData, resumeData }) => {
                 href={instagramLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] hover:scale-110 shadow-sm transition-all duration-200"
+                className="w-10 h-10 sm:w-11 sm:h-11 lg:w-12 lg:h-12 rounded-full bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] hover:scale-110 shadow-sm transition-all duration-200"
                 aria-label="Instagram Profile"
               >
-                <FaInstagram size={18} />
+                <FaInstagram size={19} />
               </a>
             )}
             {youtubeLink && (
@@ -338,10 +338,10 @@ const Hero = ({ heroData, resumeData }) => {
                 href={youtubeLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] hover:scale-110 shadow-sm transition-all duration-200"
+                className="w-10 h-10 sm:w-11 sm:h-11 lg:w-12 lg:h-12 rounded-full bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] hover:scale-110 shadow-sm transition-all duration-200"
                 aria-label="YouTube Channel"
               >
-                <FaYoutube size={18} />
+                <FaYoutube size={19} />
               </a>
             )}
             {facebookLink && (
@@ -349,19 +349,19 @@ const Hero = ({ heroData, resumeData }) => {
                 href={facebookLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] hover:scale-110 shadow-sm transition-all duration-200"
+                className="w-10 h-10 sm:w-11 sm:h-11 lg:w-12 lg:h-12 rounded-full bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] hover:scale-110 shadow-sm transition-all duration-200"
                 aria-label="Facebook Profile"
               >
-                <FaFacebook size={18} />
+                <FaFacebook size={19} />
               </a>
             )}
             {emailLink && (
               <a
                 href={`mailto:${emailLink}`}
-                className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] hover:scale-110 shadow-sm transition-all duration-200"
+                className="w-10 h-10 sm:w-11 sm:h-11 lg:w-12 lg:h-12 rounded-full bg-[#F8FAFC] dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] hover:border-[#C2272D] dark:hover:text-[#00FFFF] dark:hover:border-[#00FFFF] hover:scale-110 shadow-sm transition-all duration-200"
                 aria-label="Email Address"
               >
-                <FaEnvelope size={18} />
+                <FaEnvelope size={19} />
               </a>
             )}
           </motion.div>
@@ -374,7 +374,7 @@ const Hero = ({ heroData, resumeData }) => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-[260px] h-[340px] xs:w-[290px] xs:h-[380px] sm:w-[340px] sm:h-[440px] rounded-3xl border-4 border-white dark:border-[#222222] shadow-2xl overflow-hidden group bg-slate-100 dark:bg-[#111111]"
+            className="relative w-[260px] h-[340px] xs:w-[290px] xs:h-[380px] sm:w-[340px] sm:h-[440px] lg:w-[370px] lg:h-[480px] xl:w-[410px] xl:h-[520px] rounded-3xl border-4 border-white dark:border-[#222222] shadow-2xl overflow-hidden group bg-slate-100 dark:bg-[#111111]"
           >
             <img
               src={heroImg}
@@ -387,32 +387,32 @@ const Hero = ({ heroData, resumeData }) => {
 
           {/* Floating Technology Pills */}
           <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-            <div className="relative w-[260px] h-[340px] xs:w-[290px] xs:h-[380px] sm:w-[340px] sm:h-[440px]">
+            <div className="relative w-[260px] h-[340px] xs:w-[290px] xs:h-[380px] sm:w-[340px] sm:h-[440px] lg:w-[370px] lg:h-[480px] xl:w-[410px] xl:h-[520px]">
               <motion.div
                 variants={floatingVariants(0)}
                 animate="animate"
-                className="absolute -top-3 -left-3 sm:-top-4 sm:-left-4 w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 shadow-xl flex items-center justify-center text-[#C2272D]"
+                className="absolute -top-3 -left-3 sm:-top-4 sm:-left-4 lg:-top-5 lg:-left-5 w-11 h-11 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-2xl bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 shadow-xl flex items-center justify-center text-[#C2272D]"
                 title="Full Stack Coding"
               >
-                <FaCode className="text-lg sm:text-2xl" />
+                <FaCode className="text-lg sm:text-2xl lg:text-3xl" />
               </motion.div>
 
               <motion.div
                 variants={floatingVariants(1)}
                 animate="animate"
-                className="absolute top-1/3 -right-3 sm:-right-5 w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 shadow-xl flex items-center justify-center text-[#00FFFF]"
+                className="absolute top-1/3 -right-3 sm:-right-5 lg:-right-6 w-11 h-11 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-2xl bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 shadow-xl flex items-center justify-center text-[#00FFFF]"
                 title="React Ecosystem"
               >
-                <FaReact className="text-xl sm:text-[26px] animate-spin-slow" />
+                <FaReact className="text-xl sm:text-[26px] lg:text-[32px] animate-spin-slow" />
               </motion.div>
 
               <motion.div
                 variants={floatingVariants(0.6)}
                 animate="animate"
-                className="absolute -bottom-3 left-3 sm:-bottom-4 sm:left-6 w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 shadow-xl flex items-center justify-center text-[#00FFFF]"
+                className="absolute -bottom-3 left-3 sm:-bottom-4 sm:left-6 lg:-bottom-5 lg:left-8 w-11 h-11 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-2xl bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 shadow-xl flex items-center justify-center text-[#00FFFF]"
                 title="Backend & Cloud APIs"
               >
-                <FaServer className="text-base sm:text-[22px]" />
+                <FaServer className="text-base sm:text-[22px] lg:text-[26px]" />
               </motion.div>
 
               <motion.div

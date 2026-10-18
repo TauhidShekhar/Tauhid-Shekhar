@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
-import { FaGithub, FaExternalLinkAlt, FaBookOpen, FaTimes, FaCheck, FaHeart, FaRegHeart } from 'react-icons/fa';
+import { FaGithub, FaExternalLinkAlt, FaBookOpen, FaTimes, FaCheck, FaHeart, FaRegHeart, FaUserCircle, FaExpand, FaCompress } from 'react-icons/fa';
 import { getCacheBustedUrl } from '../utils/cacheBuster';
 
 const ProjectGallery = ({ mainImage, images, title, updatedAt }) => {
@@ -15,28 +16,28 @@ const ProjectGallery = ({ mainImage, images, title, updatedAt }) => {
   }, [mainImage]);
 
   return (
-    <div className="flex flex-col gap-3 mb-8 w-full select-none">
+    <div className="flex flex-col gap-3 mb-6 sm:mb-8 w-full select-none">
       {/* Mac Window Desktop Frame */}
-      <div className="w-full rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-2xl bg-slate-900">
+      <div className="w-full rounded-2xl overflow-hidden border border-[#E5E7EB] dark:border-white/10 shadow-xl bg-slate-900">
         {/* Top Browser Bar */}
-        <div className="px-4 py-2.5 bg-slate-800/90 border-b border-slate-700/50 flex items-center justify-between gap-2">
+        <div className="px-3.5 sm:px-4 py-2 sm:py-2.5 bg-slate-800/90 border-b border-slate-700/50 flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 shrink-0">
-            <div className="w-3 h-3 rounded-full bg-red-500/80" />
-            <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-            <div className="w-3 h-3 rounded-full bg-green-500/80" />
+            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-[#C2272D]/90" />
+            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-amber-400/90" />
+            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-emerald-400/90" />
           </div>
-          <div className="flex-1 max-w-md mx-auto bg-slate-950/70 rounded-lg px-3 py-1 text-[11px] text-slate-400 font-mono text-center truncate border border-white/5">
+          <div className="flex-1 max-w-md mx-auto bg-slate-950/70 rounded-lg px-3 py-1 text-[10px] sm:text-[11px] text-slate-400 font-mono text-center truncate border border-white/5">
             https://tauhidshekhar.app/projects/{encodeURIComponent((title || 'showcase').toLowerCase().replace(/\s+/g, '-'))}
           </div>
           <div className="w-12 text-right hidden sm:block">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">LIVE</span>
+            <span className="text-[10px] font-bold text-[#00FFFF] uppercase tracking-widest">LIVE</span>
           </div>
         </div>
         {/* Main Image Viewport */}
         <div className="w-full aspect-[16/9] bg-slate-950 overflow-hidden flex items-center justify-center relative group">
           <img 
             src={getCacheBustedUrl(activeImg || mainImage, updatedAt)} 
-            alt="Showcase active" 
+            alt={title || "Project showcase active"} 
             className="w-full h-full object-cover object-top transition-all duration-500 group-hover:scale-[1.02]" 
             loading="lazy" 
             decoding="async" 
@@ -46,16 +47,18 @@ const ProjectGallery = ({ mainImage, images, title, updatedAt }) => {
       
       {/* Thumbnails Row */}
       {allImages.length > 1 && (
-        <div className="flex gap-2.5 overflow-x-auto py-1.5 scrollbar-thin">
+        <div className="flex gap-2 sm:gap-2.5 overflow-x-auto py-1 scrollbar-thin">
           {allImages.map((img, idx) => (
             <button
               key={idx}
+              type="button"
               onClick={() => setActiveImg(img)}
-              className={`w-20 aspect-video rounded-xl overflow-hidden border-2 shrink-0 cursor-pointer transition-all ${
-                activeImg === img ? 'border-primary-blue scale-95 shadow-md' : 'border-slate-200/50 dark:border-white/5 hover:border-slate-400'
+              className={`w-18 sm:w-20 aspect-video rounded-xl overflow-hidden border-2 shrink-0 cursor-pointer transition-all ${
+                activeImg === img ? 'border-[#C2272D] dark:border-[#00FFFF] scale-95 shadow-md' : 'border-slate-200/50 dark:border-white/10 hover:border-[#C2272D]/50'
               }`}
+              aria-label={`View image ${idx + 1}`}
             >
-              <img src={getCacheBustedUrl(img, updatedAt)} alt="Thumbnail preview" className="w-full h-full object-cover" loading="lazy" decoding="async" />
+              <img src={getCacheBustedUrl(img, updatedAt)} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" loading="lazy" decoding="async" />
             </button>
           ))}
         </div>
@@ -157,28 +160,32 @@ const Projects = ({ projectsData }) => {
   const { user } = useAuth();
   const [activeFilter, setActiveFilter] = useState('all');
   const [activeCaseStudy, setActiveCaseStudy] = useState(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [savedIds, setSavedIds] = useState([]);
   const [newCommentText, setNewCommentText] = useState('');
 
-  // Lock background body scrolling when case study modal is active
-  useEffect(() => {
-    if (activeCaseStudy) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [activeCaseStudy]);
+  const triggerBtnRef = useRef(null);
+  const closeBtnRef = useRef(null);
+  const modalContentRef = useRef(null);
 
   const [projectItems, setProjectItems] = useState(() => {
-    const list = (projectsData && projectsData.length > 0) ? projectsData : [];
+    const list = (projectsData && projectsData.length > 0) ? projectsData : defaultProjects;
     return list.map(p => ({
       ...p,
       subtitle: p.subtitle || `${p.tag.toUpperCase()} Project`
     }));
   });
+
+  useEffect(() => {
+    if (projectsData && projectsData.length > 0) {
+      setProjectItems(projectsData.map(p => ({
+        ...p,
+        subtitle: p.subtitle || `${p.tag.toUpperCase()} Project`
+      })));
+    } else {
+      setProjectItems(defaultProjects);
+    }
+  }, [projectsData]);
 
   useEffect(() => {
     if (user) {
@@ -198,24 +205,71 @@ const Projects = ({ projectsData }) => {
     }
   }, [user]);
 
+  const openModal = (project, e) => {
+    triggerBtnRef.current = e?.currentTarget || document.activeElement;
+    setActiveCaseStudy(project);
+  };
+
+  const closeModal = () => {
+    setActiveCaseStudy(null);
+    setIsFullscreen(false);
+    setTimeout(() => {
+      if (triggerBtnRef.current && typeof triggerBtnRef.current.focus === 'function') {
+        triggerBtnRef.current.focus({ preventScroll: true });
+      }
+    }, 50);
+  };
+
+  // Lock background body scrolling & reset modal scroll to top & set accessible focus
+  useEffect(() => {
+    if (activeCaseStudy) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      if (modalContentRef.current) {
+        modalContentRef.current.scrollTop = 0;
+      }
+      const timer = setTimeout(() => {
+        if (modalContentRef.current) {
+          modalContentRef.current.scrollTop = 0;
+        }
+        closeBtnRef.current?.focus({ preventScroll: true });
+      }, 50);
+      return () => {
+        clearTimeout(timer);
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [activeCaseStudy]);
+
+  // Escape key listener to close modal
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && activeCaseStudy) {
+        closeModal();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeCaseStudy]);
+
   if (projectsData === null) {
     return (
-      <section id="projects" className="py-24 bg-[#F8FAFC] dark:bg-[#000000] relative">
-        <div className="max-w-[1140px] mx-auto px-6 md:px-12">
-          <div className="text-center mb-16">
-            <div className="h-4 w-28 bg-purple-500/20 animate-pulse rounded mx-auto mb-2.5" />
-            <div className="h-10 w-64 bg-slate-200 dark:bg-white/10 animate-pulse rounded mx-auto" />
+      <section id="projects" className="py-24 sm:py-28 bg-[#F8FAFC]/70 dark:bg-transparent relative">
+        <div className="max-w-[1400px] mx-auto px-4 xs:px-6 sm:px-8 lg:px-12">
+          <div className="text-center mb-14 sm:mb-16 animate-pulse">
+            <div className="h-6 w-36 bg-[#C2272D]/10 dark:bg-[#00FFFF]/10 rounded-full mx-auto mb-3" />
+            <div className="h-10 w-64 bg-slate-200 dark:bg-white/10 rounded-xl mx-auto" />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
             {[1, 2, 3, 4].map(n => (
-              <div key={n} className="rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden bg-white dark:bg-slate-950 p-6 flex flex-col gap-4">
-                <div className="w-full aspect-[16/9] bg-slate-100 dark:bg-white/5 animate-pulse rounded-xl" />
-                <div className="h-6 w-3/4 bg-slate-200 dark:bg-white/10 animate-pulse rounded" />
-                <div className="h-4 w-1/2 bg-slate-150 dark:bg-white/5 animate-pulse rounded" />
+              <div key={n} className="rounded-3xl border border-[#E5E7EB] dark:border-white/10 overflow-hidden bg-white dark:bg-[#111111] p-6 flex flex-col gap-4 animate-pulse">
+                <div className="w-full aspect-[16/9] bg-slate-150 dark:bg-white/5 rounded-2xl" />
+                <div className="h-6 w-3/4 bg-slate-200 dark:bg-white/10 rounded" />
+                <div className="h-4 w-1/2 bg-slate-150 dark:bg-white/5 rounded" />
                 <div className="flex gap-2">
-                  <div className="h-5 w-16 bg-slate-150 dark:bg-white/5 animate-pulse rounded-lg" />
-                  <div className="h-5 w-16 bg-slate-150 dark:bg-white/5 animate-pulse rounded-lg" />
-                  <div className="h-5 w-16 bg-slate-150 dark:bg-white/5 animate-pulse rounded-lg" />
+                  <div className="h-6 w-16 bg-slate-150 dark:bg-white/5 rounded-lg" />
+                  <div className="h-6 w-16 bg-slate-150 dark:bg-white/5 rounded-lg" />
+                  <div className="h-6 w-16 bg-slate-150 dark:bg-white/5 rounded-lg" />
                 </div>
               </div>
             ))}
@@ -280,26 +334,13 @@ const Projects = ({ projectsData }) => {
     { id: 'ui', label: 'UI Design' }
   ];
 
-
-
-  useEffect(() => {
-    if (projectsData && projectsData.length > 0) {
-      setProjectItems(projectsData.map(p => ({
-        ...p,
-        subtitle: p.subtitle || `${p.tag.toUpperCase()} Project`
-      })));
-    } else {
-      setProjectItems([]);
-    }
-  }, [projectsData]);
-
   const filteredProjects = activeFilter === 'all'
     ? projectItems
     : projectItems.filter(p => p.tag === activeFilter);
 
   return (
-    <section id="projects" className="py-24 sm:py-28 bg-[#F8FAFC] dark:bg-[#000000] relative">
-      <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12">
+    <section id="projects" className="py-24 sm:py-28 bg-[#F8FAFC]/70 dark:bg-transparent relative">
+      <div className="max-w-[1400px] mx-auto px-4 xs:px-6 sm:px-8 lg:px-12">
         
         {/* Section Header */}
         <div className="text-center mb-14 sm:mb-16">
@@ -312,14 +353,14 @@ const Projects = ({ projectsData }) => {
         </div>
 
         {/* Filter Buttons */}
-        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 mb-12" role="tablist" aria-label="Project Categories">
+        <div className="flex flex-wrap items-center justify-center gap-1.5 xs:gap-2 sm:gap-2.5 mb-10 sm:mb-12" role="tablist" aria-label="Project Categories">
           {filters.map((f) => (
             <button
               key={f.id}
               onClick={() => setActiveFilter(f.id)}
               role="tab"
               aria-selected={activeFilter === f.id}
-              className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-[14px] font-medium tracking-wider uppercase border transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer ${
+              className={`px-3 xs:px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-[14px] font-medium tracking-wider uppercase border transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer ${
                 activeFilter === f.id
                   ? 'bg-[#C2272D] border-[#C2272D] text-white shadow-md shadow-[#C2272D]/20 -translate-y-0.5'
                   : 'bg-white dark:bg-[#111111] border-[#E5E7EB] dark:border-white/10 text-[#525252] dark:text-[#D1D5DB] hover:border-[#C2272D] dark:hover:border-[#00FFFF]'
@@ -358,6 +399,7 @@ const Projects = ({ projectsData }) => {
                   
                   {/* Heart Bookmark Overlay Button */}
                   <button
+                    type="button"
                     onClick={() => handleFavoriteClick(project._id)}
                     className="absolute top-4 right-4 z-10 w-10 h-10 rounded-xl bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md text-[#171717] dark:text-white flex items-center justify-center shadow-md hover:scale-110 active:scale-95 transition-all border border-[#E5E7EB] dark:border-white/10 cursor-pointer"
                     title={savedIds.includes(project._id) ? "Remove from Saved" : "Save Project"}
@@ -372,10 +414,11 @@ const Projects = ({ projectsData }) => {
 
                   <div className="absolute inset-0 bg-[#000000]/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
                     <button
-                      onClick={() => setActiveCaseStudy(project)}
+                      type="button"
+                      onClick={(e) => openModal(project, e)}
                       className="w-12 h-12 rounded-full bg-white text-[#171717] hover:bg-[#00FFFF] flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all cursor-pointer"
-                      title="Case Study"
-                      aria-label="Open Project Case Study"
+                      title="Read More Details"
+                      aria-label={`Read More details about ${project.title}`}
                     >
                       <FaBookOpen size={17} />
                     </button>
@@ -386,7 +429,7 @@ const Projects = ({ projectsData }) => {
                         rel="noopener noreferrer"
                         className="w-12 h-12 rounded-full bg-white text-[#171717] hover:bg-[#C2272D] hover:text-white flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all"
                         title="Source Code"
-                        aria-label="GitHub Repository"
+                        aria-label={`GitHub Repository for ${project.title}`}
                       >
                         <FaGithub size={19} />
                       </a>
@@ -395,20 +438,20 @@ const Projects = ({ projectsData }) => {
                 </div>
 
                 {/* Details */}
-                <div className="p-6 sm:p-7 text-left flex flex-col flex-1 justify-between">
+                <div className="p-4 xs:p-5 sm:p-7 text-left flex flex-col flex-1 justify-between">
                   <div>
                     <span className="text-xs font-semibold text-[#C2272D] dark:text-[#00FFFF] uppercase tracking-wider block mb-1.5">
                       {project.subtitle}
                     </span>
-                    <h3 className="text-[20px] md:text-[22px] font-bold font-title text-[#171717] dark:text-white mb-2.5">
+                    <h3 className="text-[19px] sm:text-[20px] md:text-[22px] font-bold font-title text-[#171717] dark:text-white mb-2.5">
                       {project.title}
                     </h3>
-                    <p className="text-base text-[#525252] dark:text-[#D1D5DB] mb-5 leading-relaxed line-clamp-3">
+                    <p className="text-sm sm:text-base text-[#525252] dark:text-[#D1D5DB] mb-5 leading-relaxed line-clamp-3">
                       {project.description}
                     </p>
 
                     {/* Tech Badges */}
-                    <div className="flex flex-wrap gap-2 mb-6">
+                    <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-6">
                       {(project.tech || []).map((t) => (
                         <span key={t} className="text-xs sm:text-[13px] font-medium px-2.5 py-1 bg-[#F8FAFC] dark:bg-white/5 border border-[#E5E7EB] dark:border-white/10 text-[#525252] dark:text-[#D1D5DB] rounded-lg">
                           {t}
@@ -418,21 +461,24 @@ const Projects = ({ projectsData }) => {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex gap-3.5 border-t border-[#E5E7EB] dark:border-white/10 pt-5">
+                  <div className="flex flex-col xs:flex-row gap-2.5 sm:gap-3.5 border-t border-[#E5E7EB] dark:border-white/10 pt-4 sm:pt-5">
                     <button
-                      onClick={() => setActiveCaseStudy(project)}
-                      className="flex-1 py-2.5 sm:py-3 bg-[#F8FAFC] dark:bg-[#1A1A1A] hover:bg-slate-200 dark:hover:bg-white/10 text-[#171717] dark:text-white rounded-xl text-center text-[15px] font-semibold border border-[#E5E7EB] dark:border-white/10 hover:border-[#00FFFF] hover:shadow-md hover:shadow-[#00FFFF]/10 transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] cursor-pointer flex items-center justify-center gap-2"
+                      type="button"
+                      onClick={(e) => openModal(project, e)}
+                      className="w-full xs:flex-1 py-2.5 sm:py-3 bg-[#F8FAFC] dark:bg-[#1A1A1A] hover:bg-slate-200 dark:hover:bg-white/10 text-[#171717] dark:text-white rounded-xl text-center text-[15px] font-semibold border border-[#E5E7EB] dark:border-white/10 hover:border-[#00FFFF] hover:shadow-md hover:shadow-[#00FFFF]/10 transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] cursor-pointer flex items-center justify-center gap-2"
+                      aria-label={`Read More about ${project.title}`}
                     >
-                      Case Study
+                      <FaBookOpen size={14} className="text-[#C2272D] dark:text-[#00FFFF]" />
+                      <span>Read More</span>
                     </button>
                     {project.demo && (
                       <a
                         href={project.demo}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 py-2.5 sm:py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-xl text-center text-[15px] font-semibold shadow-md shadow-[#C2272D]/20 hover:shadow-xl hover:shadow-[#C2272D]/35 transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] cursor-pointer flex items-center justify-center gap-2 btn-shine-effect"
+                        className="w-full xs:flex-1 py-2.5 sm:py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-xl text-center text-[15px] font-semibold shadow-md shadow-[#C2272D]/20 hover:shadow-xl hover:shadow-[#C2272D]/35 transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] cursor-pointer flex items-center justify-center gap-2 btn-shine-effect"
                       >
-                        Live Demo <FaExternalLinkAlt size={12} />
+                        <span>Live Demo</span> <FaExternalLinkAlt size={12} />
                       </a>
                     )}
                   </div>
@@ -442,175 +488,292 @@ const Projects = ({ projectsData }) => {
           </AnimatePresence>
         </motion.div>
 
-        {/* Case Study Modal Popup */}
-        <AnimatePresence>
-          {activeCaseStudy && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[99999] bg-slate-950/85 backdrop-blur-md flex items-start justify-center pt-16 md:pt-24 pb-12 px-4 md:px-8 overflow-y-auto"
-              onClick={() => setActiveCaseStudy(null)}
-            >
-              <motion.div
-                initial={{ y: 25, scale: 0.96 }}
-                animate={{ y: 0, scale: 1 }}
-                exit={{ y: 25, scale: 0.96 }}
-                transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-                onClick={(e) => e.stopPropagation()}
-                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 w-full max-w-[850px] rounded-[28px] shadow-2xl overflow-hidden flex flex-col relative my-auto my-0 mb-8"
+        {/* Redesigned Read More Modal Popup with createPortal */}
+        {typeof document !== 'undefined' && createPortal(
+          <AnimatePresence>
+            {activeCaseStudy && (
+              <div
+                className="fixed inset-0 z-[999999] flex items-center justify-center p-0 sm:p-4 md:p-6 overflow-hidden"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="modal-project-title"
               >
-                {/* Sticky Header Bar */}
-                <div className="sticky top-0 z-20 px-6 py-4 md:px-8 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/60 dark:border-white/10 flex items-center justify-between">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className="w-3 h-3 rounded-full bg-red-500/80 inline-block" />
-                    <span className="w-3 h-3 rounded-full bg-yellow-500/80 inline-block" />
-                    <span className="w-3 h-3 rounded-full bg-green-500/80 inline-block" />
-                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 truncate ml-2">
-                      {activeCaseStudy.title} &mdash; Project Case Study
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => setActiveCaseStudy(null)}
-                    className="w-9 h-9 rounded-full bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 flex items-center justify-center cursor-pointer hover:bg-red-500 hover:text-white transition-all shrink-0"
-                    title="Close Case Study"
-                  >
-                    <FaTimes size={14} />
-                  </button>
-                </div>
+                {/* Backdrop */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  onClick={closeModal}
+                  className="fixed inset-0 bg-black/85 backdrop-blur-md cursor-pointer"
+                  aria-hidden="true"
+                />
 
-                <div className="overflow-y-auto p-6 md:p-10 text-left">
-                  {/* Dynamic Project Showcase Gallery */}
-                  <ProjectGallery mainImage={activeCaseStudy.image} images={activeCaseStudy.images} title={activeCaseStudy.title} updatedAt={activeCaseStudy.updatedAt} />
-
-                  <span className="text-xs font-semibold text-[#C2272D] dark:text-[#00FFFF] uppercase tracking-wider block mb-1">
-                    {activeCaseStudy.subtitle}
-                  </span>
-                  <h3 className="text-2xl md:text-[28px] font-bold font-title text-[#171717] dark:text-white mb-3">
-                    {activeCaseStudy.title}
-                  </h3>
-                  <p className="text-base text-[#525252] dark:text-[#D1D5DB] mb-6 leading-relaxed">
-                    {activeCaseStudy.description}
-                  </p>
-
-                  <h4 className="text-[18px] font-bold font-title text-[#171717] dark:text-white mb-3">Key Features</h4>
-                  <ul className="grid grid-cols-1 gap-2.5 mb-7">
-                    {(activeCaseStudy.features || []).map((feat, idx) => (
-                      <li key={idx} className="flex gap-3 items-start text-sm text-[#525252] dark:text-[#D1D5DB]">
-                        <span className="w-5 h-5 rounded-full bg-green-500/10 text-green-500 flex items-center justify-center shrink-0 mt-0.5">
-                          <FaCheck size={10} />
-                        </span>
-                        <span>{feat}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <h4 className="text-[18px] font-bold font-title text-[#171717] dark:text-white mb-3">Tech Stack</h4>
-                  <div className="flex flex-wrap gap-2 mb-7">
-                    {(activeCaseStudy.tech || []).map((t) => (
-                      <span key={t} className="text-xs sm:text-[13px] font-medium px-3.5 py-1.5 bg-[#F8FAFC] dark:bg-white/5 border border-[#E5E7EB] dark:border-white/10 text-[#525252] dark:text-[#D1D5DB] rounded-lg">
-                        {t}
+                {/* Modal Dialog Card */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.96, y: 15 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.96, y: 15 }}
+                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                  onClick={(e) => e.stopPropagation()}
+                  className={`relative z-10 bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 shadow-2xl flex flex-col overflow-hidden text-left transition-all duration-300 ${
+                    isFullscreen
+                      ? 'w-screen h-screen max-w-full max-h-full rounded-none border-0'
+                      : 'w-full h-full sm:h-[92vh] sm:max-h-[920px] sm:max-w-[1050px] sm:rounded-3xl'
+                  }`}
+                >
+                  {/* Sticky Header Bar */}
+                  <div className="sticky top-0 z-30 px-4 py-3 sm:px-6 sm:py-3.5 bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md border-b border-[#E5E7EB] dark:border-white/10 flex items-center justify-between gap-3 shrink-0">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#C2272D] inline-block shrink-0 shadow-[0_0_8px_#C2272D]" />
+                      <span className="text-sm sm:text-base font-bold text-[#171717] dark:text-white truncate font-title">
+                        {activeCaseStudy.title}
                       </span>
-                    ))}
-                  </div>
-
-                  {/* Project Comments & Reviews Discussion */}
-                  <div className="border-t border-[#E5E7EB] dark:border-white/10 pt-7 mt-7 text-left">
-                    <h4 className="text-[18px] font-bold font-title text-[#171717] dark:text-white mb-3">
-                      Discussion & Feedback ({activeCaseStudy.comments?.length || 0})
-                    </h4>
-
-                    {/* Comments Timeline */}
-                    <div className="flex flex-col gap-3.5 mb-6 max-h-[250px] overflow-y-auto pr-2 scrollbar-thin">
-                      {(activeCaseStudy.comments || []).map((comm) => (
-                        <div key={comm._id} className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200/50 dark:border-white/5 flex gap-3 text-left items-start">
-                          <div className="w-8.5 h-8.5 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-900 shrink-0 border border-slate-200 dark:border-white/5 flex items-center justify-center">
-                            {comm.userAvatar ? (
-                              <img src={comm.userAvatar} alt="Commenter Avatar" className="w-full h-full object-cover" loading="lazy" decoding="async" />
-                            ) : (
-                              <FaUserCircle className="text-slate-400 dark:text-slate-500 w-full h-full" size={24} />
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-baseline mb-1">
-                              <span className="font-bold text-xs text-black dark:text-white truncate">{comm.userName}</span>
-                              <span className="text-[9px] text-slate-400 font-bold">{new Date(comm.createdAt).toLocaleDateString()}</span>
-                            </div>
-                            <p className="text-xs text-slate-600 dark:text-slate-350 leading-relaxed break-words">{comm.content}</p>
-                          </div>
-                          {(user?.role === 'Admin' || (user && comm.userId === user.id)) && (
-                            <button
-                              onClick={() => handleDeleteComment(activeCaseStudy._id, comm._id)}
-                              className="text-[10px] font-bold text-red-500 hover:text-red-600 cursor-pointer shrink-0 self-start mt-0.5"
-                            >
-                              Delete
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                      {(!activeCaseStudy.comments || activeCaseStudy.comments.length === 0) && (
-                        <p className="text-xs text-slate-400 italic">No comments yet. Be the first to leave your feedback!</p>
-                      )}
+                      <span className="hidden sm:inline-block text-[11px] font-semibold text-[#525252] dark:text-[#9CA3AF] uppercase tracking-wider px-2 py-0.5 rounded bg-[#F8FAFC] dark:bg-white/5 border border-[#E5E7EB] dark:border-white/5 shrink-0">
+                        {activeCaseStudy.tag || 'Project'}
+                      </span>
                     </div>
 
-                    {/* Post Comment Input Bar */}
-                    {user ? (
-                      <form onSubmit={(e) => handlePostComment(e, activeCaseStudy._id)} className="flex gap-3">
-                        <input
-                          type="text"
-                          value={newCommentText}
-                          onChange={(e) => setNewCommentText(e.target.value)}
-                          placeholder="Write a feedback or ask a question about this project..."
-                          required
-                          className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-blue transition-colors"
-                        />
-                        <button
-                          type="submit"
-                          className="px-5 py-2.5 bg-primary-blue hover:bg-accent-blue text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
-                        >
-                          Post
-                        </button>
-                      </form>
-                    ) : (
-                      <p className="text-xs text-slate-500 leading-relaxed">
-                        Please <Link to="/login" onClick={() => setActiveCaseStudy(null)} className="text-primary-blue font-bold hover:underline">log in</Link> to post feedback or ask questions on this project.
-                      </p>
-                    )}
+                    <div className="flex items-center gap-2 shrink-0">
+                      {/* Fullscreen Toggle */}
+                      <button
+                        type="button"
+                        onClick={() => setIsFullscreen(prev => !prev)}
+                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#F8FAFC] dark:bg-[#1A1A1A] border border-[#E5E7EB] dark:border-white/10 text-[#525252] dark:text-[#D1D5DB] hover:text-[#00FFFF] hover:border-[#00FFFF] flex items-center justify-center transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF]"
+                        title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen View'}
+                        aria-label={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen View'}
+                      >
+                        {isFullscreen ? <FaCompress size={13} /> : <FaExpand size={13} />}
+                      </button>
+
+                      {/* Close Button */}
+                      <button
+                        ref={closeBtnRef}
+                        type="button"
+                        onClick={closeModal}
+                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#F8FAFC] dark:bg-[#1A1A1A] border border-[#E5E7EB] dark:border-white/10 text-[#525252] dark:text-[#D1D5DB] hover:bg-[#C2272D] hover:text-white hover:border-[#C2272D] dark:hover:bg-[#C2272D] dark:hover:text-white flex items-center justify-center transition-all cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF]"
+                        title="Close (Esc)"
+                        aria-label="Close project details modal"
+                      >
+                        <FaTimes size={14} />
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="flex flex-wrap gap-4 border-t border-slate-100 dark:border-white/5 pt-6">
+                  {/* Scrollable Content */}
+                  <div
+                    ref={modalContentRef}
+                    className="overflow-y-auto flex-1 p-4 xs:p-5 sm:p-7 md:p-8 overscroll-contain text-left scrollbar-thin"
+                  >
+                    {/* Dynamic Project Showcase Gallery */}
+                    <ProjectGallery
+                      mainImage={activeCaseStudy.image}
+                      images={activeCaseStudy.images}
+                      title={activeCaseStudy.title}
+                      updatedAt={activeCaseStudy.updatedAt}
+                    />
+
+                    {/* Subtitle & Title */}
+                    <span className="text-xs font-semibold text-[#C2272D] dark:text-[#00FFFF] uppercase tracking-wider block mb-1">
+                      {activeCaseStudy.subtitle || `${(activeCaseStudy.tag || 'Project').toUpperCase()} Project`}
+                    </span>
+                    <h3 id="modal-project-title" className="text-2xl sm:text-3xl font-bold font-title text-[#171717] dark:text-white mb-3">
+                      {activeCaseStudy.title}
+                    </h3>
+
+                    {/* Overview Description */}
+                    <div className="text-sm sm:text-base text-[#525252] dark:text-[#D1D5DB] mb-6 sm:mb-8 leading-relaxed whitespace-pre-line">
+                      {activeCaseStudy.description}
+                    </div>
+
+                    {/* Key Features (if available) */}
+                    {activeCaseStudy.features && activeCaseStudy.features.length > 0 && (
+                      <div className="mb-6 sm:mb-8">
+                        <h4 className="text-base sm:text-lg font-bold font-title text-[#171717] dark:text-white mb-3 flex items-center gap-2">
+                          <span className="w-1.5 h-4 rounded-full bg-[#C2272D]" /> Key Features
+                        </h4>
+                        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+                          {activeCaseStudy.features.map((feat, idx) => (
+                            <li
+                              key={idx}
+                              className="flex gap-2.5 items-start text-xs sm:text-sm text-[#525252] dark:text-[#D1D5DB] bg-[#F8FAFC] dark:bg-[#1A1A1A] p-3 rounded-xl border border-[#E5E7EB] dark:border-white/5"
+                            >
+                              <span className="w-5 h-5 rounded-full bg-[#00FFFF]/10 text-[#00FFFF] flex items-center justify-center shrink-0 mt-0.5">
+                                <FaCheck size={9} />
+                              </span>
+                              <span className="leading-snug">{feat}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Tech Stack (if available) */}
+                    {activeCaseStudy.tech && activeCaseStudy.tech.length > 0 && (
+                      <div className="mb-6 sm:mb-8">
+                        <h4 className="text-base sm:text-lg font-bold font-title text-[#171717] dark:text-white mb-3 flex items-center gap-2">
+                          <span className="w-1.5 h-4 rounded-full bg-[#00FFFF]" /> Tech Stack & Tooling
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {activeCaseStudy.tech.map((t) => (
+                            <span
+                              key={t}
+                              className="text-xs sm:text-[13px] font-medium px-3 py-1.5 bg-[#F8FAFC] dark:bg-[#1A1A1A] border border-[#E5E7EB] dark:border-white/10 text-[#171717] dark:text-white rounded-lg shadow-xs"
+                            >
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Challenges & Learnings (if available) */}
+                    {(activeCaseStudy.challenges || activeCaseStudy.learnings || activeCaseStudy.takeaways) && (
+                      <div className="mb-6 sm:mb-8">
+                        <h4 className="text-base sm:text-lg font-bold font-title text-[#171717] dark:text-white mb-3 flex items-center gap-2">
+                          <span className="w-1.5 h-4 rounded-full bg-[#C2272D]" /> Challenges & Key Learnings
+                        </h4>
+                        <div className="text-xs sm:text-sm text-[#525252] dark:text-[#D1D5DB] bg-[#F8FAFC] dark:bg-[#1A1A1A] p-4 rounded-2xl border border-[#E5E7EB] dark:border-white/10 leading-relaxed whitespace-pre-line">
+                          {activeCaseStudy.challenges || activeCaseStudy.learnings || activeCaseStudy.takeaways}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Discussion & Feedback */}
+                    <div className="border-t border-[#E5E7EB] dark:border-white/10 pt-6 mt-6">
+                      <h4 className="text-base sm:text-lg font-bold font-title text-[#171717] dark:text-white mb-3 flex items-center justify-between">
+                        <span>Discussion & Feedback</span>
+                        <span className="text-xs font-normal text-[#525252] dark:text-[#9CA3AF] px-2.5 py-0.5 rounded-full bg-[#F8FAFC] dark:bg-white/5 border border-[#E5E7EB] dark:border-white/10">
+                          {activeCaseStudy.comments?.length || 0}
+                        </span>
+                      </h4>
+
+                      {/* Comments Timeline */}
+                      <div className="flex flex-col gap-3 mb-5 max-h-[220px] overflow-y-auto pr-1 scrollbar-thin">
+                        {(activeCaseStudy.comments || []).map((comm) => (
+                          <div
+                            key={comm._id}
+                            className="p-3.5 rounded-xl bg-[#F8FAFC] dark:bg-[#1A1A1A] border border-[#E5E7EB] dark:border-white/10 flex gap-3 text-left items-start"
+                          >
+                            <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-200 dark:bg-white/10 shrink-0 border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center">
+                              {comm.userAvatar ? (
+                                <img
+                                  src={comm.userAvatar}
+                                  alt={comm.userName || "Commenter"}
+                                  className="w-full h-full object-cover"
+                                  loading="lazy"
+                                  decoding="async"
+                                />
+                              ) : (
+                                <FaUserCircle className="text-slate-400 dark:text-slate-500 w-full h-full" size={24} />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex justify-between items-baseline mb-0.5">
+                                <span className="font-semibold text-xs text-[#171717] dark:text-white truncate">
+                                {comm.userName}
+                                </span>
+                                <span className="text-[10px] text-[#525252] dark:text-[#9CA3AF]">
+                                  {new Date(comm.createdAt).toLocaleDateString()}
+                                </span>
+                              </div>
+                              <p className="text-xs text-[#525252] dark:text-[#D1D5DB] leading-relaxed break-words">
+                                {comm.content}
+                              </p>
+                            </div>
+                            {(user?.role === 'Admin' || (user && comm.userId === user.id)) && (
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteComment(activeCaseStudy._id, comm._id)}
+                                className="text-[11px] font-semibold text-[#C2272D] hover:underline cursor-pointer shrink-0 self-start ml-1"
+                              >
+                                Delete
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                        {(!activeCaseStudy.comments || activeCaseStudy.comments.length === 0) && (
+                          <p className="text-xs text-[#525252] dark:text-[#9CA3AF] italic py-2">
+                            No comments yet. Be the first to leave your feedback!
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Post Comment Input */}
+                      {user ? (
+                        <form onSubmit={(e) => handlePostComment(e, activeCaseStudy._id)} className="flex gap-2 sm:gap-3">
+                          <input
+                            type="text"
+                            value={newCommentText}
+                            onChange={(e) => setNewCommentText(e.target.value)}
+                            placeholder="Write feedback or ask a question about this project..."
+                            required
+                            className="flex-1 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl border border-[#E5E7EB] dark:border-white/10 bg-[#F8FAFC] dark:bg-[#1A1A1A] text-[#171717] dark:text-white text-xs sm:text-sm focus:outline-none focus:border-[#C2272D] dark:focus:border-[#00FFFF] transition-colors"
+                          />
+                          <button
+                            type="submit"
+                            className="px-4 sm:px-5 py-2 sm:py-2.5 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-md shadow-[#C2272D]/20 cursor-pointer"
+                          >
+                            Post
+                          </button>
+                        </form>
+                      ) : (
+                        <p className="text-xs text-[#525252] dark:text-[#9CA3AF] leading-relaxed">
+                          Please{' '}
+                          <Link
+                            to="/login"
+                            onClick={closeModal}
+                            className="text-[#C2272D] dark:text-[#00FFFF] font-semibold hover:underline"
+                          >
+                            log in
+                          </Link>{' '}
+                          to post feedback or ask questions on this project.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Sticky Bottom Actions Bar */}
+                  <div className="sticky bottom-0 z-30 px-4 py-3 sm:px-6 sm:py-3.5 bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md border-t border-[#E5E7EB] dark:border-white/10 flex flex-wrap items-center justify-between gap-2.5 shrink-0">
                     <button
-                      onClick={() => setActiveCaseStudy(null)}
-                      className="flex-1 py-3.5 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 text-slate-800 dark:text-white rounded-xl text-center text-sm font-bold border border-slate-200 dark:border-white/5 transition-all cursor-pointer flex items-center justify-center gap-2"
+                      type="button"
+                      onClick={closeModal}
+                      className="py-2.5 px-4 sm:px-5 bg-[#F8FAFC] dark:bg-[#1A1A1A] hover:bg-slate-200 dark:hover:bg-white/10 text-[#171717] dark:text-white rounded-xl text-xs sm:text-sm font-semibold border border-[#E5E7EB] dark:border-white/10 transition-all cursor-pointer flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF]"
                     >
                       Back to Projects
                     </button>
-                    {activeCaseStudy.demo && (
-                      <a
-                        href={activeCaseStudy.demo}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 py-3.5 bg-primary-blue hover:bg-accent-blue text-white rounded-xl text-center text-sm font-bold shadow-lg shadow-primary-blue/10 transition-all flex items-center justify-center gap-2"
-                      >
-                        Visit Live Site <FaExternalLinkAlt size={12} />
-                      </a>
-                    )}
-                    {activeCaseStudy.github && (
-                      <a
-                        href={activeCaseStudy.github}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 py-3.5 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 text-slate-800 dark:text-white rounded-xl text-center text-sm font-bold border border-slate-200 dark:border-white/5 transition-all flex items-center justify-center gap-2"
-                      >
-                        View GitHub <FaGithub size={14} />
-                      </a>
-                    )}
+
+                    <div className="flex items-center gap-2 sm:gap-3 ml-auto">
+                      {activeCaseStudy.github && (
+                        <a
+                          href={activeCaseStudy.github}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="py-2.5 px-4 sm:px-5 bg-[#F8FAFC] dark:bg-[#1A1A1A] hover:bg-slate-200 dark:hover:bg-white/10 text-[#171717] dark:text-white rounded-xl text-xs sm:text-sm font-semibold border border-[#E5E7EB] dark:border-white/10 hover:border-[#00FFFF] hover:text-[#00FFFF] transition-all flex items-center gap-1.5 shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF]"
+                        >
+                          <FaGithub size={14} />
+                          <span>GitHub</span>
+                        </a>
+                      )}
+                      {activeCaseStudy.demo && (
+                        <a
+                          href={activeCaseStudy.demo}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="py-2.5 px-4 sm:px-5 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-xl text-xs sm:text-sm font-semibold shadow-md shadow-[#C2272D]/20 hover:shadow-lg hover:shadow-[#C2272D]/35 transition-all flex items-center gap-1.5 btn-shine-effect focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF]"
+                        >
+                          <span>Live Demo</span>
+                          <FaExternalLinkAlt size={11} />
+                        </a>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>,
+          document.body
+        )}
       </div>
     </section>
   );

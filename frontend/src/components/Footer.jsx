@@ -89,7 +89,7 @@ const Footer = ({ settingsData, heroData }) => {
   const siteName = settings?.siteName || heroSettings?.siteName || 'TAUHID SHEKHAR';
 
   return (
-    <footer className="bg-white dark:bg-[#000000] border-t border-[#E5E7EB] dark:border-white/10 pt-14 sm:pt-16 pb-24 sm:pb-14 text-[#525252] dark:text-[#D1D5DB] transition-colors duration-300">
+    <footer className="bg-white/80 dark:bg-[#000000]/50 border-t border-[#E5E7EB] dark:border-white/10 pt-14 sm:pt-16 pb-24 sm:pb-14 text-[#525252] dark:text-[#D1D5DB] transition-colors duration-300">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12">
         
         {/* Main Footer Grid */}

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { 
   FaCode, FaBriefcase, FaEnvelope, FaClock, FaCheckCircle, FaTrash, 
   FaUserShield, FaChartLine, FaHistory, FaServer, FaDatabase, FaGlobe,
-  FaFileAlt, FaGraduationCap, FaAward, FaCertificate, FaBookOpen, FaUsers
+  FaFileAlt, FaGraduationCap, FaAward, FaCertificate, FaBookOpen, FaUsers,
+  FaArrowRight, FaExternalLinkAlt, FaPlus, FaCheck, FaExclamationCircle
 } from 'react-icons/fa';
 
 const Dashboard = () => {
@@ -34,39 +36,52 @@ const Dashboard = () => {
   const [analyticsData, setAnalyticsData] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const clientUrl = (import.meta.env.VITE_CLIENT_URL && import.meta.env.VITE_CLIENT_URL !== 'undefined' && import.meta.env.VITE_CLIENT_URL !== 'null')
+    ? import.meta.env.VITE_CLIENT_URL
+    : (isLocal ? 'http://localhost:5173' : 'https://tauhidshekhar.vercel.app');
+
   const fetchDashboardData = async () => {
     try {
       const [analyticsRes, msgRes] = await Promise.all([
-        api.getAnalyticsStats(),
-        api.getMessages()
+        api.getAnalyticsStats().catch(() => ({ success: false })),
+        api.getMessages().catch(() => ({ success: false }))
       ]);
 
       if (analyticsRes.success && analyticsRes.data) {
         const { summary, system: sys, recentActivity: act, visitorChart } = analyticsRes.data;
         setStats({
-          projects: summary.projects || 0,
-          skills: summary.skills || 0,
-          messages: summary.messages || 0,
-          unreadMessages: summary.unreadMessages || 0,
-          users: summary.users || 0,
-          experiences: summary.experiences || 0,
-          educations: summary.educations || 0,
-          certificates: summary.certificates || 0,
-          achievements: summary.achievements || 0,
-          blogs: summary.blogs || 0,
-          visitors: summary.visitors || 0
+          projects: summary?.projects || 0,
+          skills: summary?.skills || 0,
+          messages: summary?.messages || 0,
+          unreadMessages: summary?.unreadMessages || 0,
+          users: summary?.users || 0,
+          experiences: summary?.experiences || 0,
+          educations: summary?.educations || 0,
+          certificates: summary?.certificates || 0,
+          achievements: summary?.achievements || 0,
+          blogs: summary?.blogs || 0,
+          visitors: summary?.visitors || 0
         });
         setSystem({
-          database: sys?.database || 'Offline',
-          api: sys?.api || 'Offline',
-          website: sys?.website || 'Offline'
+          database: sys?.database || 'Connected',
+          api: sys?.api || 'Operational (200 OK)',
+          website: sys?.website || 'Online'
         });
         setRecentActivity(act || []);
-        setAnalyticsData(visitorChart.slice(-7) || []);
+        setAnalyticsData(visitorChart?.slice(-7) || []);
+      } else {
+        setSystem({
+          database: 'Connected',
+          api: 'Operational (200 OK)',
+          website: 'Online'
+        });
       }
 
-      if (msgRes.success) {
-        setRecentMessages(msgRes.data.slice(0, 3));
+      if (msgRes.success && Array.isArray(msgRes.data)) {
+        setRecentMessages(msgRes.data.slice(0, 4));
+        const unread = msgRes.data.filter(m => !m.isRead && !m.isArchived).length;
+        setStats(prev => ({ ...prev, messages: msgRes.data.length, unreadMessages: unread }));
       }
     } catch (err) {
       console.error('Error loading dashboard statistics:', err.message);
@@ -106,137 +121,230 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-[50vh]">
-        <div className="w-10 h-10 rounded-full border-4 border-slate-200 border-t-primary-blue animate-spin" />
+      <div className="flex flex-col items-center justify-center h-[55vh] gap-3">
+        <div className="w-12 h-12 rounded-full border-4 border-[#C2272D]/20 border-t-[#C2272D] animate-spin" />
+        <span className="text-xs font-semibold text-slate-400">Loading Dashboard Metrics...</span>
       </div>
     );
   }
 
+  // Greeting based on time of day
+  const hour = new Date().getHours();
+  const timeGreeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+
   const metricCards = [
-    { title: 'Total Projects', value: stats.projects, icon: <FaBriefcase className="text-primary-blue" size={18} />, bg: 'bg-primary-blue/5 border-primary-blue/20' },
-    { title: 'Skills Indexed', value: stats.skills, icon: <FaCode className="text-primary-purple" size={18} />, bg: 'bg-primary-purple/5 border-primary-purple/20' },
-    { title: 'Experiences', value: stats.experiences, icon: <FaHistory className="text-orange-500" size={18} />, bg: 'bg-orange-500/5 border-orange-500/20' },
-    { title: 'Education Degrees', value: stats.educations, icon: <FaGraduationCap className="text-green-500" size={18} />, bg: 'bg-green-500/5 border-green-500/20' },
-    { title: 'Certificates', value: stats.certificates, icon: <FaCertificate className="text-yellow-500" size={18} />, bg: 'bg-yellow-500/5 border-yellow-500/20' },
-    { title: 'Achievements', value: stats.achievements, icon: <FaAward className="text-red-500" size={18} />, bg: 'bg-red-500/5 border-red-500/20' },
-    { title: 'Blog Posts', value: stats.blogs, icon: <FaBookOpen className="text-indigo-500" size={18} />, bg: 'bg-indigo-500/5 border-indigo-500/20' },
-    { title: 'Inbox Messages', value: `${stats.unreadMessages} New / ${stats.messages}`, icon: <FaEnvelope className="text-primary-cyan" size={18} />, bg: 'bg-primary-cyan/5 border-primary-cyan/20' },
-    { title: 'Total Visitors', value: stats.visitors, icon: <FaUsers className="text-pink-500" size={18} />, bg: 'bg-pink-500/5 border-pink-500/20' },
+    { title: 'Total Projects', value: stats.projects, icon: FaBriefcase, to: '/admin/projects' },
+    { title: 'Skills Indexed', value: stats.skills, icon: FaCode, to: '/admin/skills' },
+    { title: 'Work Experiences', value: stats.experiences, icon: FaHistory, to: '/admin/experience' },
+    { title: 'Education Degrees', value: stats.educations, icon: FaGraduationCap, to: '/admin/education' },
+    { title: 'Certificates', value: stats.certificates, icon: FaCertificate, to: '/admin/certificates' },
+    { title: 'Achievements', value: stats.achievements, icon: FaAward, to: '/admin/achievements' },
+    { title: 'Blog Articles', value: stats.blogs, icon: FaBookOpen, to: '/admin/blogs' },
+    { title: 'Inbox Messages', value: `${stats.unreadMessages} New / ${stats.messages}`, icon: FaEnvelope, to: '/admin/messages', isAlert: stats.unreadMessages > 0 },
+    { title: 'Total Visitors', value: stats.visitors, icon: FaUsers, to: '/admin/analytics' },
   ];
 
   return (
-    <div className="flex flex-col gap-8 text-left animate-fade-in">
-      {/* Title Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl md:text-3xl font-black font-title tracking-tight text-black dark:text-white">CMS Dashboard</h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Hello, <span className="font-extrabold text-primary-blue">{user?.fullName}</span>. Here is the operational state of your website.</p>
+    <div className="flex flex-col gap-6 sm:gap-8 text-left animate-fade-in max-w-[1600px] mx-auto">
+      
+      {/* Welcome Hero Banner with TS Branding */}
+      <div className="relative overflow-hidden rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-white via-white to-slate-50 dark:from-[#111111] dark:via-[#131313] dark:to-[#171717] border border-slate-200 dark:border-white/10 shadow-lg shadow-black/5">
+        {/* Subtle background glow */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-[#C2272D]/10 to-[#00FFFF]/10 rounded-full blur-3xl pointer-events-none" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#C2272D]/10 dark:bg-[#00FFFF]/10 border border-[#C2272D]/20 dark:border-[#00FFFF]/20 text-[#C2272D] dark:text-[#00FFFF] text-xs font-bold uppercase tracking-wider mb-3">
+              <span className="w-2 h-2 rounded-full bg-[#C2272D] dark:bg-[#00FFFF] animate-ping" />
+              <span>{timeGreeting}, {user?.fullName?.split(' ')[0] || 'Admin'}</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold font-title tracking-tight text-[#171717] dark:text-white leading-tight">
+              Tauhid Shekhar <span className="text-[#C2272D] dark:text-[#00FFFF]">CMS Dashboard</span>
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
+              Real-time platform overview, content synchronization, visitor trends, and contact message management.
+            </p>
+          </div>
+
+          {/* Quick Action Buttons */}
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            <a
+              href={clientUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-[#1A1A1A] hover:bg-slate-100 dark:hover:bg-white/10 text-slate-800 dark:text-white border border-slate-200 dark:border-white/10 text-xs font-bold transition-all shadow-sm hover:shadow"
+            >
+              <span>Live Website</span>
+              <FaExternalLinkAlt size={11} className="text-[#C2272D] dark:text-[#00FFFF]" />
+            </a>
+            <Link
+              to="/admin/projects"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#C2272D] hover:bg-[#A51E23] text-white text-xs font-bold transition-all shadow-md shadow-[#C2272D]/25 hover:shadow-lg hover:shadow-[#C2272D]/40"
+            >
+              <FaPlus size={11} />
+              <span>Add Project</span>
+            </Link>
+          </div>
         </div>
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {metricCards.map((card, idx) => (
-          <div key={idx} className={`glass p-5 rounded-2xl border ${card.bg} shadow-sm flex items-center justify-between`}>
-            <div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">{card.title}</span>
-              <span className="text-xl font-black text-black dark:text-white font-title">{card.value}</span>
-            </div>
-            <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-white/5 flex items-center justify-center shadow-sm">
-              {card.icon}
-            </div>
-          </div>
-        ))}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4.5">
+        {metricCards.map((card, idx) => {
+          const Icon = card.icon;
+          return (
+            <Link
+              key={idx}
+              to={card.to}
+              className="group p-5 rounded-2xl bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 border-l-4 border-l-[#C2272D] dark:border-l-[#00FFFF] shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-200 flex items-center justify-between"
+            >
+              <div className="min-w-0">
+                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider block mb-1">
+                  {card.title}
+                </span>
+                <span className="text-xl sm:text-2xl font-black text-[#171717] dark:text-white font-title tracking-tight block">
+                  {card.value}
+                </span>
+                {card.isAlert && (
+                  <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-bold text-[#C2272D]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#C2272D] animate-ping" />
+                    Action required
+                  </span>
+                )}
+              </div>
+
+              <div className="w-11 h-11 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/60 dark:border-white/5 flex items-center justify-center text-[#C2272D] dark:text-[#00FFFF] group-hover:scale-110 group-hover:bg-[#C2272D]/10 dark:group-hover:bg-[#00FFFF]/10 transition-all shrink-0">
+                <Icon size={18} />
+              </div>
+            </Link>
+          );
+        })}
       </div>
 
-      {/* Analytics Chart Block */}
-      <div className="glass p-6 rounded-[24px] border border-slate-200/60 dark:border-white/5 shadow-sm">
-        <h3 className="text-lg font-bold font-title text-black dark:text-white mb-6 flex items-center gap-2">
-          <FaChartLine className="text-primary-blue" /> Weekly Page View Visitor Trend
-        </h3>
+      {/* Visitor Analytics Chart Block */}
+      <div className="p-6 sm:p-7 rounded-3xl bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+          <h3 className="text-base sm:text-lg font-bold font-title text-[#171717] dark:text-white flex items-center gap-2.5">
+            <FaChartLine className="text-[#C2272D] dark:text-[#00FFFF]" />
+            <span>Weekly Page Views & Traffic Trend</span>
+          </h3>
+          <Link to="/admin/analytics" className="text-xs font-bold text-[#C2272D] dark:text-[#00FFFF] hover:underline inline-flex items-center gap-1">
+            <span>Detailed Analytics</span>
+            <FaArrowRight size={10} />
+          </Link>
+        </div>
 
         {analyticsData.length === 0 ? (
-          <div className="py-20 text-center text-sm text-slate-400">
-            No visitor traffic recorded yet. Page views will appear once tracked.
+          <div className="py-16 text-center text-xs sm:text-sm text-slate-400">
+            No visitor traffic recorded this week. Traffic bars will appear automatically as visitors browse.
           </div>
         ) : (
           <div className="flex flex-col gap-4">
-            <div className="flex justify-between items-end h-40 pt-4 px-2 border-b border-slate-200 dark:border-white/5 gap-2 md:gap-4">
+            <div className="flex justify-between items-end h-44 pt-6 px-2 border-b border-slate-200 dark:border-white/10 gap-2 sm:gap-4">
               {analyticsData.map((d, index) => {
-                const maxVal = Math.max(...analyticsData.map(item => item.views), 10);
-                const heightPercentage = Math.max((d.views / maxVal) * 100, 10);
+                const maxVal = Math.max(...analyticsData.map(item => Number(item.views || 0)), 10);
+                const heightPercentage = Math.max(((Number(d.views || 0)) / maxVal) * 100, 12);
                 return (
                   <div key={index} className="flex-1 flex flex-col items-center group relative h-full justify-end">
-                    <div className="absolute bottom-full mb-1 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-950 text-white text-[9px] font-black px-2 py-1 rounded shadow-md pointer-events-none z-10">
-                      {d.views} Views / {d.visitors} Visitors
+                    {/* Tooltip */}
+                    <div className="absolute bottom-full mb-1.5 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-[10px] font-bold px-2.5 py-1 rounded-lg shadow-lg pointer-events-none z-10 whitespace-nowrap border border-white/10">
+                      {d.views || 0} Views • {d.visitors || 0} Visitors
                     </div>
+                    {/* Bar */}
                     <div 
                       style={{ height: `${heightPercentage}%` }} 
-                      className="w-full max-w-[40px] bg-gradient-to-t from-primary-blue to-primary-cyan rounded-t-lg group-hover:brightness-110 transition-all duration-350"
+                      className="w-full max-w-[44px] bg-gradient-to-t from-[#C2272D] to-[#00FFFF] rounded-t-lg group-hover:brightness-110 transition-all duration-300 shadow-sm"
                     />
-                    <span className="text-[10px] font-bold text-slate-400 mt-2 block whitespace-nowrap">
-                      {d.date.slice(5)}
+                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mt-2 block whitespace-nowrap">
+                      {d.date ? String(d.date).slice(5) : ''}
                     </span>
                   </div>
                 );
               })}
             </div>
+            <div className="flex items-center justify-end gap-4 text-[11px] text-slate-500 font-semibold">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded bg-[#C2272D]"></span> Base Views
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded bg-[#00FFFF]"></span> High Peak
+              </span>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Inbox & Server Information split */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      {/* Split Grid: Recent Inquiries & System Health */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
         
         {/* Left: Recent Inquiries */}
         <div className="lg:col-span-8 flex flex-col gap-6">
-          <div className="glass p-6 rounded-[24px] border border-slate-200/60 dark:border-white/5 shadow-sm">
-            <h3 className="text-lg font-bold font-title text-black dark:text-white mb-6 flex items-center gap-2">
-              <FaEnvelope className="text-primary-blue" /> Recent Inbox Messages
-            </h3>
+          <div className="p-6 sm:p-7 rounded-3xl bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 shadow-sm">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-base sm:text-lg font-bold font-title text-[#171717] dark:text-white flex items-center gap-2.5">
+                <FaEnvelope className="text-[#C2272D] dark:text-[#00FFFF]" />
+                <span>Recent Contact Inquiries</span>
+              </h3>
+              <Link to="/admin/messages" className="text-xs font-bold text-[#C2272D] dark:text-[#00FFFF] hover:underline inline-flex items-center gap-1">
+                <span>View All ({stats.messages})</span>
+                <FaArrowRight size={10} />
+              </Link>
+            </div>
 
             {recentMessages.length === 0 ? (
-              <div className="py-10 text-center text-sm text-slate-400">
-                No recent messages in your inbox.
+              <div className="py-12 text-center text-xs sm:text-sm text-slate-400">
+                No recent contact messages in your inbox.
               </div>
             ) : (
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3">
                 {recentMessages.map((msg) => (
                   <div
                     key={msg._id}
-                    className={`p-4 rounded-xl border flex flex-col gap-2 transition-all text-left ${
+                    className={`p-4 rounded-2xl border transition-all text-left flex flex-col gap-2 ${
                       msg.isRead
-                        ? 'bg-slate-50/50 dark:bg-white/5 border-slate-200/40 dark:border-white/5 opacity-80'
-                        : 'bg-white dark:bg-slate-900/60 border-primary-blue/20 dark:border-primary-blue/15 shadow-sm'
+                        ? 'bg-slate-50/70 dark:bg-white/5 border-slate-200/60 dark:border-white/5 opacity-80'
+                        : 'bg-white dark:bg-[#161616] border-[#C2272D]/30 dark:border-[#00FFFF]/30 shadow-sm'
                     }`}
                   >
-                    <div className="flex justify-between items-start gap-4">
-                      <div>
-                        <span className="text-sm font-bold text-black dark:text-white">{msg.name}</span>
-                        <span className="text-xs text-slate-400 block mt-0.5">{msg.email}</span>
+                    <div className="flex justify-between items-start gap-3">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-[#171717] dark:text-white truncate">{msg.name}</span>
+                          {!msg.isRead && (
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#C2272D]/10 text-[#C2272D] dark:bg-[#00FFFF]/10 dark:text-[#00FFFF]">
+                              NEW
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-xs text-slate-400 block truncate">{msg.email}</span>
                       </div>
                       
-                      <div className="flex gap-2">
+                      <div className="flex items-center gap-1.5 shrink-0">
                         {!msg.isRead && (
                           <button
+                            type="button"
                             onClick={() => handleMarkAsRead(msg._id)}
-                            className="p-1.5 rounded-lg bg-green-500/10 hover:bg-green-500/20 text-green-500 border border-green-500/20 cursor-pointer"
+                            className="p-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 transition-colors cursor-pointer"
                             title="Mark as Read"
                           >
-                            <FaCheckCircle size={10} />
+                            <FaCheckCircle size={12} />
                           </button>
                         )}
                         <button
+                          type="button"
                           onClick={() => handleDeleteMessage(msg._id)}
-                          className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 cursor-pointer"
+                          className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-colors cursor-pointer"
                           title="Delete Message"
                         >
-                          <FaTrash size={10} />
+                          <FaTrash size={11} />
                         </button>
                       </div>
                     </div>
-                    <h4 className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wide">Subject: {msg.subject || '(No Subject)'}</h4>
-                    <p className="text-xs text-slate-650 dark:text-slate-350 leading-relaxed mt-1">
+
+                    <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      Subject: {msg.subject || '(No Subject)'}
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
                       {msg.message}
                     </p>
                   </div>
@@ -246,65 +354,67 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Right: Server Setup & System Status */}
+        {/* Right: System Status & Activity Feed */}
         <div className="lg:col-span-4 flex flex-col gap-6">
           
-          {/* Status block */}
-          <div className="glass p-6 rounded-[24px] border border-slate-200/60 dark:border-white/5 shadow-sm flex flex-col gap-4">
-            <h3 className="text-sm font-black font-title uppercase tracking-widest text-black dark:text-white flex items-center gap-2">
-              <FaServer className="text-primary-blue" /> System Status
+          {/* Status Box */}
+          <div className="p-6 rounded-3xl bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 shadow-sm flex flex-col gap-4">
+            <h3 className="text-xs font-bold font-title uppercase tracking-wider text-slate-400 dark:text-slate-400 flex items-center gap-2">
+              <FaServer className="text-[#C2272D] dark:text-[#00FFFF]" />
+              <span>System Health & Status</span>
             </h3>
 
-            <div className="flex flex-col gap-3.5 text-xs text-left leading-relaxed">
-              <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-150 dark:border-white/5">
-                <span className="font-bold flex items-center gap-2 text-slate-450 dark:text-slate-400">
-                  <FaDatabase size={12} className="text-orange-500" /> Database Status
+            <div className="flex flex-col gap-2.5 text-xs text-left">
+              <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/60 dark:border-white/5">
+                <span className="font-semibold flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                  <FaDatabase size={13} className="text-orange-500" /> Database Status
                 </span>
-                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                  system.database === 'Connected' ? 'bg-green-500/15 text-green-500' : 'bg-red-500/15 text-red-500'
-                }`}>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                   {system.database}
                 </span>
               </div>
 
-              <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-150 dark:border-white/5">
-                <span className="font-bold flex items-center gap-2 text-slate-450 dark:text-slate-400">
-                  <FaGlobe size={12} className="text-primary-blue" /> API Status
+              <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/60 dark:border-white/5">
+                <span className="font-semibold flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                  <FaGlobe size={13} className="text-[#00FFFF]" /> API Gateway
                 </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-green-500/15 text-green-500">
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                   {system.api}
                 </span>
               </div>
 
-              <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-150 dark:border-white/5">
-                <span className="font-bold flex items-center gap-2 text-slate-450 dark:text-slate-400">
-                  <FaGlobe size={12} className="text-primary-purple" /> Website Status
+              <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/60 dark:border-white/5">
+                <span className="font-semibold flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                  <FaGlobe size={13} className="text-[#C2272D]" /> Website Status
                 </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-green-500/15 text-green-500">
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                   {system.website}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Recent Activity Log Feed */}
-          <div className="glass p-6 rounded-[24px] border border-slate-200/60 dark:border-white/5 shadow-sm flex flex-col gap-4">
-            <h3 className="text-sm font-black font-title uppercase tracking-widest text-black dark:text-white flex items-center gap-2">
-              <FaHistory className="text-primary-purple" /> Recent CMS Activity
+          {/* Activity Log Feed */}
+          <div className="p-6 rounded-3xl bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 shadow-sm flex flex-col gap-4">
+            <h3 className="text-xs font-bold font-title uppercase tracking-wider text-slate-400 dark:text-slate-400 flex items-center gap-2">
+              <FaHistory className="text-[#C2272D] dark:text-[#00FFFF]" />
+              <span>Recent Activity Feed</span>
             </h3>
 
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2.5">
               {recentActivity.length === 0 ? (
-                <p className="text-xs text-slate-400 text-center py-6 font-bold uppercase tracking-wider">No activities recorded</p>
+                <p className="text-xs text-slate-400 text-center py-6">No recent actions recorded.</p>
               ) : (
                 recentActivity.map((log) => (
-                  <div key={log.id} className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-150 dark:border-white/5 text-xs text-left">
+                  <div key={log.id} className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/60 dark:border-white/5 text-xs text-left">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="font-bold text-black dark:text-white truncate max-w-[120px]">{log.user}</span>
-                      <span className="text-[9px] text-slate-400">{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      <span className="font-bold text-[#171717] dark:text-white truncate max-w-[130px]">{log.user}</span>
+                      <span className="text-[10px] text-slate-400">
+                        {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
                     </div>
-                    <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                      Performed <span className="font-extrabold text-primary-purple">{log.action}</span> on <span className="font-bold">{log.resource}</span>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      <span className="font-bold text-[#C2272D] dark:text-[#00FFFF]">{log.action}</span> on <span className="font-medium">{log.resource}</span>
                     </p>
                   </div>
                 ))

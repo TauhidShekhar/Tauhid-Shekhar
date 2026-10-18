@@ -117,7 +117,11 @@ app.use(
           "https://tauhid-shekhar-portfolio.onrender.com",
           "wss://tauhid-shekhar-portfolio.onrender.com",
           "https://*.onrender.com",
-          "wss://*.onrender.com"
+          "wss://*.onrender.com",
+          "https://tauhidshekhar.com",
+          "https://www.tauhidshekhar.com",
+          "https://*.tauhidshekhar.com",
+          "wss://*.tauhidshekhar.com"
         ]
       }
     },
@@ -136,7 +140,11 @@ const allowedOrigins = [
   'https://tauhidshekhar.vercel.app',
   'https://tauhidshekhar-admin.vercel.app',
   'https://tauhid-shekhar-portfolio-f4xf.vercel.app',
-  'https://tauhidshekhar.app'
+  'https://tauhidshekhar.app',
+  'https://tauhidshekhar.com',
+  'https://www.tauhidshekhar.com',
+  'https://admin.tauhidshekhar.com',
+  'https://api.tauhidshekhar.com'
 ];
 
 if (process.env.CLIENT_URL) {
@@ -155,8 +163,13 @@ app.use(cors({
       return callback(null, true);
     }
 
-    // Allow all Vercel previews and subdomains
-    if (origin.endsWith('.vercel.app') || origin === 'https://tauhidshekhar.app') {
+    // Allow all Vercel previews and subdomains + custom domain and subdomains
+    if (
+      origin.endsWith('.vercel.app') || 
+      origin === 'https://tauhidshekhar.app' || 
+      origin === 'https://tauhidshekhar.com' || 
+      origin.endsWith('.tauhidshekhar.com')
+    ) {
       return callback(null, true);
     }
 

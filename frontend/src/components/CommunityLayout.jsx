@@ -589,7 +589,7 @@ const CommunityLayout = () => {
   const allNavItems = navSections.flatMap(s => s.items);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#000000] text-[#171717] dark:text-[#F1F1F5] flex flex-col font-sans transition-colors duration-200">
+    <div className="min-h-screen bg-white/80 dark:bg-transparent text-[#171717] dark:text-[#F1F1F5] flex flex-col font-sans transition-colors duration-200">
       
       {/* Top Navbar Header */}
       <header className="sticky top-0 z-[100] border-b border-[#E5E7EB] dark:border-white/10 bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md px-3 py-2.5 sm:px-6 sm:py-3 flex items-center justify-between shadow-sm transition-colors duration-200">

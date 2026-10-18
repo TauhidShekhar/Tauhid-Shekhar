@@ -24,36 +24,61 @@ const DynamicSEOHelper = () => {
 
   // Update headers on route changes
   useEffect(() => {
-    if (!seo) return;
-
     const path = location.pathname;
+    const baseSiteUrl = seo?.siteUrl || 'https://tauhidshekhar.com';
+    const siteName = seo?.siteName || 'Tauhid Shekhar';
     
     // Default meta fallback
-    let title = seo.metaTitle || 'Tauhid Shekhar | Portfolio';
-    let description = seo.metaDescription || '';
-    let keywords = seo.metaKeywords || '';
-    let canonical = `${seo.siteUrl || 'https://tauhidshekhar.vercel.app'}${path}`;
-    let ogTitle = seo.ogTitle || title;
-    let ogDescription = seo.ogDescription || description;
-    let ogImage = seo.ogImage?.url || '';
+    let title = seo?.metaTitle || 'Tauhid Shekhar | Full-Stack Software Engineer & MERN Developer';
+    let description = seo?.metaDescription || 'Official portfolio of Tauhid Shekhar, Full-Stack Web Developer & MERN Engineer specializing in React.js, Node.js, Express, MongoDB, REST APIs, and modern responsive interfaces.';
+    let keywords = seo?.metaKeywords || 'Tauhid Shekhar, Full Stack Developer, MERN Stack, React Developer, Node.js Engineer, Web Developer Portfolio, Delhi India';
+    let canonical = `${baseSiteUrl}${path === '/' ? '' : path}`;
+    let ogTitle = seo?.ogTitle || title;
+    let ogDescription = seo?.ogDescription || description;
+    let ogImage = seo?.ogImage?.url || `${baseSiteUrl}/assits/Profile_Pic.png`;
+    let robotsIndex = 'index, follow';
 
     // Route-specific metadata mapping
-    if (path.startsWith('/community')) {
-      title = `DevCommunity Platform | ${seo.siteName || 'Tauhid Shekhar'}`;
+    if (path.startsWith('/community/projects')) {
+      title = `Project Discussions & Showcases | DevCommunity - ${siteName}`;
+      description = 'Explore open-source project discussions, code feedback, and architectural reviews by fellow software engineers.';
+      keywords = 'Software Projects, React Showcases, Code Review, MERN discussions';
+    } else if (path.startsWith('/community/doubts')) {
+      title = `Doubts Lounge & Code Help | DevCommunity - ${siteName}`;
+      description = 'Ask technical programming questions, debug React and Node.js code snippets, and collaborate with developers.';
+    } else if (path.startsWith('/community/resources')) {
+      title = `Developer Resources & Curated Tools | ${siteName}`;
+      description = 'Free cheatsheets, developer templates, roadmaps, and MERN stack learning resources.';
+    } else if (path.startsWith('/community/jobs') || path.startsWith('/community/career-hub')) {
+      title = `Developer Careers & Job Board | ${siteName}`;
+      description = 'Discover tech job opportunities, freelance gigs, and hiring advice for junior and full-stack software engineers.';
+    } else if (path.startsWith('/community/leaderboard')) {
+      title = `Developer Leaderboard & Badges | DevCommunity - ${siteName}`;
+      description = 'Top contributing community developers, challenge solvers, and active coders in the TS Ecosystem.';
+    } else if (path.startsWith('/community')) {
+      title = `DevCommunity Platform & Code Hub | ${siteName}`;
       description = 'Join our active developer community, discuss MERN stack engineering, ask questions, and share code portfolios.';
       keywords = 'Developer Community, Code Forum, MERN discussions, coding platform';
     } else if (path.startsWith('/features')) {
-      title = `Features Checklist | ${seo.siteName || 'Tauhid Shekhar'}`;
-      description = 'Explore interactive command palettes, AI developer tools, dynamic location switchers, and real-time CMS sync features.';
-    } else if (path.startsWith('/legal') || path.startsWith('/terms') || path.startsWith('/privacy')) {
-      title = `Legal Policies | ${seo.siteName || 'Tauhid Shekhar'}`;
-      description = 'Privacy policies, service agreements, and terms of service guidelines.';
-    } else if (path.startsWith('/login') || path.startsWith('/register')) {
-      title = `Auth Portal | ${seo.siteName || 'Tauhid Shekhar'}`;
-      description = 'Sign in or register your profile to unlock custom portfolios, service orders, and tech forums.';
-    } else if (path.startsWith('/user/dashboard') || path.startsWith('/dashboard')) {
-      title = `User Workspace | ${seo.siteName || 'Tauhid Shekhar'}`;
-      description = 'Admin panel and user account overview dashboards.';
+      title = `Platform Features & Interactive Capabilities | ${siteName}`;
+      description = 'Explore interactive command palettes, AI ATS resume analyzer, real-time CMS sync, and responsive portfolio tools.';
+    } else if (path.startsWith('/legal')) {
+      title = `Legal Notice & Imprint | ${siteName}`;
+      description = 'Legal disclosures, platform ownership, and intellectual property statements for Tauhid Shekhar.';
+    } else if (path.startsWith('/terms')) {
+      title = `Terms of Service | ${siteName}`;
+      description = 'User terms, acceptable use policy, and guidelines for Tauhid Shekhar website and community platform.';
+    } else if (path.startsWith('/privacy')) {
+      title = `Privacy Policy & Data Protection | ${siteName}`;
+      description = 'Privacy commitment, cookie usage, and personal data management policies under GDPR/CCPA standards.';
+    } else if (path.startsWith('/login') || path.startsWith('/register') || path.startsWith('/forgot-password') || path.startsWith('/recover-account')) {
+      title = `Creator & Member Sign In | ${siteName}`;
+      description = 'Access developer account, personal saved projects, and administrative CMS modules.';
+      robotsIndex = 'noindex, nofollow';
+    } else if (path.startsWith('/user/dashboard') || path.startsWith('/dashboard') || path.startsWith('/admin')) {
+      title = `Control Dashboard | ${siteName}`;
+      description = 'Administrative platform overview and account settings.';
+      robotsIndex = 'noindex, nofollow';
     }
 
     // 1. Inject DOM Title
@@ -65,10 +90,13 @@ const DynamicSEOHelper = () => {
     // 3. Inject Meta keywords
     updateOrCreateMeta('keywords', keywords);
 
-    // 4. Inject Canonical link
+    // 4. Inject Robots meta (controls crawling of private vs public routes)
+    updateOrCreateMeta('robots', robotsIndex);
+
+    // 5. Inject Canonical link
     updateOrCreateLink('canonical', 'canonical', canonical);
 
-    // 5. OpenGraph Tags
+    // 6. OpenGraph Tags
     updateOrCreateMeta('og:title', ogTitle, 'property');
     updateOrCreateMeta('og:description', ogDescription, 'property');
     if (ogImage) {
@@ -76,17 +104,18 @@ const DynamicSEOHelper = () => {
     }
     updateOrCreateMeta('og:type', 'website', 'property');
     updateOrCreateMeta('og:url', canonical, 'property');
+    updateOrCreateMeta('og:site_name', siteName, 'property');
 
-    // 6. Twitter Card Tags
-    updateOrCreateMeta('twitter:card', seo.twitterCard || 'summary_large_image');
+    // 7. Twitter Card Tags
+    updateOrCreateMeta('twitter:card', seo?.twitterCard || 'summary_large_image');
     updateOrCreateMeta('twitter:title', ogTitle);
     updateOrCreateMeta('twitter:description', ogDescription);
     if (ogImage) {
       updateOrCreateMeta('twitter:image', ogImage);
     }
 
-    // 7. Inject JSON-LD Schema Settings
-    injectSchemaLD(seo, path, title, description, canonical);
+    // 8. Inject JSON-LD Schema Settings
+    injectSchemaLD(seo || {}, path, title, description, canonical);
 
   }, [location, seo]);
 
@@ -222,8 +251,9 @@ const DynamicSEOHelper = () => {
       '@context': 'https://schema.org',
       '@type': 'WebSite',
       'name': data.siteName || 'Tauhid Shekhar',
-      'url': data.siteUrl || 'https://tauhidshekhar.vercel.app',
-      'description': data.metaDescription
+      'url': data.siteUrl || 'https://tauhidshekhar.com',
+      'description': description,
+      'inLanguage': 'en-US'
     });
 
     // 2. Person / Professional profile schema
@@ -231,26 +261,34 @@ const DynamicSEOHelper = () => {
       '@context': 'https://schema.org',
       '@type': 'Person',
       'name': data.author || 'Tauhid Shekhar',
-      'url': data.siteUrl || 'https://tauhidshekhar.vercel.app',
+      'alternateName': 'TS',
+      'url': data.siteUrl || 'https://tauhidshekhar.com',
+      'image': `${data.siteUrl || 'https://tauhidshekhar.com'}/assits/Profile_Pic.png`,
       'sameAs': [
         'https://github.com/tauhidshekhar',
         'https://linkedin.com/in/tauhidshekhar'
       ],
-      'jobTitle': 'Full-Stack Software Engineer',
-      'worksFor': {
-        '@type': 'Organization',
-        'name': data.siteName || 'Tauhid Shekhar Portfolio'
+      'jobTitle': 'Full-Stack Software Engineer & MERN Developer',
+      'knowsAbout': [
+        'JavaScript', 'React.js', 'Node.js', 'Express.js', 'MongoDB', 
+        'RESTful APIs', 'Tailwind CSS', 'Next.js', 'Full-Stack Web Development', 
+        'UI/UX Design', 'Technical SEO', 'Web Performance'
+      ],
+      'alumniOf': {
+        '@type': 'EducationalOrganization',
+        'name': 'Indira Gandhi National Open University (IGNOU)'
       }
     });
 
     // 3. Breadcrumb list schema based on path
     const pathParts = path.split('/').filter(Boolean);
+    const domain = data.siteUrl || 'https://tauhidshekhar.com';
     if (pathParts.length > 0) {
       const itemListElement = [{
         '@type': 'ListItem',
         'position': 1,
         'name': 'Home',
-        'item': data.siteUrl || 'https://tauhidshekhar.vercel.app'
+        'item': domain
       }];
       
       let currentAcc = '';
@@ -259,8 +297,8 @@ const DynamicSEOHelper = () => {
         itemListElement.push({
           '@type': 'ListItem',
           'position': index + 2,
-          'name': part.charAt(0).toUpperCase() + part.slice(1),
-          'item': `${data.siteUrl || 'https://tauhidshekhar.vercel.app'}${currentAcc}`
+          'name': part.charAt(0).toUpperCase() + part.slice(1).replace(/-/g, ' '),
+          'item': `${domain}${currentAcc}`
         });
       });
 

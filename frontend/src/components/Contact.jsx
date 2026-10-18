@@ -178,7 +178,7 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
   ].filter(p => socialLinks[p.key]);
 
   return (
-    <section id="contact" className="scroll-mt-24 py-20 sm:py-24 lg:py-28 bg-[#F8FAFC] dark:bg-[#000000] relative">
+    <section id="contact" className="scroll-mt-24 py-20 sm:py-24 lg:py-28 bg-[#F8FAFC]/70 dark:bg-transparent relative">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12">
         
         {/* Section Header */}
@@ -212,7 +212,7 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
                     key={idx}
                     onClick={() => setSelectedLocationIdx(idx)}
                     type="button"
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer ${
+                    className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold font-title uppercase tracking-wider transition-all cursor-pointer ${
                       selectedLocationIdx === idx
                         ? 'bg-[#C2272D] text-white shadow-md'
                         : 'bg-transparent text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF]'
@@ -227,22 +227,26 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
             {contactDetails.map((detail, idx) => (
               <div
                 key={idx}
-                className="bg-white dark:bg-[#111111] p-4 sm:p-5 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm flex items-center gap-3.5 sm:gap-4 hover:border-[#C2272D] dark:hover:border-[#00FFFF] hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 text-left card-interactive group cursor-pointer"
+                className="bg-white dark:bg-[#111111] p-4.5 xs:p-5 sm:p-5.5 md:p-6 rounded-2xl sm:rounded-3xl border border-[#E5E7EB] dark:border-white/10 shadow-sm flex items-center gap-4 sm:gap-5 hover:border-[#C2272D] dark:hover:border-[#00FFFF] hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 text-left card-interactive group cursor-pointer"
               >
-                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-[#F8FAFC] dark:bg-[#1A1A1A] flex items-center justify-center shrink-0 border border-[#E5E7EB] dark:border-white/10 text-[#C2272D] dark:text-[#00FFFF] text-base sm:text-lg shadow-sm group-hover:scale-110 transition-transform duration-300">
+                <div className="w-12 h-12 xs:w-13 xs:h-13 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-[#F8FAFC] dark:bg-[#1A1A1A] flex items-center justify-center shrink-0 border border-[#E5E7EB] dark:border-white/10 text-[#C2272D] dark:text-[#00FFFF] text-lg sm:text-xl md:text-2xl shadow-xs group-hover:scale-110 transition-transform duration-300">
                   {detail.icon}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-[11px] sm:text-xs font-bold text-[#525252] dark:text-[#9CA3AF] uppercase tracking-wider block mb-0.5">{detail.title}</h3>
+                  <span className="text-xs sm:text-[13px] md:text-sm font-bold font-title text-[#525252] dark:text-[#9CA3AF] uppercase tracking-wider block mb-1">
+                    {detail.title}
+                  </span>
                   {detail.href ? (
                     <a 
                       href={detail.href} 
-                      className="text-sm sm:text-[15px] font-semibold text-[#171717] dark:text-white hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors [overflow-wrap:anywhere] block"
+                      className="text-[15px] xs:text-base sm:text-[17px] md:text-[18px] font-semibold text-[#171717] dark:text-white hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors [overflow-wrap:anywhere] block leading-snug"
                     >
                       {detail.value}
                     </a>
                   ) : (
-                    <span className="text-sm sm:text-[15px] font-semibold text-[#171717] dark:text-white block [overflow-wrap:anywhere]">{detail.value}</span>
+                    <span className="text-[15px] xs:text-base sm:text-[17px] md:text-[18px] font-semibold text-[#171717] dark:text-white block [overflow-wrap:anywhere] leading-snug">
+                      {detail.value}
+                    </span>
                   )}
                 </div>
               </div>
@@ -250,16 +254,18 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
 
             {/* Social Links Block */}
             {socialPlatforms.length > 0 && (
-              <div className="bg-white dark:bg-[#111111] p-4 sm:p-5 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm text-left flex flex-col gap-3">
-                <h3 className="text-[11px] sm:text-xs font-bold text-[#525252] dark:text-[#9CA3AF] uppercase tracking-wider">Social Channels</h3>
-                <div className="flex flex-wrap gap-2.5 sm:gap-3">
+              <div className="bg-white dark:bg-[#111111] p-4.5 xs:p-5 sm:p-5.5 md:p-6 rounded-2xl sm:rounded-3xl border border-[#E5E7EB] dark:border-white/10 shadow-sm text-left flex flex-col gap-3.5 sm:gap-4">
+                <span className="text-xs sm:text-[13px] md:text-sm font-bold font-title text-[#525252] dark:text-[#9CA3AF] uppercase tracking-wider block">
+                  Social Channels
+                </span>
+                <div className="flex flex-wrap gap-2.5 sm:gap-3.5">
                   {socialPlatforms.map((platform, pIdx) => (
                     <a
                       key={pIdx}
                       href={formatExternalLink(socialLinks[platform.key])}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#F8FAFC] dark:bg-[#1A1A1A] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] transition-all duration-200 hover:text-white hover:scale-110 active:scale-95 ${platform.color} shadow-sm`}
+                      className={`w-11 h-11 xs:w-12 xs:h-12 sm:w-13 sm:h-13 rounded-xl sm:rounded-2xl bg-[#F8FAFC] dark:bg-[#1A1A1A] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525252] dark:text-[#D1D5DB] transition-all duration-200 hover:text-white hover:scale-110 active:scale-95 ${platform.color} shadow-xs text-lg sm:text-xl`}
                       aria-label={`Connect on ${platform.key}`}
                     >
                       {platform.icon}

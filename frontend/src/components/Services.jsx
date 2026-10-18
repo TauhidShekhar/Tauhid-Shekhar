@@ -54,24 +54,6 @@ const Services = ({ servicesData }) => {
     }
   };
 
-  if (servicesData === null) {
-    return (
-      <section id="services" className="py-24 bg-white dark:bg-[#000000] relative animate-pulse">
-        <div className="max-w-[1140px] mx-auto px-6 md:px-12">
-          <div className="text-center mb-16">
-            <div className="h-4 w-24 bg-purple-500/20 rounded mx-auto mb-2" />
-            <div className="h-10 w-48 bg-slate-200 dark:bg-white/10 rounded mx-auto" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map(n => (
-              <div key={n} className="h-48 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-white/5 p-6 flex flex-col gap-3" />
-            ))}
-          </div>
-        </div>
-      </section>
-    );
-  }
-
   useEffect(() => {
     if (servicesData && servicesData.length > 0) {
       setServices(servicesData);
@@ -97,6 +79,24 @@ const Services = ({ servicesData }) => {
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState('');
+
+  if (servicesData === null) {
+    return (
+      <section id="services" className="py-24 bg-white/70 dark:bg-transparent relative animate-pulse">
+        <div className="max-w-[1140px] mx-auto px-6 md:px-12">
+          <div className="text-center mb-16">
+            <div className="h-4 w-24 bg-purple-500/20 rounded mx-auto mb-2" />
+            <div className="h-10 w-48 bg-slate-200 dark:bg-white/10 rounded mx-auto" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map(n => (
+              <div key={n} className="h-48 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-white/5 p-6 flex flex-col gap-3" />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   const openOrderModal = (serviceTitle) => {
     // Map service title to enum options correctly
@@ -202,8 +202,8 @@ const Services = ({ servicesData }) => {
   };
 
   return (
-    <section id="services" className="py-24 bg-white dark:bg-[#000000] relative">
-      <div className="max-w-[1280px] mx-auto px-6 md:px-12">
+    <section id="services" className="py-24 bg-white/70 dark:bg-transparent relative">
+      <div className="max-w-[1280px] mx-auto px-4 xs:px-6 sm:px-8 lg:px-12">
         
         {/* Section Header */}
         <div className="text-center mb-14 sm:mb-16">
@@ -227,7 +227,7 @@ const Services = ({ servicesData }) => {
             <motion.div
               key={idx}
               variants={cardVariants}
-              className="bg-[#F8FAFC] dark:bg-[#111111] p-6 sm:p-7 rounded-3xl border border-[#E5E7EB] dark:border-white/10 shadow-sm hover:scale-[1.01] hover:shadow-2xl hover:border-[#C2272D] dark:hover:border-[#00FFFF] transition-all duration-300 flex flex-col justify-between"
+              className="bg-[#F8FAFC] dark:bg-[#111111] p-5 sm:p-7 rounded-3xl border border-[#E5E7EB] dark:border-white/10 shadow-sm hover:scale-[1.01] hover:shadow-2xl hover:border-[#C2272D] dark:hover:border-[#00FFFF] transition-all duration-300 flex flex-col justify-between"
             >
               <div>
                  {/* Header */}
@@ -263,16 +263,16 @@ const Services = ({ servicesData }) => {
               </div>
 
               {/* Actions */}
-              <div className="flex gap-3.5 border-t border-[#E5E7EB] dark:border-white/10 pt-5">
+              <div className="flex flex-col xs:flex-row gap-2.5 sm:gap-3.5 border-t border-[#E5E7EB] dark:border-white/10 pt-4 sm:pt-5">
                 <button
                   onClick={() => openOrderModal(service.title)}
-                  className="flex-1 py-2.5 sm:py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-xl text-center text-[15px] font-semibold shadow-md shadow-[#C2272D]/20 transition-all cursor-pointer"
+                  className="w-full xs:flex-1 py-2.5 sm:py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-xl text-center text-[15px] font-semibold shadow-md shadow-[#C2272D]/20 transition-all cursor-pointer"
                 >
                   Order Service
                 </button>
                 <a
                   href="#contact"
-                  className="flex-1 py-2.5 sm:py-3 bg-white dark:bg-[#1A1A1A] hover:bg-slate-100 dark:hover:bg-white/10 text-[#171717] dark:text-white rounded-xl text-center text-[15px] font-semibold border border-[#E5E7EB] dark:border-white/10 transition-all"
+                  className="w-full xs:flex-1 py-2.5 sm:py-3 bg-white dark:bg-[#1A1A1A] hover:bg-slate-100 dark:hover:bg-white/10 text-[#171717] dark:text-white rounded-xl text-center text-[15px] font-semibold border border-[#E5E7EB] dark:border-white/10 transition-all"
                 >
                   Inquire Info
                 </a>
@@ -285,7 +285,7 @@ const Services = ({ servicesData }) => {
       {/* Transactional Service Order Modal */}
       <AnimatePresence>
         {isModalOpen && (
-          <div className="fixed inset-0 z-55 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-55 flex items-center justify-center p-3 xs:p-4">
             {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -301,7 +301,7 @@ const Services = ({ servicesData }) => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-              className="relative w-full max-w-lg glass p-6 md:p-8 rounded-[28px] border border-slate-200/80 dark:border-white/10 shadow-2xl z-10 text-left bg-white dark:bg-slate-950"
+              className="relative w-full max-w-lg glass p-4 xs:p-6 md:p-8 rounded-[24px] sm:rounded-[28px] border border-slate-200/80 dark:border-white/10 shadow-2xl z-10 text-left bg-white dark:bg-slate-950 max-h-[90vh] overflow-y-auto"
             >
               {/* Close Button */}
               <button

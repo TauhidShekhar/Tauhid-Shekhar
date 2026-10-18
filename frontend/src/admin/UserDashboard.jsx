@@ -256,7 +256,7 @@ const UserDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-800 dark:text-slate-100 flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-slate-50/70 dark:bg-transparent text-slate-800 dark:text-slate-100 flex flex-col lg:flex-row">
       
       {/* User Dashboard Sidebar */}
       <aside className="w-full lg:w-64 bg-white dark:bg-slate-900 border-r border-slate-200/60 dark:border-white/5 p-6 flex flex-col justify-between shrink-0">

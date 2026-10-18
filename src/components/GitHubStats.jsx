@@ -40,8 +40,8 @@ const GitHubStats = () => {
   ];
 
   return (
-    <section id="github" className="py-24 bg-white dark:bg-[#000000] relative text-left">
-      <div className="max-w-[1280px] mx-auto px-6 md:px-12">
+    <section id="github" className="py-24 bg-white/70 dark:bg-transparent relative text-left">
+      <div className="max-w-[1280px] mx-auto px-4 xs:px-6 sm:px-8 lg:px-12">
         
         {/* Section Header */}
         <div className="text-center mb-14 sm:mb-16">
@@ -67,7 +67,7 @@ const GitHubStats = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
             {/* Top Languages Card */}
-            <div className="bg-[#F8FAFC] dark:bg-[#111111] p-6 md:p-8 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm flex flex-col items-center min-h-[220px] justify-between">
+            <div className="bg-[#F8FAFC] dark:bg-[#111111] p-4 xs:p-6 md:p-8 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm flex flex-col items-center min-h-[220px] justify-between">
               <h3 className="text-xl font-bold font-title text-[#171717] dark:text-white mb-4 w-full text-left flex items-center gap-2">
                 <FaCode size={18} className="text-[#00FFFF]" /> Top Languages
               </h3>
@@ -101,7 +101,7 @@ const GitHubStats = () => {
             </div>
 
             {/* Streak Counter Card */}
-            <div className="bg-[#F8FAFC] dark:bg-[#111111] p-6 md:p-8 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm flex flex-col items-center min-h-[220px] justify-between">
+            <div className="bg-[#F8FAFC] dark:bg-[#111111] p-4 xs:p-6 md:p-8 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm flex flex-col items-center min-h-[220px] justify-between">
               <h3 className="text-xl font-bold font-title text-[#171717] dark:text-white mb-4 w-full text-left flex items-center gap-2">
                 <FaHistory size={18} className="text-[#C2272D] dark:text-[#00FFFF]" /> GitHub Streak
               </h3>
@@ -131,7 +131,7 @@ const GitHubStats = () => {
             </div>
 
             {/* General Profile Stats Card */}
-            <div className="bg-[#F8FAFC] dark:bg-[#111111] p-6 md:p-8 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm flex flex-col items-center lg:col-span-2 min-h-[220px] justify-between">
+            <div className="bg-[#F8FAFC] dark:bg-[#111111] p-4 xs:p-6 md:p-8 rounded-2xl border border-[#E5E7EB] dark:border-white/10 shadow-sm flex flex-col items-center lg:col-span-2 min-h-[220px] justify-between">
               <h3 className="text-xl font-bold font-title text-[#171717] dark:text-white mb-4 w-full text-left flex items-center gap-2">
                 <FaGithub size={20} className="text-[#C2272D] dark:text-[#00FFFF]" /> Profile Overview
               </h3>

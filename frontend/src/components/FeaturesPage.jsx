@@ -173,7 +173,7 @@ const FeaturesPage = () => {
   };
 
   return (
-    <section className="min-h-screen bg-[#F8FAFC] dark:bg-[#09090c] text-[#171717] dark:text-white pt-24 pb-20 px-6 sm:px-12 relative overflow-hidden text-left transition-colors duration-300">
+    <section className="min-h-screen bg-[#F8FAFC]/70 dark:bg-transparent text-[#171717] dark:text-white pt-24 pb-20 px-6 sm:px-12 relative overflow-hidden text-left transition-colors duration-300">
       {/* Background radial effects */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-1/4 left-1/4 w-[300px] h-[300px] bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none" />

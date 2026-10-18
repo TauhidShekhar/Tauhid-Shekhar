@@ -124,6 +124,7 @@ const VerifyEmail = lazy(() => import('./admin/VerifyEmail.jsx'));
 const RecoverAccount = lazy(() => import('./admin/RecoverAccount.jsx'));
 
 import DynamicSEOHelper from './components/DynamicSEOHelper.jsx';
+import MeteorBackground from './components/MeteorBackground.jsx';
 
 import { LoadingProvider } from './contexts/LoadingContext.jsx';
 import GlobalLoader from './components/ui/GlobalLoader.jsx';
@@ -136,6 +137,7 @@ createRoot(document.getElementById('root')).render(
           <BrowserRouter>
           <DynamicSEOHelper />
           <FeatureDiscoveryTour />
+          <MeteorBackground />
           <Suspense fallback={<LoadingScreen />}>
             <Routes>
             {/* Main Website Route */}

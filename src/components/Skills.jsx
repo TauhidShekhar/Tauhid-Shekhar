@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { api } from '../services/api';
-import { 
-  SiCplusplus, SiPython, SiJavascript, SiHtml5, SiReact, SiBootstrap, 
-  SiNodedotjs, SiExpress, SiMongodb, SiMysql, SiGit, SiGithub, 
-  SiPostman, SiNetlify, SiVercel, SiJsonwebtokens
-} from 'react-icons/si';
-import { FaCode, FaLaptopCode, FaServer, FaDatabase, FaTools, FaLightbulb, FaCss3Alt } from 'react-icons/fa';
+import { FaCode, FaLaptopCode, FaServer, FaDatabase, FaTools, FaLightbulb } from 'react-icons/fa';
 const getAutoLogoUrl = (skillName) => {
   const name = skillName.toLowerCase().trim();
   const mapping = {
@@ -173,24 +167,6 @@ const Skills = ({ skillsData }) => {
     return (skillsData && skillsData.length > 0) ? skillsData : defaultSkills;
   });
 
-  if (skillsData === null) {
-    return (
-      <section id="skills" className="py-24 bg-white dark:bg-[#000000] relative">
-        <div className="max-w-[960px] mx-auto px-6 md:px-12">
-          <div className="text-center mb-16 animate-pulse">
-            <div className="h-4 w-24 bg-purple-500/20 rounded mx-auto mb-2" />
-            <div className="h-10 w-48 bg-slate-200 dark:bg-white/10 rounded mx-auto" />
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
-              <div key={n} className="h-20 bg-white dark:bg-slate-900 rounded-2xl border border-slate-250/50 dark:border-white/5 animate-pulse" />
-            ))}
-          </div>
-        </div>
-      </section>
-    );
-  }
-
   useEffect(() => {
     if (skillsData && skillsData.length > 0) {
       setSkillItems(skillsData);
@@ -198,6 +174,24 @@ const Skills = ({ skillsData }) => {
       setSkillItems(defaultSkills);
     }
   }, [skillsData]);
+
+  if (skillsData === null) {
+    return (
+      <section id="skills" className="py-24 sm:py-28 bg-white/70 dark:bg-transparent relative">
+        <div className="max-w-[1400px] mx-auto px-4 xs:px-6 sm:px-8 lg:px-12">
+          <div className="text-center mb-14 sm:mb-16 animate-pulse">
+            <div className="h-6 w-36 bg-[#C2272D]/10 dark:bg-[#00FFFF]/10 rounded-full mx-auto mb-3" />
+            <div className="h-10 w-64 bg-slate-200 dark:bg-white/10 rounded-xl mx-auto" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
+            {[1, 2, 3, 4, 5, 6].map(n => (
+              <div key={n} className="h-20 bg-[#F8FAFC] dark:bg-[#111111] rounded-2xl border border-[#E5E7EB] dark:border-white/10 animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   const getSkillCategories = (skill) => {
     if (skill.categories && Array.isArray(skill.categories) && skill.categories.length > 0) {
@@ -222,46 +216,46 @@ const Skills = ({ skillsData }) => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.05,
+        staggerChildren: 0.04,
       },
     },
   };
 
   const cardVariants = {
-    hidden: { y: 20, opacity: 0 },
+    hidden: { y: 16, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
-      transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
+      transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
     },
   };
 
   return (
-    <section id="skills" className="py-24 sm:py-28 bg-white dark:bg-[#000000] relative">
-      <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12">
+    <section id="skills" className="py-24 sm:py-28 bg-white/70 dark:bg-transparent relative">
+      <div className="max-w-[1400px] mx-auto px-4 xs:px-6 sm:px-8 lg:px-12">
         
         {/* Section Header */}
-        <div className="text-center mb-14 sm:mb-16">
+        <div className="text-center mb-12 sm:mb-14">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#C2272D]/10 dark:bg-[#00FFFF]/10 border border-[#C2272D]/20 dark:border-[#00FFFF]/30 text-[#C2272D] dark:text-[#00FFFF] text-xs sm:text-sm font-semibold tracking-wider uppercase mb-3">
             <span>Core Competencies</span>
           </div>
-          <h2 className="text-2xl md:text-[32px] font-bold font-title tracking-tight text-[#171717] dark:text-white">
+          <h2 className="text-2xl sm:text-3xl md:text-[34px] font-bold font-title tracking-tight text-[#171717] dark:text-white">
             Technical Skills & Tooling
           </h2>
         </div>
 
         {/* Category Filters */}
-        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 mb-12" role="tablist" aria-label="Skill Categories">
+        <div className="flex flex-wrap items-center justify-center gap-1.5 xs:gap-2 sm:gap-2.5 mb-10 sm:mb-12" role="tablist" aria-label="Skill Categories">
           {categories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setActiveFilter(cat.id)}
               role="tab"
               aria-selected={activeFilter.toLowerCase() === cat.id.toLowerCase()}
-              className={`flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-[14px] font-medium tracking-wider uppercase border transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer ${
+              className={`flex items-center gap-1.5 xs:gap-2 px-3 xs:px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-[14px] font-medium tracking-wider uppercase border transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer ${
                 activeFilter.toLowerCase() === cat.id.toLowerCase()
                   ? 'bg-[#C2272D] border-[#C2272D] text-white shadow-md shadow-[#C2272D]/20 -translate-y-0.5'
-                  : 'bg-[#F8FAFC] dark:bg-[#111111] border-[#E5E7EB] dark:border-white/10 text-[#525252] dark:text-[#D1D5DB] hover:border-[#C2272D] dark:hover:border-[#00FFFF]'
+                  : 'bg-[#F8FAFC] dark:bg-[#111111] border-[#E5E7EB] dark:border-white/10 text-[#525252] dark:text-[#D1D5DB] hover:border-[#C2272D] dark:hover:border-[#00FFFF] hover:text-[#C2272D] dark:hover:text-[#00FFFF]'
               }`}
             >
               {cat.icon}
@@ -276,7 +270,7 @@ const Skills = ({ skillsData }) => {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-50px' }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6"
         >
           <AnimatePresence mode="popLayout">
             {filteredSkills.map((skill) => {
@@ -290,63 +284,56 @@ const Skills = ({ skillsData }) => {
                   initial="hidden"
                   animate="visible"
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className="bg-[#F8FAFC] dark:bg-[#111111] p-5 sm:p-6 rounded-2xl flex flex-col justify-between shadow-sm border border-[#E5E7EB] dark:border-white/10 hover:border-[#C2272D] dark:hover:border-[#00FFFF] hover:-translate-y-1.5 hover:shadow-lg hover:shadow-[#C2272D]/10 dark:hover:shadow-[#00FFFF]/10 transition-all duration-300 relative group overflow-hidden card-interactive"
+                  className="bg-[#F8FAFC] dark:bg-[#111111] p-4 sm:p-5 rounded-2xl flex items-center justify-between shadow-xs border border-[#E5E7EB] dark:border-white/10 hover:border-[#C2272D] dark:hover:border-[#00FFFF] hover:-translate-y-1 hover:shadow-lg hover:shadow-[#C2272D]/10 dark:hover:shadow-[#00FFFF]/10 transition-all duration-300 relative group overflow-hidden"
                   title={`${skill.name} - ${cats.join(', ')}`}
                 >
                   {/* Left Accent indicator */}
-                  <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-[#C2272D] to-[#00FFFF] opacity-90 group-hover:w-2 transition-all duration-300" />
+                  <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-[#C2272D] to-[#00FFFF] opacity-80 group-hover:w-2 transition-all duration-300" />
 
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3.5">
-                      <div className="relative w-12 h-12 flex items-center justify-center shrink-0 bg-white dark:bg-[#1A1A1A] rounded-xl overflow-hidden border border-[#E5E7EB] dark:border-white/10 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-                        {logoSrc && (
-                          <img 
-                            src={logoSrc} 
-                            alt="" 
-                            className="w-8 h-8 object-contain select-none absolute z-10" 
-                            loading="lazy"
-                            onError={(e) => {
-                              const primaryCat = skill.primaryCategory || cats[0] || 'Frontend';
-                              const fallbackLogo = CATEGORY_LOGOS[primaryCat] || CATEGORY_LOGOS['Frontend'];
-                              if (skill.useCategoryFallback !== false && e.target.src !== fallbackLogo) {
-                                e.target.src = fallbackLogo;
-                              } else {
-                                e.target.style.display = 'none';
-                              }
-                            }}
-                          />
-                        )}
-                        <div className="w-12 h-12 rounded-xl bg-[#C2272D]/10 text-[#C2272D] dark:text-[#00FFFF] flex items-center justify-center font-bold text-sm select-none">
-                          {skill.name.charAt(0).toUpperCase()}
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-1 items-start text-left">
-                        <h3 className="text-base sm:text-[18px] font-semibold text-[#171717] dark:text-white font-title leading-tight">
-                          {skill.name}
-                        </h3>
-                        <div className="flex flex-wrap gap-1 mt-0.5">
-                          {cats.map((cat) => (
-                            <span key={cat} className="px-2 py-0.5 rounded text-[10px] font-medium uppercase tracking-wider bg-white dark:bg-white/5 text-[#525252] dark:text-[#9CA3AF] border border-[#E5E7EB] dark:border-white/5">
-                              {cat}
-                            </span>
-                          ))}
-                        </div>
+                  <div className="flex items-center gap-3.5 sm:gap-4 min-w-0 flex-1">
+                    <div className="relative w-12 h-12 flex items-center justify-center shrink-0 bg-white dark:bg-[#1A1A1A] rounded-xl overflow-hidden border border-[#E5E7EB] dark:border-white/10 group-hover:scale-110 group-hover:rotate-2 transition-transform duration-300 shadow-xs">
+                      {logoSrc && (
+                        <img 
+                          src={logoSrc} 
+                          alt="" 
+                          className="w-7 h-7 sm:w-8 sm:h-8 object-contain select-none absolute z-10" 
+                          loading="lazy"
+                          onError={(e) => {
+                            const primaryCat = skill.primaryCategory || cats[0] || 'Frontend';
+                            const fallbackLogo = CATEGORY_LOGOS[primaryCat] || CATEGORY_LOGOS['Frontend'];
+                            if (skill.useCategoryFallback !== false && e.target.src !== fallbackLogo) {
+                              e.target.src = fallbackLogo;
+                            } else {
+                              e.target.style.display = 'none';
+                            }
+                          }}
+                        />
+                      )}
+                      <div className="w-full h-full rounded-xl bg-[#C2272D]/10 text-[#C2272D] dark:text-[#00FFFF] flex items-center justify-center font-bold text-sm select-none">
+                        {skill.name.charAt(0).toUpperCase()}
                       </div>
                     </div>
-                    <span className="text-sm font-semibold text-[#C2272D] dark:text-[#00FFFF]">
-                      {skill.percentage}%
-                    </span>
+
+                    <div className="flex flex-col gap-1 min-w-0 flex-1 text-left">
+                      <h3 className="text-[15px] sm:text-[16px] lg:text-[17px] font-semibold text-[#171717] dark:text-white font-title leading-snug truncate group-hover:text-[#C2272D] dark:group-hover:text-[#00FFFF] transition-colors duration-200">
+                        {skill.name}
+                      </h3>
+                      <div className="flex flex-wrap gap-1.5 items-center">
+                        {cats.map((cat) => (
+                          <span 
+                            key={cat} 
+                            className="inline-flex items-center px-2 py-0.5 rounded text-[10px] sm:text-[11px] font-medium tracking-wide uppercase bg-white dark:bg-[#1A1A1A] text-[#525252] dark:text-[#D1D5DB] border border-[#E5E7EB] dark:border-white/10"
+                          >
+                            {cat}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Progress Bar */}
-                  <div className="h-2.5 w-full bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      whileInView={{ width: `${skill.percentage}%` }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-                      className="h-full bg-gradient-to-r from-[#C2272D] to-[#00FFFF] rounded-full"
-                    />
+                  {/* Right subtle indicator */}
+                  <div className="shrink-0 ml-3 w-7 h-7 rounded-lg bg-black/[0.03] dark:bg-white/[0.04] flex items-center justify-center text-[#525252] dark:text-[#9CA3AF] group-hover:text-[#C2272D] dark:group-hover:text-[#00FFFF] group-hover:bg-[#C2272D]/10 dark:group-hover:bg-[#00FFFF]/10 transition-all duration-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#525252]/40 dark:bg-[#9CA3AF]/40 group-hover:bg-[#C2272D] dark:group-hover:bg-[#00FFFF] transition-colors duration-200" />
                   </div>
                 </motion.div>
               );

@@ -199,9 +199,11 @@ const Resume = ({ resumeData, settingsData }) => {
   };
 
   const handleViewResume = (e) => {
-    if (e) e.preventDefault();
     const linkToOpen = resumePdfUrl || '/assits/Resume-file.pdf';
-    window.open(linkToOpen, '_blank', 'noopener,noreferrer');
+    if (!linkToOpen) {
+      if (e) e.preventDefault();
+      return;
+    }
   };
 
   const getScoreColor = (score) => {
@@ -224,8 +226,8 @@ const Resume = ({ resumeData, settingsData }) => {
   ];
 
   return (
-    <section id="resume" className="py-24 bg-[#F8FAFC] dark:bg-[#000000] relative text-left">
-      <div className="max-w-[1280px] mx-auto px-6 md:px-12">
+    <section id="resume" className="py-24 bg-[#F8FAFC]/70 dark:bg-transparent relative text-left">
+      <div className="max-w-[1280px] mx-auto px-4 xs:px-6 sm:px-8 lg:px-12">
         
         {/* Section Header */}
         <div className="text-center mb-14 sm:mb-16">
@@ -298,11 +300,13 @@ const Resume = ({ resumeData, settingsData }) => {
               </div>
 
               <div className="flex flex-col gap-2.5">
-                <div className="flex flex-wrap gap-2.5">
+                <div className="flex flex-col xs:flex-row flex-wrap gap-2.5">
                   <a
                     href={resumePdfUrl || '/assits/Resume-file.pdf'}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     onClick={handleViewResume}
-                    className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full font-semibold text-[14px] sm:text-[15px] shadow-md shadow-[#C2272D]/20 transition-all active:scale-[0.98] cursor-pointer btn-shine-effect text-center"
+                    className="w-full xs:flex-1 min-w-0 xs:min-w-[140px] flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-full font-semibold text-[14px] sm:text-[15px] shadow-md shadow-[#C2272D]/20 transition-all active:scale-[0.98] cursor-pointer btn-shine-effect text-center"
                   >
                     <FaEye /> View Resume PDF
                   </a>
@@ -310,7 +314,7 @@ const Resume = ({ resumeData, settingsData }) => {
                     href={resumePdfUrl || '/assits/Resume-file.pdf'}
                     download="Tauhid_Shekhar_Resume.pdf"
                     onClick={handleDownloadResume}
-                    className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 bg-[#F8FAFC] dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-[#171717] dark:text-white rounded-full font-semibold text-[14px] sm:text-[15px] border border-[#E5E7EB] dark:border-white/10 transition-all cursor-pointer text-center"
+                    className="w-full xs:flex-1 min-w-0 xs:min-w-[140px] flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 bg-[#F8FAFC] dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-[#171717] dark:text-white rounded-full font-semibold text-[14px] sm:text-[15px] border border-[#E5E7EB] dark:border-white/10 transition-all cursor-pointer text-center"
                   >
                     <FaDownload /> Download CV
                   </a>
@@ -515,13 +519,13 @@ const Resume = ({ resumeData, settingsData }) => {
               className="relative bg-white dark:bg-[#121217] rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden shadow-2xl border border-slate-200 dark:border-white/10"
             >
               {/* Modal Header */}
-              <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#181822]">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-4 sm:px-5 py-3 sm:py-3.5 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#181822]">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-[#C2272D]/10 text-[#C2272D] flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-[#C2272D]/10 text-[#C2272D] flex items-center justify-center shrink-0">
                     <FaFilePdf size={18} />
                   </div>
                   <div>
-                    <h3 className="text-sm sm:text-base font-bold text-[#171717] dark:text-white">
+                    <h3 className="text-sm sm:text-base font-bold text-[#171717] dark:text-white leading-tight">
                       Tauhid Shekhar — Full-Stack MERN Developer Resume
                     </h3>
                     <p className="text-[11px] text-[#525252] dark:text-gray-400">
@@ -529,7 +533,7 @@ const Resume = ({ resumeData, settingsData }) => {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
                   <a
                     href={resumePdfUrl || '/assits/Resume-file.pdf'}
                     onClick={handleDownloadResume}
@@ -539,6 +543,8 @@ const Resume = ({ resumeData, settingsData }) => {
                   </a>
                   <a
                     href={resumePdfUrl || '/assits/Resume-file.pdf'}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     onClick={handleViewResume}
                     className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 text-[#171717] dark:text-white text-xs font-semibold transition-colors cursor-pointer"
                   >
@@ -546,7 +552,7 @@ const Resume = ({ resumeData, settingsData }) => {
                   </a>
                   <button
                     onClick={() => setShowFullPreview(false)}
-                    className="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 dark:text-slate-300 transition-colors ml-1"
+                    className="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 dark:text-slate-300 transition-colors ml-1 cursor-pointer"
                     aria-label="Close modal"
                   >
                     <FaTimes size={18} />

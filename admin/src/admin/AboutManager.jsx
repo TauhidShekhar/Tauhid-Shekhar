@@ -3,7 +3,7 @@ import { api } from '../services/api';
 import { 
   FaSave, FaCloudUploadAlt, FaTrash, FaPlus, FaTimes, FaUndo,
   FaUser, FaCheckCircle, FaLanguage, FaGripVertical, FaBan, FaInfoCircle, FaEnvelope, FaPhone, FaMapMarkerAlt,
-  FaLink, FaImage
+  FaLink, FaImage, FaBriefcase, FaBuilding, FaCalendarAlt, FaExternalLinkAlt
 } from 'react-icons/fa';
 import ImageCropperModal from '../components/ui/ImageCropperModal';
 
@@ -55,6 +55,16 @@ const AboutManager = () => {
     contactPhone: '',
     contactAddress: '',
     personalInfoAddress: '',
+
+    // Current Employment / Workplace Details
+    currentWorkIsEmployed: true,
+    currentWorkCompanyName: '',
+    currentWorkRole: '',
+    currentWorkJoiningDate: '',
+    currentWorkEmploymentType: 'Full-time',
+    currentWorkLocation: '',
+    currentWorkDetails: '',
+    currentWorkCompanyUrl: '',
 
     // Add inputs
     newStrengthTitle: '',
@@ -108,6 +118,15 @@ const AboutManager = () => {
           contactAddress: d.aboutContactInfo?.address || d.address || '',
           personalInfoAddress: (d.aboutPersonalInfo?.find(item => item.label.toLowerCase() === 'address')?.value) || 
                                (d.aboutPersonalInfo?.length ? '' : 'Bettiah, Bihar, India'),
+
+          currentWorkIsEmployed: d.currentWork?.isEmployed !== undefined ? d.currentWork.isEmployed : Boolean(d.currentWork?.companyName),
+          currentWorkCompanyName: d.currentWork?.companyName || '',
+          currentWorkRole: d.currentWork?.role || '',
+          currentWorkJoiningDate: d.currentWork?.joiningDate || '',
+          currentWorkEmploymentType: d.currentWork?.employmentType || 'Full-time',
+          currentWorkLocation: d.currentWork?.location || '',
+          currentWorkDetails: d.currentWork?.details || '',
+          currentWorkCompanyUrl: d.currentWork?.companyUrl || '',
 
           newStrengthTitle: '',
           newStrengthDesc: '',
@@ -321,6 +340,16 @@ const AboutManager = () => {
         email: formData.contactEmail,
         phone: formData.contactPhone,
         address: formData.contactAddress
+      },
+      currentWork: {
+        isEmployed: formData.currentWorkIsEmployed,
+        companyName: formData.currentWorkCompanyName,
+        role: formData.currentWorkRole,
+        joiningDate: formData.currentWorkJoiningDate,
+        employmentType: formData.currentWorkEmploymentType,
+        location: formData.currentWorkLocation,
+        details: formData.currentWorkDetails,
+        companyUrl: formData.currentWorkCompanyUrl
       }
     };
 
@@ -494,6 +523,105 @@ const AboutManager = () => {
             </div>
           </div>
 
+          {/* Current Company / Employment Highlight CMS */}
+          <div className="glass p-6 rounded-2xl border border-slate-200/60 dark:border-white/5 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-base font-bold font-title text-black dark:text-white flex items-center gap-2">
+                <FaBriefcase className="text-primary-blue" /> Current Company & Employment
+              </h3>
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={formData.currentWorkIsEmployed}
+                  onChange={(e) => setFormData(prev => ({ ...prev, currentWorkIsEmployed: e.target.checked }))}
+                  className="w-4 h-4 rounded text-primary-purple focus:ring-0 cursor-pointer"
+                />
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Display on Website</span>
+              </label>
+            </div>
+            <p className="text-xs text-slate-400 mb-4">Highlight your current company, job role, joining timeline, and key responsibilities in the About section.</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-bold text-slate-450 uppercase flex items-center gap-1.5"><FaBuilding /> Company Name</label>
+                <input
+                  type="text"
+                  name="currentWorkCompanyName"
+                  value={formData.currentWorkCompanyName}
+                  onChange={handleInputChange}
+                  placeholder="e.g. NextGen Web Solutions"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:border-primary-purple"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-bold text-slate-450 uppercase flex items-center gap-1.5"><FaBriefcase /> Role / Job Title</label>
+                <input
+                  type="text"
+                  name="currentWorkRole"
+                  value={formData.currentWorkRole}
+                  onChange={handleInputChange}
+                  placeholder="e.g. Full Stack Web Developer"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:border-primary-purple"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-bold text-slate-450 uppercase flex items-center gap-1.5"><FaCalendarAlt /> Joining Date / Duration</label>
+                <input
+                  type="text"
+                  name="currentWorkJoiningDate"
+                  value={formData.currentWorkJoiningDate}
+                  onChange={handleInputChange}
+                  placeholder="e.g. Jan 2024 – Present (Joined Jan 2024)"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:border-primary-purple"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-bold text-slate-450 uppercase">Employment Type</label>
+                <input
+                  type="text"
+                  name="currentWorkEmploymentType"
+                  value={formData.currentWorkEmploymentType}
+                  onChange={handleInputChange}
+                  placeholder="e.g. Full-time, Remote, Contract"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:border-primary-purple"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-bold text-slate-450 uppercase flex items-center gap-1.5"><FaMapMarkerAlt /> Location / Work Mode</label>
+                <input
+                  type="text"
+                  name="currentWorkLocation"
+                  value={formData.currentWorkLocation}
+                  onChange={handleInputChange}
+                  placeholder="e.g. New Delhi, India / Hybrid"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:border-primary-purple"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-bold text-slate-450 uppercase flex items-center gap-1.5"><FaExternalLinkAlt /> Company Website / Link (Optional)</label>
+                <input
+                  type="text"
+                  name="currentWorkCompanyUrl"
+                  value={formData.currentWorkCompanyUrl}
+                  onChange={handleInputChange}
+                  placeholder="e.g. https://company.com"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:border-primary-purple"
+                />
+              </div>
+              <div className="md:col-span-2 flex flex-col gap-1">
+                <label className="text-[10px] font-bold text-slate-450 uppercase">Key Highlights / Responsibilities</label>
+                <textarea
+                  name="currentWorkDetails"
+                  value={formData.currentWorkDetails}
+                  onChange={handleInputChange}
+                  rows={2}
+                  placeholder="e.g. Developing responsive modern web applications, high-performance REST APIs, and leading client product deliveries."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-purple resize-none"
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Dynamic Personal Information Blocks */}
           <div className="glass p-6 rounded-2xl border border-slate-200/60 dark:border-white/5 shadow-sm">
             <h3 className="text-base font-bold font-title text-black dark:text-white mb-2 flex items-center gap-2">
@@ -544,33 +672,43 @@ const AboutManager = () => {
             </div>
           </div>
 
-          {/* Core Strengths */}
+          {/* Core Strengths (Keywords) */}
           <div className="glass p-6 rounded-2xl border border-slate-200/60 dark:border-white/5 shadow-sm">
-            <h3 className="text-base font-bold font-title text-black dark:text-white mb-2 flex items-center gap-2">
-              <FaCheckCircle className="text-green-500" size={14} /> Core Strengths List
+            <h3 className="text-base font-bold font-title text-black dark:text-white mb-1 flex items-center gap-2">
+              <FaCheckCircle className="text-green-500" size={14} /> Core Strengths (Keywords)
             </h3>
+            <p className="text-xs text-slate-400 mb-4">Add your key strengths as concise keywords (e.g. Problem Solving, Quick Learner, Team Collaboration).</p>
             
-            <div className="flex flex-col gap-3 mb-4">
+            <div className="flex flex-col gap-2.5 mb-4">
               {(formData.coreStrengths || []).map((item, idx) => (
-                <div key={idx} className="flex gap-2 items-start p-3 bg-slate-50/50 dark:bg-white/5 border border-slate-200/40 dark:border-white/5 rounded-xl">
-                  <FaGripVertical className="text-slate-350 dark:text-slate-600 mt-2 shrink-0" size={12} />
-                  <div className="flex-1 flex flex-col gap-1.5">
-                    <input type="text" value={item?.title || ''} onChange={(e) => handleStrengthEdit(idx, 'title', e.target.value)} placeholder="Title" className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs font-bold focus:outline-none focus:border-primary-purple" />
-                    <input type="text" value={item?.desc || ''} onChange={(e) => handleStrengthEdit(idx, 'desc', e.target.value)} placeholder="Description" className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-xs focus:outline-none focus:border-primary-purple" />
-                  </div>
-                  <button type="button" onClick={() => handleRemoveStrength(idx)} className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg shrink-0 cursor-pointer">
+                <div key={idx} className="flex gap-2 items-center p-2.5 bg-slate-50/50 dark:bg-white/5 border border-slate-200/40 dark:border-white/5 rounded-xl">
+                  <FaGripVertical className="text-slate-350 dark:text-slate-600 shrink-0" size={12} />
+                  <input 
+                    type="text" 
+                    value={item?.title || (typeof item === 'string' ? item : '')} 
+                    onChange={(e) => handleStrengthEdit(idx, 'title', e.target.value)} 
+                    placeholder="Strength Keyword (e.g. Problem Solving)" 
+                    className="flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs font-bold focus:outline-none focus:border-primary-purple" 
+                  />
+                  <button type="button" onClick={() => handleRemoveStrength(idx)} className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg shrink-0 cursor-pointer" title="Remove">
                     <FaTrash size={12} />
                   </button>
                 </div>
               ))}
             </div>
 
-            <div className="border border-dashed border-slate-200 dark:border-white/10 p-4 rounded-xl flex flex-col gap-2">
-              <p className="text-[10px] font-bold text-slate-400 uppercase">Add a Core Strength</p>
-              <input type="text" name="newStrengthTitle" value={formData.newStrengthTitle} onChange={handleInputChange} placeholder="Title (e.g. Quick Learner)" className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-purple" />
-              <input type="text" name="newStrengthDesc" value={formData.newStrengthDesc} onChange={handleInputChange} placeholder="Short description..." className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-primary-purple" />
-              <button type="button" onClick={handleAddStrength} className="self-start px-4 py-2 bg-primary-purple/10 text-primary-purple border border-primary-purple/20 rounded-lg text-xs font-black cursor-pointer flex items-center gap-1.5">
-                <FaPlus size={10} /> Add Strength
+            <div className="border border-dashed border-slate-200 dark:border-white/10 p-3.5 rounded-xl flex gap-2 items-center">
+              <input 
+                type="text" 
+                name="newStrengthTitle" 
+                value={formData.newStrengthTitle} 
+                onChange={handleInputChange} 
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddStrength(); } }}
+                placeholder="Strength Keyword (e.g. Quick Learner)" 
+                className="flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs font-bold focus:outline-none focus:border-primary-purple" 
+              />
+              <button type="button" onClick={handleAddStrength} className="px-4 py-2 bg-primary-purple/10 text-primary-purple border border-primary-purple/20 rounded-lg text-xs font-black cursor-pointer flex items-center gap-1.5 shrink-0">
+                <FaPlus size={10} /> Add Keyword
               </button>
             </div>
           </div>

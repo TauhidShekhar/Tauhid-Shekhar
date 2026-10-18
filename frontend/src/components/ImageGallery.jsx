@@ -9,6 +9,7 @@ export const ImageGallery = ({ images = [] }) => {
 
   const touchStart = useRef(0);
   const touchEnd = useRef(0);
+  const lastTap = useRef(0);
 
   // Keyboard navigation
   useEffect(() => {
@@ -66,7 +67,6 @@ export const ImageGallery = ({ images = [] }) => {
   };
 
   // Double tap to toggle zoom
-  const lastTap = useRef(0);
   const handleDoubleTap = () => {
     const now = Date.now();
     const DOUBLE_PRESS_DELAY = 300;

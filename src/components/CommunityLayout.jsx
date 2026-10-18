@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { api } from '../services/api';
 import { 
   FaHome, FaGlobe, FaUsers, FaFolderOpen, FaBriefcase, FaCrown, 
@@ -22,52 +23,8 @@ const CommunityLayout = () => {
     }
   });
 
-  // Theme synchronization with main website
-  const [isDark, setIsDark] = useState(() => {
-    try {
-      const savedTheme = localStorage.getItem('theme');
-      if (savedTheme) return savedTheme === 'dark';
-      return document.documentElement.classList.contains('darkmode') || 
-        window.matchMedia('(prefers-color-scheme: dark)').matches;
-    } catch {
-      return true;
-    }
-  });
-
-  useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add('darkmode');
-      if (document.body) document.body.classList.add('darkmode');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('darkmode');
-      if (document.body) document.body.classList.remove('darkmode');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [isDark]);
-
-  useEffect(() => {
-    const syncTheme = () => {
-      try {
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme) {
-          setIsDark(savedTheme === 'dark');
-        }
-      } catch (_) {}
-    };
-    window.addEventListener('storage', syncTheme);
-    window.addEventListener('theme-change', syncTheme);
-    return () => {
-      window.removeEventListener('storage', syncTheme);
-      window.removeEventListener('theme-change', syncTheme);
-    };
-  }, []);
-
-  const toggleTheme = () => {
-    const nextDark = !isDark;
-    setIsDark(nextDark);
-    window.dispatchEvent(new Event('theme-change'));
-  };
+  // Centralized theme synchronization with main website
+  const { isDark, toggleTheme } = useTheme();
 
   useEffect(() => {
     try {
@@ -632,7 +589,7 @@ const CommunityLayout = () => {
   const allNavItems = navSections.flatMap(s => s.items);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#000000] text-[#171717] dark:text-[#F1F1F5] flex flex-col font-sans transition-colors duration-200">
+    <div className="min-h-screen bg-white/80 dark:bg-transparent text-[#171717] dark:text-[#F1F1F5] flex flex-col font-sans transition-colors duration-200">
       
       {/* Top Navbar Header */}
       <header className="sticky top-0 z-[100] border-b border-[#E5E7EB] dark:border-white/10 bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md px-3 py-2.5 sm:px-6 sm:py-3 flex items-center justify-between shadow-sm transition-colors duration-200">
