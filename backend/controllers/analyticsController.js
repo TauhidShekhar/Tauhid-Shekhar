@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { getDbStatus } = require('../config/db');
 const Analytics = require('../models/Analytics');
 const Project = require('../models/Project');
 const Skill = require('../models/Skill');
@@ -136,7 +137,8 @@ const getStats = async (req, res, next) => {
           visitors: totalVisitors
         },
         system: {
-          database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
+          database: getDbStatus().status,
+          databaseDetails: getDbStatus(),
           api: 'Online',
           website: 'Online'
         },

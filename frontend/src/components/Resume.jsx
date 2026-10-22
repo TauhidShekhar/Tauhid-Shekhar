@@ -528,47 +528,43 @@ const Resume = ({ resumeData, settingsData }) => {
 
                 {/* The Embedded Original PDF Document Viewer */}
                 <div className="relative w-full rounded-3xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-2xl bg-slate-900 aspect-[1/1.3] sm:aspect-[1/1.35] min-h-[520px] max-h-[920px]">
-                  <object
-                    data={`${resumePdfUrl || '/assits/Resume-file.pdf'}#view=FitH`}
-                    type="application/pdf"
-                    className="w-full h-full rounded-2xl border-0"
-                    onLoad={() => setPdfLoaded(true)}
-                    onError={() => setPdfError(true)}
-                  >
+                  {pdfError ? (
+                    <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-white dark:bg-[#111116] text-center">
+                      <FaFilePdf size={48} className="text-[#C2272D] mb-4" />
+                      <h4 className="text-base font-bold text-slate-900 dark:text-white mb-2">
+                        Original Resume PDF
+                      </h4>
+                      <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mb-6 leading-relaxed">
+                        To view this resume, open the document directly or download a copy:
+                      </p>
+                      <div className="flex flex-wrap gap-3 justify-center">
+                        <a
+                          href={resumePdfUrl || '/assits/Resume-file.pdf'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#C2272D] hover:bg-[#A51E23] text-white font-bold text-xs sm:text-sm shadow-md"
+                        >
+                          <FaExternalLinkAlt /> Open PDF in New Tab
+                        </a>
+                        <button
+                          type="button"
+                          onClick={handleDownloadResume}
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-100 dark:bg-white/10 hover:bg-slate-200 text-slate-800 dark:text-white font-bold text-xs sm:text-sm border border-slate-200 dark:border-white/10 cursor-pointer"
+                        >
+                          <FaDownload /> Download Resume
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
                     <iframe
-                      src={`${resumePdfUrl || '/assits/Resume-file.pdf'}#toolbar=1&navpanes=0&view=FitH`}
+                      src={`${resumePdfUrl || '/assits/Resume-file.pdf'}#toolbar=0&navpanes=0`}
                       className="w-full h-full rounded-2xl border-0"
                       title="Tauhid Shekhar Original Resume PDF Viewer"
-                    >
-                      {/* Robust Fallback if browser disabled native iframe PDF viewing */}
-                      <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-white dark:bg-[#111116] text-center">
-                        <FaFilePdf size={48} className="text-[#C2272D] mb-4" />
-                        <h4 className="text-base font-bold text-slate-900 dark:text-white mb-2">
-                          Original Resume PDF
-                        </h4>
-                        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mb-6 leading-relaxed">
-                          Your browser does not directly render inline PDF frames. You can open the original PDF in a new tab or download it directly below:
-                        </p>
-                        <div className="flex flex-wrap gap-3 justify-center">
-                          <a
-                            href={resumePdfUrl || '/assits/Resume-file.pdf'}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#C2272D] hover:bg-[#A51E23] text-white font-bold text-xs sm:text-sm shadow-md"
-                          >
-                            <FaExternalLinkAlt /> Open PDF in New Tab
-                          </a>
-                          <button
-                            type="button"
-                            onClick={handleDownloadResume}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-100 dark:bg-white/10 hover:bg-slate-200 text-slate-800 dark:text-white font-bold text-xs sm:text-sm border border-slate-200 dark:border-white/10"
-                          >
-                            <FaDownload /> Download Resume
-                          </button>
-                        </div>
-                      </div>
-                    </iframe>
-                  </object>
+                      onLoad={() => setPdfLoaded(true)}
+                      onError={() => setPdfError(true)}
+                      loading="lazy"
+                    />
+                  )}
                 </div>
 
                 {/* Viewer Helper Notes & Admin controls */}
@@ -803,32 +799,12 @@ const Resume = ({ resumeData, settingsData }) => {
 
               {/* Modal Body - Full Viewport PDF Viewer */}
               <div className="flex-1 overflow-hidden p-2 sm:p-4 bg-slate-900">
-                <object
-                  data={`${resumePdfUrl || '/assits/Resume-file.pdf'}#view=FitH`}
-                  type="application/pdf"
+                <iframe
+                  src={`${resumePdfUrl || '/assits/Resume-file.pdf'}#toolbar=0&navpanes=0`}
                   className="w-full h-full rounded-2xl border-0"
-                >
-                  <iframe
-                    src={`${resumePdfUrl || '/assits/Resume-file.pdf'}#toolbar=1&navpanes=0&view=FitH`}
-                    className="w-full h-full rounded-2xl border-0"
-                    title="Full Screen Resume PDF Viewer"
-                  >
-                    <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-white dark:bg-[#111116] text-center">
-                      <FaFilePdf size={48} className="text-[#C2272D] mb-4" />
-                      <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">
-                        Click below to view or download the original resume PDF:
-                      </p>
-                      <a
-                        href={resumePdfUrl || '/assits/Resume-file.pdf'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#C2272D] text-white text-sm font-bold"
-                      >
-                        <FaExternalLinkAlt /> Open Original PDF
-                      </a>
-                    </div>
-                  </iframe>
-                </object>
+                  title="Full Screen Resume PDF Viewer"
+                  loading="lazy"
+                />
               </div>
             </div>
           </div>

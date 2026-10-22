@@ -13,7 +13,7 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const compression = require('compression');
-const connectDB = require('./config/db');
+const { connectDB, getDbStatus, pingDb } = require('./config/db');
 const { errorHandler } = require('./middleware/errorHandler');
 const { apiLimiter } = require('./middleware/rateLimiter');
 const { performanceMiddleware } = require('./middleware/performanceMiddleware');
@@ -253,7 +253,17 @@ const formRoutes = require('./routes/formRoutes');
 
 
 // Mount Routes
-const { cacheMiddleware } = require('./middleware/cacheMiddleware');
+const { cacheMiddleware, clearCache } = require('./middleware/cacheMiddleware');
+
+// Invalidate in-memory response caches on any mutation request
+app.use('/api', (req, res, next) => {
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+    try {
+      clearCache();
+    } catch (_) {}
+  }
+  next();
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/portfolio', portfolioRoutes);
@@ -383,9 +393,49 @@ app.get('/robots.txt', async (req, res, next) => {
   }
 });
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ success: true, status: 'healthy', timestamp: new Date() });
+// Active System & Database Health Check Endpoints
+app.get('/api/health', async (req, res) => {
+  const dbStatus = getDbStatus();
+  const dbPing = await pingDb(2500);
+  const isHealthy = dbPing.healthy && dbStatus.isConnected;
+  const isDegraded = dbStatus.status === 'Reconnecting' || dbStatus.status === 'Connecting';
+
+  const statusCode = isHealthy ? 200 : (isDegraded ? 200 : 503);
+  res.status(statusCode).json({
+    success: isHealthy,
+    status: isHealthy ? 'healthy' : (isDegraded ? 'degraded' : 'unhealthy'),
+    server: 'operational',
+    timestamp: new Date(),
+    database: {
+      status: dbStatus.status,
+      connected: dbStatus.isConnected,
+      latencyMs: dbPing.latencyMs,
+      host: dbStatus.host,
+      readyState: dbStatus.readyState,
+      reconnectAttempts: dbStatus.reconnectAttempts
+    }
+  });
+});
+
+app.get('/api/health/db', async (req, res) => {
+  const dbStatus = getDbStatus();
+  const dbPing = await pingDb(3000);
+  const isConnected = dbPing.healthy && dbStatus.isConnected;
+
+  res.status(isConnected ? 200 : 503).json({
+    success: isConnected,
+    status: dbStatus.status,
+    connected: isConnected,
+    latencyMs: dbPing.latencyMs,
+    host: dbStatus.host,
+    databaseName: dbStatus.name,
+    readyState: dbStatus.readyState,
+    reconnectAttempts: dbStatus.reconnectAttempts,
+    lastConnectedAt: dbStatus.lastConnectedAt,
+    lastDisconnectedAt: dbStatus.lastDisconnectedAt,
+    error: dbPing.error || null,
+    timestamp: new Date()
+  });
 });
 
 app.get('/', (req, res) => {
@@ -502,37 +552,50 @@ io.on('connection', (socket) => {
   });
 });
 
+let isSeeded = false;
+const runInitialSeeds = async () => {
+  if (isSeeded) return;
+  isSeeded = true;
+  try {
+    await seedAdmin();
+    const seedEcosystem = require('./utils/seeder');
+    await seedEcosystem();
+    const { seedFormTemplates } = require('./utils/formTemplatesSeeder');
+    await seedFormTemplates();
+    const { reconcileProjects } = require('./utils/projectReconciler');
+    await reconcileProjects();
+  } catch (err) {
+    console.error('[Startup Seeding Error]:', err.message);
+  }
+};
+
 // Start server listening (for Render / Local development)
 if (!process.env.VERCEL) {
+  const PORT = process.env.PORT || 5000;
+  server.listen(PORT, () => {
+    console.log(`Server running in ${process.env.NODE_ENV || 'production'} mode on port ${PORT}`);
+    
+    // Start self-ping keep-alive routine to prevent sleeping
+    try {
+      const startKeepAlive = require('./utils/keepAlive');
+      startKeepAlive();
+    } catch (err) {
+      console.warn('Failed to start keep-alive routine:', err.message);
+    }
+  });
+
+  // Initiate database connection with non-blocking resilience
   connectDB()
     .then(async () => {
-      // Seed default admin user
-      await seedAdmin();
-      
-      // Seed default ecosystem configurations
-      const seedEcosystem = require('./utils/seeder');
-      await seedEcosystem();
-      const { seedFormTemplates } = require('./utils/formTemplatesSeeder');
-      await seedFormTemplates();
-
-      // Start Express + Socket.io Server listening
-      const PORT = process.env.PORT || 5000;
-      server.listen(PORT, () => {
-        console.log(`Server running in ${process.env.NODE_ENV || 'production'} mode on port ${PORT}`);
-        
-        // Start self-ping keep-alive routine to prevent sleeping
-        try {
-          const startKeepAlive = require('./utils/keepAlive');
-          startKeepAlive();
-        } catch (err) {
-          console.warn('Failed to start keep-alive routine:', err.message);
-        }
-      });
+      await runInitialSeeds();
     })
     .catch((err) => {
-      console.error('Critical Database Connection Failure: Server could not be started.', err.message);
-      process.exit(1);
+      console.warn('[Database] Initial connection attempt deferred to background reconnect loop:', err.message);
     });
+
+  mongoose.connection.once('open', () => {
+    runInitialSeeds();
+  });
 }
 
 // Export app for Vercel Serverless hosting

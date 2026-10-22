@@ -151,7 +151,7 @@ const defaultSkills = [
   { name: 'Responsive UI Design', percentage: 92, category: 'Concepts' },
 ];
 
-const Skills = ({ skillsData }) => {
+const Skills = ({ skillsData, error, isCachedData, lastUpdated, onRetry }) => {
   const [activeFilter, setActiveFilter] = useState('all');
   const categories = [
     { id: 'all', name: 'All' },
@@ -164,14 +164,32 @@ const Skills = ({ skillsData }) => {
   ];
 
   const [skillItems, setSkillItems] = useState(() => {
-    return (skillsData && skillsData.length > 0) ? skillsData : defaultSkills;
+    if (Array.isArray(skillsData) && skillsData.length > 0) return skillsData;
+    try {
+      const cached = localStorage.getItem('tauhid_portfolio_cached_v2');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed?.data?.skills?.length) return parsed.data.skills;
+      }
+    } catch (_) {}
+    return Array.isArray(skillsData) ? skillsData : [];
   });
 
   useEffect(() => {
-    if (skillsData && skillsData.length > 0) {
+    if (Array.isArray(skillsData) && skillsData.length > 0) {
       setSkillItems(skillsData);
-    } else {
-      setSkillItems(defaultSkills);
+    } else if (!skillsData || skillsData.length === 0) {
+      try {
+        const cached = localStorage.getItem('tauhid_portfolio_cached_v2');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed?.data?.skills?.length) {
+            setSkillItems(parsed.data.skills);
+            return;
+          }
+        }
+      } catch (_) {}
+      setSkillItems([]);
     }
   }, [skillsData]);
 
@@ -264,11 +282,54 @@ const Skills = ({ skillsData }) => {
           ))}
         </div>
 
-        {/* Skills Grid */}
-        <div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6"
-        >
-          <AnimatePresence mode="wait">
+        {/* Offline / Cached Data Notification Badge */}
+        {isCachedData && (
+          <div className="max-w-xl mx-auto mb-8 p-3 px-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-amber-700 dark:text-amber-300 text-xs flex items-center justify-between gap-3 shadow-sm">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+              <span>
+                Showing cached skills {lastUpdated ? `(Snapshot: ${new Date(lastUpdated).toLocaleTimeString()})` : ''}.
+              </span>
+            </div>
+            {onRetry && (
+              <button
+                type="button"
+                onClick={onRetry}
+                className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-900 dark:text-amber-100 font-bold cursor-pointer transition-colors text-[11px] shrink-0"
+              >
+                Sync Now
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Error / DB Connection State */}
+        {error && (!skillItems || skillItems.length === 0) ? (
+          <div className="max-w-md mx-auto my-12 p-8 rounded-3xl bg-white dark:bg-[#111111] border border-red-500/25 shadow-xl text-center flex flex-col items-center gap-4">
+            <h3 className="text-base font-bold font-title text-slate-900 dark:text-white mb-1">Skills Syncing with Database</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Real-time skills data is currently reconnecting. No static fallback is displayed.
+            </p>
+            {onRetry && (
+              <button
+                type="button"
+                onClick={onRetry}
+                className="mt-1 px-4 py-2 rounded-xl bg-[#C2272D] hover:bg-[#A51E23] text-white text-xs font-bold transition-all shadow-md cursor-pointer"
+              >
+                Retry
+              </button>
+            )}
+          </div>
+        ) : filteredSkills.length === 0 ? (
+          <div className="text-center py-12 text-slate-400 dark:text-slate-500 text-sm">
+            No technical skills found in this category.
+          </div>
+        ) : (
+          /* Skills Grid */
+          <div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6"
+          >
+          <AnimatePresence>
             {filteredSkills.map((skill) => {
               const logoSrc = getSkillLogoUrl(skill);
               const cats = getSkillCategories(skill);
@@ -335,6 +396,7 @@ const Skills = ({ skillsData }) => {
             })}
           </AnimatePresence>
         </div>
+        )}
       </div>
     </section>
   );

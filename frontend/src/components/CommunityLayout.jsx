@@ -3,6 +3,9 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { api } from '../services/api';
+import tsLogoDark from '../assets/ts-logo-dark.jpg';
+import tsLogoRed from '../assets/ts-logo-red.jpg';
+import logo2 from '../assets/logo2.png';
 import { 
   FaHome, FaGlobe, FaUsers, FaFolderOpen, FaBriefcase, FaCrown, 
   FaBell, FaComments, FaUser, FaCog, FaPlus, FaTimes, FaBars, 
@@ -33,6 +36,27 @@ const CommunityLayout = () => {
       console.warn('Failed to save sidebar state to localStorage:', err);
     }
   }, [sidebarCollapsed]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
   
   const [notifCount, setNotifCount] = useState(0);
   const [myGroups, setMyGroups] = useState([]);
@@ -44,12 +68,8 @@ const CommunityLayout = () => {
   const [leaderboardTimeframe, setLeaderboardTimeframe] = useState('weekly');
   const [mobileSectionsExpanded, setMobileSectionsExpanded] = useState({
     actions: true,
-    suggested: false,
-    leaderboard: false,
-    stats: false,
-    tags: false,
-    announcements: false,
-    events: false
+    suggested: true,
+    leaderboard: false
   });
   
   const toggleMobileSection = (section) => {
@@ -282,148 +302,6 @@ const CommunityLayout = () => {
           )}
         </div>
 
-        {/* SECTION: COMMUNITY STATISTICS */}
-        <div className="bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 rounded-2xl flex flex-col shadow-sm overflow-hidden hover:border-[#C2272D]/40 transition-all duration-300 text-left card-interactive">
-          <button
-            type="button"
-            disabled={!isMobile}
-            onClick={() => toggleMobileSection('stats')}
-            className="w-full p-3.5 sm:p-4 flex items-center justify-between border-b border-[#E5E7EB] dark:border-white/10 bg-[#F8FAFC] dark:bg-[#17171e]/50 select-none cursor-pointer text-left"
-          >
-            <div className="flex items-center gap-2">
-              <span className="p-1.5 bg-[#C2272D]/10 rounded-lg text-[#C2272D]">
-                <FaTachometerAlt size={10} />
-              </span>
-              <span className="text-[11px] font-black text-[#171717] dark:text-slate-300 uppercase tracking-wider font-title">Community Statistics</span>
-            </div>
-            {isMobile && (
-              <span className={`text-[#525252] dark:text-slate-400 transition-transform duration-250 ${isSectionExpanded('stats') ? 'rotate-180' : ''}`}>
-                <FaAngleDown size={14} />
-              </span>
-            )}
-          </button>
-
-          {isSectionExpanded('stats') && (
-            <div className="p-3.5 sm:p-4 grid grid-cols-2 gap-2.5">
-              {[
-                { name: 'Total Members', val: '2,480+', change: '+14% this mo' },
-                { name: 'Online Now', val: '180+', change: 'Active developers', isOnline: true },
-                { name: 'Discussions', val: '8,420', change: 'Solutions shared' },
-                { name: 'Resources', val: '1,240', change: 'Open repos & guides' }
-              ].map((stat, idx) => (
-                <div key={idx} className="p-2.5 bg-[#F8FAFC] dark:bg-[#181820]/60 border border-[#E5E7EB] dark:border-white/5 rounded-xl flex flex-col text-left gap-0.5">
-                  <span className="text-[9px] font-black text-[#525252] dark:text-slate-400 uppercase tracking-wider">{stat.name}</span>
-                  <div className="flex items-center gap-1.5">
-                    {stat.isOnline && <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shrink-0" />}
-                    <h4 className="text-sm font-black text-[#171717] dark:text-white leading-tight">{stat.val}</h4>
-                  </div>
-                  <span className="text-[8px] text-[#737373] dark:text-slate-500 font-medium">{stat.change}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* SECTION: POPULAR TAGS */}
-        <div className="bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 rounded-2xl flex flex-col shadow-sm overflow-hidden hover:border-[#C2272D]/40 transition-all duration-300 text-left card-interactive">
-          <button
-            type="button"
-            disabled={!isMobile}
-            onClick={() => toggleMobileSection('tags')}
-            className="w-full p-3.5 sm:p-4 flex items-center justify-between border-b border-[#E5E7EB] dark:border-white/10 bg-[#F8FAFC] dark:bg-[#17171e]/50 select-none cursor-pointer text-left"
-          >
-            <div className="flex items-center gap-2">
-              <span className="p-1.5 bg-[#C2272D]/10 rounded-lg text-[#C2272D]">
-                <FaHashtag size={10} />
-              </span>
-              <span className="text-[11px] font-black text-[#171717] dark:text-slate-300 uppercase tracking-wider font-title">Trending Tech Topics</span>
-            </div>
-            {isMobile && (
-              <span className={`text-[#525252] dark:text-slate-400 transition-transform duration-250 ${isSectionExpanded('tags') ? 'rotate-180' : ''}`}>
-                <FaAngleDown size={14} />
-              </span>
-            )}
-          </button>
-
-          {isSectionExpanded('tags') && (
-            <div className="p-3.5 sm:p-4 flex flex-col gap-3">
-              <div className="flex flex-wrap gap-1.5">
-                {[
-                  { tag: 'react', count: '1.2k', trending: true },
-                  { tag: 'fullstack', count: '980', trending: true },
-                  { tag: 'nodejs', count: '890', trending: false },
-                  { tag: 'ai', count: '3.1k', trending: true },
-                  { tag: 'javascript', count: '2.4k', trending: false },
-                  { tag: 'tailwind', count: '780', trending: false },
-                  { tag: 'career', count: '1.5k', trending: true }
-                ].map(item => (
-                  <Link
-                    key={item.tag}
-                    to={`/community?search=${item.tag}`}
-                    className="px-2.5 py-1 bg-[#F8FAFC] dark:bg-[#181820] border border-[#E5E7EB] dark:border-white/10 text-[#171717] dark:text-slate-300 hover:bg-[#C2272D] hover:text-white hover:border-[#C2272D] rounded-lg text-[9px] font-black uppercase tracking-wider transition-all duration-200 flex items-center gap-1 group shadow-sm active:scale-95"
-                  >
-                    <span>#{item.tag}</span>
-                    <span className="text-[8px] opacity-75 font-semibold font-mono bg-black/5 dark:bg-white/10 group-hover:bg-white/20 px-1 py-0.5 rounded">{item.count}</span>
-                    {item.trending && <span className="text-[9px]">🔥</span>}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* SECTION: ANNOUNCEMENTS */}
-        <div className="bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 rounded-2xl flex flex-col shadow-sm overflow-hidden hover:border-[#C2272D]/40 transition-all duration-300 text-left card-interactive">
-          <button
-            type="button"
-            disabled={!isMobile}
-            onClick={() => toggleMobileSection('announcements')}
-            className="w-full p-3.5 sm:p-4 flex items-center justify-between border-b border-[#E5E7EB] dark:border-white/10 bg-[#F8FAFC] dark:bg-[#17171e]/50 select-none cursor-pointer text-left"
-          >
-            <div className="flex items-center gap-2">
-              <span className="p-1.5 bg-[#C2272D]/10 rounded-lg text-[#C2272D]">
-                <FaBell size={10} />
-              </span>
-              <span className="text-[11px] font-black text-[#171717] dark:text-slate-300 uppercase tracking-wider font-title">Announcements</span>
-            </div>
-            {isMobile && (
-              <span className={`text-[#525252] dark:text-slate-400 transition-transform duration-250 ${isSectionExpanded('announcements') ? 'rotate-180' : ''}`}>
-                <FaAngleDown size={14} />
-              </span>
-            )}
-          </button>
-
-          {isSectionExpanded('announcements') && (
-            <div className="p-3.5 sm:p-4 flex flex-col gap-3">
-              {[
-                { 
-                  title: '🚀 DevCommunity 2027 Rebirth', 
-                  desc: 'Modernized with Tauhid Shekhar visual branding, fast navigation, and streamlined developer hubs.',
-                  date: 'Today',
-                  unread: true
-                },
-                { 
-                  title: '💡 AI Consultant & Career Hub Live', 
-                  desc: 'Prepare for software engineering interviews and generate tailored tech roadmaps in one click.',
-                  date: 'Active',
-                  unread: false
-                }
-              ].map((ann, idx) => (
-                <div 
-                  key={idx} 
-                  className="p-3 bg-[#F8FAFC] dark:bg-[#181820]/60 rounded-xl border border-[#E5E7EB] dark:border-white/5 text-[10px] leading-relaxed flex flex-col gap-1 relative"
-                >
-                  {ann.unread && (
-                    <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-[#C2272D] rounded-full animate-pulse" title="New" />
-                  )}
-                  <span className="text-[#C2272D] font-black text-[11px] leading-snug">{ann.title}</span>
-                  <p className="text-[#525252] dark:text-slate-300 font-medium">{ann.desc}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
       </div>
     );
   };
@@ -604,15 +482,19 @@ const CommunityLayout = () => {
             <FaBars />
           </button>
           
-          {/* TS Crowned Logo & DevCommunity Title */}
-          <Link to="/community" className="flex items-center gap-2.5 group shrink-0">
+          {/* TS Crowned Logo & DevCommunity Title (Static, No Animation) */}
+          <Link to="/community" className="flex items-center gap-2.5 shrink-0" title="TS DevCommunity">
             <img 
-              src={isDark ? "/assits/ts-logo-dark.jpg" : "/assits/ts-logo-red.jpg"} 
+              src={isDark ? tsLogoDark : tsLogoRed} 
               alt="Tauhid Shekhar Logo" 
-              className="w-8 h-8 rounded-lg object-cover shadow-sm border border-[#E5E7EB] dark:border-white/10 group-hover:scale-105 transition-transform" 
+              className="w-8 h-8 rounded-lg object-cover shadow-sm border border-[#E5E7EB] dark:border-white/10 shrink-0" 
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = logo2;
+              }}
             />
             <div className="flex items-center gap-1.5">
-              <span className="text-sm sm:text-base font-black font-title tracking-tight text-[#171717] dark:text-white group-hover:text-[#C2272D] transition-colors">
+              <span className="text-sm sm:text-base font-black font-title tracking-tight text-[#171717] dark:text-white hover:text-[#C2272D] transition-colors">
                 DevCommunity
               </span>
               <span className="px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider rounded bg-[#C2272D]/10 text-[#C2272D] border border-[#C2272D]/20">
@@ -630,6 +512,16 @@ const CommunityLayout = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-3.5 pr-8 py-1.5 rounded-xl bg-[#F8FAFC] dark:bg-[#1E1E24] border border-[#E5E7EB] dark:border-white/10 text-xs text-[#171717] dark:text-white placeholder-[#737373] dark:placeholder-slate-400 focus:outline-none focus:border-[#C2272D] transition-all"
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"
+                aria-label="Clear search"
+              >
+                <FaTimes size={10} />
+              </button>
+            )}
           </form>
         </div>
 
@@ -790,19 +682,24 @@ const CommunityLayout = () => {
                         {!sidebarCollapsed && <span>{item.name}</span>}
                       </div>
                       
-                      {item.badge > 0 && (
-                        sidebarCollapsed ? (
-                          <span className="absolute top-1 right-1 w-3.5 h-3.5 text-[8px] font-black bg-[#C2272D] text-white rounded-full flex items-center justify-center border border-white dark:border-[#111111]">
-                            {item.badge}
-                          </span>
-                        ) : (
-                          <span className={`px-1.5 py-0.5 text-[9px] font-black rounded-full leading-none shrink-0 ${
-                            active ? 'bg-white text-[#C2272D]' : 'bg-[#C2272D] text-white'
-                          }`}>
-                            {item.badge}
-                          </span>
-                        )
-                      )}
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {active && !sidebarCollapsed && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#00FFFF] shadow-[0_0_6px_#00FFFF]"></span>
+                        )}
+                        {item.badge > 0 && (
+                          sidebarCollapsed ? (
+                            <span className="absolute top-1 right-1 w-3.5 h-3.5 text-[8px] font-black bg-[#C2272D] text-white rounded-full flex items-center justify-center border border-white dark:border-[#111111]">
+                              {item.badge}
+                            </span>
+                          ) : (
+                            <span className={`px-1.5 py-0.5 text-[9px] font-black rounded-full leading-none shrink-0 ${
+                              active ? 'bg-white text-[#C2272D]' : 'bg-[#C2272D] text-white'
+                            }`}>
+                              {item.badge}
+                            </span>
+                          )
+                        )}
+                      </div>
 
                       {sidebarCollapsed && (
                         <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#111111] border border-white/10 text-[10px] font-black text-white uppercase tracking-wider rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 whitespace-nowrap shadow-xl z-[999]">
@@ -972,9 +869,13 @@ const CommunityLayout = () => {
         <div className="p-4 border-b border-[#E5E7EB] dark:border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <img 
-              src={isDark ? "/assits/ts-logo-dark.jpg" : "/assits/ts-logo-red.jpg"} 
+              src={isDark ? tsLogoDark : tsLogoRed} 
               alt="Logo" 
-              className="w-7 h-7 rounded-lg object-cover" 
+              className="w-7 h-7 rounded-lg object-cover shrink-0" 
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = logo2;
+              }}
             />
             <span className="text-sm font-black font-title tracking-tight text-[#171717] dark:text-white uppercase">DevCommunity</span>
           </div>

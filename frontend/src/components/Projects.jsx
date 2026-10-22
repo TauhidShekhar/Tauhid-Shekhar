@@ -156,7 +156,7 @@ const defaultProjects = [
   }
 ];
 
-const Projects = ({ projectsData }) => {
+const Projects = ({ projectsData, error, isCachedData, lastUpdated, onRetry }) => {
   const { user } = useAuth();
   const [activeFilter, setActiveFilter] = useState('all');
   const [activeCaseStudy, setActiveCaseStudy] = useState(null);
@@ -169,21 +169,43 @@ const Projects = ({ projectsData }) => {
   const modalContentRef = useRef(null);
 
   const [projectItems, setProjectItems] = useState(() => {
-    const list = (projectsData && projectsData.length > 0) ? projectsData : defaultProjects;
+    let list = Array.isArray(projectsData) && projectsData.length > 0 ? projectsData : [];
+    if (list.length === 0) {
+      try {
+        const cached = localStorage.getItem('tauhid_portfolio_cached_v2');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed?.data?.projects?.length) list = parsed.data.projects;
+        }
+      } catch (_) {}
+    }
     return list.map(p => ({
       ...p,
-      subtitle: p.subtitle || `${p.tag.toUpperCase()} Project`
+      subtitle: p.subtitle || `${(p.tag || 'Project').toUpperCase()} Project`
     }));
   });
 
   useEffect(() => {
-    if (projectsData && projectsData.length > 0) {
+    if (Array.isArray(projectsData) && projectsData.length > 0) {
       setProjectItems(projectsData.map(p => ({
         ...p,
-        subtitle: p.subtitle || `${p.tag.toUpperCase()} Project`
+        subtitle: p.subtitle || `${(p.tag || 'Project').toUpperCase()} Project`
       })));
-    } else {
-      setProjectItems(defaultProjects);
+    } else if (!projectsData || projectsData.length === 0) {
+      try {
+        const cached = localStorage.getItem('tauhid_portfolio_cached_v2');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed?.data?.projects?.length) {
+            setProjectItems(parsed.data.projects.map(p => ({
+              ...p,
+              subtitle: p.subtitle || `${(p.tag || 'Project').toUpperCase()} Project`
+            })));
+            return;
+          }
+        }
+      } catch (_) {}
+      setProjectItems([]);
     }
   }, [projectsData]);
 
@@ -371,11 +393,59 @@ const Projects = ({ projectsData }) => {
           ))}
         </div>
 
-        {/* Projects Grid */}
-        <div
-          className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10"
-        >
-          <AnimatePresence mode="wait">
+        {/* Offline / Cached Data Notification Badge */}
+        {isCachedData && (
+          <div className="max-w-xl mx-auto mb-8 p-3 px-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-amber-700 dark:text-amber-300 text-xs flex items-center justify-between gap-3 shadow-sm">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+              <span>
+                Showing cached portfolio projects {lastUpdated ? `(Snapshot: ${new Date(lastUpdated).toLocaleTimeString()})` : ''}. Live database sync will resume automatically.
+              </span>
+            </div>
+            {onRetry && (
+              <button
+                type="button"
+                onClick={onRetry}
+                className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-900 dark:text-amber-100 font-bold cursor-pointer transition-colors text-[11px] shrink-0"
+              >
+                Sync Now
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Error / DB Connection Degraded State */}
+        {error && (!projectItems || projectItems.length === 0) ? (
+          <div className="max-w-md mx-auto my-12 p-8 rounded-3xl bg-white dark:bg-[#111111] border border-red-500/25 shadow-xl text-center flex flex-col items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center text-xl">
+              <FaTimes />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold font-title text-slate-900 dark:text-white mb-1">Live Database Connecting</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                Unable to load fresh projects right now. The database is reconnecting automatically. No outdated static data is displayed.
+              </p>
+            </div>
+            {onRetry && (
+              <button
+                type="button"
+                onClick={onRetry}
+                className="mt-1 px-5 py-2.5 rounded-xl bg-[#C2272D] hover:bg-[#A51E23] text-white text-xs font-bold transition-all shadow-md shadow-[#C2272D]/25 hover:scale-105 active:scale-95 cursor-pointer"
+              >
+                Retry Live Connection
+              </button>
+            )}
+          </div>
+        ) : filteredProjects.length === 0 ? (
+          <div className="text-center py-16 text-slate-400 dark:text-slate-500 text-sm">
+            No projects found in this category.
+          </div>
+        ) : (
+          /* Projects Grid */
+          <div
+            className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10"
+          >
+          <AnimatePresence>
             {filteredProjects.map((project) => (
               <motion.div
                 key={project._id}
@@ -485,6 +555,7 @@ const Projects = ({ projectsData }) => {
             ))}
           </AnimatePresence>
         </div>
+        )}
 
         {/* Redesigned Read More Modal Popup with createPortal */}
         {typeof document !== 'undefined' && createPortal(

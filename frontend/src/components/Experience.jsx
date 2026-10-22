@@ -31,16 +31,16 @@ const defaultExperiences = [
   }
 ];
 
-const Experience = ({ experienceData }) => {
+const Experience = ({ experienceData, error, isCachedData, lastUpdated, onRetry }) => {
   const [experiences, setExperiences] = useState(() => {
-    return (experienceData && experienceData.length > 0) ? experienceData : defaultExperiences;
+    return Array.isArray(experienceData) ? experienceData : [];
   });
 
   useEffect(() => {
-    if (experienceData && experienceData.length > 0) {
+    if (Array.isArray(experienceData)) {
       setExperiences(experienceData);
     } else {
-      setExperiences(defaultExperiences);
+      setExperiences([]);
     }
   }, [experienceData]);
 
@@ -83,59 +83,103 @@ const Experience = ({ experienceData }) => {
           </h2>
         </div>
 
-        <motion.div
-          variants={timelineVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-80px' }}
-          className="relative pl-6 xs:pl-8 sm:pl-12 border-l-2 border-[#E5E7EB] dark:border-white/10 flex flex-col gap-8 sm:gap-10"
-        >
-          {experiences.map((exp, idx) => (
-            <motion.div
-              key={idx}
-              variants={itemVariants}
-              className="relative"
-            >
-              {/* Timeline Icon Badge */}
-              <div className="absolute -left-[38px] xs:-left-[47px] sm:-left-[69px] top-2 w-9 h-9 xs:w-10 xs:h-10 sm:w-13 sm:h-13 rounded-xl sm:rounded-2xl bg-white dark:bg-[#111111] border-2 border-[#E5E7EB] dark:border-white/10 flex items-center justify-center shadow-lg z-10 hover:scale-115 hover:rotate-6 transition-all duration-300 cursor-pointer">
-                {getIcon(exp.type)}
-              </div>
+        {/* Offline / Cached Data Notification Badge */}
+        {isCachedData && (
+          <div className="max-w-xl mx-auto mb-8 p-3 px-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-amber-700 dark:text-amber-300 text-xs flex items-center justify-between gap-3 shadow-sm">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+              <span>
+                Showing cached career history {lastUpdated ? `(Snapshot: ${new Date(lastUpdated).toLocaleTimeString()})` : ''}.
+              </span>
+            </div>
+            {onRetry && (
+              <button
+                type="button"
+                onClick={onRetry}
+                className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-900 dark:text-amber-100 font-bold cursor-pointer transition-colors text-[11px] shrink-0"
+              >
+                Sync Now
+              </button>
+            )}
+          </div>
+        )}
 
-              {/* Experience Card */}
-              <div className="bg-[#F8FAFC] dark:bg-[#111111] p-4 xs:p-6 sm:p-7 rounded-2xl sm:rounded-3xl border border-[#E5E7EB] dark:border-white/10 shadow-sm hover:shadow-2xl hover:shadow-[#C2272D]/10 dark:hover:shadow-[#00FFFF]/10 hover:border-[#C2272D] dark:hover:border-[#00FFFF] hover:-translate-y-1.5 transition-all duration-300 card-interactive">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3.5">
-                  <div>
-                    <h3 className="text-lg sm:text-[20px] font-bold font-title text-[#171717] dark:text-white leading-snug">
-                      {exp.role}
-                    </h3>
-                    <span className="text-[15px] font-semibold text-[#C2272D] dark:text-[#00FFFF] font-title">
-                      {exp.company}
-                    </span>
-                  </div>
-                  <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white dark:bg-white/5 border border-[#E5E7EB] dark:border-white/10 text-xs sm:text-[13px] font-medium text-[#525252] dark:text-[#D1D5DB] font-title shrink-0 w-fit">
-                    <FaCalendarAlt size={12} className="text-[#C2272D] dark:text-[#00FFFF]" />
-                    <span>{exp.duration}</span>
-                  </span>
+        {/* Error / DB Connection State */}
+        {error && (!experiences || experiences.length === 0) ? (
+          <div className="max-w-md mx-auto my-12 p-8 rounded-3xl bg-white dark:bg-[#111111] border border-red-500/25 shadow-xl text-center flex flex-col items-center gap-4">
+            <h3 className="text-base font-bold font-title text-slate-900 dark:text-white mb-1">Career History Syncing</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Experience timeline is reconnecting with the live database. No outdated static data is displayed.
+            </p>
+            {onRetry && (
+              <button
+                type="button"
+                onClick={onRetry}
+                className="mt-1 px-4 py-2 rounded-xl bg-[#C2272D] hover:bg-[#A51E23] text-white text-xs font-bold transition-all shadow-md cursor-pointer"
+              >
+                Retry
+              </button>
+            )}
+          </div>
+        ) : experiences.length === 0 ? (
+          <div className="text-center py-12 text-slate-400 dark:text-slate-500 text-sm">
+            No professional experience records found.
+          </div>
+        ) : (
+          <motion.div
+            variants={timelineVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-80px' }}
+            className="relative pl-6 xs:pl-8 sm:pl-12 border-l-2 border-[#E5E7EB] dark:border-white/10 flex flex-col gap-8 sm:gap-10"
+          >
+            {experiences.map((exp, idx) => (
+              <motion.div
+                key={idx}
+                variants={itemVariants}
+                className="relative"
+              >
+                {/* Timeline Icon Badge */}
+                <div className="absolute -left-[38px] xs:-left-[47px] sm:-left-[69px] top-2 w-9 h-9 xs:w-10 xs:h-10 sm:w-13 sm:h-13 rounded-xl sm:rounded-2xl bg-white dark:bg-[#111111] border-2 border-[#E5E7EB] dark:border-white/10 flex items-center justify-center shadow-lg z-10 hover:scale-115 hover:rotate-6 transition-all duration-300 cursor-pointer">
+                  {getIcon(exp.type)}
                 </div>
 
-                <p className="text-base text-[#525252] dark:text-[#D1D5DB] mb-5 leading-relaxed">
-                  {exp.description}
-                </p>
+                {/* Experience Card */}
+                <div className="bg-[#F8FAFC] dark:bg-[#111111] p-4 xs:p-6 sm:p-7 rounded-2xl sm:rounded-3xl border border-[#E5E7EB] dark:border-white/10 shadow-sm hover:shadow-2xl hover:shadow-[#C2272D]/10 dark:hover:shadow-[#00FFFF]/10 hover:border-[#C2272D] dark:hover:border-[#00FFFF] hover:-translate-y-1.5 transition-all duration-300 card-interactive">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3.5">
+                    <div>
+                      <h3 className="text-lg sm:text-[20px] font-bold font-title text-[#171717] dark:text-white leading-snug">
+                        {exp.role}
+                      </h3>
+                      <span className="text-[15px] font-semibold text-[#C2272D] dark:text-[#00FFFF] font-title">
+                        {exp.company}
+                      </span>
+                    </div>
+                    <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white dark:bg-white/5 border border-[#E5E7EB] dark:border-white/10 text-xs sm:text-[13px] font-medium text-[#525252] dark:text-[#D1D5DB] font-title shrink-0 w-fit">
+                      <FaCalendarAlt size={12} className="text-[#C2272D] dark:text-[#00FFFF]" />
+                      <span>{exp.duration}</span>
+                    </span>
+                  </div>
 
-                {exp.points && exp.points.length > 0 && (
-                  <ul className="grid grid-cols-1 gap-2.5 text-left">
-                    {exp.points.map((pt, pIdx) => (
-                      <li key={pIdx} className="flex gap-3 items-start text-sm sm:text-base text-[#525252] dark:text-[#D1D5DB]">
-                        <FaCheckCircle className="text-[#C2272D] dark:text-[#00FFFF] shrink-0 mt-1" size={15} />
-                        <span className="leading-relaxed">{pt}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
+                  <p className="text-base text-[#525252] dark:text-[#D1D5DB] mb-5 leading-relaxed">
+                    {exp.description}
+                  </p>
+
+                  {exp.points && exp.points.length > 0 && (
+                    <ul className="grid grid-cols-1 gap-2.5 text-left">
+                      {exp.points.map((pt, pIdx) => (
+                        <li key={pIdx} className="flex gap-3 items-start text-sm sm:text-base text-[#525252] dark:text-[#D1D5DB]">
+                          <FaCheckCircle className="text-[#C2272D] dark:text-[#00FFFF] shrink-0 mt-1" size={15} />
+                          <span className="leading-relaxed">{pt}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
       </div>
     </section>
   );

@@ -333,7 +333,7 @@ const CommunityResumeHub = () => {
           )}
         </div>
 
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           {!selectedResumeId ? (
             /* Hub Feed layout split */
             <motion.div

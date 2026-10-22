@@ -1195,5 +1195,24 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(payload)
     });
+  },
+  // Health & Database Diagnostics API
+  getHealth: async () => {
+    try {
+      const res = await fetch(`${API_BASE}/health?t=${Date.now()}`);
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      return { success: false, status: 'unhealthy', database: { status: 'Temporarily Unavailable' }, error: err.message };
+    }
+  },
+  getDbHealth: async () => {
+    try {
+      const res = await fetch(`${API_BASE}/health/db?t=${Date.now()}`);
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      return { success: false, status: 'Temporarily Unavailable', connected: false, error: err.message };
+    }
   }
 };

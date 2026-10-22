@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 import socket from '../services/socket';
@@ -16,6 +16,7 @@ import { ImageGallery } from './ImageGallery';
 
 const CommunityFeed = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const searchUrlQuery = searchParams.get('search') || '';
   
@@ -823,54 +824,54 @@ const CommunityFeed = () => {
   return (
     <div className="flex flex-col gap-6 w-full text-left">
       
-      {/* Top Banner Card */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#171717] via-[#111111] to-[#0A0A0A] border border-[#C2272D]/30 p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-xl card-interactive">
-        <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#C2272D]/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-[#00FFFF]/10 rounded-full blur-3xl pointer-events-none" />
-
+      {/* Compact Community Introduction (Clean, No Fake Numbers) */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#141414] via-[#111111] to-[#161616] border border-[#C2272D]/25 p-4 sm:p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm">
         <div className="z-10 text-left">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-[#C2272D] text-white">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-[#C2272D] text-white">
               DevCommunity
             </span>
             <span className="text-[10px] text-[#00FFFF] font-bold font-mono">
               Tauhid Shekhar Ecosystem
             </span>
           </div>
-          <h2 className="text-xl md:text-2xl font-black text-white font-title tracking-tight leading-tight">
-            Build Projects, Learn Together
+          <h2 className="text-base sm:text-lg font-black text-white font-title tracking-tight leading-snug">
+            Build Projects, Learn & Collaborate
           </h2>
-          <p className="text-xs md:text-sm text-slate-300 mt-1 max-w-md font-medium leading-relaxed">
-            Collaborate on full-stack code, resolve development doubts, and unlock rewards with top software engineers.
+          <p className="text-xs text-slate-400 mt-0.5 max-w-lg font-medium leading-relaxed">
+            Connect with full-stack engineers, ask questions, share technical resources, and showcase projects.
           </p>
         </div>
 
-        <div className="z-10 flex flex-wrap gap-3 sm:gap-4 shrink-0">
-          <div className="px-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-start min-w-[90px]">
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Members</span>
-            <span className="text-base font-black text-white mt-0.5">2,480+</span>
+        {user ? (
+          <div className="z-10 flex items-center gap-3 shrink-0 bg-white/5 border border-white/10 px-3.5 py-2 rounded-xl">
+            <div className="flex flex-col text-left">
+              <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Your Status</span>
+              <span className="text-xs font-black text-[#00FFFF] flex items-center gap-1 font-mono">
+                {user.xp || 0} XP &bull; Level {user.level || Math.floor((user.xp || 0) / 100) + 1}
+              </span>
+            </div>
           </div>
-          <div className="px-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-start min-w-[90px]">
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Active</span>
-            <span className="text-base font-black text-[#00FFFF] mt-0.5">180+</span>
-          </div>
-          <div className="px-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-start min-w-[90px]">
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Rewards</span>
-            <span className="text-base font-black text-[#C2272D] mt-0.5">10k+ XP</span>
-          </div>
-        </div>
+        ) : (
+          <Link
+            to="/login"
+            className="z-10 px-4 py-2 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-xl text-xs font-black tracking-wider transition-colors shadow-sm shrink-0"
+          >
+            Join Community
+          </Link>
+        )}
       </div>
 
       {/* Search & Category Filter Header */}
-      <div className="bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 p-3.5 sm:p-4 rounded-3xl flex flex-col md:flex-row gap-3 items-center justify-between shadow-sm">
-        <div className="flex flex-nowrap items-center gap-2 overflow-x-auto w-full md:w-auto scrollbar-none py-1">
+      <div className="bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 p-3 sm:p-3.5 rounded-2xl flex flex-col md:flex-row gap-3 items-center justify-between shadow-sm">
+        <div className="flex flex-nowrap items-center gap-1.5 sm:gap-2 overflow-x-auto w-full md:w-auto scrollbar-none py-0.5">
           {categories.map(c => (
             <button
               key={c}
               onClick={() => setActiveCategory(c)}
-              className={`whitespace-nowrap flex-shrink-0 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+              className={`whitespace-nowrap flex-shrink-0 px-3.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
                 activeCategory === c 
-                  ? 'bg-[#C2272D] text-white shadow-md shadow-[#C2272D]/20' 
+                  ? 'bg-[#C2272D] text-white shadow-sm shadow-[#C2272D]/20' 
                   : 'bg-[#F8FAFC] dark:bg-[#1C1C24] text-[#525252] dark:text-slate-300 hover:text-[#C2272D] dark:hover:text-white border border-[#E5E7EB] dark:border-white/5'
               }`}
             >
@@ -882,12 +883,28 @@ const CommunityFeed = () => {
         {searchUrlQuery && (
           <button 
             onClick={() => navigate('/community')}
-            className="text-[10px] font-black uppercase text-[#C2272D] hover:underline shrink-0"
+            className="text-[10px] font-black uppercase text-[#C2272D] hover:underline shrink-0 cursor-pointer"
           >
             Clear Search Filter
           </button>
         )}
       </div>
+
+      {/* Guest Prompt to Sign In if not logged in */}
+      {!user && (
+        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#111111] border border-[#E5E7EB] dark:border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+          <div className="text-left">
+            <h4 className="text-xs sm:text-sm font-bold text-[#171717] dark:text-white">Have a question or something to share?</h4>
+            <p className="text-[11px] text-[#525252] dark:text-slate-400 mt-0.5">Sign in to publish posts, participate in discussions, and vote on polls.</p>
+          </div>
+          <Link
+            to="/login"
+            className="px-4 py-2 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-xl text-xs font-black shrink-0 transition-colors shadow-sm"
+          >
+            Sign In to Post
+          </Link>
+        </div>
+      )}
 
       {/* Create Post Card */}
       {user && (

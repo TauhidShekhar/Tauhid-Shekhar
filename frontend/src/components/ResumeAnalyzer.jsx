@@ -246,7 +246,7 @@ const ResumeAnalyzer = () => {
           </div>
         )}
 
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           {!activeReport ? (
             /* Uploader and History Grid */
             <motion.div
@@ -507,7 +507,7 @@ const ResumeAnalyzer = () => {
 
                 {/* Tab content wrapper */}
                 <div className="bg-[#121217] border border-white/5 p-6 rounded-3xl shadow-xl min-h-[400px]">
-                  <AnimatePresence mode="wait">
+                  <AnimatePresence>
                     
                     {activeTab === 'breakdown' && (
                       <motion.div

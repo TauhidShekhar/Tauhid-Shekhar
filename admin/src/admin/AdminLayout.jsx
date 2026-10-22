@@ -84,6 +84,50 @@ const AdminLayout = () => {
     ? import.meta.env.VITE_CLIENT_URL
     : (isLocal ? 'http://localhost:5173' : 'https://tauhidshekhar.vercel.app');
 
+  // Real-time Database Health State
+  const [dbHealth, setDbHealth] = useState({
+    status: 'Checking...',
+    connected: false,
+    latencyMs: null,
+    host: null,
+    reconnectAttempts: 0
+  });
+  const [isHealthChecking, setIsHealthChecking] = useState(false);
+  const [showHealthTooltip, setShowHealthTooltip] = useState(false);
+
+  const checkDatabaseHealth = async () => {
+    setIsHealthChecking(true);
+    try {
+      const res = await api.getDbHealth();
+      if (res) {
+        setDbHealth({
+          status: res.status || (res.connected ? 'Connected' : 'Temporarily Unavailable'),
+          connected: Boolean(res.connected),
+          latencyMs: res.latencyMs,
+          host: res.host,
+          reconnectAttempts: res.reconnectAttempts || 0,
+          error: res.error
+        });
+      }
+    } catch (_) {
+      setDbHealth({
+        status: 'Temporarily Unavailable',
+        connected: false,
+        latencyMs: null,
+        host: null,
+        reconnectAttempts: 0
+      });
+    } finally {
+      setIsHealthChecking(false);
+    }
+  };
+
+  useEffect(() => {
+    checkDatabaseHealth();
+    const interval = setInterval(checkDatabaseHealth, 25000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Collapsible navigation sections
   const [sections, setSections] = useState({
     content: true,
@@ -763,13 +807,66 @@ const AdminLayout = () => {
           {/* Right Header Actions */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-2">
             
-            {/* Live System Indicator */}
-            <div className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wider">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              <span>Online</span>
+            {/* Live Database Health Indicator */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={checkDatabaseHealth}
+                onMouseEnter={() => setShowHealthTooltip(true)}
+                onMouseLeave={() => setShowHealthTooltip(false)}
+                className={`hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider cursor-pointer transition-all border ${
+                  dbHealth.connected
+                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20'
+                    : (dbHealth.status === 'Reconnecting' || dbHealth.status === 'Connecting'
+                        ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20'
+                        : 'bg-red-500/10 border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-500/20')
+                }`}
+                title="Click to re-ping database"
+              >
+                {dbHealth.connected ? (
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                ) : (
+                  <span className={`w-2 h-2 rounded-full ${dbHealth.status === 'Reconnecting' ? 'bg-amber-500 animate-spin' : 'bg-red-500'}`} />
+                )}
+                <span>
+                  {isHealthChecking 
+                    ? 'Pinging...' 
+                    : (dbHealth.connected 
+                        ? `DB: Connected ${dbHealth.latencyMs ? `(${dbHealth.latencyMs}ms)` : ''}`
+                        : `DB: ${dbHealth.status}`)}
+                </span>
+              </button>
+
+              {/* Hover Tooltip Details */}
+              {showHealthTooltip && (
+                <div className="absolute top-full right-0 mt-2 p-2.5 w-56 rounded-xl bg-white dark:bg-[#1A1A1A] border border-slate-200 dark:border-white/10 shadow-xl z-50 text-left pointer-events-none">
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Database Telemetry</div>
+                  <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                    Status: <span className={dbHealth.connected ? 'text-emerald-500' : 'text-red-500'}>{dbHealth.status}</span>
+                  </div>
+                  {dbHealth.host && (
+                    <div className="text-[11px] text-slate-500 truncate mt-0.5">
+                      Host: {dbHealth.host}
+                    </div>
+                  )}
+                  {dbHealth.latencyMs !== null && (
+                    <div className="text-[11px] text-slate-500 mt-0.5">
+                      Ping: {dbHealth.latencyMs} ms
+                    </div>
+                  )}
+                  {dbHealth.reconnectAttempts > 0 && (
+                    <div className="text-[11px] text-amber-500 mt-0.5">
+                      Reconnect attempts: {dbHealth.reconnectAttempts}
+                    </div>
+                  )}
+                  <div className="text-[9px] text-slate-400 mt-1 pt-1 border-t border-slate-100 dark:border-white/5">
+                    Click pill to re-test connection
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Notification Inbox Bell */}

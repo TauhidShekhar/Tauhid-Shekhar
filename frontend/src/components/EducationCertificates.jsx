@@ -119,7 +119,7 @@ const defaultAchievements = [
   }
 ];
 
-const EducationCertificates = ({ educationData, certificatesData, achievementsData }) => {
+const EducationCertificates = ({ educationData, certificatesData, achievementsData, error, isCachedData, lastUpdated, onRetry }) => {
   const [activeTab, setActiveTab] = useState('all'); // 'all', 'education', 'certificates', 'achievements'
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCertificate, setSelectedCertificate] = useState(null);
@@ -127,15 +127,15 @@ const EducationCertificates = ({ educationData, certificatesData, achievementsDa
 
   // Sync state with incoming props or fallback
   const educationList = useMemo(() => {
-    return Array.isArray(educationData) && educationData.length > 0 ? educationData : defaultEducation;
+    return Array.isArray(educationData) ? educationData : [];
   }, [educationData]);
 
   const certsList = useMemo(() => {
-    return Array.isArray(certificatesData) && certificatesData.length > 0 ? certificatesData : defaultCertificates;
+    return Array.isArray(certificatesData) ? certificatesData : [];
   }, [certificatesData]);
 
   const achievementsList = useMemo(() => {
-    return Array.isArray(achievementsData) && achievementsData.length > 0 ? achievementsData : defaultAchievements;
+    return Array.isArray(achievementsData) ? achievementsData : [];
   }, [achievementsData]);
 
   // Handle ESC key to close modal
@@ -249,6 +249,46 @@ const EducationCertificates = ({ educationData, certificatesData, achievementsDa
             Comprehensive overview of university qualifications, professional certifications, algorithmic accomplishments, and recognized tech milestones.
           </p>
         </div>
+
+        {/* Offline / Cached Data Notification Badge */}
+        {isCachedData && (
+          <div className="max-w-xl mx-auto p-3 px-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-amber-700 dark:text-amber-300 text-xs flex items-center justify-between gap-3 shadow-sm">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+              <span>
+                Showing cached education & certifications {lastUpdated ? `(Snapshot: ${new Date(lastUpdated).toLocaleTimeString()})` : ''}.
+              </span>
+            </div>
+            {onRetry && (
+              <button
+                type="button"
+                onClick={onRetry}
+                className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-900 dark:text-amber-100 font-bold cursor-pointer transition-colors text-[11px] shrink-0"
+              >
+                Sync Now
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Error / DB Connection State */}
+        {error && (educationList.length === 0 && certsList.length === 0 && achievementsList.length === 0) && (
+          <div className="max-w-md mx-auto my-6 p-8 rounded-3xl bg-white dark:bg-[#111111] border border-red-500/25 shadow-xl text-center flex flex-col items-center gap-4">
+            <h3 className="text-base font-bold font-title text-slate-900 dark:text-white mb-1">Credentials Syncing with Database</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Academic and credential records are currently establishing live synchronization.
+            </p>
+            {onRetry && (
+              <button
+                type="button"
+                onClick={onRetry}
+                className="mt-1 px-4 py-2 rounded-xl bg-[#C2272D] hover:bg-[#A51E23] text-white text-xs font-bold transition-all shadow-md cursor-pointer"
+              >
+                Retry
+              </button>
+            )}
+          </div>
+        )}
 
         {/* ==================== 2. PROMINENT IMPACT STATS BAR ==================== */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">

@@ -34,9 +34,9 @@ const defaultServices = [
   }
 ];
 
-const Services = ({ servicesData }) => {
+const Services = ({ servicesData, error, isCachedData, lastUpdated, onRetry }) => {
   const [services, setServices] = useState(() => {
-    return (servicesData && servicesData.length > 0) ? servicesData : [];
+    return Array.isArray(servicesData) ? servicesData : [];
   });
 
   const getIcon = (iconName) => {
@@ -215,14 +215,57 @@ const Services = ({ servicesData }) => {
           </h2>
         </div>
 
-        {/* Services Grid */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-50px' }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10"
-        >
+        {/* Offline / Cached Data Notification Badge */}
+        {isCachedData && (
+          <div className="max-w-xl mx-auto mb-8 p-3 px-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-amber-700 dark:text-amber-300 text-xs flex items-center justify-between gap-3 shadow-sm">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+              <span>
+                Showing cached services {lastUpdated ? `(Snapshot: ${new Date(lastUpdated).toLocaleTimeString()})` : ''}.
+              </span>
+            </div>
+            {onRetry && (
+              <button
+                type="button"
+                onClick={onRetry}
+                className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-900 dark:text-amber-100 font-bold cursor-pointer transition-colors text-[11px] shrink-0"
+              >
+                Sync Now
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Error / DB Reconnecting State */}
+        {error && (!services || services.length === 0) ? (
+          <div className="max-w-md mx-auto my-12 p-8 rounded-3xl bg-white dark:bg-[#111111] border border-red-500/25 shadow-xl text-center flex flex-col items-center gap-4">
+            <h3 className="text-base font-bold font-title text-slate-900 dark:text-white mb-1">Services Syncing</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Available service listings are synchronizing with the database.
+            </p>
+            {onRetry && (
+              <button
+                type="button"
+                onClick={onRetry}
+                className="mt-1 px-4 py-2 rounded-xl bg-[#C2272D] hover:bg-[#A51E23] text-white text-xs font-bold transition-all shadow-md cursor-pointer"
+              >
+                Retry
+              </button>
+            )}
+          </div>
+        ) : services.length === 0 ? (
+          <div className="text-center py-12 text-slate-400 dark:text-slate-500 text-sm">
+            No service offerings currently listed.
+          </div>
+        ) : (
+          /* Services Grid */
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-50px' }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10"
+          >
           {services.map((service, idx) => (
             <motion.div
               key={idx}
@@ -280,6 +323,7 @@ const Services = ({ servicesData }) => {
             </motion.div>
           ))}
         </motion.div>
+        )}
       </div>
 
       {/* Transactional Service Order Modal */}

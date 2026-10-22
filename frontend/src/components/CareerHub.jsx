@@ -681,7 +681,7 @@ ${builderData.educations.map(edu => `- ${edu.degree} from ${edu.school} (${edu.y
 
       {/* Sub Tabs Container */}
       <div className="min-h-[480px]">
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           
           {/* TAB 1: ATS Checker Workspace */}
           {activeSubTab === 'atsChecker' && (

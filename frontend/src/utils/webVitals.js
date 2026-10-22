@@ -78,7 +78,7 @@ const reportMetric = (name, value, onReport, isDev) => {
     onReport({ name, value: rounded });
   }
 
-  if (isDev) {
+  if (isDev && typeof window !== 'undefined' && window.__SHOW_WEB_VITALS__) {
     let color = '#22c55e'; // Green
     if (name === 'LCP' && rounded > 2500) color = '#ef4444'; // Red
     else if (name === 'FCP' && rounded > 1800) color = '#f59e0b'; // Orange

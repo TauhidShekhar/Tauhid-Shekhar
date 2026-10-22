@@ -1,4 +1,5 @@
 let ioInstance = null;
+const { clearCache } = require('../middleware/cacheMiddleware');
 
 const socketUtil = {
   setIO: (io) => {
@@ -8,12 +9,18 @@ const socketUtil = {
     return ioInstance;
   },
   emitContentUpdate: (model, action, data) => {
+    try {
+      clearCache();
+    } catch (_) {}
     if (ioInstance) {
       ioInstance.emit('content_update', { model, action, data });
     }
   },
   contentSyncPlugin: (schema) => {
     const broadcast = (model, action, doc) => {
+      try {
+        clearCache();
+      } catch (_) {}
       if (ioInstance) {
         ioInstance.emit('content_update', {
           model: model.toLowerCase(),

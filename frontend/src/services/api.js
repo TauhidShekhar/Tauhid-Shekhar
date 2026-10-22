@@ -510,6 +510,24 @@ export const api = {
     return apiRequest('/portfolio/all');
   },
 
+  // Active Health Checks
+  getHealth: async () => {
+    try {
+      const res = await fetch(`${API_BASE}/health?t=${Date.now()}`);
+      return await res.json();
+    } catch (err) {
+      return { success: false, status: 'unhealthy', database: { status: 'Temporarily Unavailable' }, error: err.message };
+    }
+  },
+  getDbHealth: async () => {
+    try {
+      const res = await fetch(`${API_BASE}/health/db?t=${Date.now()}`);
+      return await res.json();
+    } catch (err) {
+      return { success: false, status: 'Temporarily Unavailable', connected: false, error: err.message };
+    }
+  },
+
   // Website Settings
   getSettings: async () => {
     return apiRequest('/settings');

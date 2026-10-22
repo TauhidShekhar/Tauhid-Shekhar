@@ -31,6 +31,14 @@ const Dashboard = () => {
     website: 'Checking...'
   });
   
+  const [dbDetails, setDbDetails] = useState({
+    connected: false,
+    latencyMs: null,
+    host: null,
+    reconnectAttempts: 0
+  });
+  const [isPingingDb, setIsPingingDb] = useState(false);
+  
   const [recentActivity, setRecentActivity] = useState([]);
   const [recentMessages, setRecentMessages] = useState([]);
   const [analyticsData, setAnalyticsData] = useState([]);
@@ -41,11 +49,46 @@ const Dashboard = () => {
     ? import.meta.env.VITE_CLIENT_URL
     : (isLocal ? 'http://localhost:5173' : 'https://tauhidshekhar.vercel.app');
 
+  const checkDbPing = async () => {
+    setIsPingingDb(true);
+    try {
+      const dbRes = await api.getDbHealth();
+      if (dbRes) {
+        setSystem(prev => ({
+          ...prev,
+          database: dbRes.status || (dbRes.connected ? 'Connected' : 'Temporarily Unavailable'),
+          api: 'Operational (200 OK)'
+        }));
+        setDbDetails({
+          connected: Boolean(dbRes.connected),
+          latencyMs: dbRes.latencyMs,
+          host: dbRes.host,
+          reconnectAttempts: dbRes.reconnectAttempts || 0
+        });
+      }
+    } catch (_) {
+      setSystem(prev => ({
+        ...prev,
+        database: 'Temporarily Unavailable',
+        api: 'Unreachable'
+      }));
+      setDbDetails({
+        connected: false,
+        latencyMs: null,
+        host: null,
+        reconnectAttempts: 0
+      });
+    } finally {
+      setIsPingingDb(false);
+    }
+  };
+
   const fetchDashboardData = async () => {
     try {
-      const [analyticsRes, msgRes] = await Promise.all([
+      const [analyticsRes, msgRes, dbRes] = await Promise.all([
         api.getAnalyticsStats().catch(() => ({ success: false })),
-        api.getMessages().catch(() => ({ success: false }))
+        api.getMessages().catch(() => ({ success: false })),
+        api.getDbHealth().catch(() => ({ success: false, status: 'Temporarily Unavailable' }))
       ]);
 
       if (analyticsRes.success && analyticsRes.data) {
@@ -64,7 +107,7 @@ const Dashboard = () => {
           visitors: summary?.visitors || 0
         });
         setSystem({
-          database: sys?.database || 'Connected',
+          database: dbRes?.status || sys?.database || 'Connected',
           api: sys?.api || 'Operational (200 OK)',
           website: sys?.website || 'Online'
         });
@@ -72,9 +115,18 @@ const Dashboard = () => {
         setAnalyticsData(visitorChart?.slice(-7) || []);
       } else {
         setSystem({
-          database: 'Connected',
+          database: dbRes?.status || 'Temporarily Unavailable',
           api: 'Operational (200 OK)',
           website: 'Online'
+        });
+      }
+
+      if (dbRes) {
+        setDbDetails({
+          connected: Boolean(dbRes.connected),
+          latencyMs: dbRes.latencyMs,
+          host: dbRes.host,
+          reconnectAttempts: dbRes.reconnectAttempts || 0
         });
       }
 
@@ -359,26 +411,58 @@ const Dashboard = () => {
           
           {/* Status Box */}
           <div className="p-6 rounded-3xl bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 shadow-sm flex flex-col gap-4">
-            <h3 className="text-xs font-bold font-title uppercase tracking-wider text-slate-400 dark:text-slate-400 flex items-center gap-2">
-              <FaServer className="text-[#C2272D] dark:text-[#00FFFF]" />
-              <span>System Health & Status</span>
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold font-title uppercase tracking-wider text-slate-400 dark:text-slate-400 flex items-center gap-2">
+                <FaServer className="text-[#C2272D] dark:text-[#00FFFF]" />
+                <span>System Health & Status</span>
+              </h3>
+              <button
+                type="button"
+                onClick={checkDbPing}
+                disabled={isPingingDb}
+                className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-white/5 hover:bg-[#C2272D] hover:text-white dark:hover:bg-[#00FFFF] dark:hover:text-black transition-colors cursor-pointer border border-slate-200 dark:border-white/10 flex items-center gap-1.5"
+              >
+                {isPingingDb ? (
+                  <>
+                    <span className="w-2 h-2 rounded-full border-2 border-current border-t-transparent animate-spin" />
+                    <span>Pinging...</span>
+                  </>
+                ) : (
+                  <span>Test Ping</span>
+                )}
+              </button>
+            </div>
 
             <div className="flex flex-col gap-2.5 text-xs text-left">
               <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/60 dark:border-white/5">
-                <span className="font-semibold flex items-center gap-2 text-slate-700 dark:text-slate-300">
-                  <FaDatabase size={13} className="text-orange-500" /> Database Status
-                </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                  {system.database}
-                </span>
+                <div className="flex flex-col">
+                  <span className="font-semibold flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                    <FaDatabase size={13} className="text-orange-500" /> Database Status
+                  </span>
+                  {dbDetails.host && (
+                    <span className="text-[10px] text-slate-400 ml-5 truncate max-w-[150px]">
+                      {dbDetails.host}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                    dbDetails.connected
+                      ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                      : (system.database === 'Reconnecting'
+                          ? 'bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400'
+                          : 'bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400')
+                  }`}>
+                    {system.database} {dbDetails.latencyMs ? `(${dbDetails.latencyMs}ms)` : ''}
+                  </span>
+                </div>
               </div>
 
               <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/60 dark:border-white/5">
                 <span className="font-semibold flex items-center gap-2 text-slate-700 dark:text-slate-300">
                   <FaGlobe size={13} className="text-[#00FFFF]" /> API Gateway
                 </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                   {system.api}
                 </span>
               </div>
@@ -387,7 +471,7 @@ const Dashboard = () => {
                 <span className="font-semibold flex items-center gap-2 text-slate-700 dark:text-slate-300">
                   <FaGlobe size={13} className="text-[#C2272D]" /> Website Status
                 </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                   {system.website}
                 </span>
               </div>

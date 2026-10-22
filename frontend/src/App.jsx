@@ -34,11 +34,17 @@ const SectionSkeleton = () => (
   </div>
 );
 
-let isInitialFetchStarted = false;
-
-const App = () => {
-  const { user } = useAuth();
-  const [portfolioData, setPortfolioData] = useState({
+const getInitialPortfolioData = () => {
+  try {
+    const cachedRaw = localStorage.getItem('tauhid_portfolio_cached_v2');
+    if (cachedRaw) {
+      const parsed = JSON.parse(cachedRaw);
+      if (parsed && parsed.data) {
+        return parsed.data;
+      }
+    }
+  } catch (_) {}
+  return {
     settings: null,
     hero: null,
     about: null,
@@ -50,7 +56,31 @@ const App = () => {
     education: [],
     certificates: [],
     achievements: []
+  };
+};
+
+const App = () => {
+  const { user } = useAuth();
+  const [portfolioData, setPortfolioData] = useState(getInitialPortfolioData);
+  const [fetchError, setFetchError] = useState(null);
+  const [isCachedData, setIsCachedData] = useState(() => {
+    try {
+      return Boolean(localStorage.getItem('tauhid_portfolio_cached_v2'));
+    } catch (_) {
+      return false;
+    }
   });
+  const [lastUpdated, setLastUpdated] = useState(() => {
+    try {
+      const cachedRaw = localStorage.getItem('tauhid_portfolio_cached_v2');
+      if (cachedRaw) {
+        const parsed = JSON.parse(cachedRaw);
+        if (parsed?.timestamp) return new Date(parsed.timestamp);
+      }
+    } catch (_) {}
+    return null;
+  });
+  const [isRetrying, setIsRetrying] = useState(false);
   const settings = portfolioData.settings;
   const [showCookieNotice, setShowCookieNotice] = useState(false);
 
@@ -127,45 +157,73 @@ const App = () => {
     if (isFetching.current) return;
     isFetching.current = true;
     if (showLoader) setLoading(true);
+    setIsRetrying(true);
     try {
       const res = await api.getPortfolioAll();
-      if (res && res.success) {
+      if (res && res.success && res.data) {
         const d = res.data;
-        setPortfolioData({
+        const freshData = {
           settings: d.settings || null,
           hero: d.hero || null,
           about: d.about || null,
-          skills: d.skills || [],
-          projects: d.projects || [],
-          experiences: d.experiences || [],
-          services: d.services || [],
+          skills: Array.isArray(d.skills) ? d.skills : [],
+          projects: Array.isArray(d.projects) ? d.projects : [],
+          experiences: Array.isArray(d.experiences) ? d.experiences : [],
+          services: Array.isArray(d.services) ? d.services : [],
           activeResume: d.activeResume || null,
-          education: d.education || [],
-          certificates: d.certificates || [],
-          achievements: d.achievements || []
-        });
+          education: Array.isArray(d.education) ? d.education : [],
+          certificates: Array.isArray(d.certificates) ? d.certificates : [],
+          achievements: Array.isArray(d.achievements) ? d.achievements : []
+        };
+        setPortfolioData(freshData);
+        setFetchError(null);
+        setIsCachedData(false);
+        setLastUpdated(new Date());
+
+        try {
+          localStorage.setItem('tauhid_portfolio_cached_v2', JSON.stringify({
+            timestamp: Date.now(),
+            data: freshData
+          }));
+        } catch (_) {}
+      } else {
+        throw new Error(res?.message || 'Database temporarily unavailable');
       }
     } catch (err) {
-      console.error('Failed to load portfolio data:', err.message);
+      console.warn('Portfolio API load failed:', err.message);
+      let restored = false;
+      try {
+        const cachedRaw = localStorage.getItem('tauhid_portfolio_cached_v2');
+        if (cachedRaw) {
+          const parsed = JSON.parse(cachedRaw);
+          if (parsed && parsed.data) {
+            setPortfolioData(parsed.data);
+            setIsCachedData(true);
+            setLastUpdated(new Date(parsed.timestamp));
+            setFetchError('Operating in offline cached mode. Reconnecting to database...');
+            restored = true;
+          }
+        }
+      } catch (_) {}
+
+      if (!restored) {
+        setFetchError(err.message || 'Unable to connect to database. Please retry.');
+        setIsCachedData(false);
+      }
     } finally {
       isFetching.current = false;
       setLoading(false);
-      // Flag app as loaded after a short delay to permit smooth startup transition
+      setIsRetrying(false);
       setTimeout(() => {
         window.isAppLoaded = true;
       }, 100);
     }
   };
 
-  // Fetch initial data on mount
+  // Fetch fresh data whenever component mounts (handles back navigation from forms / other pages)
   useEffect(() => {
-    if (!isInitialFetchStarted) {
-      isInitialFetchStarted = true;
-      fetchPortfolioData(true);
-    } else {
-      // If already started in another strict mode mount, ensure spinner turns off
-      setLoading(false);
-    }
+    const hasCachedContent = portfolioData.skills?.length > 0 || portfolioData.projects?.length > 0;
+    fetchPortfolioData(!hasCachedContent);
   }, []);
 
   // Listen for real-time updates and fetch silently in the background
@@ -445,19 +503,43 @@ const App = () => {
         </Suspense>
 
         <Suspense fallback={<SectionSkeleton />}>
-          <Skills skillsData={portfolioData.skills} />
+          <Skills 
+            skillsData={portfolioData.skills} 
+            error={fetchError} 
+            isCachedData={isCachedData} 
+            lastUpdated={lastUpdated} 
+            onRetry={() => fetchPortfolioData(true)} 
+          />
         </Suspense>
 
         <Suspense fallback={<SectionSkeleton />}>
-          <Projects projectsData={portfolioData.projects} />
+          <Projects 
+            projectsData={portfolioData.projects} 
+            error={fetchError} 
+            isCachedData={isCachedData} 
+            lastUpdated={lastUpdated} 
+            onRetry={() => fetchPortfolioData(true)} 
+          />
         </Suspense>
 
         <Suspense fallback={<SectionSkeleton />}>
-          <Experience experienceData={portfolioData.experiences} />
+          <Experience 
+            experienceData={portfolioData.experiences} 
+            error={fetchError} 
+            isCachedData={isCachedData} 
+            lastUpdated={lastUpdated} 
+            onRetry={() => fetchPortfolioData(true)} 
+          />
         </Suspense>
 
         <Suspense fallback={<SectionSkeleton />}>
-          <Services servicesData={portfolioData.services} />
+          <Services 
+            servicesData={portfolioData.services} 
+            error={fetchError} 
+            isCachedData={isCachedData} 
+            lastUpdated={lastUpdated} 
+            onRetry={() => fetchPortfolioData(true)} 
+          />
         </Suspense>
 
         <Suspense fallback={<SectionSkeleton />}>
@@ -465,7 +547,15 @@ const App = () => {
         </Suspense>
 
         <Suspense fallback={<SectionSkeleton />}>
-          <EducationCertificates educationData={portfolioData.education} certificatesData={portfolioData.certificates} achievementsData={portfolioData.achievements} />
+          <EducationCertificates 
+            educationData={portfolioData.education} 
+            certificatesData={portfolioData.certificates} 
+            achievementsData={portfolioData.achievements} 
+            error={fetchError} 
+            isCachedData={isCachedData} 
+            lastUpdated={lastUpdated} 
+            onRetry={() => fetchPortfolioData(true)} 
+          />
         </Suspense>
 
         <Suspense fallback={<SectionSkeleton />}>
