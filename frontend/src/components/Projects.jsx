@@ -254,7 +254,7 @@ const Projects = ({ projectsData }) => {
 
   if (projectsData === null) {
     return (
-      <section id="projects" className="py-24 sm:py-28 bg-[#F8FAFC]/70 dark:bg-transparent relative">
+      <section id="projects" className="scroll-mt-24 py-24 sm:py-28 bg-[#F8FAFC]/70 dark:bg-transparent relative">
         <div className="max-w-[1400px] mx-auto px-4 xs:px-6 sm:px-8 lg:px-12">
           <div className="text-center mb-14 sm:mb-16 animate-pulse">
             <div className="h-6 w-36 bg-[#C2272D]/10 dark:bg-[#00FFFF]/10 rounded-full mx-auto mb-3" />
@@ -339,7 +339,7 @@ const Projects = ({ projectsData }) => {
     : projectItems.filter(p => p.tag === activeFilter);
 
   return (
-    <section id="projects" className="py-24 sm:py-28 bg-[#F8FAFC]/70 dark:bg-transparent relative">
+    <section id="projects" className="scroll-mt-24 py-24 sm:py-28 bg-[#F8FAFC]/70 dark:bg-transparent relative">
       <div className="max-w-[1400px] mx-auto px-4 xs:px-6 sm:px-8 lg:px-12">
         
         {/* Section Header */}
@@ -372,19 +372,17 @@ const Projects = ({ projectsData }) => {
         </div>
 
         {/* Projects Grid */}
-        <motion.div
-          layout
+        <div
           className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10"
         >
-          <AnimatePresence mode="popLayout">
+          <AnimatePresence mode="wait">
             {filteredProjects.map((project) => (
               <motion.div
                 key={project._id}
-                layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25 }}
                 className="bg-white dark:bg-[#111111] rounded-3xl overflow-hidden border border-[#E5E7EB] dark:border-white/10 shadow-md hover:shadow-2xl hover:shadow-[#C2272D]/10 dark:hover:shadow-[#00FFFF]/10 transition-all duration-300 flex flex-col justify-between group hover:-translate-y-2 card-interactive"
               >
                 {/* Image & Overlay */}
@@ -486,7 +484,7 @@ const Projects = ({ projectsData }) => {
               </motion.div>
             ))}
           </AnimatePresence>
-        </motion.div>
+        </div>
 
         {/* Redesigned Read More Modal Popup with createPortal */}
         {typeof document !== 'undefined' && createPortal(

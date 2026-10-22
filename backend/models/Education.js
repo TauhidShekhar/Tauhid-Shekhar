@@ -21,6 +21,26 @@ const educationSchema = new mongoose.Schema(
       type: String,
       default: ''
     },
+    fieldOfStudy: {
+      type: String,
+      default: ''
+    },
+    location: {
+      type: String,
+      default: ''
+    },
+    status: {
+      type: String,
+      default: 'Completed'
+    },
+    honors: {
+      type: String,
+      default: ''
+    },
+    link: {
+      type: String,
+      default: ''
+    },
     description: {
       type: String,
       default: ''

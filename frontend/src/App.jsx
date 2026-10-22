@@ -229,30 +229,100 @@ const App = () => {
     };
   }, [settings?.customFooterScripts]);
 
-  // 3. Scroll Event Listeners (Active menu and Back-to-Top CTA)
+  // 3. Scroll Event Listeners (Active menu and Back-to-Top CTA) - Throttled with RAF
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollPos = window.scrollY;
-      setShowBackToTop(scrollPos > 400);
+    let ticking = false;
 
-      // Section intersection observer
-      const sections = ['home', 'about', 'skills', 'projects', 'experience', 'education', 'resume', 'certificates', 'testimonials', 'blog', 'faq', 'contact'];
-      for (const sectionId of sections) {
-        const el = document.getElementById(sectionId);
-        if (el) {
-          const top = el.offsetTop - 120;
-          const height = el.offsetHeight;
-          if (scrollPos >= top && scrollPos < top + height) {
-            setActiveSection(sectionId);
-            break;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const scrollPos = window.scrollY;
+          setShowBackToTop(prev => (scrollPos > 400) !== prev ? (scrollPos > 400) : prev);
+
+          // Section intersection observer in exact DOM order
+          const sections = ['home', 'about', 'skills', 'projects', 'experience', 'services', 'resume', 'education', 'contact'];
+          for (const sectionId of sections) {
+            const el = document.getElementById(sectionId);
+            if (el) {
+              const top = el.offsetTop - 120;
+              const height = el.offsetHeight;
+              if (scrollPos >= top && scrollPos < top + height) {
+                setActiveSection(prev => prev !== sectionId ? sectionId : prev);
+                break;
+              }
+            }
           }
-        }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // 4. Cross-page and Direct URL Hash Anchor Resolver (with Browser Back/Forward support)
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const resolveTarget = (raw) => {
+      if (!raw) return;
+      const targetId = raw.replace(/^#/, '');
+      if (!targetId) return;
+
+      let attempts = 0;
+      const maxAttempts = 35; // Retry while Suspense components are mounting
+
+      const resolveScroll = () => {
+        const el = document.getElementById(targetId);
+        if (el) {
+          el.scrollIntoView({
+            behavior: prefersReducedMotion ? 'auto' : 'smooth',
+            block: 'start'
+          });
+
+          const rect = el.getBoundingClientRect();
+          if (Math.abs(rect.top - 80) > 40) {
+            const targetTop = rect.top + window.pageYOffset - 80;
+            window.scrollTo({
+              top: Math.max(0, targetTop),
+              behavior: prefersReducedMotion ? 'auto' : 'smooth'
+            });
+          }
+          setActiveSection(targetId);
+        }
+        
+        attempts++;
+        if (attempts < maxAttempts) {
+          setTimeout(resolveScroll, 120);
+        }
+      };
+
+      resolveScroll();
+    };
+
+    // Handle initial mount or route navigation
+    const rawTarget = location.hash || location.state?.scrollTo;
+    if (rawTarget) {
+      resolveTarget(rawTarget);
+    }
+
+    // Handle Browser Back / Forward buttons and manual hash changes
+    const handleHashOrPopState = () => {
+      if (window.location.hash) {
+        resolveTarget(window.location.hash);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashOrPopState);
+    window.addEventListener('popstate', handleHashOrPopState);
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashOrPopState);
+      window.removeEventListener('popstate', handleHashOrPopState);
+    };
+  }, [location.pathname, location.hash, location.state]);
 
   // Maintenance or Platform Offline check (with Admin bypass)
   if (settings) {

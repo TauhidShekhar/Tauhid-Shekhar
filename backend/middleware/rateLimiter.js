@@ -81,6 +81,15 @@ const recoveryLimiter = createLimiter({
   message: 'Too many recovery attempts. Please wait a few minutes before trying again.',
 });
 
+// ---------------------------------------------------------------------------
+// Form Submission Limiter – 15 submissions per 15 minutes
+// ---------------------------------------------------------------------------
+const formSubmissionLimiter = createLimiter({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 15,
+  message: 'Too many submissions from this connection. Please wait a few minutes before submitting again.',
+});
+
 module.exports = {
   loginLimiter,
   registerLimiter,
@@ -89,5 +98,6 @@ module.exports = {
   uploadLimiter,
   apiLimiter,
   recoveryLimiter,
+  formSubmissionLimiter,
 };
 

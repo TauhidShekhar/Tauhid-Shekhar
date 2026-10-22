@@ -1,64 +1,109 @@
-const API_BASE = 'http://localhost:5000/api';
+const getApiBase = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && envUrl !== 'undefined' && envUrl !== 'null') return envUrl;
+  const protocol = window.location.protocol;
+  const hostname = window.location.hostname;
+  const port = window.location.port;
+  if (port === '5173' || port === '5174') {
+    return `${protocol}//${hostname}:5000/api`;
+  }
+  return 'https://tauhid-shekhar-portfolio.onrender.com/api';
+};
+const API_BASE = getApiBase();
 
-// Helper for fetch requests with credentials (cookie support)
+let authFailureCallback = null;
+
+export const registerAuthFailureCallback = (callback) => {
+  authFailureCallback = callback;
+};
+
+const checkResponse = async (response) => {
+  const result = await response.json();
+  if (!response.ok) {
+    if (response.status === 401 && authFailureCallback) {
+      authFailureCallback();
+    }
+    const error = new Error(result.message || 'API request failed');
+    error.status = response.status;
+    error.errors = result.errors;
+    throw error;
+  }
+  return result;
+};
+
+const inflightRequests = new Map();
+
 const apiRequest = async (endpoint, options = {}) => {
+  const method = options.method ? options.method.toUpperCase() : 'GET';
+  
+  // Deduplicate concurrent GET requests
+  if (method === 'GET') {
+    if (inflightRequests.has(endpoint)) {
+      return inflightRequests.get(endpoint);
+    }
+  }
+
   const headers = {
     'Content-Type': 'application/json',
-    'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-    'Pragma': 'no-cache',
     ...options.headers,
   };
 
-  // Add cache buster query parameter to GET requests
   let url = `${API_BASE}${endpoint}`;
-  if (!options.method || options.method.toUpperCase() === 'GET') {
-    const separator = url.includes('?') ? '&' : '?';
-    url = `${url}${separator}t=${Date.now()}`;
-  }
 
   // Configure 6-second request timeout
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 6000);
 
-  try {
-    const response = await fetch(url, {
-      ...options,
-      headers,
-      credentials: 'include', // Crucial for HttpOnly cookies on cross-origin requests
-      cache: 'no-store', // Disable browser caching for fresh database data
-      signal: controller.signal
-    });
-    clearTimeout(timeoutId);
+  const requestPromise = (async () => {
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers,
+        credentials: 'include', // Crucial for HttpOnly cookies on cross-origin requests
+        cache: 'no-store', // Disable browser caching for fresh database data
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      return await checkResponse(response);
+    } catch (err) {
+      clearTimeout(timeoutId);
+      if (err.name === 'AbortError') {
+        throw new Error('API Request timed out after 6 seconds');
+      }
+      throw err;
+    } finally {
+      if (method === 'GET') {
+        inflightRequests.delete(endpoint);
+      }
+    }
+  })();
 
-    const result = await response.json();
-    if (!response.ok) {
-      throw new Error(result.message || 'API request failed');
-    }
-    return result;
-  } catch (err) {
-    clearTimeout(timeoutId);
-    if (err.name === 'AbortError') {
-      throw new Error('API Request timed out after 6 seconds');
-    }
-    throw err;
+  if (method === 'GET') {
+    inflightRequests.set(endpoint, requestPromise);
   }
+
+  return requestPromise;
 };
 
 // Helper for multipart/form-data requests (file uploads)
 const apiUploadRequest = async (endpoint, formData, options = {}) => {
+  const headers = {
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    ...options.headers,
+  };
   const response = await fetch(`${API_BASE}${endpoint}`, {
     method: 'POST',
     body: formData,
     credentials: 'include',
-    ...options
+    cache: 'no-store',
+    ...options,
+    headers
   });
 
-  const result = await response.json();
-  if (!response.ok) {
-    throw new Error(result.message || 'File upload failed');
-  }
-  return result;
+  return checkResponse(response);
 };
+
 
 // API Services
 export const api = {
@@ -71,6 +116,9 @@ export const api = {
   },
   verifyEmail: async (token) => {
     return apiRequest(`/auth/verify-email/${token}`);
+  },
+  checkUsernameAvailability: async (username, excludeUserId = '') => {
+    return apiRequest(`/auth/check-username?username=${encodeURIComponent(username)}&excludeUserId=${excludeUserId}`);
   },
   login: async (identifier, password, rememberMe = false) => {
     return apiRequest('/auth/login', {
@@ -94,9 +142,7 @@ export const api = {
       body: formData,
       credentials: 'include'
     });
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.message || 'Profile update failed');
-    return result;
+    return checkResponse(response);
   },
   changePassword: async (oldPassword, newPassword, confirmPassword) => {
     return apiRequest('/auth/change-password', {
@@ -104,16 +150,46 @@ export const api = {
       body: JSON.stringify({ oldPassword, newPassword, confirmPassword })
     });
   },
+  logoutAllDevices: async () => {
+    return apiRequest('/auth/logout-all', { method: 'POST' });
+  },
+  downloadPersonalData: async () => {
+    // Return the raw response or fetch directly
+    const response = await fetch(`${API_BASE}/auth/download-data`, {
+      method: 'GET',
+      credentials: 'include'
+    });
+    if (!response.ok) throw new Error('Failed to download personal data');
+    return response.json();
+  },
   forgotPassword: async (email) => {
     return apiRequest('/auth/forgot-password', {
       method: 'POST',
       body: JSON.stringify({ email })
     });
   },
+  verifyResetToken: async (token) => {
+    return apiRequest('/auth/verify-reset-token', {
+      method: 'POST',
+      body: JSON.stringify({ token })
+    });
+  },
   resetPassword: async (token, password, confirmPassword) => {
     return apiRequest(`/auth/reset-password/${token}`, {
       method: 'POST',
       body: JSON.stringify({ password, confirmPassword })
+    });
+  },
+  recoverAccount: async (identifier) => {
+    return apiRequest('/auth/recover-account', {
+      method: 'POST',
+      body: JSON.stringify({ identifier })
+    });
+  },
+  verifyRecoveryOtp: async (identifier, otp, password, confirmPassword) => {
+    return apiRequest('/auth/verify-recovery-otp', {
+      method: 'POST',
+      body: JSON.stringify({ identifier, otp, password, confirmPassword })
     });
   },
   sendOTP: async () => {
@@ -379,6 +455,9 @@ export const api = {
   getResumes: async () => {
     return apiRequest('/resume');
   },
+  getActiveResume: async () => {
+    return apiRequest('/resume/active');
+  },
   uploadResume: async (formData) => {
     const response = await fetch(`${API_BASE}/resume`, {
       method: 'POST',
@@ -427,21 +506,15 @@ export const api = {
     return result;
   },
 
+  getPortfolioAll: async () => {
+    return apiRequest('/portfolio/all');
+  },
+
   // Website Settings
   getSettings: async () => {
     return apiRequest('/settings');
   },
   updateSettings: async (settingsData) => {
-    if (settingsData instanceof FormData) {
-      const response = await fetch(`${API_BASE}/settings`, {
-        method: 'PUT',
-        body: settingsData,
-        credentials: 'include'
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.message || 'Settings update failed');
-      return result;
-    }
     return apiRequest('/settings', {
       method: 'PUT',
       body: JSON.stringify(settingsData)
@@ -450,19 +523,28 @@ export const api = {
 
   // Contact Messages
   getMessages: async () => {
-    return apiRequest('/messages');
+    return apiRequest('/contact');
   },
   sendMessage: async (messageData) => {
-    return apiRequest('/messages', {
+    return apiRequest('/contact', {
+      method: 'POST',
+      body: JSON.stringify(messageData)
+    });
+  },
+  createMessage: async (messageData) => {
+    return apiRequest('/contact', {
       method: 'POST',
       body: JSON.stringify(messageData)
     });
   },
   markMessageRead: async (id) => {
-    return apiRequest(`/messages/${id}/read`, { method: 'PUT' });
+    return apiRequest(`/contact/${id}/read`, { method: 'PATCH' });
   },
   deleteMessage: async (id) => {
-    return apiRequest(`/messages/${id}`, { method: 'DELETE' });
+    return apiRequest(`/contact/${id}`, { method: 'DELETE' });
+  },
+  toggleMessageArchive: async (id) => {
+    return apiRequest(`/contact/${id}/archive`, { method: 'PATCH' });
   },
 
   // User Management
@@ -506,6 +588,9 @@ export const api = {
 
   // Service Orders CMS Endpoints
   createOrder: async (orderData) => {
+    if (orderData instanceof FormData) {
+      return apiUploadRequest('/orders', orderData);
+    }
     return apiRequest('/orders', {
       method: 'POST',
       body: JSON.stringify(orderData)
@@ -516,7 +601,7 @@ export const api = {
   },
   updateOrderStatus: async (id, status) => {
     return apiRequest(`/orders/${id}/status`, {
-      method: 'PUT',
+      method: 'PATCH',
       body: JSON.stringify({ status })
     });
   },
@@ -586,6 +671,12 @@ export const api = {
   bookmarkCommunityPost: async (id) => {
     return apiRequest(`/community/posts/${id}/bookmark`, { method: 'POST' });
   },
+  votePollOption: async (postId, optionId) => {
+    return apiRequest(`/community/posts/${postId}/poll/vote`, {
+      method: 'POST',
+      body: JSON.stringify({ optionId })
+    });
+  },
   getCommunityComments: async (postId) => {
     return apiRequest(`/community/posts/${postId}/comments`);
   },
@@ -598,8 +689,17 @@ export const api = {
   deleteCommunityComment: async (commentId) => {
     return apiRequest(`/community/comments/${commentId}`, { method: 'DELETE' });
   },
+  updateCommunityComment: async (commentId, content) => {
+    return apiRequest(`/community/comments/${commentId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ content })
+    });
+  },
   getCommunityGroups: async () => {
     return apiRequest('/community/groups');
+  },
+  getCommunityGroupDetails: async (id) => {
+    return apiRequest(`/community/groups/${id}`);
   },
   createCommunityGroup: async (payload) => {
     return apiRequest('/community/groups', {
@@ -663,6 +763,12 @@ export const api = {
   deleteCommunityQuestion: async (id) => {
     return apiRequest(`/community/questions/${id}`, { method: 'DELETE' });
   },
+  updateCommunityQuestion: async (id, payload) => {
+    return apiRequest(`/community/questions/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    });
+  },
   voteCommunityQuestion: async (id, voteType) => {
     return apiRequest(`/community/questions/${id}/vote`, {
       method: 'POST',
@@ -672,10 +778,10 @@ export const api = {
   bookmarkCommunityQuestion: async (id) => {
     return apiRequest(`/community/questions/${id}/bookmark`, { method: 'POST' });
   },
-  createCommunityAnswer: async (questionId, content) => {
+  createCommunityAnswer: async (questionId, payload) => {
     return apiRequest(`/community/questions/${questionId}/answers`, {
       method: 'POST',
-      body: JSON.stringify({ content })
+      body: JSON.stringify(typeof payload === 'string' ? { content: payload } : payload)
     });
   },
   voteCommunityAnswer: async (answerId, voteType) => {
@@ -689,6 +795,12 @@ export const api = {
   },
   deleteCommunityAnswer: async (answerId) => {
     return apiRequest(`/community/answers/${answerId}`, { method: 'DELETE' });
+  },
+  updateCommunityAnswer: async (answerId, payload) => {
+    return apiRequest(`/community/answers/${answerId}`, {
+      method: 'PUT',
+      body: JSON.stringify(typeof payload === 'string' ? { content: payload } : payload)
+    });
   },
 
   // Project Showcase
@@ -704,6 +816,12 @@ export const api = {
   },
   deleteCommunityProject: async (id) => {
     return apiRequest(`/community/projects/${id}`, { method: 'DELETE' });
+  },
+  updateCommunityProject: async (id, payload) => {
+    return apiRequest(`/community/projects/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    });
   },
   likeCommunityProject: async (id) => {
     return apiRequest(`/community/projects/${id}/like`, { method: 'POST' });
@@ -727,6 +845,15 @@ export const api = {
   downloadCommunityResource: async (resourceId) => {
     return apiRequest(`/community/resources/${resourceId}/download`, { method: 'POST' });
   },
+  deleteCommunityResource: async (resourceId) => {
+    return apiRequest(`/community/resources/${resourceId}`, { method: 'DELETE' });
+  },
+  updateCommunityResource: async (id, payload) => {
+    return apiRequest(`/community/resources/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    });
+  },
   getCommunityJobs: async (params = {}) => {
     const query = new URLSearchParams(params).toString();
     return apiRequest(`/community/jobs?${query}`);
@@ -739,6 +866,15 @@ export const api = {
   },
   applyToCommunityJob: async (jobId) => {
     return apiRequest(`/community/jobs/${jobId}/apply`, { method: 'POST' });
+  },
+  updateCommunityJob: async (id, payload) => {
+    return apiRequest(`/community/jobs/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    });
+  },
+  deleteCommunityJob: async (id) => {
+    return apiRequest(`/community/jobs/${id}`, { method: 'DELETE' });
   },
   getCommunityLeaderboard: async () => {
     return apiRequest('/community/leaderboard');
@@ -776,5 +912,408 @@ export const api = {
     const result = await response.json();
     if (!response.ok) throw new Error(result.message || 'Image upload failed');
     return result;
+  },
+  deleteCommunityImage: async (publicId) => {
+    const response = await fetch(`${API_BASE}/community/delete-image`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ publicId }),
+      credentials: 'include'
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || 'Image deletion failed');
+    return result;
+  },
+  // Events API
+  getCommunityEvents: async (groupId) => {
+    return apiRequest(`/community/events${groupId ? `?groupId=${groupId}` : ''}`);
+  },
+  createCommunityEvent: async (eventData) => {
+    return apiRequest('/community/events', {
+      method: 'POST',
+      body: JSON.stringify(eventData)
+    });
+  },
+  rsvpCommunityEvent: async (eventId) => {
+    return apiRequest(`/community/events/${eventId}/rsvp`, { method: 'POST' });
+  },
+  deleteCommunityEvent: async (eventId) => {
+    return apiRequest(`/community/events/${eventId}`, { method: 'DELETE' });
+  },
+  updateCommunityEvent: async (id, payload) => {
+    return apiRequest(`/community/events/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    });
+  },
+  // Reports API
+  submitCommunityReport: async (reportData) => {
+    return apiRequest('/community/reports', {
+      method: 'POST',
+      body: JSON.stringify(reportData)
+    });
+  },
+  getCommunityReports: async () => {
+    return apiRequest('/community/reports');
+  },
+  actionCommunityReport: async (reportId, actionData) => {
+    return apiRequest(`/community/reports/${reportId}/action`, {
+      method: 'POST',
+      body: JSON.stringify(actionData)
+    });
+  },
+
+  // Gamification, Streaks, Challenges, Store & AI Consultant API
+  getRewardsDashboard: async () => {
+    return apiRequest('/community/rewards/dashboard');
+  },
+  claimMissionReward: async (missionId) => {
+    return apiRequest(`/community/rewards/claim-mission/${missionId}`, { method: 'POST' });
+  },
+  triggerSpinWheel: async () => {
+    return apiRequest('/community/rewards/spin-wheel', { method: 'POST' });
+  },
+  getEcosystemLeaderboard: async (category = 'xp') => {
+    return apiRequest(`/community/rewards/leaderboard-ecosystem?category=${category}`);
+  },
+  getDailyChallenge: async () => {
+    return apiRequest('/community/challenges/today');
+  },
+  getRandomChallenge: async () => {
+    return apiRequest('/community/challenges/random');
+  },
+  submitChallengeSolution: async (id, code, runOnly = false) => {
+    return apiRequest(`/community/challenges/${id}/submit`, {
+      method: 'POST',
+      body: JSON.stringify({ code, runOnly })
+    });
+  },
+  unlockChallengeHint: async (id, level) => {
+    return apiRequest(`/community/challenges/${id}/unlock-hint`, {
+      method: 'POST',
+      body: JSON.stringify({ level })
+    });
+  },
+  submitQuizScore: async (difficulty, score, totalQuestions) => {
+    return apiRequest('/community/challenges/quiz/submit', {
+      method: 'POST',
+      body: JSON.stringify({ difficulty, score, totalQuestions })
+    });
+  },
+  getStoreProducts: async () => {
+    return apiRequest('/community/store/products');
+  },
+  checkoutStoreProduct: async (productId, payload) => {
+    return apiRequest(`/community/store/checkout/${productId}`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+  getStoreHistory: async () => {
+    return apiRequest('/community/store/history');
+  },
+  refundStoreProduct: async (orderId) => {
+    return apiRequest(`/community/store/refund/${orderId}`, {
+      method: 'POST'
+    });
+  },
+  aiReviewCode: async (code, language = 'Javascript') => {
+    return apiRequest('/community/ai/review-code', {
+      method: 'POST',
+      body: JSON.stringify({ code, language })
+    });
+  },
+  aiReviewResume: async (resumeText) => {
+    return apiRequest('/community/ai/review-resume', {
+      method: 'POST',
+      body: JSON.stringify({ resumeText })
+    });
+  },
+  aiGenerateContent: async (topic, category = 'General') => {
+    return apiRequest('/community/ai/generate-content', {
+      method: 'POST',
+      body: JSON.stringify({ topic, category })
+    });
+  },
+  getAIChats: async () => {
+    return apiRequest('/community/ai/chats');
+  },
+  createAIChat: async (payload) => {
+    return apiRequest('/community/ai/chats', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+  sendAIChatMessage: async (chatId, content, attachments = null) => {
+    return apiRequest(`/community/ai/chats/${chatId}/messages`, {
+      method: 'POST',
+      body: JSON.stringify({ content, attachments })
+    });
+  },
+  updateAIChat: async (chatId, payload) => {
+    return apiRequest(`/community/ai/chats/${chatId}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    });
+  },
+  deleteAIChat: async (chatId) => {
+    return apiRequest(`/community/ai/chats/${chatId}`, {
+      method: 'DELETE'
+    });
+  },
+
+  // ATS Resume Analyzer API
+  uploadAndAnalyzeResume: async (formData) => {
+    return apiUploadRequest('/resume/upload/analyze', formData);
+  },
+  matchJobDescription: async (id, payload) => {
+    return apiRequest(`/resume/job-match/${id}`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+  rewriteResumeSection: async (id, payload) => {
+    return apiRequest(`/resume/rewrite/${id}`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+  getResumeHistory: async () => {
+    return apiRequest('/resume/history/logs');
+  },
+  deleteResumeAnalysis: async (id) => {
+    return apiRequest(`/resume/history/logs/${id}`, {
+      method: 'DELETE'
+    });
+  },
+  getResumeReportDetails: async (id) => {
+    return apiRequest(`/resume/report/details/${id}`);
+  },
+
+  // Community Resume Hub API
+  getCommunityResumeHub: async (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return apiRequest(`/resume/community/hub?${query}`);
+  },
+  shareResumeToHub: async (id, payload) => {
+    return apiRequest(`/resume/community/share/${id}`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+  submitCommunityReview: async (id, payload) => {
+    return apiRequest(`/resume/community/review/${id}`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+  postResumeComment: async (id, payload) => {
+    return apiRequest(`/resume/community/comment/${id}`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+  getResumeComments: async (id) => {
+    return apiRequest(`/resume/community/comments/${id}`);
+  },
+  toggleLikeResume: async (id) => {
+    return apiRequest(`/resume/community/like/${id}`, {
+      method: 'POST'
+    });
+  },
+  toggleBookmarkResume: async (id) => {
+    return apiRequest(`/resume/community/bookmark/${id}`, {
+      method: 'POST'
+    });
+  },
+  reportResume: async (id, payload) => {
+    return apiRequest(`/resume/community/report/${id}`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+  getResumeLeaderboard: async () => {
+    return apiRequest('/resume/community/leaderboard');
+  },
+  getResumeAnalytics: async () => {
+    return apiRequest('/resume/community/analytics');
+  },
+  getFeatures: async (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return apiRequest(`/features?${query}`);
+  },
+  getAllFeatures: async () => {
+    return apiRequest('/features/all');
+  },
+  createFeature: async (payload) => {
+    return apiRequest('/features', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+  updateFeature: async (id, payload) => {
+    return apiRequest(`/features/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    });
+  },
+  deleteFeature: async (id) => {
+    return apiRequest(`/features/${id}`, {
+      method: 'DELETE'
+    });
+  },
+  completeOnboarding: async () => {
+    return apiRequest('/features/onboarding/complete', {
+      method: 'POST'
+    });
+  },
+  resetOnboarding: async () => {
+    return apiRequest('/features/onboarding/reset', {
+      method: 'POST'
+    });
+  },
+  viewFeatureRelease: async (id) => {
+    return apiRequest(`/features/view/${id}`, {
+      method: 'POST'
+    });
+  },
+  getWhatsNewFeatures: async () => {
+    return apiRequest('/features/whats-new');
+  },
+
+  // CMS Draft & Versioning API
+  getCmsDraft: async (model, id) => {
+    return apiRequest(`/cms/draft/${model}/${id || 'new'}`);
+  },
+  saveCmsDraft: async (model, id, draftData) => {
+    return apiRequest(`/cms/draft/${model}/${id || 'new'}`, {
+      method: 'POST',
+      body: JSON.stringify({ draftData })
+    });
+  },
+  publishCmsDraft: async (model, id, comment) => {
+    return apiRequest(`/cms/publish/${model}/${id || 'new'}`, {
+      method: 'POST',
+      body: JSON.stringify({ comment })
+    });
+  },
+  getCmsVersions: async (model, id) => {
+    return apiRequest(`/cms/versions/${model}/${id}`);
+  },
+  restoreCmsVersion: async (versionId) => {
+    return apiRequest(`/cms/restore/${versionId}`, {
+      method: 'POST'
+    });
+  },
+  // Forms Management API
+  getAdminForms: async (params = {}) => {
+    const q = new URLSearchParams(params).toString();
+    return apiRequest(`/forms/admin/all${q ? '?' + q : ''}`);
+  },
+  getAdminForm: async (id) => {
+    return apiRequest(`/forms/admin/${id}`);
+  },
+  createForm: async (formData) => {
+    return apiRequest('/forms/admin', {
+      method: 'POST',
+      body: JSON.stringify(formData)
+    });
+  },
+  updateForm: async (id, formData) => {
+    return apiRequest(`/forms/admin/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(formData)
+    });
+  },
+  duplicateForm: async (id) => {
+    return apiRequest(`/forms/admin/${id}/duplicate`, {
+      method: 'POST'
+    });
+  },
+  archiveForm: async (id) => {
+    return apiRequest(`/forms/admin/${id}/archive`, {
+      method: 'PUT'
+    });
+  },
+  deleteForm: async (id, confirmDelete = false) => {
+    return apiRequest(`/forms/admin/${id}`, {
+      method: 'DELETE',
+      body: JSON.stringify({ confirmDelete })
+    });
+  },
+  getFormAnalytics: async (formId) => {
+    return apiRequest(`/forms/admin/${formId}/analytics`);
+  },
+  getFormSubmissions: async (params = {}) => {
+    const q = new URLSearchParams(params).toString();
+    return apiRequest(`/forms/admin/submissions/list${q ? '?' + q : ''}`);
+  },
+  getFormSubmissionById: async (id) => {
+    return apiRequest(`/forms/admin/submissions/${id}`);
+  },
+  updateSubmissionStatus: async (id, status) => {
+    return apiRequest(`/forms/admin/submissions/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status })
+    });
+  },
+  addSubmissionNote: async (id, note) => {
+    return apiRequest(`/forms/admin/submissions/${id}/notes`, {
+      method: 'POST',
+      body: JSON.stringify({ note })
+    });
+  },
+  deleteSubmission: async (id) => {
+    return apiRequest(`/forms/admin/submissions/${id}`, {
+      method: 'DELETE'
+    });
+  },
+  getFormQrCodeDataUrl: async (slug) => {
+    return apiRequest(`/forms/${slug}/qr?format=dataUrl`);
+  },
+  // Form Categories API
+  getFormCategories: async () => {
+    return apiRequest('/forms/categories');
+  },
+  createFormCategory: async (categoryData) => {
+    return apiRequest('/forms/categories', {
+      method: 'POST',
+      body: JSON.stringify(categoryData)
+    });
+  },
+  updateFormCategory: async (id, categoryData) => {
+    return apiRequest(`/forms/categories/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(categoryData)
+    });
+  },
+  toggleFormCategoryActive: async (id) => {
+    return apiRequest(`/forms/categories/${id}/toggle-active`, {
+      method: 'PUT'
+    });
+  },
+  deleteFormCategory: async (id, reassignToCategoryId = null) => {
+    return apiRequest(`/forms/categories/${id}`, {
+      method: 'DELETE',
+      body: JSON.stringify({ reassignToCategoryId })
+    });
+  },
+  // Public Form API
+  getPublicForms: async (placement = 'directory') => {
+    return apiRequest(`/forms/public?placement=${encodeURIComponent(placement)}`);
+  },
+  getPublicFormBySlug: async (slug) => {
+    return apiRequest(`/forms/public/${slug}`);
+  },
+  submitPublicForm: async (slug, payload, isMultipart = false) => {
+    if (isMultipart) {
+      return apiUploadRequest(`/forms/${slug}/submit`, payload);
+    }
+    return apiRequest(`/forms/${slug}/submit`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
   }
 };

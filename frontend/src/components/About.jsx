@@ -159,7 +159,7 @@ const About = ({ aboutData, resumeData }) => {
   const personalInfo = settings?.aboutPersonalInfo || [];
 
   return (
-    <section id="about" className="py-20 sm:py-24 md:py-28 bg-[#F8FAFC]/70 dark:bg-transparent relative">
+    <section id="about" className="scroll-mt-24 py-20 sm:py-24 md:py-28 bg-[#F8FAFC]/70 dark:bg-transparent relative">
       <div className="max-w-[1400px] mx-auto px-4 xs:px-6 sm:px-8 lg:px-12">
         
         {/* Section Header */}

@@ -70,7 +70,7 @@ const Experience = ({ experienceData }) => {
   };
 
   return (
-    <section id="experience" className="py-24 sm:py-28 bg-white/70 dark:bg-transparent relative">
+    <section id="experience" className="scroll-mt-24 py-24 sm:py-28 bg-white/70 dark:bg-transparent relative">
       <div className="max-w-[1100px] mx-auto px-4 xs:px-6 sm:px-8 lg:px-12">
         
         {/* Section Header */}

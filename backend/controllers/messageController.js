@@ -18,46 +18,33 @@ const getMessages = async (req, res) => {
 // @access  Public
 const createMessage = async (req, res) => {
   try {
+    // 0. Anti-Spam Honeypot check
+    if (req.body._ts_hp && String(req.body._ts_hp).trim()) {
+      return res.json({
+        success: true,
+        message: 'Thank you! Your message has been received.'
+      });
+    }
+
     const Setting = require('../models/Setting');
     const settings = await Setting.findOne();
-    const formFields = settings?.contactFormFields || [];
 
-    const dynamicFields = {};
     let name = req.body.name || '';
     let email = req.body.email || '';
-    let phone = req.body.phone || '';
-    let subject = req.body.subject || '';
+    let phone = req.body.phone || req.body.phone_number || req.body.mobile || '';
+    let subject = req.body.subject || 'Direct Website Contact Inquiry';
     let message = req.body.message || '';
+    const dynamicFields = {};
 
-    // If we have custom fields, validate and map them
-    if (formFields.length > 0) {
-      for (const field of formFields) {
-        const val = req.body[field.name];
-        if (field.required && (val === undefined || val === null || String(val).trim() === '')) {
-          return res.status(400).json({ success: false, message: `${field.label} is required.` });
-        }
-        if (val !== undefined && val !== null) {
-          if (field.name === 'name') name = String(val);
-          else if (field.name === 'email') email = String(val);
-          else if (field.name === 'phone' || field.name === 'phone_number' || field.name === 'mobile') phone = String(val);
-          else if (field.name === 'subject') subject = String(val);
-          else if (field.name === 'message') message = String(val);
-          else {
-            dynamicFields[field.name] = String(val);
-          }
-        }
-      }
-    } else {
-      // Fallback validation for standard fields
-      if (!name || typeof name !== 'string' || !name.trim()) {
-        return res.status(400).json({ success: false, message: 'Name is required.' });
-      }
-      if (!email || typeof email !== 'string' || !email.trim()) {
-        return res.status(400).json({ success: false, message: 'Email address is required.' });
-      }
-      if (!message || typeof message !== 'string' || !message.trim()) {
-        return res.status(400).json({ success: false, message: 'Message text is required.' });
-      }
+    // Standard Simple Contact Form Validation
+    if (!name || typeof name !== 'string' || !name.trim()) {
+      return res.status(400).json({ success: false, message: 'Name is required.' });
+    }
+    if (!email || typeof email !== 'string' || !email.trim()) {
+      return res.status(400).json({ success: false, message: 'Email address is required.' });
+    }
+    if (!message || typeof message !== 'string' || !message.trim()) {
+      return res.status(400).json({ success: false, message: 'Message text is required.' });
     }
 
     const cleanEmail = email.trim().toLowerCase();

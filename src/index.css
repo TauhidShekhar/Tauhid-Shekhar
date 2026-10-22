@@ -250,6 +250,21 @@ p {
   background: var(--brand-red);
 }
 
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(150, 150, 150, 0.25);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-red, #C2272D);
+}
+
 /* ── Custom Cursor ── */
 .custom-cursor {
   width: 8px;
@@ -310,14 +325,10 @@ p {
 
 
 
-/* ── Progressive Off-screen Rendering Optimizations ── */
+/* ── Section Layout Stability & Performance (prevents scroll jumps) ── */
 section {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 600px;
-}
-
-section#home {
-  content-visibility: visible;
+  position: relative;
+  width: 100%;
 }
 
 /* ── Premium Global Animation Utilities ── */

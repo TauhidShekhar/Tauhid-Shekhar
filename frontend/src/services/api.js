@@ -1206,5 +1206,114 @@ export const api = {
     return apiRequest(`/cms/restore/${versionId}`, {
       method: 'POST'
     });
+  },
+  // Forms Management API
+  getAdminForms: async (params = {}) => {
+    const q = new URLSearchParams(params).toString();
+    return apiRequest(`/forms/admin/all${q ? '?' + q : ''}`);
+  },
+  getAdminForm: async (id) => {
+    return apiRequest(`/forms/admin/${id}`);
+  },
+  createForm: async (formData) => {
+    return apiRequest('/forms/admin', {
+      method: 'POST',
+      body: JSON.stringify(formData)
+    });
+  },
+  updateForm: async (id, formData) => {
+    return apiRequest(`/forms/admin/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(formData)
+    });
+  },
+  duplicateForm: async (id) => {
+    return apiRequest(`/forms/admin/${id}/duplicate`, {
+      method: 'POST'
+    });
+  },
+  archiveForm: async (id) => {
+    return apiRequest(`/forms/admin/${id}/archive`, {
+      method: 'PUT'
+    });
+  },
+  deleteForm: async (id, confirmDelete = false) => {
+    return apiRequest(`/forms/admin/${id}`, {
+      method: 'DELETE',
+      body: JSON.stringify({ confirmDelete })
+    });
+  },
+  getFormAnalytics: async (formId) => {
+    return apiRequest(`/forms/admin/${formId}/analytics`);
+  },
+  getFormSubmissions: async (params = {}) => {
+    const q = new URLSearchParams(params).toString();
+    return apiRequest(`/forms/admin/submissions/list${q ? '?' + q : ''}`);
+  },
+  getFormSubmissionById: async (id) => {
+    return apiRequest(`/forms/admin/submissions/${id}`);
+  },
+  updateSubmissionStatus: async (id, status) => {
+    return apiRequest(`/forms/admin/submissions/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status })
+    });
+  },
+  addSubmissionNote: async (id, note) => {
+    return apiRequest(`/forms/admin/submissions/${id}/notes`, {
+      method: 'POST',
+      body: JSON.stringify({ note })
+    });
+  },
+  deleteSubmission: async (id) => {
+    return apiRequest(`/forms/admin/submissions/${id}`, {
+      method: 'DELETE'
+    });
+  },
+  getFormQrCodeDataUrl: async (slug) => {
+    return apiRequest(`/forms/${slug}/qr?format=dataUrl`);
+  },
+  // Form Categories API
+  getFormCategories: async () => {
+    return apiRequest('/forms/categories');
+  },
+  createFormCategory: async (categoryData) => {
+    return apiRequest('/forms/categories', {
+      method: 'POST',
+      body: JSON.stringify(categoryData)
+    });
+  },
+  updateFormCategory: async (id, categoryData) => {
+    return apiRequest(`/forms/categories/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(categoryData)
+    });
+  },
+  toggleFormCategoryActive: async (id) => {
+    return apiRequest(`/forms/categories/${id}/toggle-active`, {
+      method: 'PUT'
+    });
+  },
+  deleteFormCategory: async (id, reassignToCategoryId = null) => {
+    return apiRequest(`/forms/categories/${id}`, {
+      method: 'DELETE',
+      body: JSON.stringify({ reassignToCategoryId })
+    });
+  },
+  // Public Form API
+  getPublicForms: async (placement = 'directory') => {
+    return apiRequest(`/forms/public?placement=${encodeURIComponent(placement)}`);
+  },
+  getPublicFormBySlug: async (slug) => {
+    return apiRequest(`/forms/public/${slug}`);
+  },
+  submitPublicForm: async (slug, payload, isMultipart = false) => {
+    if (isMultipart) {
+      return apiUploadRequest(`/forms/${slug}/submit`, payload);
+    }
+    return apiRequest(`/forms/${slug}/submit`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
   }
 };

@@ -202,7 +202,7 @@ const Services = ({ servicesData }) => {
   };
 
   return (
-    <section id="services" className="py-24 bg-white/70 dark:bg-transparent relative">
+    <section id="services" className="scroll-mt-24 py-24 bg-white/70 dark:bg-transparent relative">
       <div className="max-w-[1280px] mx-auto px-4 xs:px-6 sm:px-8 lg:px-12">
         
         {/* Section Header */}

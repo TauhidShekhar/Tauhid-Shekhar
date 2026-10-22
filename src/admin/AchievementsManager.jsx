@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../services/api';
-import { FaAward, FaPlusCircle, FaEdit, FaTrash, FaCheck, FaTimes } from 'react-icons/fa';
+import { FaAward, FaPlusCircle, FaEdit, FaTrash, FaCheck, FaTimes, FaGraduationCap, FaCertificate, FaTrophy } from 'react-icons/fa';
 
 const AchievementsManager = () => {
   const [achievements, setAchievements] = useState([]);
@@ -116,9 +117,47 @@ const AchievementsManager = () => {
 
   return (
     <div className="flex flex-col gap-8 text-left">
-      <div>
-        <h2 className="text-2xl md:text-3xl font-black font-title text-black dark:text-white">Achievements Manager</h2>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Publish and index DSA milestones, coding rankings, or content stats.</p>
+      {/* Suite Navigation */}
+      <div className="p-4 sm:p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#C2272D] mb-1">
+            <FaTrophy size={14} />
+            <span>Academic & Honors Management Suite</span>
+          </div>
+          <h2 className="text-2xl md:text-3xl font-black font-['Manrope'] text-slate-900 dark:text-white">
+            Honors & Achievements
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Publish and index DSA milestones, coding rankings, and technical mentorship stats.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 w-full md:w-auto overflow-x-auto">
+          <Link
+            to="/admin/education"
+            className="px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap"
+          >
+            <FaGraduationCap size={13} />
+            <span>Education</span>
+          </Link>
+
+          <Link
+            to="/admin/certificates"
+            className="px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap"
+          >
+            <FaCertificate size={12} />
+            <span>Certifications</span>
+          </Link>
+
+          <Link
+            to="/admin/achievements"
+            className="px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5 bg-[#C2272D] text-white shadow-sm whitespace-nowrap"
+          >
+            <FaTrophy size={12} />
+            <span>Achievements</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/25">{achievements.length}</span>
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -153,7 +192,7 @@ const AchievementsManager = () => {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold text-slate-550 dark:text-slate-400 uppercase tracking-wider">Category</label>
                 <input
@@ -177,7 +216,7 @@ const AchievementsManager = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold text-slate-550 dark:text-slate-400 uppercase tracking-wider">Date Achieved</label>
                 <input

@@ -262,6 +262,15 @@ const Footer = ({ settingsData, heroData }) => {
                   Contact & Inquiries
                 </a>
               </li>
+              <li>
+                <Link 
+                  to="/forms" 
+                  className="text-sm sm:text-base font-normal text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors py-1 inline-flex items-center gap-2"
+                >
+                  <span>Forms Center</span>
+                  <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-[#C2272D]/10 text-[#C2272D] dark:bg-[#00FFFF]/15 dark:text-[#00FFFF]">Hub</span>
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -307,6 +316,17 @@ const Footer = ({ settingsData, heroData }) => {
                 >
                   Education & Certifications
                 </a>
+              </li>
+              <li>
+                <Link 
+                  to="/forms" 
+                  className="text-sm sm:text-base font-normal text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors py-1 inline-flex items-center gap-2"
+                >
+                  <span>Forms & Applications Directory</span>
+                  <span className="px-2 py-0.5 text-[10px] uppercase font-semibold rounded-full bg-[#00FFFF]/10 text-[#00FFFF]">
+                    New
+                  </span>
+                </Link>
               </li>
               <li>
                 <Link 

@@ -224,10 +224,10 @@ const Hero = ({ heroData, resumeData }) => {
             <span className="font-serif italic font-semibold text-[#C2272D] drop-shadow-sm">{siteName}</span>
           </motion.h1>
 
-          {/* Dynamic Role Typer */}
+          {/* Dynamic Role Typer - Reserved Height to prevent vertical jitter */}
           <motion.div
             variants={itemVariants}
-            className="min-h-[44px] sm:min-h-[50px] lg:min-h-[56px] xl:min-h-[62px] flex flex-wrap items-baseline gap-x-2 gap-y-1 mb-4 sm:mb-5 lg:mb-6 text-[18px] xs:text-[21px] sm:text-[24px] md:text-[28px] lg:text-[32px] xl:text-[36px] font-semibold font-title text-[#171717] dark:text-white leading-normal"
+            className="min-h-[64px] xs:min-h-[58px] sm:min-h-[52px] lg:min-h-[60px] flex flex-wrap items-baseline gap-x-2 gap-y-1 mb-4 sm:mb-5 lg:mb-6 text-[18px] xs:text-[21px] sm:text-[24px] md:text-[28px] lg:text-[32px] xl:text-[36px] font-semibold font-title text-[#171717] dark:text-white leading-normal"
           >
             <span className="shrink-0">I build as a</span>
             <span className="text-[#C2272D] dark:text-[#00FFFF] inline-flex items-center">
@@ -269,12 +269,10 @@ const Hero = ({ heroData, resumeData }) => {
                 </a>
               )}
 
-              {showResume && resumeLink && (
+              {showResume && (
                 <a
-                  href={resumeLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={handleViewResume}
+                  href="#resume"
+                  onClick={(e) => handleScrollTo(e, '#resume')}
                   className="w-full sm:w-auto min-h-[46px] sm:min-h-[50px] lg:min-h-[54px] flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-6 lg:px-7 py-2.5 sm:py-3.5 lg:py-4 bg-transparent border border-slate-300 dark:border-white/20 hover:border-[#C2272D] hover:text-[#C2272D] dark:hover:border-[#00FFFF] dark:hover:text-[#00FFFF] text-[#171717] dark:text-white rounded-full text-[13px] xs:text-[14px] sm:text-[15px] lg:text-[16px] font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer hover:shadow-md text-center whitespace-nowrap"
                 >
                   <FaFileAlt size={14} className="shrink-0 hidden xs:inline" />
@@ -373,13 +371,13 @@ const Hero = ({ heroData, resumeData }) => {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-[260px] h-[340px] xs:w-[290px] xs:h-[380px] sm:w-[340px] sm:h-[440px] lg:w-[370px] lg:h-[480px] xl:w-[410px] xl:h-[520px] rounded-3xl border-4 border-white dark:border-[#222222] shadow-2xl overflow-hidden group bg-slate-100 dark:bg-[#111111]"
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="relative w-[240px] h-[310px] xs:w-[280px] xs:h-[360px] sm:w-[340px] sm:h-[440px] lg:w-[370px] lg:h-[480px] xl:w-[410px] xl:h-[520px] max-w-[85vw] rounded-3xl border-4 border-white dark:border-[#222222] shadow-2xl overflow-hidden group bg-slate-100 dark:bg-[#111111]"
           >
             <img
               src={heroImg}
               alt={`${siteName} headshot`}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
               fetchPriority="high"
               decoding="async"
             />
@@ -387,7 +385,7 @@ const Hero = ({ heroData, resumeData }) => {
 
           {/* Floating Technology Pills */}
           <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-            <div className="relative w-[260px] h-[340px] xs:w-[290px] xs:h-[380px] sm:w-[340px] sm:h-[440px] lg:w-[370px] lg:h-[480px] xl:w-[410px] xl:h-[520px]">
+            <div className="relative w-[240px] h-[310px] xs:w-[280px] xs:h-[360px] sm:w-[340px] sm:h-[440px] lg:w-[370px] lg:h-[480px] xl:w-[410px] xl:h-[520px] max-w-[85vw]">
               <motion.div
                 variants={floatingVariants(0)}
                 animate="animate"

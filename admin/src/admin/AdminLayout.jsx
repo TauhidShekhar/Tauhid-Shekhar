@@ -8,7 +8,7 @@ import {
   FaBars, FaTimes, FaGlobe, FaChevronDown, FaChevronUp, FaBook, FaQuoteLeft, 
   FaImages, FaFileAlt, FaCertificate, FaAward, FaHistory, FaDatabase, FaShieldAlt, 
   FaUserCog, FaChartLine, FaMoon, FaSun, FaUserCircle, FaHome, FaShoppingBag, FaLaptopCode, FaUsers,
-  FaRocket, FaQuestionCircle, FaSearch, FaBell, FaCheckCircle
+  FaRocket, FaQuestionCircle, FaSearch, FaBell, FaCheckCircle, FaWpforms, FaLayerGroup
 } from 'react-icons/fa';
 
 const ALL_MODULES = [
@@ -29,6 +29,8 @@ const ALL_MODULES = [
   { name: 'Contact Messages', path: '/admin/messages', category: 'Engagement', icon: FaEnvelope },
   { name: 'Service Orders', path: '/admin/orders', category: 'Engagement', icon: FaShoppingBag },
   { name: 'Community CMS', path: '/admin/community', category: 'Engagement', icon: FaUsers },
+  { name: 'Forms Management', path: '/admin/forms', category: 'Engagement', icon: FaWpforms },
+  { name: 'Form Categories', path: '/admin/forms?tab=categories', category: 'Engagement', icon: FaLayerGroup },
   { name: 'Media Library', path: '/admin/media', category: 'Management', icon: FaImages },
   { name: 'Users Directory', path: '/admin/users', category: 'Management', icon: FaUserCog },
   { name: 'Doubts Lounge', path: '/admin/doubts', category: 'Management', icon: FaQuestionCircle },
@@ -271,6 +273,18 @@ const AdminLayout = () => {
                 <div className="flex items-center gap-2.5">
                   <FaUsers size={13} className={isActive('/admin/community') ? 'text-white' : 'text-slate-400 group-hover:text-[#C2272D] dark:group-hover:text-[#00FFFF]'} />
                   <span>Community CMS</span>
+                </div>
+              </Link>
+              <Link to="/admin/forms" onClick={handleLinkClick} className={isActive('/admin/forms') && !location.search.includes('tab=categories') ? activeLinkClass : inactiveLinkClass}>
+                <div className="flex items-center gap-2.5">
+                  <FaWpforms size={13} className={isActive('/admin/forms') && !location.search.includes('tab=categories') ? 'text-white' : 'text-slate-400 group-hover:text-[#C2272D] dark:group-hover:text-[#00FFFF]'} />
+                  <span>Forms Management</span>
+                </div>
+              </Link>
+              <Link to="/admin/forms?tab=categories" onClick={handleLinkClick} className={location.pathname === '/admin/forms' && location.search.includes('tab=categories') ? activeLinkClass : inactiveLinkClass}>
+                <div className="flex items-center gap-2.5">
+                  <FaLayerGroup size={13} className={location.pathname === '/admin/forms' && location.search.includes('tab=categories') ? 'text-white' : 'text-slate-400 group-hover:text-[#C2272D] dark:group-hover:text-[#00FFFF]'} />
+                  <span>Form Categories</span>
                 </div>
               </Link>
             </div>

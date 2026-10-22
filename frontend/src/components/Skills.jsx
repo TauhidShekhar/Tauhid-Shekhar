@@ -177,7 +177,7 @@ const Skills = ({ skillsData }) => {
 
   if (skillsData === null) {
     return (
-      <section id="skills" className="py-24 sm:py-28 bg-white/70 dark:bg-transparent relative">
+      <section id="skills" className="scroll-mt-24 py-24 sm:py-28 bg-white/70 dark:bg-transparent relative">
         <div className="max-w-[1400px] mx-auto px-4 xs:px-6 sm:px-8 lg:px-12">
           <div className="text-center mb-14 sm:mb-16 animate-pulse">
             <div className="h-6 w-36 bg-[#C2272D]/10 dark:bg-[#00FFFF]/10 rounded-full mx-auto mb-3" />
@@ -231,7 +231,7 @@ const Skills = ({ skillsData }) => {
   };
 
   return (
-    <section id="skills" className="py-24 sm:py-28 bg-white/70 dark:bg-transparent relative">
+    <section id="skills" className="scroll-mt-24 py-24 sm:py-28 bg-white/70 dark:bg-transparent relative">
       <div className="max-w-[1400px] mx-auto px-4 xs:px-6 sm:px-8 lg:px-12">
         
         {/* Section Header */}
@@ -265,26 +265,21 @@ const Skills = ({ skillsData }) => {
         </div>
 
         {/* Skills Grid */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-50px' }}
+        <div
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6"
         >
-          <AnimatePresence mode="popLayout">
+          <AnimatePresence mode="wait">
             {filteredSkills.map((skill) => {
               const logoSrc = getSkillLogoUrl(skill);
               const cats = getSkillCategories(skill);
               return (
                 <motion.div
                   key={skill.name}
-                  layout
-                  variants={cardVariants}
-                  initial="hidden"
-                  animate="visible"
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  className="bg-[#F8FAFC] dark:bg-[#111111] p-4 sm:p-5 rounded-2xl flex items-center justify-between shadow-xs border border-[#E5E7EB] dark:border-white/10 hover:border-[#C2272D] dark:hover:border-[#00FFFF] hover:-translate-y-1 hover:shadow-lg hover:shadow-[#C2272D]/10 dark:hover:shadow-[#00FFFF]/10 transition-all duration-300 relative group overflow-hidden"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="bg-[#F8FAFC] dark:bg-[#111111] p-4 sm:p-5 rounded-2xl flex items-center justify-between shadow-xs border border-[#E5E7EB] dark:border-white/10 hover:border-[#C2272D] dark:hover:border-[#00FFFF] hover:-translate-y-1 hover:shadow-lg hover:shadow-[#C2272D]/10 dark:hover:shadow-[#00FFFF]/10 transition-all duration-200 relative group overflow-hidden"
                   title={`${skill.name} - ${cats.join(', ')}`}
                 >
                   {/* Left Accent indicator */}
@@ -339,7 +334,7 @@ const Skills = ({ skillsData }) => {
               );
             })}
           </AnimatePresence>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

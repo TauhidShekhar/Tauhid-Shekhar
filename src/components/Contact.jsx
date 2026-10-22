@@ -4,7 +4,8 @@ import { api } from '../services/api';
 import { 
   FaEnvelope, FaPhone, FaMapMarkerAlt, FaPaperPlane, FaClock,
   FaGithub, FaLinkedin, FaTwitter, FaInstagram, FaYoutube, FaFacebook,
-  FaCheckCircle, FaExclamationCircle
+  FaCheckCircle, FaExclamationCircle, FaUser, FaCommentDots,
+  FaTimes, FaUndo
 } from 'react-icons/fa';
 
 const formatExternalLink = (url) => {
@@ -19,13 +20,9 @@ const formatExternalLink = (url) => {
 const extractIframeSrc = (input) => {
   if (!input) return '';
   const trimmed = input.trim();
-  
-  // If it's already a clean URL, return it directly
   if (/^(f|ht)tps?:\/\//i.test(trimmed) && !trimmed.includes('<')) {
     return trimmed;
   }
-  
-  // Regex to match src attribute inside iframe or HTML string
   const match = trimmed.match(/src\s*=\s*["']([^"']+)["']/i);
   if (match && match[1]) {
     return match[1].replace(/&amp;/g, '&');
@@ -34,132 +31,194 @@ const extractIframeSrc = (input) => {
 };
 
 const Contact = ({ settingsData, aboutData, onShowToast }) => {
-  const [formData, setFormData] = useState({});
+  // Simple, dedicated inquiry form state
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    message: '',
+    _ts_hp: '' // Anti-spam honeypot
+  });
+  const [fieldErrors, setFieldErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
-  const [status, setStatus] = useState(null); // { type: 'success' | 'error', message: string }
+  const [status, setStatus] = useState(null); // { type: 'success' | 'error', message: string, senderName?: string }
+  const [isFormClosed, setIsFormClosed] = useState(false);
   const [settings, setSettings] = useState(settingsData || null);
   const [aboutSettings, setAboutSettings] = useState(aboutData || null);
   const [selectedLocationIdx, setSelectedLocationIdx] = useState(0);
 
   // Sync props to state
   useEffect(() => {
-    if (settingsData) {
-      setSettings(settingsData);
-    }
+    if (settingsData) setSettings(settingsData);
   }, [settingsData]);
 
   useEffect(() => {
-    if (aboutData) {
-      setAboutSettings(aboutData);
-    }
+    if (aboutData) setAboutSettings(aboutData);
   }, [aboutData]);
-
-  const defaultFields = [
-    { id: '1', name: 'name', label: 'Your Name', type: 'text', required: true, placeholder: 'e.g. John Doe' },
-    { id: '2', name: 'email', label: 'Email Address', type: 'email', required: true, placeholder: 'e.g. john@example.com' },
-    { id: '3', name: 'phone_number', label: 'Phone Number', type: 'tel', required: false, placeholder: '+91 98765 43210' },
-    { id: '4', name: 'subject', label: 'Subject', type: 'text', required: true, placeholder: 'Project Inquiry / Job Opportunity' },
-    { id: '5', name: 'message', label: 'Message', type: 'textarea', required: true, placeholder: 'Tell me about your project, timeline, or inquiry...' }
-  ];
-
-  const formFields = settings?.contactFormFields?.length ? settings.contactFormFields : defaultFields;
-
-  // Pre-populate empty form state based on loaded fields
-  useEffect(() => {
-    setFormData(prev => {
-      const initialData = { ...prev };
-      formFields.forEach(f => {
-        if (initialData[f.name] === undefined) {
-          initialData[f.name] = '';
-        }
-      });
-      return initialData;
-    });
-  }, [settings]);
 
   useEffect(() => {
     if (settingsData && aboutData) return;
     const loadSettings = async () => {
       try {
-        const [res, aboutRes] = await Promise.all([
+        const [settingsRes, aboutRes] = await Promise.all([
           api.getSettings().catch(() => null),
           api.getAbout().catch(() => null)
         ]);
-        if (res?.success) {
-          setSettings(res.data);
-        }
-        if (aboutRes?.success) {
-          setAboutSettings(aboutRes.data);
-        }
+        if (settingsRes?.success) setSettings(settingsRes.data);
+        if (aboutRes?.success) setAboutSettings(aboutRes.data);
       } catch (err) {
-        console.error('Failed to load contact settings:', err.message);
+        console.error('Failed to load contact info:', err.message);
       }
     };
     loadSettings();
   }, [settingsData, aboutData]);
 
-  // Resolve active/selected location details
-  const activeLocation = settings?.locations?.length > 0 
-    ? settings.locations[selectedLocationIdx] 
-    : null;
+  const socialLinks = settings?.socialLinks || aboutSettings?.socialLinks || {};
+  const socialPlatforms = [
+    { key: 'github', icon: <FaGithub />, color: 'hover:bg-[#24292e]' },
+    { key: 'linkedin', icon: <FaLinkedin />, color: 'hover:bg-[#0077b5]' },
+    { key: 'twitter', icon: <FaTwitter />, color: 'hover:bg-[#1da1f2]' },
+    { key: 'instagram', icon: <FaInstagram />, color: 'hover:bg-[#e1306c]' },
+    { key: 'youtube', icon: <FaYoutube />, color: 'hover:bg-[#ff0000]' },
+    { key: 'facebook', icon: <FaFacebook />, color: 'hover:bg-[#1877f2]' }
+  ].filter(p => socialLinks[p.key]);
 
-  const emailVal = activeLocation?.email || aboutSettings?.aboutContactInfo?.email || settings?.email || 'shekhartauhid@gmail.com';
-  const phoneVal = activeLocation?.phone || aboutSettings?.aboutContactInfo?.phone || settings?.phone || '+91 9142725562';
-  const addressVal = activeLocation?.address || aboutSettings?.aboutContactInfo?.address || settings?.address || 'Amritsar, Punjab, India';
-  const workingHoursVal = activeLocation?.workingHours || settings?.workingHours || 'Mon - Fri: 9:00 AM - 6:00 PM';
-  const mapEmbedRaw = activeLocation?.mapEmbed || settings?.mapEmbed || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d108604.38204859068!2d74.80284487532353!3d31.633979268875355!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4d74.87226424999999!3m2!1m2!1s0x391964aa569e7355%3A0xe021a60ccab1c0ef!2sAmritsar%2C%20Punjab!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin";
-  const mapEmbedVal = extractIframeSrc(mapEmbedRaw);
+  const emailVal = settings?.email || aboutSettings?.email || 'shekhartauhid@gmail.com';
+  const phoneVal = settings?.phone || aboutSettings?.phone || '+91 91427 25562';
+  const workingHoursVal = settings?.workingHours || 'Mon - Fri: 9:00 AM - 6:00 PM IST';
+  const mapEmbedVal = extractIframeSrc(settings?.mapEmbedUrl || '');
+
+  const locationsList = (settings?.locations && settings.locations.length > 0)
+    ? settings.locations
+    : (settings?.address ? [{ title: 'Primary Office', address: settings.address }] : [{ title: 'Headquarters', address: 'Patna, Bihar, India' }]);
+
+  const activeLoc = locationsList[selectedLocationIdx] || locationsList[0];
+  const addressVal = activeLoc?.address || 'Patna, Bihar, India';
 
   const contactDetails = [
     { title: 'Email', value: emailVal, href: `mailto:${emailVal}`, icon: <FaEnvelope className="text-[#C2272D]" /> },
-    { title: 'Phone', value: phoneVal, href: `tel:${phoneVal.replace(/\s+/g, '')}`, icon: <FaPhone className="text-[#00FFFF]" /> },
+    { title: 'Phone / WhatsApp', value: phoneVal, href: `tel:${phoneVal.replace(/\s+/g, '')}`, icon: <FaPhone className="text-[#00FFFF]" /> },
     { title: 'Location', value: addressVal, href: null, icon: <FaMapMarkerAlt className="text-[#C2272D]" /> },
     { title: 'Working Hours', value: workingHoursVal, href: null, icon: <FaClock className="text-emerald-500" /> }
   ];
 
   const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    const val = type === 'checkbox' ? checked : value;
+    const { name, value } = e.target;
     if (status) setStatus(null);
-    setFormData(prev => {
-      const next = { ...prev, [name]: val };
-      // Sync phone and phone_number aliases
-      if (name === 'phone') next.phone_number = val;
-      if (name === 'phone_number') next.phone = val;
-      return next;
+    if (fieldErrors[name]) {
+      setFieldErrors(prev => ({ ...prev, [name]: '' }));
+    }
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleResetForm = () => {
+    setFormData({
+      name: '',
+      email: '',
+      phone: '',
+      message: '',
+      _ts_hp: ''
     });
+    setFieldErrors({});
+    setStatus(null);
+    if (onShowToast) onShowToast('Form fields cleared.');
+  };
+
+  const handleCloseForm = () => {
+    setIsFormClosed(true);
+    setStatus(null);
+    if (onShowToast) onShowToast('Contact form minimized. Click Reopen Form to compose a message.');
+  };
+
+  const handleReopenForm = () => {
+    setIsFormClosed(false);
+  };
+
+  const handleBackToPortfolio = (e) => {
+    if (e) e.preventDefault();
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+    window.history.pushState(null, '', '#home');
+  };
+
+  // Client-side validation
+  const validateForm = () => {
+    const errors = {};
+    if (!formData.name.trim()) {
+      errors.name = 'Full name is required';
+    } else if (formData.name.trim().length < 2) {
+      errors.name = 'Name must be at least 2 characters';
+    }
+
+    if (!formData.email.trim()) {
+      errors.email = 'Email address is required';
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email.trim())) {
+        errors.email = 'Please enter a valid email address';
+      }
+    }
+
+    if (!formData.message.trim()) {
+      errors.message = 'Please enter your message or project inquiry';
+    } else if (formData.message.trim().length < 10) {
+      errors.message = 'Message must be at least 10 characters long';
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return; // Prevent double clicks
+
+    if (!validateForm()) {
+      if (onShowToast) onShowToast('Please fill out all required fields correctly.');
+      return;
+    }
+
     setSubmitting(true);
     setStatus(null);
 
     try {
-      // Ensure phone and phone_number are populated if either is filled
-      const payload = { ...formData };
-      if (payload.phone && !payload.phone_number) payload.phone_number = payload.phone;
-      if (payload.phone_number && !payload.phone) payload.phone = payload.phone_number;
+      const payload = {
+        name: formData.name.trim(),
+        email: formData.email.trim().toLowerCase(),
+        phone: formData.phone.trim(),
+        phone_number: formData.phone.trim(),
+        subject: `Direct Contact Inquiry from ${formData.name.trim()}`,
+        message: formData.message.trim(),
+        _ts_hp: formData._ts_hp
+      };
 
       const res = await api.createMessage(payload);
       if (res?.success) {
-        const successMsg = res.message || 'Thank you! Your message has been sent successfully. I will respond to you shortly.';
-        setStatus({ type: 'success', message: successMsg });
-        if (onShowToast) onShowToast('Message Sent Successfully!');
-        
-        // Reset form inputs
-        const resetData = {};
-        formFields.forEach(f => {
-          resetData[f.name] = '';
+        setStatus({
+          type: 'success',
+          message: res.message || 'Thank you! Your message has been safely saved and forwarded to Gmail. Tauhid will respond shortly.',
+          senderName: formData.name.trim()
         });
-        setFormData(resetData);
+        if (onShowToast) onShowToast('Message Sent & Delivered to Gmail!');
+
+        // Clear form inputs on success
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          message: '',
+          _ts_hp: ''
+        });
+        setFieldErrors({});
       } else {
-        const errorMsg = res?.message || 'Failed to send message. Please verify all required fields.';
+        const errorMsg = res?.message || 'Failed to deliver message. Please verify fields and try again.';
         setStatus({ type: 'error', message: errorMsg });
         if (onShowToast) onShowToast(errorMsg);
       }
-    } catch (error) {
-      const errorMsg = error.message || 'An error occurred while connecting. Please try again.';
+    } catch (err) {
+      const errorMsg = err?.message || 'Connection error. Please try again or reach out via direct email.';
       setStatus({ type: 'error', message: errorMsg });
       if (onShowToast) onShowToast(errorMsg);
     } finally {
@@ -167,47 +226,50 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
     }
   };
 
-  const socialLinks = settings?.socialLinks || {};
-  const socialPlatforms = [
-    { key: 'github', icon: <FaGithub />, color: 'hover:bg-slate-800' },
-    { key: 'linkedin', icon: <FaLinkedin />, color: 'hover:bg-blue-700' },
-    { key: 'twitter', icon: <FaTwitter />, color: 'hover:bg-sky-500' },
-    { key: 'instagram', icon: <FaInstagram />, color: 'hover:bg-pink-600' },
-    { key: 'youtube', icon: <FaYoutube />, color: 'hover:bg-red-600' },
-    { key: 'facebook', icon: <FaFacebook />, color: 'hover:bg-blue-600' }
-  ].filter(p => socialLinks[p.key]);
+  const messageLength = (formData.message || '').length;
 
   return (
-    <section id="contact" className="scroll-mt-24 py-20 sm:py-24 lg:py-28 bg-[#F8FAFC]/70 dark:bg-transparent relative">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12">
+    <section 
+      id="contact" 
+      tabIndex="-1" 
+      aria-label="Contact Section"
+      className="py-16 sm:py-20 md:py-24 relative overflow-hidden focus:outline-none scroll-mt-24"
+    >
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 relative z-10">
         
         {/* Section Header */}
-        <div className="text-center mb-12 sm:mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#C2272D]/10 dark:bg-[#00FFFF]/10 border border-[#C2272D]/20 dark:border-[#00FFFF]/30 text-[#C2272D] dark:text-[#00FFFF] text-xs sm:text-sm font-semibold tracking-wider uppercase mb-3">
-            <span>Get In Touch</span>
-          </div>
-          <h2 className="text-2xl sm:text-3xl md:text-[32px] font-bold font-title tracking-tight text-[#171717] dark:text-white">
-            Let's Start a Conversation
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="text-center max-w-3xl mx-auto mb-10 sm:mb-14 md:mb-16"
+        >
+          <span className="text-xs sm:text-sm font-bold font-title text-[#C2272D] dark:text-[#00FFFF] uppercase tracking-wider block mb-2 sm:mb-3">
+            Get In Touch
+          </span>
+          <h2 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-black font-title tracking-tight text-[#171717] dark:text-white mb-3 sm:mb-4">
+            Let's Build Something <span className="text-[#C2272D]">Together</span>
           </h2>
-          <p className="mt-2.5 text-sm sm:text-base text-[#525252] dark:text-[#D1D5DB] max-w-xl mx-auto leading-relaxed">
-            Have a project in mind, seeking full-stack engineering expertise, or just want to connect? Send a note below.
+          <p className="text-sm sm:text-base md:text-lg text-[#525252] dark:text-[#D1D5DB] font-normal leading-relaxed">
+            Have a project in mind, need technical consultation, or want to discuss full-stack development? Send a message directly.
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+        {/* Contact Layout Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-10 lg:gap-12 items-start">
           
-          {/* Left: Contact Info cards */}
+          {/* Left Column: Direct Info & Socials */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-            className="lg:col-span-5 flex flex-col gap-3.5 sm:gap-4.5 w-full"
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+            className="lg:col-span-5 flex flex-col gap-4 sm:gap-5 w-full"
           >
-            {/* Multiple Locations Tabs */}
-            {settings?.locations?.length > 1 && (
-              <div className="flex flex-wrap gap-2 mb-1 p-1.5 bg-white dark:bg-[#111111] rounded-2xl border border-[#E5E7EB] dark:border-white/10">
-                {settings.locations.map((loc, idx) => (
+            {locationsList.length > 1 && (
+              <div className="flex flex-wrap gap-2 p-1.5 bg-slate-100 dark:bg-white/5 rounded-2xl border border-[#E5E7EB] dark:border-white/10 mb-1">
+                {locationsList.map((loc, idx) => (
                   <button
                     key={idx}
                     onClick={() => setSelectedLocationIdx(idx)}
@@ -252,11 +314,10 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
               </div>
             ))}
 
-            {/* Social Links Block */}
             {socialPlatforms.length > 0 && (
               <div className="bg-white dark:bg-[#111111] p-4.5 xs:p-5 sm:p-5.5 md:p-6 rounded-2xl sm:rounded-3xl border border-[#E5E7EB] dark:border-white/10 shadow-sm text-left flex flex-col gap-3.5 sm:gap-4">
                 <span className="text-xs sm:text-[13px] md:text-sm font-bold font-title text-[#525252] dark:text-[#9CA3AF] uppercase tracking-wider block">
-                  Social Channels
+                  Connect Across Networks
                 </span>
                 <div className="flex flex-wrap gap-2.5 sm:gap-3.5">
                   {socialPlatforms.map((platform, pIdx) => (
@@ -275,7 +336,6 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
               </div>
             )}
 
-            {/* Embedded Google Map */}
             {mapEmbedVal && (
               <div className="bg-white dark:bg-[#111111] p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl border border-[#E5E7EB] dark:border-white/10 shadow-sm overflow-hidden h-[180px] sm:h-[220px]">
                 <iframe
@@ -289,153 +349,254 @@ const Contact = ({ settingsData, aboutData, onShowToast }) => {
             )}
           </motion.div>
 
-          {/* Right: Contact Form */}
+          {/* Right Column: Simple Dedicated Contact Form */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
             className="lg:col-span-7 w-full"
           >
-            <form 
-              onSubmit={handleFormSubmit} 
-              className="bg-white dark:bg-[#111111] p-5 xs:p-6 sm:p-8 md:p-10 lg:p-12 rounded-2xl sm:rounded-3xl border border-[#E5E7EB] dark:border-white/10 shadow-md flex flex-col gap-5 sm:gap-6 text-left"
-            >
-              
-              {/* Form Inputs Grid: 1 column on mobile, 2 columns on tablet/desktop */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-                {formFields.map((field, fIdx) => {
-                  const isFullWidth = field.type === 'textarea' || field.type === 'checkbox' || field.type === 'radio' || formFields.length <= 2;
-                  
-                  return (
-                    <div 
-                      key={field.id || fIdx} 
-                      className={`flex flex-col gap-1.5 ${isFullWidth ? 'sm:col-span-2' : 'sm:col-span-1'}`}
-                    >
-                      {field.type !== 'checkbox' && (
-                        <label htmlFor={field.name} className="text-sm sm:text-[15px] font-semibold text-[#171717] dark:text-white flex items-center justify-between">
-                          <span>
-                            {field.label} {field.required && <span className="text-[#C2272D]">*</span>}
-                          </span>
-                        </label>
-                      )}
-
-                      {field.type === 'textarea' ? (
-                        <textarea
-                          id={field.name}
-                          name={field.name}
-                          value={formData[field.name] || ''}
-                          onChange={handleInputChange}
-                          required={field.required}
-                          rows="4"
-                          placeholder={field.placeholder}
-                          className="w-full px-4 py-3 sm:py-3.5 rounded-xl border border-[#E5E7EB] dark:border-white/10 bg-[#F8FAFC] dark:bg-[#1A1A1A] text-[#171717] dark:text-white focus:outline-none focus:border-[#C2272D] dark:focus:border-[#00FFFF] focus:ring-2 focus:ring-[#C2272D]/20 dark:focus:ring-[#00FFFF]/20 text-[15px] sm:text-base transition-all resize-none placeholder-slate-400 min-h-[110px]"
-                        />
-                      ) : field.type === 'select' ? (
-                        <select
-                          id={field.name}
-                          name={field.name}
-                          value={formData[field.name] || ''}
-                          onChange={handleInputChange}
-                          required={field.required}
-                          className="w-full px-4 py-3 sm:py-3.5 rounded-xl border border-[#E5E7EB] dark:border-white/10 bg-[#F8FAFC] dark:bg-[#1A1A1A] text-[#171717] dark:text-white focus:outline-none focus:border-[#C2272D] dark:focus:border-[#00FFFF] focus:ring-2 focus:ring-[#C2272D]/20 dark:focus:ring-[#00FFFF]/20 text-[15px] sm:text-base transition-all min-h-[46px]"
-                        >
-                          <option value="">Select option...</option>
-                          {field.options?.map((opt, oIdx) => (
-                            <option key={oIdx} value={opt}>{opt}</option>
-                          ))}
-                        </select>
-                      ) : field.type === 'checkbox' ? (
-                        <div className="flex items-center gap-3 py-1">
-                          <input
-                            type="checkbox"
-                            id={field.name}
-                            name={field.name}
-                            checked={!!formData[field.name]}
-                            onChange={handleInputChange}
-                            required={field.required}
-                            className="w-5 h-5 accent-[#C2272D] rounded focus:ring-[#C2272D] cursor-pointer"
-                          />
-                          <label htmlFor={field.name} className="text-sm sm:text-[15px] font-medium text-[#171717] dark:text-white cursor-pointer select-none">
-                            {field.label} {field.required && <span className="text-[#C2272D]">*</span>}
-                          </label>
-                        </div>
-                      ) : field.type === 'radio' ? (
-                        <div className="flex flex-wrap gap-4 py-1">
-                          {field.options?.map((opt, oIdx) => (
-                            <label key={oIdx} className="flex items-center gap-2 text-sm sm:text-[15px] font-medium text-[#171717] dark:text-white cursor-pointer select-none">
-                              <input
-                                type="radio"
-                                name={field.name}
-                                value={opt}
-                                checked={formData[field.name] === opt}
-                                onChange={handleInputChange}
-                                required={field.required}
-                                className="w-4.5 h-4.5 accent-[#C2272D] cursor-pointer"
-                              />
-                              {opt}
-                            </label>
-                          ))}
-                        </div>
-                      ) : (
-                        <input
-                          type={field.type || 'text'}
-                          id={field.name}
-                          name={field.name}
-                          value={formData[field.name] || ''}
-                          onChange={handleInputChange}
-                          required={field.required}
-                          placeholder={field.placeholder}
-                          className="w-full px-4 py-3 sm:py-3.5 rounded-xl border border-[#E5E7EB] dark:border-white/10 bg-[#F8FAFC] dark:bg-[#1A1A1A] text-[#171717] dark:text-white focus:outline-none focus:border-[#C2272D] dark:focus:border-[#00FFFF] focus:ring-2 focus:ring-[#C2272D]/20 dark:focus:ring-[#00FFFF]/20 text-[15px] sm:text-base transition-all placeholder-slate-400 min-h-[46px]"
-                        />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Status Feedback Banner */}
-              <AnimatePresence>
-                {status && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    className={`p-4 rounded-xl flex items-center gap-3 text-sm font-medium border ${
-                      status.type === 'success'
-                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
-                        : 'bg-[#C2272D]/10 border-[#C2272D]/30 text-[#C2272D] dark:text-red-400'
-                    }`}
+            {isFormClosed ? (
+              <div className="bg-white dark:bg-[#111111] p-8 sm:p-12 rounded-2xl sm:rounded-3xl border border-[#E5E7EB] dark:border-white/10 shadow-md text-center flex flex-col items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-[#C2272D]/10 dark:bg-[#00FFFF]/10 text-[#C2272D] dark:text-[#00FFFF] flex items-center justify-center text-2xl">
+                  <FaEnvelope />
+                </div>
+                <h3 className="text-xl font-bold font-title text-[#171717] dark:text-white">
+                  Contact Form is Minimized
+                </h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md">
+                  You can reopen the contact form at any time to send a quick message, or scroll back to explore portfolio projects.
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-3 mt-2">
+                  <button
+                    type="button"
+                    onClick={handleReopenForm}
+                    className="px-6 py-2.5 rounded-full bg-[#C2272D] text-white text-xs sm:text-sm font-bold shadow-md hover:bg-[#A51E23] transition-all cursor-pointer"
                   >
-                    {status.type === 'success' ? (
-                      <FaCheckCircle className="shrink-0 text-base" />
-                    ) : (
-                      <FaExclamationCircle className="shrink-0 text-base" />
-                    )}
-                    <span className="leading-relaxed">{status.message}</span>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full min-h-[48px] sm:min-h-[52px] py-3.5 sm:py-4 px-6 sm:px-8 bg-[#C2272D] hover:bg-[#A51E23] disabled:bg-slate-400 text-white rounded-full font-semibold text-[15px] sm:text-[16px] shadow-md shadow-[#C2272D]/25 hover:shadow-xl hover:shadow-[#C2272D]/40 transition-all duration-200 flex items-center justify-center gap-2.5 cursor-pointer mt-1 hover:scale-[1.02] active:scale-[0.98] btn-shine-effect group"
+                    Reopen Contact Form
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleBackToPortfolio}
+                    className="px-6 py-2.5 rounded-full bg-slate-100 dark:bg-white/10 text-[#171717] dark:text-white text-xs sm:text-sm font-bold hover:bg-slate-200 transition-all cursor-pointer"
+                  >
+                    Back to Portfolio
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form 
+                onSubmit={handleFormSubmit} 
+                noValidate
+                className="bg-white dark:bg-[#111111] p-5 xs:p-6 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl border border-[#E5E7EB] dark:border-white/10 shadow-md flex flex-col gap-5 sm:gap-6 text-left relative"
               >
-                {submitting ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Sending message...</span>
-                  </>
-                ) : (
-                  <>
-                    <FaPaperPlane size={15} className="transition-transform duration-200 group-hover:translate-x-1 group-hover:-translate-y-1" />
-                    <span>Send Message</span>
-                  </>
-                )}
-              </button>
-            </form>
+                {/* Honeypot anti-spam bot field (hidden from view) */}
+                <input
+                  type="text"
+                  name="_ts_hp"
+                  value={formData._ts_hp}
+                  onChange={handleInputChange}
+                  style={{ display: 'none' }}
+                  tabIndex="-1"
+                  autoComplete="off"
+                />
+
+                {/* Form Card Top Controls: Header title + Close/Clear */}
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/5">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#C2272D] animate-ping" />
+                    <span className="text-xs sm:text-sm font-bold font-title uppercase tracking-wider text-[#171717] dark:text-white">
+                      Quick Inquiry Channel
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleResetForm}
+                      title="Clear form inputs"
+                      className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5 transition-all text-xs flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <FaUndo size={11} />
+                      <span className="hidden sm:inline font-medium">Clear</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleCloseForm}
+                      title="Close / Minimize form"
+                      className="p-2 rounded-xl text-slate-400 hover:text-[#C2272D] hover:bg-[#C2272D]/10 dark:hover:bg-white/5 transition-all cursor-pointer"
+                      aria-label="Close form"
+                    >
+                      <FaTimes size={15} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Form Inputs Grid: Name, Email, Phone (optional), Message */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                  {/* Full Name */}
+                  <div className="flex flex-col gap-1.5 sm:col-span-1">
+                    <label htmlFor="contact_name" className="text-xs sm:text-sm font-semibold text-[#171717] dark:text-white flex items-center gap-1.5">
+                      <FaUser size={11} className="text-[#C2272D] opacity-80" />
+                      <span>Full Name</span>
+                      <span className="text-[#C2272D]">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="contact_name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      placeholder="e.g. Alex Johnson"
+                      className={`w-full px-4 py-3 sm:py-3.5 rounded-xl border text-[14px] sm:text-[15px] transition-all placeholder-slate-400 min-h-[46px] bg-[#F8FAFC] dark:bg-[#1A1A1A] text-[#171717] dark:text-white focus:outline-none ${
+                        fieldErrors.name 
+                          ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' 
+                          : 'border-[#E5E7EB] dark:border-white/10 focus:border-[#C2272D] dark:focus:border-[#00FFFF] focus:ring-2 focus:ring-[#C2272D]/20 dark:focus:ring-[#00FFFF]/20'
+                      }`}
+                    />
+                    {fieldErrors.name && (
+                      <span className="text-[11px] font-medium text-red-500">{fieldErrors.name}</span>
+                    )}
+                  </div>
+
+                  {/* Email Address */}
+                  <div className="flex flex-col gap-1.5 sm:col-span-1">
+                    <label htmlFor="contact_email" className="text-xs sm:text-sm font-semibold text-[#171717] dark:text-white flex items-center gap-1.5">
+                      <FaEnvelope size={11} className="text-[#C2272D] opacity-80" />
+                      <span>Email Address</span>
+                      <span className="text-[#C2272D]">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      id="contact_email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      placeholder="e.g. alex@company.com"
+                      className={`w-full px-4 py-3 sm:py-3.5 rounded-xl border text-[14px] sm:text-[15px] transition-all placeholder-slate-400 min-h-[46px] bg-[#F8FAFC] dark:bg-[#1A1A1A] text-[#171717] dark:text-white focus:outline-none ${
+                        fieldErrors.email 
+                          ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' 
+                          : 'border-[#E5E7EB] dark:border-white/10 focus:border-[#C2272D] dark:focus:border-[#00FFFF] focus:ring-2 focus:ring-[#C2272D]/20 dark:focus:ring-[#00FFFF]/20'
+                      }`}
+                    />
+                    {fieldErrors.email && (
+                      <span className="text-[11px] font-medium text-red-500">{fieldErrors.email}</span>
+                    )}
+                  </div>
+
+                  {/* Mobile / Phone (Optional) */}
+                  <div className="flex flex-col gap-1.5 sm:col-span-2">
+                    <label htmlFor="contact_phone" className="text-xs sm:text-sm font-semibold text-[#171717] dark:text-white flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <FaPhone size={11} className="text-[#00FFFF] opacity-80" />
+                        <span>Mobile / WhatsApp</span>
+                      </span>
+                      <span className="text-[11px] font-normal text-slate-400">Optional</span>
+                    </label>
+                    <input
+                      type="tel"
+                      id="contact_phone"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      placeholder="+91 91427 25562"
+                      className="w-full px-4 py-3 sm:py-3.5 rounded-xl border border-[#E5E7EB] dark:border-white/10 bg-[#F8FAFC] dark:bg-[#1A1A1A] text-[#171717] dark:text-white focus:outline-none focus:border-[#C2272D] dark:focus:border-[#00FFFF] focus:ring-2 focus:ring-[#C2272D]/20 dark:focus:ring-[#00FFFF]/20 text-[14px] sm:text-[15px] transition-all placeholder-slate-400 min-h-[46px]"
+                    />
+                  </div>
+
+                  {/* Message */}
+                  <div className="flex flex-col gap-1.5 sm:col-span-2">
+                    <label htmlFor="contact_message" className="text-xs sm:text-sm font-semibold text-[#171717] dark:text-white flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <FaCommentDots size={11} className="text-[#00FFFF] opacity-80" />
+                        <span>Message / Inquiry</span>
+                        <span className="text-[#C2272D]">*</span>
+                      </span>
+                      <span className="text-[11px] font-normal text-slate-400">
+                        {messageLength} / 1000
+                      </span>
+                    </label>
+                    <textarea
+                      id="contact_message"
+                      name="message"
+                      value={formData.message}
+                      onChange={handleInputChange}
+                      rows="4"
+                      maxLength={1000}
+                      placeholder="Tell me about your project, timeline, requirements, or inquiry..."
+                      className={`w-full px-4 py-3 sm:py-3.5 rounded-xl border text-[14px] sm:text-[15px] transition-all resize-none placeholder-slate-400 min-h-[120px] bg-[#F8FAFC] dark:bg-[#1A1A1A] text-[#171717] dark:text-white focus:outline-none ${
+                        fieldErrors.message 
+                          ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' 
+                          : 'border-[#E5E7EB] dark:border-white/10 focus:border-[#C2272D] dark:focus:border-[#00FFFF] focus:ring-2 focus:ring-[#C2272D]/20 dark:focus:ring-[#00FFFF]/20'
+                      }`}
+                    />
+                    {fieldErrors.message && (
+                      <span className="text-[11px] font-medium text-red-500">{fieldErrors.message}</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Status Feedback Banner */}
+                <AnimatePresence>
+                  {status && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      className={`p-4 sm:p-5 rounded-2xl flex flex-col gap-2 border ${
+                        status.type === 'success'
+                          ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300'
+                          : 'bg-[#C2272D]/10 border-[#C2272D]/30 text-[#C2272D] dark:text-red-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 font-bold text-sm">
+                        {status.type === 'success' ? (
+                          <FaCheckCircle className="shrink-0 text-base text-emerald-500" />
+                        ) : (
+                          <FaExclamationCircle className="shrink-0 text-base text-[#C2272D]" />
+                        )}
+                        <span>{status.type === 'success' ? 'Message Sent Successfully!' : 'Submission Notice'}</span>
+                      </div>
+                      <p className="text-xs sm:text-sm leading-relaxed opacity-95">
+                        {status.message}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Form Action Controls: Send Message + Reset */}
+                <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full sm:flex-1 min-h-[48px] sm:min-h-[52px] py-3.5 sm:py-4 px-6 sm:px-8 bg-[#C2272D] hover:bg-[#A51E23] disabled:bg-slate-400 text-white rounded-full font-semibold text-[15px] sm:text-[16px] shadow-md shadow-[#C2272D]/25 hover:shadow-xl hover:shadow-[#C2272D]/40 transition-all duration-200 flex items-center justify-center gap-2.5 cursor-pointer hover:scale-[1.01] active:scale-[0.98] btn-shine-effect group"
+                  >
+                    {submitting ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Sending Message...</span>
+                      </>
+                    ) : (
+                      <>
+                        <FaPaperPlane size={14} className="transition-transform duration-200 group-hover:translate-x-1 group-hover:-translate-y-1" />
+                        <span>Send Message</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleResetForm}
+                    disabled={submitting}
+                    className="w-full sm:w-auto px-5 py-3 rounded-full border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 transition-all cursor-pointer"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </form>
+            )}
           </motion.div>
         </div>
       </div>

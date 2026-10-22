@@ -5,57 +5,73 @@ const CustomCursor = () => {
   const outlineRef = useRef(null);
 
   useEffect(() => {
+    // Only enable custom cursor on devices with fine pointer (mouse/trackpad), not touch screens
+    const hasFinePointer = window.matchMedia('(pointer: fine)').matches;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!hasFinePointer || prefersReducedMotion) return;
+
     const cursor = cursorRef.current;
     const outline = outlineRef.current;
     if (!cursor || !outline) return;
 
-    let mouseX = 0;
-    let mouseY = 0;
-    let outlineX = 0;
-    let outlineY = 0;
+    let mouseX = -100;
+    let mouseY = -100;
+    let outlineX = -100;
+    let outlineY = -100;
+    let isHovering = false;
+    let isVisible = false;
 
     const onMouseMove = (e) => {
       mouseX = e.clientX;
       mouseY = e.clientY;
-      
-      // Update inline css custom variables directly on document
-      document.documentElement.style.setProperty('--mouse-x', `${mouseX}px`);
-      document.documentElement.style.setProperty('--mouse-y', `${mouseY}px`);
 
-      // Update cursor position directly on DOM without state re-render
-      cursor.style.left = `${mouseX}px`;
-      cursor.style.top = `${mouseY}px`;
+      if (!isVisible) {
+        isVisible = true;
+        cursor.style.opacity = '1';
+        outline.style.opacity = '1';
+      }
+
+      // GPU-accelerated translate3d (0 layout recalculations)
+      cursor.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate(-50%, -50%)`;
     };
 
-    // Use event delegation for mouse over state (highly performant, removes mutation observer)
     const onMouseOver = (e) => {
-      const target = e.target.closest('a, button, input[type="submit"], [role="button"]');
-      if (target) {
-        outline.classList.add('scale-[1.4]', 'bg-primary-blue/5', 'border-primary-cyan');
-      } else {
-        outline.classList.remove('scale-[1.4]', 'bg-primary-blue/5', 'border-primary-cyan');
+      const target = e.target.closest('a, button, input, textarea, select, [role="button"], [tabindex="0"]');
+      if (target && !isHovering) {
+        isHovering = true;
+        outline.classList.add('scale-[1.4]', 'border-[#00FFFF]');
+      } else if (!target && isHovering) {
+        isHovering = false;
+        outline.classList.remove('scale-[1.4]', 'border-[#00FFFF]');
       }
     };
 
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseover', onMouseOver);
+    const onMouseLeave = () => {
+      isVisible = false;
+      cursor.style.opacity = '0';
+      outline.style.opacity = '0';
+    };
 
-    // Smooth outline movement loop
+    window.addEventListener('mousemove', onMouseMove, { passive: true });
+    window.addEventListener('mouseover', onMouseOver, { passive: true });
+    document.addEventListener('mouseleave', onMouseLeave);
+
+    // Smooth GPU outline tracking loop
     let animFrame;
     const followCursor = () => {
       const dx = mouseX - outlineX;
       const dy = mouseY - outlineY;
-      outlineX += dx * 0.15;
-      outlineY += dy * 0.15;
-      outline.style.left = `${outlineX}px`;
-      outline.style.top = `${outlineY}px`;
+      outlineX += dx * 0.2;
+      outlineY += dy * 0.2;
+      outline.style.transform = `translate3d(${outlineX}px, ${outlineY}px, 0) translate(-50%, -50%)`;
       animFrame = requestAnimationFrame(followCursor);
     };
-    followCursor();
+    animFrame = requestAnimationFrame(followCursor);
 
     return () => {
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseover', onMouseOver);
+      document.removeEventListener('mouseleave', onMouseLeave);
       cancelAnimationFrame(animFrame);
     };
   }, []);
@@ -65,12 +81,28 @@ const CustomCursor = () => {
       <div
         ref={cursorRef}
         className="custom-cursor hidden lg:block"
-        style={{ position: 'fixed', pointerEvents: 'none', zIndex: 9999 }}
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          opacity: 0,
+          pointerEvents: 'none',
+          zIndex: 9999,
+          willChange: 'transform'
+        }}
       />
       <div
         ref={outlineRef}
         className="custom-cursor-outline hidden lg:block"
-        style={{ position: 'fixed', pointerEvents: 'none', zIndex: 9998 }}
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          opacity: 0,
+          pointerEvents: 'none',
+          zIndex: 9998,
+          willChange: 'transform'
+        }}
       />
     </>
   );

@@ -58,6 +58,7 @@ const ProfileManager = lazy(() => import('./admin/ProfileManager.jsx'));
 const SecurityManager = lazy(() => import('./admin/SecurityManager.jsx'));
 const CommunityCMS = lazy(() => import('./admin/CommunityCMS.jsx'));
 const FeatureManagement = lazy(() => import('./admin/FeatureManagement.jsx'));
+const FormsManager = lazy(() => import('./admin/FormsManager.jsx'));
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -117,6 +118,7 @@ createRoot(document.getElementById('root')).render(
               <Route path="security" element={<SecurityManager />} />
               <Route path="community" element={<CommunityCMS />} />
               <Route path="features" element={<FeatureManagement />} />
+              <Route path="forms" element={<FormsManager />} />
             </Route>
 
             {/* Fallback to Admin Dashboard */}

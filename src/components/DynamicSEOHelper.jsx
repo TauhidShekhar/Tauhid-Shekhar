@@ -72,8 +72,8 @@ const DynamicSEOHelper = () => {
       title = `Privacy Policy & Data Protection | ${siteName}`;
       description = 'Privacy commitment, cookie usage, and personal data management policies under GDPR/CCPA standards.';
     } else if (path.startsWith('/login') || path.startsWith('/register') || path.startsWith('/forgot-password') || path.startsWith('/recover-account')) {
-      title = `Creator & Member Sign In | ${siteName}`;
-      description = 'Access developer account, personal saved projects, and administrative CMS modules.';
+      title = `Sign In | ${siteName}`;
+      description = 'Sign in to your account to continue.';
       robotsIndex = 'noindex, nofollow';
     } else if (path.startsWith('/user/dashboard') || path.startsWith('/dashboard') || path.startsWith('/admin')) {
       title = `Control Dashboard | ${siteName}`;

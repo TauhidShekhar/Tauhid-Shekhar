@@ -85,6 +85,9 @@ const ProfileManager = lazy(() => import('../../admin/src/admin/ProfileManager.j
 const SecurityManager = lazy(() => import('../../admin/src/admin/SecurityManager.jsx'));
 const CommunityCMS = lazy(() => import('../../admin/src/admin/CommunityCMS.jsx'));
 const FeatureManagement = lazy(() => import('../../admin/src/admin/FeatureManagement.jsx'));
+const FormsManager = lazy(() => import('../../admin/src/admin/FormsManager.jsx'));
+const FormsDirectory = lazy(() => import('./components/FormsDirectory.jsx'));
+const DynamicPublicForm = lazy(() => import('./components/DynamicPublicForm.jsx'));
 
 // Community Platform Pages (Lazy Loaded)
 const CommunityLayout = lazy(() => import('./components/CommunityLayout.jsx'));
@@ -142,10 +145,15 @@ createRoot(document.getElementById('root')).render(
             <Routes>
             {/* Main Website Route */}
             <Route path="/" element={<App />} />
+            <Route path="/resume" element={<Navigate to="/#resume" replace />} />
+            <Route path="/ats" element={<Navigate to="/#resume" replace />} />
             <Route path="/features" element={<FeaturesPage />} />
             <Route path="/legal" element={<Legal />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
+            <Route path="/forms" element={<FormsDirectory />} />
+            <Route path="/forms-center" element={<FormsDirectory />} />
+            <Route path="/forms/:slug" element={<DynamicPublicForm />} />
 
             {/* Public Auth Routes */}
             <Route path="/login" element={<Auth />} />
@@ -212,6 +220,7 @@ createRoot(document.getElementById('root')).render(
               <Route path="security" element={<SecurityManager />} />
               <Route path="community" element={<CommunityCMS />} />
               <Route path="features" element={<FeatureManagement />} />
+              <Route path="forms" element={<FormsManager />} />
             </Route>
 
             {/* Community Module Routes */}

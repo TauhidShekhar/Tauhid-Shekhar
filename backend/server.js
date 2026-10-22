@@ -64,6 +64,8 @@ app.use(async (req, res, next) => {
         });
         const seedEcosystem = require('./utils/seeder');
         await seedEcosystem();
+        const { seedFormTemplates } = require('./utils/formTemplatesSeeder');
+        await seedFormTemplates();
       }
     }
     next();
@@ -247,6 +249,7 @@ const featureRoutes = require('./routes/featureRoutes');
 const cmsRoutes = require('./routes/cmsRoutes');
 const portfolioRoutes = require('./routes/portfolioRoutes');
 const shareRoutes = require('./routes/shareRoutes');
+const formRoutes = require('./routes/formRoutes');
 
 
 // Mount Routes
@@ -254,6 +257,7 @@ const { cacheMiddleware } = require('./middleware/cacheMiddleware');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/portfolio', portfolioRoutes);
+app.use('/api/forms', formRoutes);
 app.use('/api/skills', cacheMiddleware('skills'), skillRoutes);
 app.use('/api/projects', cacheMiddleware('projects'), projectRoutes);
 app.use('/api/messages', messageRoutes);
@@ -302,6 +306,19 @@ app.get('/sitemap.xml', async (req, res, next) => {
       { url: '/community', changefreq: 'daily', priority: 0.9 },
       { url: '/contact', changefreq: 'monthly', priority: 0.7 }
     ];
+
+    // Fetch dynamic public forms
+    const Form = require('./models/Form');
+    pages.push({ url: '/forms', changefreq: 'daily', priority: 0.8 });
+    const publicForms = await Form.find({ status: 'Published' }).select('slug updatedAt');
+    publicForms.forEach(f => {
+      pages.push({
+        url: `/forms/${f.slug}`,
+        changefreq: 'weekly',
+        priority: 0.7,
+        lastmod: f.updatedAt ? f.updatedAt.toISOString().split('T')[0] : undefined
+      });
+    });
 
     // Fetch dynamic blogs
     const blogs = await Blog.find({ status: 'Published' }).select('slug updatedAt');
@@ -495,6 +512,8 @@ if (!process.env.VERCEL) {
       // Seed default ecosystem configurations
       const seedEcosystem = require('./utils/seeder');
       await seedEcosystem();
+      const { seedFormTemplates } = require('./utils/formTemplatesSeeder');
+      await seedFormTemplates();
 
       // Start Express + Socket.io Server listening
       const PORT = process.env.PORT || 5000;
