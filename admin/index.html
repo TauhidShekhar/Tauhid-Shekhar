@@ -27,16 +27,21 @@
         try {
           var savedTheme = localStorage.getItem('theme');
           var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
-            document.documentElement.classList.add('darkmode');
+          var isDark = savedTheme === 'dark' || (!savedTheme && systemDark);
+          if (isDark) {
+            document.documentElement.classList.add('dark', 'darkmode');
+            document.documentElement.setAttribute('data-theme', 'dark');
+            document.documentElement.style.colorScheme = 'dark';
           } else {
-            document.documentElement.classList.remove('darkmode');
+            document.documentElement.classList.remove('dark', 'darkmode');
+            document.documentElement.setAttribute('data-theme', 'light');
+            document.documentElement.style.colorScheme = 'light';
           }
         } catch (e) {}
       })();
     </script>
   </head>
-  <body class="darkmode">
+  <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

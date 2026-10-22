@@ -6,6 +6,7 @@ import './index.css';
 
 // Auth context and protection wrappers
 import { AuthProvider } from './contexts/AuthContext.jsx';
+import { ThemeProvider } from './contexts/ThemeContext.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
 import AppLoader from './components/common/AppLoader.jsx';
@@ -63,7 +64,8 @@ const FormsManager = lazy(() => import('./admin/FormsManager.jsx'));
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
-      <BrowserRouter>
+      <ThemeProvider>
+        <BrowserRouter>
         <Suspense fallback={<LoadingScreen />}>
           <Routes>
             {/* Automatic Redirect from Root to Admin Panel */}
@@ -125,7 +127,8 @@ createRoot(document.getElementById('root')).render(
             <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
           </Routes>
         </Suspense>
-      </BrowserRouter>
+        </BrowserRouter>
+      </ThemeProvider>
     </AuthProvider>
   </StrictMode>
 );

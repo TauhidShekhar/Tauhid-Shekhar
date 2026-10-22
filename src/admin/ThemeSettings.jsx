@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
-import { FaSave, FaCog } from 'react-icons/fa';
+import { FaSave, FaCog, FaSun, FaMoon } from 'react-icons/fa';
 
 const ThemeSettings = () => {
   const [theme, setTheme] = useState({
     defaultMode: 'dark',
-    primaryColor: '#0071e3'
+    primaryColor: '#C2272D'
   });
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState('');
@@ -17,7 +17,7 @@ const ThemeSettings = () => {
         if (res.success && res.data) {
           setTheme({
             defaultMode: res.data.theme?.defaultMode || 'dark',
-            primaryColor: res.data.theme?.primaryColor || '#0071e3'
+            primaryColor: res.data.theme?.primaryColor || '#C2272D'
           });
         }
       } catch (err) {
@@ -40,7 +40,6 @@ const ThemeSettings = () => {
     setLoading(true);
 
     try {
-      // Fetch setting first
       const settingsRes = await api.getSettings();
       if (settingsRes.success && settingsRes.data) {
         const updatedSettings = {
@@ -49,7 +48,7 @@ const ThemeSettings = () => {
         };
         const res = await api.updateSettings(updatedSettings);
         if (res.success) {
-          setSuccess('Theme settings updated successfully!');
+          setSuccess('Theme configurations saved successfully!');
           setTimeout(() => setSuccess(''), 3000);
         }
       }
@@ -60,62 +59,64 @@ const ThemeSettings = () => {
     }
   };
 
-  if (loading && theme.primaryColor === '') {
-    return (
-      <div className="flex items-center justify-center h-[50vh]">
-        <div className="w-10 h-10 rounded-full border-4 border-slate-200 border-t-primary-blue animate-spin" />
-      </div>
-    );
-  }
-
   return (
-    <div className="flex flex-col gap-8 text-left animate-fade-in">
+    <div className="flex flex-col gap-6 sm:gap-8 text-left animate-fade-in max-w-[1600px] mx-auto">
       <div>
-        <h2 className="text-2xl md:text-3xl font-black font-title text-black dark:text-white">Theme Configurations</h2>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Configure site defaults, primary accent colors, and CSS tokens.</p>
+        <h2 className="text-2xl md:text-3xl font-black font-title text-black dark:text-white flex items-center gap-2.5">
+          <FaCog className="text-[#C2272D] dark:text-[#00FFFF]" />
+          <span>Theme Configurations</span>
+        </h2>
+        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+          Configure site brand defaults, primary accent colors, and global visual tokens.
+        </p>
       </div>
 
-      <div className="glass p-6 md:p-8 rounded-2xl border border-slate-200/60 dark:border-white/5 shadow-sm max-w-[500px]">
-        <h3 className="text-lg font-bold font-title text-black dark:text-white mb-6 flex items-center gap-2">
-          <FaCog className="text-primary-blue" /> Layout Styling & Accents
+      <div className="glass p-6 md:p-8 rounded-3xl border border-slate-200 dark:border-white/10 shadow-sm max-w-[560px]">
+        <h3 className="text-base font-bold font-title text-black dark:text-white mb-6 flex items-center gap-2">
+          <FaCog className="text-[#C2272D] dark:text-[#00FFFF]" />
+          <span>Layout Styling & Default Accents</span>
         </h3>
 
         {success && (
-          <div className="p-4 mb-6 rounded-xl bg-green-500/10 border border-green-500/20 text-green-500 text-xs font-bold">
+          <div className="p-4 mb-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
             {success}
           </div>
         )}
 
         <form onSubmit={handleFormSubmit} className="flex flex-col gap-5 text-xs">
           <div className="flex flex-col gap-2">
-            <label className="font-bold text-slate-550 dark:text-slate-455 uppercase">Default Theme Mode</label>
+            <label className="font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider text-[10px]">
+              Default Platform Mode
+            </label>
             <select
               name="defaultMode"
               value={theme.defaultMode}
               onChange={handleInputChange}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none cursor-pointer"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#141414] text-slate-900 dark:text-slate-100 focus:outline-none cursor-pointer"
             >
-              <option value="dark">Force Dark Mode</option>
-              <option value="light">Force Light Mode</option>
+              <option value="dark">Dark Theme (Default TS Cyan & Red)</option>
+              <option value="light">Light Theme (Clean Crisp Surfaces)</option>
             </select>
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="font-bold text-slate-550 dark:text-slate-455 uppercase">Accent Theme Color</label>
+            <label className="font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider text-[10px]">
+              Brand Accent Color
+            </label>
             <div className="flex items-center gap-4">
               <input
                 type="color"
                 name="primaryColor"
                 value={theme.primaryColor}
                 onChange={handleInputChange}
-                className="w-12 h-12 rounded-xl border border-slate-200 dark:border-white/5 cursor-pointer bg-transparent"
+                className="w-12 h-12 rounded-xl border border-slate-200 dark:border-white/10 cursor-pointer bg-transparent"
               />
               <input
                 type="text"
                 name="primaryColor"
                 value={theme.primaryColor}
                 onChange={handleInputChange}
-                className="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none font-mono"
+                className="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#141414] text-slate-900 dark:text-slate-100 focus:outline-none font-mono"
               />
             </div>
           </div>
@@ -123,13 +124,13 @@ const ThemeSettings = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-fit px-8 py-3 bg-primary-blue hover:bg-accent-blue text-white rounded-xl font-bold shadow-lg flex items-center justify-center gap-1.5 cursor-pointer mt-2"
+            className="w-fit px-8 py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-xl font-bold shadow-md shadow-[#C2272D]/20 flex items-center justify-center gap-2 cursor-pointer mt-2"
           >
             {loading ? (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
               <>
-                <FaSave /> Save Theme settings
+                <FaSave /> <span>Save Theme Settings</span>
               </>
             )}
           </button>

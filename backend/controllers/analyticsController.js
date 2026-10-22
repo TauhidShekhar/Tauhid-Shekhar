@@ -71,8 +71,8 @@ const getStats = async (req, res, next) => {
   try {
     const projectsCount = await Project.countDocuments({});
     const skillsCount = await Skill.countDocuments({});
-    const messagesCount = await Message.countDocuments({});
-    const unreadMessagesCount = await Message.countDocuments({ isRead: false });
+    const messagesCount = await Message.countDocuments({ isArchived: { $ne: true } });
+    const unreadMessagesCount = await Message.countDocuments({ isRead: false, isArchived: { $ne: true } });
     const usersCount = await User.countDocuments({});
     const experienceCount = await Experience.countDocuments({});
     const educationCount = await Education.countDocuments({});
@@ -147,11 +147,21 @@ const getStats = async (req, res, next) => {
           resource: act.resource,
           timestamp: act.createdAt
         })),
-        visitorChart: history.map(h => ({
-          date: h.date.toISOString().slice(0, 10),
-          views: h.pageViews,
-          visitors: h.uniqueVisitors
-        })),
+        visitorChart: (() => {
+          const chart = [];
+          for (let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const dateStr = d.toISOString().slice(0, 10);
+            const match = history.find(h => h.date && h.date.toISOString().slice(0, 10) === dateStr);
+            chart.push({
+              date: dateStr,
+              views: match ? match.pageViews : 0,
+              visitors: match ? match.uniqueVisitors : 0
+            });
+          }
+          return chart;
+        })(),
         topPages: aggResult.map(a => ({ page: a._id, views: a.totalViews })),
         deviceBreakdown: devices[0] || { desktop: 0, mobile: 0, tablet: 0 }
       }

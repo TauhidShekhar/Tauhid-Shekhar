@@ -3,6 +3,8 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 import { PasswordStrength } from '../components/ui/PasswordStrength';
+import tsLogoRed from '../assets/ts-logo-red.jpg';
+import tsLogo2 from '../assets/logo2.png';
 import { 
   FaLock, FaUser, FaEnvelope, FaEye, FaEyeSlash, 
   FaArrowLeft, FaGoogle, FaGithub, FaExclamationCircle, FaCheckCircle, FaTimes
@@ -172,11 +174,17 @@ const Auth = () => {
 
         {/* Brand Header */}
         <div className="flex flex-col items-center text-center mb-5">
-          <img 
-            src="/assits/ts-logo-red.jpg" 
-            alt="Tauhid Shekhar Logo" 
-            className="w-12 h-12 rounded-2xl object-cover ring-2 ring-[#C2272D]/30 shadow-md shadow-[#C2272D]/15 mb-2.5" 
-          />
+          <div className="w-14 h-14 rounded-2xl bg-slate-900 border border-slate-200 dark:border-white/10 p-0.5 flex items-center justify-center shadow-md shadow-[#C2272D]/15 mb-2.5 overflow-hidden">
+            <img 
+              src={tsLogoRed} 
+              alt="Tauhid Shekhar Logo" 
+              className="w-full h-full object-cover rounded-[14px]" 
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = tsLogo2;
+              }}
+            />
+          </div>
           <h1 className="text-xl sm:text-2xl font-black font-['Manrope'] text-slate-900 tracking-tight">
             {activeTab === 'login' ? 'Sign In' : 'Create Account'}
           </h1>

@@ -2,8 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { 
   FaQuestionCircle, FaSearch, FaTrash, FaCheck, FaTimes, 
-  FaSpinner, FaUser, FaComments, FaCalendarAlt, FaEdit 
+  FaSpinner, FaUser, FaComments, FaCalendarAlt, FaEdit, FaPaperPlane, FaCheckCircle
 } from 'react-icons/fa';
+
+const CATEGORIES = [
+  'HTML', 'CSS', 'JavaScript', 'React', 'Node', 'Express', 
+  'MongoDB', 'Python', 'Java', 'C++', 'DSA', 'AI', 'Cloud', 'Career', 'Other'
+];
 
 const DoubtsManager = () => {
   const [questions, setQuestions] = useState([]);
@@ -15,17 +20,14 @@ const DoubtsManager = () => {
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [answers, setAnswers] = useState([]);
   const [loadingDetails, setLoadingDetails] = useState(false);
+  const [newAnswerText, setNewAnswerText] = useState('');
+  const [submittingAnswer, setSubmittingAnswer] = useState(false);
 
   // Edit fields
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
   const [editCategory, setEditCategory] = useState('');
-
-  const CATEGORIES = [
-    'HTML', 'CSS', 'JavaScript', 'React', 'Node', 'Express', 
-    'MongoDB', 'Python', 'Java', 'C++', 'DSA', 'AI', 'Cloud', 'Career', 'Other'
-  ];
 
   const fetchQuestions = async () => {
     try {
@@ -48,10 +50,11 @@ const DoubtsManager = () => {
     setSelectedQuestion(q);
     setLoadingDetails(true);
     setIsEditing(false);
+    setNewAnswerText('');
     try {
       const res = await api.getCommunityQuestionDetails(q._id);
       if (res.success) {
-        setAnswers(res.data.answers || []);
+        setAnswers(res.data?.answers || []);
       }
     } catch (err) {
       console.error('Error loading question details:', err.message);
@@ -61,7 +64,7 @@ const DoubtsManager = () => {
   };
 
   const handleDeleteQuestion = async (qId) => {
-    if (!window.confirm('Are you sure you want to delete this doubt? This will remove all answers.')) return;
+    if (!window.confirm('Are you sure you want to delete this doubt? This will remove all associated answers.')) return;
     try {
       const res = await api.deleteCommunityQuestion(qId);
       if (res.success) {
@@ -84,6 +87,34 @@ const DoubtsManager = () => {
       }
     } catch (err) {
       alert(err.message || 'Failed to delete answer');
+    }
+  };
+
+  const handleAcceptAnswer = async (ansId) => {
+    try {
+      const res = await api.acceptCommunityAnswer(ansId);
+      if (res.success) {
+        setAnswers(prev => prev.map(a => a._id === ansId ? { ...a, isAccepted: !a.isAccepted } : a));
+      }
+    } catch (err) {
+      alert(err.message || 'Failed to toggle accepted status');
+    }
+  };
+
+  const handlePostAnswer = async (e) => {
+    e.preventDefault();
+    if (!newAnswerText.trim() || !selectedQuestion) return;
+    setSubmittingAnswer(true);
+    try {
+      const res = await api.createCommunityAnswer(selectedQuestion._id, newAnswerText.trim());
+      if (res.success && res.data) {
+        setAnswers(prev => [...prev, res.data]);
+        setNewAnswerText('');
+      }
+    } catch (err) {
+      alert(err.message || 'Failed to post answer');
+    } finally {
+      setSubmittingAnswer(false);
     }
   };
 
@@ -124,35 +155,41 @@ const DoubtsManager = () => {
   });
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start text-left max-w-[1600px] mx-auto animate-fade-in">
       {/* List Container */}
-      <div className={`${selectedQuestion ? 'lg:col-span-6' : 'lg:col-span-12'} glass p-6 rounded-2xl border border-slate-200/60 dark:border-white/5 shadow-sm text-left flex flex-col gap-6`}>
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 dark:border-white/5 pb-4">
+      <div className={`${selectedQuestion ? 'lg:col-span-6' : 'lg:col-span-12'} glass p-5 sm:p-7 rounded-3xl border border-slate-200 dark:border-white/10 shadow-sm flex flex-col gap-6`}>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 dark:border-white/10 pb-4">
           <div>
             <h2 className="text-xl font-bold font-title text-black dark:text-white flex items-center gap-2">
-              <FaQuestionCircle className="text-primary-blue" /> Q&A Doubts Lounge
+              <FaQuestionCircle className="text-[#C2272D] dark:text-[#00FFFF]" />
+              <span>Doubts Lounge & Discussions</span>
             </h2>
-            <p className="text-xs text-slate-550 dark:text-slate-400 mt-1">Manage, moderate, edit and delete community doubt questions and answers.</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              Manage student doubts, write verified replies, and moderate community Q&A.
+            </p>
           </div>
+          <span className="text-xs font-bold px-3 py-1 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-600 dark:text-slate-300">
+            {filteredQuestions.length} Questions
+          </span>
         </div>
 
         {/* Toolbar */}
-        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
           <div className="relative w-full sm:max-w-xs">
             <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
             <input
               type="text"
-              placeholder="Search doubts..."
+              placeholder="Search doubts or author..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:outline-none"
+              className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#141414] text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-[#C2272D] dark:focus:border-[#00FFFF]"
             />
           </div>
 
           <select
             value={filterCategory}
             onChange={e => setFilterCategory(e.target.value)}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:outline-none cursor-pointer"
+            className="w-full sm:w-auto px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#141414] text-slate-900 dark:text-slate-100 text-xs focus:outline-none cursor-pointer"
           >
             <option value="All">All Categories</option>
             {CATEGORIES.map(cat => (
@@ -163,47 +200,52 @@ const DoubtsManager = () => {
 
         {/* Questions Table */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-2">
-            <FaSpinner className="animate-spin text-primary-blue text-2xl" />
-            <span className="text-xs text-slate-450 font-bold">Loading doubts lounge...</span>
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <div className="w-10 h-10 rounded-full border-4 border-[#C2272D]/20 border-t-[#C2272D] animate-spin" />
+            <span className="text-xs text-slate-400 font-bold">Loading doubts lounge...</span>
           </div>
         ) : filteredQuestions.length === 0 ? (
-          <div className="text-center py-10 text-xs text-slate-450 italic">No doubt records found.</div>
+          <div className="text-center py-16 text-xs sm:text-sm text-slate-400 italic">No doubt records found.</div>
         ) : (
           <div className="overflow-x-auto w-full">
             <table className="w-full border-collapse text-xs text-left">
               <thead>
-                <tr className="border-b border-slate-200 dark:border-white/5 text-slate-400 font-bold">
+                <tr className="border-b border-slate-200 dark:border-white/10 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
                   <th className="pb-3 pr-4 font-bold">Question Details</th>
-                  <th className="pb-3 px-4 font-bold">Lounge</th>
-                  <th className="pb-3 px-4 font-bold">Author</th>
-                  <th className="pb-3 pl-4 text-right font-bold">Actions</th>
+                  <th className="pb-3 px-3 font-bold">Category</th>
+                  <th className="pb-3 px-3 font-bold">Author</th>
+                  <th className="pb-3 pl-3 text-right font-bold">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                 {filteredQuestions.map(q => (
                   <tr 
                     key={q._id} 
-                    className="border-b border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-all cursor-pointer"
+                    className={`hover:bg-slate-50 dark:hover:bg-white/5 transition-all cursor-pointer ${
+                      selectedQuestion?._id === q._id ? 'bg-[#C2272D]/5 dark:bg-[#00FFFF]/5 font-semibold' : ''
+                    }`}
                     onClick={() => handleOpenDetails(q)}
                   >
-                    <td className="py-4 pr-4">
+                    <td className="py-3.5 pr-4">
                       <div className="font-bold text-slate-900 dark:text-white line-clamp-1">{q.title}</div>
-                      <div className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">{q.content}</div>
+                      <div className="text-[11px] text-slate-400 mt-0.5 line-clamp-1">{q.content}</div>
                     </td>
-                    <td className="py-4 px-4">
-                      <span className="px-2 py-0.5 bg-primary-blue/5 border border-primary-blue/15 text-primary-blue rounded text-[9px] font-black uppercase">
+                    <td className="py-3.5 px-3 whitespace-nowrap">
+                      <span className="px-2 py-0.5 bg-slate-100 dark:bg-white/10 text-[#C2272D] dark:text-[#00FFFF] border border-slate-200 dark:border-white/10 rounded-full text-[9px] font-black uppercase">
                         {q.category}
                       </span>
                     </td>
-                    <td className="py-4 px-4 text-slate-550 dark:text-slate-450 font-semibold">{q.author?.fullName || 'Anonymous'}</td>
-                    <td className="py-4 pl-4 text-right" onClick={e => e.stopPropagation()}>
+                    <td className="py-3.5 px-3 text-slate-600 dark:text-slate-300 font-semibold whitespace-nowrap">
+                      {q.author?.fullName || 'Anonymous'}
+                    </td>
+                    <td className="py-3.5 pl-3 text-right whitespace-nowrap" onClick={e => e.stopPropagation()}>
                       <button
+                        type="button"
                         onClick={() => handleDeleteQuestion(q._id)}
-                        className="p-2 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-lg transition-colors cursor-pointer"
+                        className="p-1.5 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-lg transition-colors cursor-pointer"
                         title="Delete Question"
                       >
-                        <FaTrash size={10} />
+                        <FaTrash size={11} />
                       </button>
                     </td>
                   </tr>
@@ -216,16 +258,19 @@ const DoubtsManager = () => {
 
       {/* Detail Drawer */}
       {selectedQuestion && (
-        <div className="lg:col-span-6 glass p-6 rounded-2xl border border-slate-200/60 dark:border-white/5 shadow-sm text-left flex flex-col gap-6 animate-in slide-in-from-right duration-250">
-          <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/5 pb-4">
-            <h3 className="text-base font-black text-black dark:text-white flex items-center gap-1.5">
-              Doubt Details
+        <div className="lg:col-span-6 glass p-5 sm:p-7 rounded-3xl border border-slate-200 dark:border-white/10 shadow-sm text-left flex flex-col gap-5">
+          <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/10 pb-4">
+            <h3 className="text-base font-black text-black dark:text-white flex items-center gap-2">
+              <FaComments className="text-[#C2272D] dark:text-[#00FFFF]" />
+              <span>Doubt Details & Discussion</span>
             </h3>
             <button 
+              type="button"
               onClick={() => setSelectedQuestion(null)}
-              className="p-1 text-slate-400 hover:text-black dark:hover:text-white cursor-pointer"
+              className="p-1.5 text-slate-400 hover:text-black dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 cursor-pointer"
+              title="Close Panel"
             >
-              <FaTimes size={16} />
+              <FaTimes size={15} />
             </button>
           </div>
 
@@ -237,17 +282,17 @@ const DoubtsManager = () => {
                   type="text" 
                   value={editTitle}
                   onChange={e => setEditTitle(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:outline-none"
+                  className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#141414] text-slate-900 dark:text-slate-100 text-xs focus:outline-none"
                   required
                 />
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] font-bold text-slate-500 uppercase">Category Lounge</label>
+                <label className="text-[10px] font-bold text-slate-500 uppercase">Category</label>
                 <select 
                   value={editCategory}
                   onChange={e => setEditCategory(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:outline-none cursor-pointer"
+                  className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#141414] text-slate-900 dark:text-slate-100 text-xs focus:outline-none cursor-pointer"
                 >
                   {CATEGORIES.map(cat => (
                     <option key={cat} value={cat}>{cat}</option>
@@ -261,22 +306,22 @@ const DoubtsManager = () => {
                   value={editContent}
                   onChange={e => setEditContent(e.target.value)}
                   rows="5"
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:outline-none resize-none"
+                  className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#141414] text-slate-900 dark:text-slate-100 text-xs focus:outline-none resize-none"
                   required
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-white/5">
+              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-white/10">
                 <button
                   type="button"
                   onClick={() => setIsEditing(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-350 cursor-pointer"
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-primary-blue hover:bg-accent-blue text-white rounded-xl text-xs font-black uppercase cursor-pointer"
+                  className="px-5 py-2 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-xl text-xs font-bold uppercase cursor-pointer"
                 >
                   Save Changes
                 </button>
@@ -286,7 +331,7 @@ const DoubtsManager = () => {
             <div className="flex flex-col gap-4">
               {/* Question overview */}
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 bg-primary-blue/5 border border-primary-blue/15 text-primary-blue rounded text-[9px] font-black uppercase">
+                <span className="px-2.5 py-0.5 bg-[#C2272D]/10 text-[#C2272D] dark:bg-[#00FFFF]/10 dark:text-[#00FFFF] border border-[#C2272D]/20 dark:border-[#00FFFF]/20 rounded-full text-[10px] font-bold uppercase">
                   {selectedQuestion.category}
                 </span>
                 <span className="text-[10px] text-slate-400 font-bold ml-auto flex items-center gap-1">
@@ -295,84 +340,106 @@ const DoubtsManager = () => {
               </div>
 
               <h4 className="text-sm font-extrabold text-slate-900 dark:text-white leading-snug">{selectedQuestion.title}</h4>
-              <p className="text-xs text-slate-655 dark:text-slate-300 leading-relaxed whitespace-pre-line bg-slate-50 dark:bg-white/5 p-4 rounded-xl border border-slate-200/50 dark:border-white/5">
+              <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line bg-slate-50 dark:bg-[#141414] p-4 rounded-2xl border border-slate-200 dark:border-white/10">
                 {selectedQuestion.content}
               </p>
 
-              {/* Question attached images */}
-              {selectedQuestion.images && selectedQuestion.images.length > 0 && (
-                <div className="grid grid-cols-3 gap-2">
-                  {selectedQuestion.images.map((img, idx) => (
-                    <a key={idx} href={img.url} target="_blank" rel="noreferrer" className="block relative w-full h-16 bg-slate-100 dark:bg-slate-950 rounded-lg overflow-hidden border border-white/5 hover:opacity-80 transition-all cursor-zoom-in">
-                      <img src={img.url} alt="" className="w-full h-full object-cover" />
-                    </a>
-                  ))}
-                </div>
-              )}
-
+              {/* Action buttons */}
               <div className="flex gap-2">
                 <button 
+                  type="button"
                   onClick={handleStartEdit}
-                  className="px-4 py-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-330 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                  className="px-3.5 py-1.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-slate-200 dark:border-white/10"
                 >
-                  <FaEdit /> Edit Content
+                  <FaEdit /> Edit Doubt
                 </button>
                 <button 
+                  type="button"
                   onClick={() => handleDeleteQuestion(selectedQuestion._id)}
-                  className="px-4 py-2 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-xl text-xs font-bold flex items-center gap-1.5 ml-auto cursor-pointer transition-colors"
+                  className="px-3.5 py-1.5 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-xl text-xs font-bold flex items-center gap-1.5 ml-auto cursor-pointer transition-colors"
                 >
                   <FaTrash /> Delete Doubt
                 </button>
               </div>
 
               {/* Answers block */}
-              <div className="border-t border-slate-150 dark:border-white/5 pt-4 mt-2">
-                <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-1.5">
-                  <FaComments /> Answers ({answers.length})
+              <div className="border-t border-slate-200 dark:border-white/10 pt-4 mt-2 flex flex-col gap-3">
+                <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <FaComments /> Answers & Responses ({answers.length})
                 </h5>
 
                 {loadingDetails ? (
-                  <FaSpinner className="animate-spin text-primary-blue text-lg mx-auto" />
+                  <div className="py-6 flex justify-center">
+                    <FaSpinner className="animate-spin text-[#C2272D] dark:text-[#00FFFF] text-xl" />
+                  </div>
                 ) : answers.length === 0 ? (
-                  <div className="text-center py-6 text-xs text-slate-450 italic">No answers written yet.</div>
+                  <div className="text-center py-6 text-xs text-slate-400 italic">No answers written yet. Be the first to reply!</div>
                 ) : (
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-2.5 max-h-[300px] overflow-y-auto pr-1">
                     {answers.map(ans => (
-                      <div key={ans._id} className="p-3 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-150 dark:border-white/5 flex flex-col gap-2">
+                      <div key={ans._id} className="p-3 bg-slate-50 dark:bg-[#141414] rounded-xl border border-slate-200 dark:border-white/10 flex flex-col gap-2">
                         <div className="flex items-center gap-2">
                           {ans.author?.avatar?.url ? (
-                            <img src={ans.author.avatar.url} alt="" className="w-4 h-4 rounded-full object-cover" />
+                            <img src={ans.author.avatar.url} alt="" className="w-5 h-5 rounded-full object-cover" />
                           ) : (
-                            <FaUser size={10} className="text-slate-450" />
+                            <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-white/10 flex items-center justify-center text-[9px] font-bold">
+                              {ans.author?.fullName?.charAt(0) || 'U'}
+                            </div>
                           )}
-                          <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{ans.author?.fullName || 'Anonymous'}</span>
+                          <span className="text-[11px] font-bold text-slate-900 dark:text-slate-100">{ans.author?.fullName || 'Anonymous'}</span>
                           {ans.isAccepted && (
-                            <span className="px-1.5 py-0.5 bg-emerald-500 text-white rounded text-[8px] font-black uppercase">Accepted</span>
+                            <span className="px-1.5 py-0.5 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 rounded text-[8px] font-black uppercase">
+                              Accepted Solution
+                            </span>
                           )}
-                          <button
-                            onClick={() => handleDeleteAnswer(ans._id)}
-                            className="ml-auto text-red-500 hover:text-red-650 cursor-pointer"
-                            title="Delete Answer"
-                          >
-                            <FaTrash size={9} />
-                          </button>
-                        </div>
-                        <p className="text-xs text-slate-655 dark:text-slate-355 leading-relaxed whitespace-pre-line">{ans.content}</p>
-
-                        {/* Answer attached images */}
-                        {ans.images && ans.images.length > 0 && (
-                          <div className="grid grid-cols-4 gap-1.5 mt-1">
-                            {ans.images.map((img, idx) => (
-                              <a key={idx} href={img.url} target="_blank" rel="noreferrer" className="block relative w-full h-10 bg-slate-100 dark:bg-slate-950 rounded-lg overflow-hidden border border-white/5 hover:opacity-80 transition-all cursor-zoom-in">
-                                <img src={img.url} alt="" className="w-full h-full object-cover" />
-                              </a>
-                            ))}
+                          <div className="ml-auto flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleAcceptAnswer(ans._id)}
+                              className={`p-1 rounded cursor-pointer ${ans.isAccepted ? 'text-emerald-500' : 'text-slate-400 hover:text-emerald-500'}`}
+                              title={ans.isAccepted ? 'Unmark as Solution' : 'Mark as Solution'}
+                            >
+                              <FaCheckCircle size={12} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteAnswer(ans._id)}
+                              className="text-red-500 hover:text-red-600 cursor-pointer p-1"
+                              title="Delete Answer"
+                            >
+                              <FaTrash size={10} />
+                            </button>
                           </div>
-                        )}
+                        </div>
+                        <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">{ans.content}</p>
                       </div>
                     ))}
                   </div>
                 )}
+
+                {/* Reply Form (Admin Official Reply) */}
+                <form onSubmit={handlePostAnswer} className="mt-2 flex flex-col gap-2 border-t border-slate-200 dark:border-white/10 pt-3">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase">Write Official Answer / Solution</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Type your answer here..."
+                      value={newAnswerText}
+                      onChange={e => setNewAnswerText(e.target.value)}
+                      className="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#141414] text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-[#C2272D] dark:focus:border-[#00FFFF]"
+                      disabled={submittingAnswer}
+                    />
+                    <button
+                      type="submit"
+                      disabled={submittingAnswer || !newAnswerText.trim()}
+                      className="px-4 py-2 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                    >
+                      <FaPaperPlane size={11} />
+                      <span>{submittingAnswer ? 'Posting...' : 'Reply'}</span>
+                    </button>
+                  </div>
+                </form>
+
               </div>
             </div>
           )}

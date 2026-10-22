@@ -57,18 +57,31 @@ const uploadMedia = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'File is required' });
     }
 
-    const { uploadToCloudinary } = require('../middleware/upload');
+    const { uploadToCloudinary, uploadToLocal } = require('../middleware/upload');
     const fileType = getMediaType(req.file.mimetype);
 
-    // Map file types to Cloudinary resource types
-    let resourceType = 'auto';
-    if (fileType === 'image') resourceType = 'image';
-    if (fileType === 'video') resourceType = 'video';
-    if (fileType === 'pdf' || fileType === 'document' || fileType === 'archive') {
-      resourceType = 'raw';
+    let uploadResult = null;
+    if (
+      process.env.CLOUDINARY_CLOUD_NAME &&
+      process.env.CLOUDINARY_API_KEY &&
+      process.env.CLOUDINARY_API_SECRET
+    ) {
+      try {
+        let resourceType = 'auto';
+        if (fileType === 'image') resourceType = 'image';
+        if (fileType === 'video') resourceType = 'video';
+        if (fileType === 'pdf' || fileType === 'document' || fileType === 'archive') {
+          resourceType = 'raw';
+        }
+        uploadResult = await uploadToCloudinary(req.file.buffer, 'media_library', resourceType);
+      } catch (cloudErr) {
+        console.warn('Cloudinary upload failed, falling back to local storage:', cloudErr.message);
+      }
     }
 
-    const uploadResult = await uploadToCloudinary(req.file.buffer, 'media_library', resourceType);
+    if (!uploadResult) {
+      uploadResult = await uploadToLocal(req.file.buffer, 'media_library');
+    }
 
     const media = await Media.create({
       fileName: req.file.originalname,

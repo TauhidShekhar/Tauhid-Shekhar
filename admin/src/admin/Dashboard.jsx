@@ -141,7 +141,7 @@ const Dashboard = () => {
     { title: 'Achievements', value: stats.achievements, icon: FaAward, to: '/admin/achievements' },
     { title: 'Blog Articles', value: stats.blogs, icon: FaBookOpen, to: '/admin/blogs' },
     { title: 'Inbox Messages', value: `${stats.unreadMessages} New / ${stats.messages}`, icon: FaEnvelope, to: '/admin/messages', isAlert: stats.unreadMessages > 0 },
-    { title: 'Total Visitors', value: stats.visitors, icon: FaUsers, to: '/admin/analytics' },
+    { title: 'Total Visitors', value: stats.visitors > 0 ? stats.visitors.toLocaleString() : '0 Tracked', icon: FaUsers, to: '/admin/analytics' },
   ];
 
   return (
@@ -410,7 +410,7 @@ const Dashboard = () => {
                     <div className="flex justify-between items-center mb-1">
                       <span className="font-bold text-[#171717] dark:text-white truncate max-w-[130px]">{log.user}</span>
                       <span className="text-[10px] text-slate-400">
-                        {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {log.timestamp || log.createdAt ? new Date(log.timestamp || log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recently'}
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400">
