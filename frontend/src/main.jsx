@@ -89,6 +89,11 @@ const FormsManager = lazy(() => import('../../admin/src/admin/FormsManager.jsx')
 const FormsDirectory = lazy(() => import('./components/FormsDirectory.jsx'));
 const DynamicPublicForm = lazy(() => import('./components/DynamicPublicForm.jsx'));
 
+// Public Services Pages (Lazy Loaded)
+const ServicesPage = lazy(() => import('./pages/ServicesPage.jsx'));
+const ServiceDetails = lazy(() => import('./pages/ServiceDetails.jsx'));
+const ServiceOrderPage = lazy(() => import('./pages/ServiceOrderPage.jsx'));
+
 // Community Platform Pages (Lazy Loaded)
 const CommunityLayout = lazy(() => import('./components/CommunityLayout.jsx'));
 const CommunityFeed = lazy(() => import('./components/CommunityFeed.jsx'));
@@ -154,6 +159,12 @@ createRoot(document.getElementById('root')).render(
             <Route path="/forms" element={<FormsDirectory />} />
             <Route path="/forms-center" element={<FormsDirectory />} />
             <Route path="/forms/:slug" element={<DynamicPublicForm />} />
+
+            {/* Public Services Routes */}
+            <Route path="/services" element={<ServicesPage />} />
+            <Route path="/services/:slug" element={<ServiceDetails />} />
+            <Route path="/services/:slug/order" element={<ServiceOrderPage />} />
+            <Route path="/services/order" element={<ServiceOrderPage />} />
 
             {/* Public Auth Routes */}
             <Route path="/login" element={<Auth />} />

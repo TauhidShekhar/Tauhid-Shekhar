@@ -74,6 +74,9 @@ const updateSettings = async (req, res) => {
     if (typeof updates.websiteStatus === 'string') {
       try { updates.websiteStatus = JSON.parse(updates.websiteStatus); } catch (_) {}
     }
+    if (typeof updates.emailNotifications === 'string') {
+      try { updates.emailNotifications = JSON.parse(updates.emailNotifications); } catch (_) {}
+    }
 
     const oldImageIds = [];
 
@@ -142,4 +145,19 @@ const updateSettings = async (req, res) => {
   }
 };
 
-module.exports = { getSettings, updateSettings };
+// @desc    Test email notification delivery
+// @route   POST /api/settings/test-email
+// @access  Private (Admin only)
+const testEmailNotification = async (req, res) => {
+  try {
+    const { targetEmail } = req.body;
+    const { sendTestNotificationEmail, getAdminNotificationEmail } = require('../utils/emailService');
+    const recipient = targetEmail || await getAdminNotificationEmail('order');
+    await sendTestNotificationEmail(recipient);
+    res.json({ success: true, message: `Test email sent successfully to ${recipient}` });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message || 'Failed to send test email' });
+  }
+};
+
+module.exports = { getSettings, updateSettings, testEmailNotification };

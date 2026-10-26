@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { getSettings, updateSettings } = require('../controllers/settingsController');
+const { getSettings, updateSettings, testEmailNotification } = require('../controllers/settingsController');
 const { requireAuth, requireAdmin } = require('../middleware/authMiddleware');
 const { upload } = require('../middleware/upload');
+
+router.post('/test-email', requireAuth, requireAdmin, testEmailNotification);
 
 router.route('/')
   .get(getSettings)

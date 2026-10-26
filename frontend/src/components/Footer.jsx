@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../services/api';
 import { 
   FaHeart, FaGithub, FaLinkedin, FaEnvelope, FaInstagram,
@@ -16,6 +16,8 @@ const formatExternalLink = (url) => {
 };
 
 const Footer = ({ settingsData, heroData }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [settings, setSettings] = useState(settingsData || null);
   const [heroSettings, setHeroSettings] = useState(heroData || null);
 
@@ -53,26 +55,38 @@ const Footer = ({ settingsData, heroData }) => {
   }, [settingsData, heroData]);
 
   const handleScrollTo = (e, targetId) => {
-    e.preventDefault();
-    const element = document.querySelector(targetId);
+    if (e) e.preventDefault();
+    const cleanId = (targetId || '').replace(/^#/, '');
+
+    // Cross-page navigation: If on another route, navigate to / with target section hash
+    if (location.pathname !== '/') {
+      navigate('/#' + cleanId, { state: { scrollTo: '#' + cleanId } });
+      return;
+    }
+
+    // Same-page: Scroll directly and smoothly with fixed header clearance
+    const element = document.getElementById(cleanId);
     if (element) {
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       const offset = 80;
       const bodyRect = document.body.getBoundingClientRect().top;
       const elementRect = element.getBoundingClientRect().top;
       const elementPosition = elementRect - bodyRect;
-      const offsetPosition = elementPosition - offset;
+      const offsetPosition = Math.max(0, elementPosition - offset);
 
       window.scrollTo({
         top: offsetPosition,
-        behavior: 'smooth',
+        behavior: prefersReducedMotion ? 'auto' : 'smooth',
       });
+      window.history.pushState(null, '', '#' + cleanId);
     }
   };
 
   const scrollToTop = () => {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     window.scrollTo({
       top: 0,
-      behavior: 'smooth',
+      behavior: prefersReducedMotion ? 'auto' : 'smooth',
     });
   };
 
@@ -291,13 +305,13 @@ const Footer = ({ settingsData, heroData }) => {
                 </a>
               </li>
               <li>
-                <a 
-                  href="#services" 
-                  onClick={(e) => handleScrollTo(e, '#services')} 
-                  className="text-sm sm:text-base font-normal text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors py-1 inline-block"
+                <Link 
+                  to="/services" 
+                  className="text-sm sm:text-base font-normal text-[#525252] dark:text-[#D1D5DB] hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition-colors py-1 inline-flex items-center gap-1.5"
                 >
-                  Design & Dev Services
-                </a>
+                  <span>Tailored Services & Solutions</span>
+                  <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-[#C2272D]/10 text-[#C2272D] dark:bg-[#00FFFF]/15 dark:text-[#00FFFF]">Explore</span>
+                </Link>
               </li>
               <li>
                 <a 

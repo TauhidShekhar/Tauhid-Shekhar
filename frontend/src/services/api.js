@@ -404,8 +404,25 @@ export const api = {
   },
 
   // Services
-  getServices: async () => {
-    return apiRequest('/services');
+  getServices: async (params = {}) => {
+    const cleanParams = {};
+    if (params && typeof params === 'object') {
+      Object.keys(params).forEach(k => {
+        const val = params[k];
+        if (val !== undefined && val !== null && val !== '' && val !== 'undefined' && val !== 'null') {
+          cleanParams[k] = val;
+        }
+      });
+    }
+    const query = new URLSearchParams(cleanParams).toString();
+    return apiRequest(`/services${query ? `?${query}` : ''}`);
+  },
+  getServiceBySlug: async (slug) => {
+    const encoded = encodeURIComponent(slug || '');
+    return apiRequest(`/services/slug/${encoded}`);
+  },
+  getServiceById: async (id) => {
+    return apiRequest(`/services/${id}`);
   },
   createService: async (serviceData) => {
     return apiRequest('/services', {
@@ -421,6 +438,27 @@ export const api = {
   },
   deleteService: async (id) => {
     return apiRequest(`/services/${id}`, { method: 'DELETE' });
+  },
+  duplicateService: async (id) => {
+    return apiRequest(`/services/${id}/duplicate`, { method: 'POST' });
+  },
+  getServiceCategories: async () => {
+    return apiRequest('/services/categories');
+  },
+  createServiceCategory: async (data) => {
+    return apiRequest('/services/categories', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+  updateServiceCategory: async (id, data) => {
+    return apiRequest(`/services/categories/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  },
+  deleteServiceCategory: async (id) => {
+    return apiRequest(`/services/categories/${id}`, { method: 'DELETE' });
   },
 
   // Gallery
@@ -614,8 +652,12 @@ export const api = {
       body: JSON.stringify(orderData)
     });
   },
-  getOrders: async () => {
-    return apiRequest('/orders');
+  getOrders: async (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return apiRequest(`/orders${query ? `?${query}` : ''}`);
+  },
+  getOrderById: async (id) => {
+    return apiRequest(`/orders/${id}`);
   },
   updateOrderStatus: async (id, status) => {
     return apiRequest(`/orders/${id}/status`, {
@@ -623,9 +665,21 @@ export const api = {
       body: JSON.stringify({ status })
     });
   },
+  addOrderNote: async (id, noteData) => {
+    return apiRequest(`/orders/${id}/notes`, {
+      method: 'POST',
+      body: JSON.stringify(noteData)
+    });
+  },
   deleteOrder: async (id) => {
     return apiRequest(`/orders/${id}`, {
       method: 'DELETE'
+    });
+  },
+  testEmailNotification: async (targetEmail) => {
+    return apiRequest('/settings/test-email', {
+      method: 'POST',
+      body: JSON.stringify({ targetEmail })
     });
   },
 

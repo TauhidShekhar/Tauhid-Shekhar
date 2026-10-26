@@ -218,11 +218,46 @@ const sendContactUserConfirmation = async (userEmail, messageData) => {
   await sendEmail(userEmail, 'Thank You! We Received Your Request', html);
 };
 
+const Setting = require('../models/Setting');
+
+/**
+ * Dynamically resolves the admin notification recipient email address
+ * from the Setting document, with fallback to SMTP_USER or default email.
+ */
+const getAdminNotificationEmail = async (type = 'order') => {
+  try {
+    const setting = await Setting.findOne({});
+    if (setting) {
+      if (setting.emailNotifications && setting.emailNotifications.enabled !== false) {
+        if (type === 'order' && setting.emailNotifications.orderRecipient) {
+          return setting.emailNotifications.orderRecipient;
+        }
+        if (type === 'inquiry' && setting.emailNotifications.inquiryRecipient) {
+          return setting.emailNotifications.inquiryRecipient;
+        }
+        if (type === 'contact' && setting.emailNotifications.contactRecipient) {
+          return setting.emailNotifications.contactRecipient;
+        }
+      }
+      if (setting.aboutContactInfo?.email) {
+        return setting.aboutContactInfo.email;
+      }
+      if (setting.email) {
+        return setting.email;
+      }
+    }
+  } catch (err) {
+    console.warn('Could not retrieve admin email from Setting model:', err.message);
+  }
+  return process.env.SMTP_USER || 'shekhartauhid@gmail.com';
+};
+
 /**
  * Notify the admin of a new project service request order sheet.
  */
 const sendOrderAdminNotification = async (adminEmail, orderData, ipAddress = 'N/A') => {
-  const { name, email, phone = 'N/A', companyName = 'N/A', selectedService, budget, projectType = 'N/A', deadline, description, attachment, createdAt = new Date() } = orderData;
+  const recipient = adminEmail || await getAdminNotificationEmail('order');
+  const { referenceId = 'N/A', name, email, phone = 'N/A', companyName = 'N/A', selectedService, packageName = 'Custom', budget, projectType = 'N/A', deadline, description, attachment, createdAt = new Date() } = orderData;
   const submissionTime = new Date(createdAt).toLocaleString();
   const deadlineStr = deadline ? new Date(deadline).toLocaleDateString() : 'No Deadline';
   
@@ -230,24 +265,28 @@ const sendOrderAdminNotification = async (adminEmail, orderData, ipAddress = 'N/
   if (attachment && attachment.url) {
     const sizeKB = attachment.fileSize ? `${(attachment.fileSize / 1024).toFixed(1)} KB` : 'Unknown';
     attachmentRow = `<tr><td style="padding:12px 16px;color:#6b7280;font-size:13px;border-bottom:1px solid #e5e7eb;"><strong>Attachment</strong></td>
-           <td style="padding:12px 16px;color:#1f2937;font-size:13px;border-bottom:1px solid #e5e7eb;"><a href="${attachment.url}" target="_blank" style="color:#6366f1;text-decoration:none;font-weight:600;">Download ${attachment.fileName || 'Attachment'} (${sizeKB})</a></td></tr>`;
+           <td style="padding:12px 16px;color:#1f2937;font-size:13px;border-bottom:1px solid #e5e7eb;"><a href="${attachment.url}" target="_blank" style="color:#C2272D;text-decoration:none;font-weight:600;">Download ${attachment.fileName || 'Attachment'} (${sizeKB})</a></td></tr>`;
   }
 
   const html = wrapTemplate(
-    'New Service Order Request Received',
+    `New Service Order: ${referenceId}`,
     `<p>Hello Admin,</p>
-     <p>A new client has placed a service order inquiry on <strong>Tauhid Shekhar Portfolio</strong>.</p>
+     <p>A new client has placed a service order on <strong>Tauhid Shekhar Portfolio</strong>.</p>
      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f9fafb;border-radius:8px;margin:20px 0;border:1px solid #e5e7eb;border-collapse:separate;">
-       <tr><td style="padding:12px 16px;color:#6b7280;font-size:13px;width:145px;border-bottom:1px solid #e5e7eb;"><strong>Client Name</strong></td>
+       <tr><td style="padding:12px 16px;color:#6b7280;font-size:13px;width:145px;border-bottom:1px solid #e5e7eb;"><strong>Reference ID</strong></td>
+           <td style="padding:12px 16px;color:#C2272D;font-size:14px;font-weight:700;border-bottom:1px solid #e5e7eb;">${referenceId}</td></tr>
+       <tr><td style="padding:12px 16px;color:#6b7280;font-size:13px;border-bottom:1px solid #e5e7eb;"><strong>Client Name</strong></td>
            <td style="padding:12px 16px;color:#1f2937;font-size:13px;font-weight:600;border-bottom:1px solid #e5e7eb;">${name}</td></tr>
        <tr><td style="padding:12px 16px;color:#6b7280;font-size:13px;border-bottom:1px solid #e5e7eb;"><strong>Email Address</strong></td>
-           <td style="padding:12px 16px;color:#1f2937;font-size:13px;border-bottom:1px solid #e5e7eb;"><a href="mailto:${email}" style="color:#6366f1;text-decoration:none;">${email}</a></td></tr>
+           <td style="padding:12px 16px;color:#1f2937;font-size:13px;border-bottom:1px solid #e5e7eb;"><a href="mailto:${email}" style="color:#0088cc;text-decoration:none;">${email}</a></td></tr>
        <tr><td style="padding:12px 16px;color:#6b7280;font-size:13px;border-bottom:1px solid #e5e7eb;"><strong>Phone Number</strong></td>
            <td style="padding:12px 16px;color:#1f2937;font-size:13px;border-bottom:1px solid #e5e7eb;">${phone}</td></tr>
        <tr><td style="padding:12px 16px;color:#6b7280;font-size:13px;border-bottom:1px solid #e5e7eb;"><strong>Company Name</strong></td>
            <td style="padding:12px 16px;color:#1f2937;font-size:13px;border-bottom:1px solid #e5e7eb;">${companyName}</td></tr>
        <tr><td style="padding:12px 16px;color:#6b7280;font-size:13px;border-bottom:1px solid #e5e7eb;"><strong>Service Selection</strong></td>
-           <td style="padding:12px 16px;color:#1f2937;font-size:13px;font-weight:600;border-bottom:1px solid #e5e7eb;color:#6366f1;">${selectedService}</td></tr>
+           <td style="padding:12px 16px;color:#1f2937;font-size:13px;font-weight:600;border-bottom:1px solid #e5e7eb;color:#C2272D;">${selectedService}</td></tr>
+       <tr><td style="padding:12px 16px;color:#6b7280;font-size:13px;border-bottom:1px solid #e5e7eb;"><strong>Package Tier</strong></td>
+           <td style="padding:12px 16px;color:#1f2937;font-size:13px;font-weight:600;border-bottom:1px solid #e5e7eb;">${packageName}</td></tr>
        <tr><td style="padding:12px 16px;color:#6b7280;font-size:13px;border-bottom:1px solid #e5e7eb;"><strong>Budget / Price</strong></td>
            <td style="padding:12px 16px;color:#1f2937;font-size:13px;font-weight:600;border-bottom:1px solid #e5e7eb;color:#10b981;">${budget}</td></tr>
        <tr><td style="padding:12px 16px;color:#6b7280;font-size:13px;border-bottom:1px solid #e5e7eb;"><strong>Project Type</strong></td>
@@ -262,18 +301,18 @@ const sendOrderAdminNotification = async (adminEmail, orderData, ipAddress = 'N/
        <tr><td style="padding:12px 16px;color:#6b7280;font-size:13px;vertical-align:top;"><strong>Project Scope</strong></td>
            <td style="padding:12px 16px;color:#1f2937;font-size:13px;line-height:1.6;white-space:pre-wrap;">${description}</td></tr>
      </table>
-     <p style="font-size:13px;color:#6b7280;">You can email the client directly at <a href="mailto:${email}" style="color:#6366f1;">${email}</a>.</p>`
+     <p style="font-size:13px;color:#6b7280;">You can reply directly to the client at <a href="mailto:${email}" style="color:#C2272D;">${email}</a>.</p>`
   );
-  await sendEmail(adminEmail, `💼 New Service Order: ${selectedService} (${budget})`, html);
+  await sendEmail(recipient, `💼 New Service Order [${referenceId}]: ${selectedService} (${budget})`, html);
 };
 
 /**
  * Send confirmation email back to the client placing a service order.
  */
 const sendOrderUserConfirmation = async (userEmail, orderData) => {
-  const { name, selectedService, budget, deadline, description, attachment } = orderData;
+  const { referenceId = 'N/A', name, selectedService, packageName = 'Custom', budget, deadline, description, attachment } = orderData;
   const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
-  const deadlineStr = deadline ? new Date(deadline).toLocaleDateString() : 'No Target Date';
+  const deadlineStr = deadline ? new Date(deadline).toLocaleDateString() : 'Flexible / To Discuss';
   
   let fileText = 'None provided';
   if (attachment && attachment.url) {
@@ -281,29 +320,109 @@ const sendOrderUserConfirmation = async (userEmail, orderData) => {
   }
 
   const html = wrapTemplate(
-    'Thank You! We Received Your Request',
+    `Order Confirmation [${referenceId}]`,
     `<p>Hi <strong>${name}</strong>,</p>
-     <p>Thank you for placing an order request! I have received your project details and will review them shortly.</p>
-     <p>Here are the parameters of your service order submission:</p>
+     <p>Thank you for submitting your project order request! We have logged your request with reference code <strong>${referenceId}</strong>.</p>
+     <p>Here is a summary of your order submission:</p>
      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f9fafb;border-radius:8px;margin:20px 0;border:1px solid #e5e7eb;border-collapse:separate;padding:16px;">
-       <tr><td style="color:#6b7280;font-size:13px;width:130px;padding:4px 0;"><strong>Selected Service</strong></td>
-           <td style="color:#1f2937;font-size:13px;font-weight:600;padding:4px 0;">${selectedService}</td></tr>
-       <tr><td style="color:#6b7280;font-size:13px;padding:4px 0;"><strong>Budget Proposal</strong></td>
-           <td style="color:#1f2937;font-size:13px;font-weight:600;padding:4px 0;color:#10b981;">${budget}</td></tr>
-       <tr><td style="color:#6b7280;font-size:13px;padding:4px 0;"><strong>Target Deadline</strong></td>
-           <td style="color:#1f2937;font-size:13px;padding:4px 0;">${deadlineStr}</td></tr>
-       <tr><td style="color:#6b7280;font-size:13px;padding:4px 0;"><strong>Attachment Uploaded</strong></td>
-           <td style="color:#1f2937;font-size:13px;padding:4px 0;">${fileText}</td></tr>
-       <tr><td style="color:#6b7280;font-size:13px;vertical-align:top;padding:4px 0;"><strong>Project Description</strong></td>
-           <td style="color:#1f2937;font-size:13px;line-height:1.5;padding:4px 0;white-space:pre-wrap;">${description}</td></tr>
+       <tr><td style="color:#6b7280;font-size:13px;width:140px;padding:6px 0;"><strong>Reference ID</strong></td>
+           <td style="color:#C2272D;font-size:13px;font-weight:700;padding:6px 0;">${referenceId}</td></tr>
+       <tr><td style="color:#6b7280;font-size:13px;padding:6px 0;"><strong>Selected Service</strong></td>
+           <td style="color:#1f2937;font-size:13px;font-weight:600;padding:6px 0;">${selectedService}</td></tr>
+       <tr><td style="color:#6b7280;font-size:13px;padding:6px 0;"><strong>Package Tier</strong></td>
+           <td style="color:#1f2937;font-size:13px;font-weight:600;padding:6px 0;">${packageName}</td></tr>
+       <tr><td style="color:#6b7280;font-size:13px;padding:6px 0;"><strong>Budget Proposal</strong></td>
+           <td style="color:#1f2937;font-size:13px;font-weight:600;padding:6px 0;color:#10b981;">${budget}</td></tr>
+       <tr><td style="color:#6b7280;font-size:13px;padding:6px 0;"><strong>Target Deadline</strong></td>
+           <td style="color:#1f2937;font-size:13px;padding:6px 0;">${deadlineStr}</td></tr>
+       <tr><td style="color:#6b7280;font-size:13px;padding:6px 0;"><strong>Attachment Uploaded</strong></td>
+           <td style="color:#1f2937;font-size:13px;padding:6px 0;">${fileText}</td></tr>
+       <tr><td style="color:#6b7280;font-size:13px;vertical-align:top;padding:6px 0;"><strong>Project Description</strong></td>
+           <td style="color:#1f2937;font-size:13px;line-height:1.5;padding:6px 0;white-space:pre-wrap;">${description}</td></tr>
      </table>
-     <p><strong>Expected Response Time:</strong> 24–48 hours</p>
+     <p><strong>Next Steps:</strong></p>
+     <p style="font-size:14px;color:#374151;line-height:1.6;">Our team will review your project scope and contact you within <strong>24 hours</strong> with milestone plans, quote verification, and next steps.</p>
      <hr style="border:0;border-top:1px solid #e5e7eb;margin:24px 0;" />
      <p style="font-size:13px;color:#6b7280;margin:0;">Best Regards,</p>
      <p style="font-size:14px;font-weight:700;color:#1f2937;margin:4px 0 0 0;">Tauhid Shekhar</p>
-     <p style="font-size:13px;color:#6b7280;margin:2px 0 0 0;"><a href="${clientUrl}" style="color:#6366f1;text-decoration:none;">${clientUrl}</a> | shekhartauhid@gmail.com</p>`
+     <p style="font-size:13px;color:#6b7280;margin:2px 0 0 0;"><a href="${clientUrl}" style="color:#C2272D;text-decoration:none;">${clientUrl}</a> | shekhartauhid@gmail.com</p>`
   );
-  await sendEmail(userEmail, 'Thank You! We Received Your Request', html);
+  await sendEmail(userEmail, `Order Received [${referenceId}]: ${selectedService}`, html);
+};
+
+/**
+ * Notify the admin of a new Service Inquiry.
+ */
+const sendInquiryAdminNotification = async (adminEmail, inquiryData, ipAddress = 'N/A') => {
+  const recipient = adminEmail || await getAdminNotificationEmail('inquiry');
+  const { referenceId = 'N/A', name, email, phone = 'N/A', companyName = 'N/A', selectedService, description, createdAt = new Date() } = inquiryData;
+  const submissionTime = new Date(createdAt).toLocaleString();
+
+  const html = wrapTemplate(
+    `New Service Inquiry: ${referenceId}`,
+    `<p>Hello Admin,</p>
+     <p>A new visitor has submitted an inquiry regarding <strong>${selectedService}</strong>.</p>
+     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f9fafb;border-radius:8px;margin:20px 0;border:1px solid #e5e7eb;border-collapse:separate;">
+       <tr><td style="padding:12px 16px;color:#6b7280;font-size:13px;width:145px;border-bottom:1px solid #e5e7eb;"><strong>Reference ID</strong></td>
+           <td style="padding:12px 16px;color:#00aaaa;font-size:14px;font-weight:700;border-bottom:1px solid #e5e7eb;">${referenceId}</td></tr>
+       <tr><td style="padding:12px 16px;color:#6b7280;font-size:13px;border-bottom:1px solid #e5e7eb;"><strong>Visitor Name</strong></td>
+           <td style="padding:12px 16px;color:#1f2937;font-size:13px;font-weight:600;border-bottom:1px solid #e5e7eb;">${name}</td></tr>
+       <tr><td style="padding:12px 16px;color:#6b7280;font-size:13px;border-bottom:1px solid #e5e7eb;"><strong>Email Address</strong></td>
+           <td style="padding:12px 16px;color:#1f2937;font-size:13px;border-bottom:1px solid #e5e7eb;"><a href="mailto:${email}" style="color:#0088cc;text-decoration:none;">${email}</a></td></tr>
+       <tr><td style="padding:12px 16px;color:#6b7280;font-size:13px;border-bottom:1px solid #e5e7eb;"><strong>Phone Number</strong></td>
+           <td style="padding:12px 16px;color:#1f2937;font-size:13px;border-bottom:1px solid #e5e7eb;">${phone}</td></tr>
+       <tr><td style="padding:12px 16px;color:#6b7280;font-size:13px;border-bottom:1px solid #e5e7eb;"><strong>Company / Brand</strong></td>
+           <td style="padding:12px 16px;color:#1f2937;font-size:13px;border-bottom:1px solid #e5e7eb;">${companyName}</td></tr>
+       <tr><td style="padding:12px 16px;color:#6b7280;font-size:13px;border-bottom:1px solid #e5e7eb;"><strong>Interested Service</strong></td>
+           <td style="padding:12px 16px;color:#1f2937;font-size:13px;font-weight:600;border-bottom:1px solid #e5e7eb;color:#00aaaa;">${selectedService}</td></tr>
+       <tr><td style="padding:12px 16px;color:#6b7280;font-size:13px;border-bottom:1px solid #e5e7eb;"><strong>Submission Time</strong></td>
+           <td style="padding:12px 16px;color:#1f2937;font-size:13px;border-bottom:1px solid #e5e7eb;">${submissionTime}</td></tr>
+       <tr><td style="padding:12px 16px;color:#6b7280;font-size:13px;border-bottom:1px solid #e5e7eb;"><strong>IP Address</strong></td>
+           <td style="padding:12px 16px;color:#1f2937;font-size:13px;border-bottom:1px solid #e5e7eb;">${ipAddress}</td></tr>
+       <tr><td style="padding:12px 16px;color:#6b7280;font-size:13px;vertical-align:top;"><strong>Inquiry Message</strong></td>
+           <td style="padding:12px 16px;color:#1f2937;font-size:13px;line-height:1.6;white-space:pre-wrap;">${description}</td></tr>
+     </table>
+     <p style="font-size:13px;color:#6b7280;">You can reply directly to the visitor at <a href="mailto:${email}" style="color:#00aaaa;">${email}</a>.</p>`
+  );
+  await sendEmail(recipient, `💬 New Service Inquiry [${referenceId}]: ${selectedService}`, html);
+};
+
+/**
+ * Send confirmation email back to the visitor inquiring about a service.
+ */
+const sendInquiryUserConfirmation = async (userEmail, inquiryData) => {
+  const { referenceId = 'N/A', name, selectedService, description } = inquiryData;
+  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+
+  const html = wrapTemplate(
+    `Inquiry Received [${referenceId}]`,
+    `<p>Hi <strong>${name}</strong>,</p>
+     <p>Thank you for inquiring about our <strong>${selectedService}</strong> service! Your inquiry has been registered under ticket reference <strong>${referenceId}</strong>.</p>
+     <p>Here are your inquiry notes:</p>
+     <div style="background-color:#f9fafb;border-left:4px solid #00aaaa;padding:12px 16px;margin:20px 0;font-size:14px;color:#374151;white-space:pre-wrap;">
+       "${description}"
+     </div>
+     <p>We typically respond with consultation details within <strong>24 hours</strong>.</p>
+     <hr style="border:0;border-top:1px solid #e5e7eb;margin:24px 0;" />
+     <p style="font-size:13px;color:#6b7280;margin:0;">Best Regards,</p>
+     <p style="font-size:14px;font-weight:700;color:#1f2937;margin:4px 0 0 0;">Tauhid Shekhar</p>
+     <p style="font-size:13px;color:#6b7280;margin:2px 0 0 0;"><a href="${clientUrl}" style="color:#00aaaa;text-decoration:none;">${clientUrl}</a> | shekhartauhid@gmail.com</p>`
+  );
+  await sendEmail(userEmail, `Inquiry Received [${referenceId}]: ${selectedService}`, html);
+};
+
+/**
+ * Send a test email from the Admin Settings panel to verify SMTP functionality.
+ */
+const sendTestNotificationEmail = async (targetEmail) => {
+  const html = wrapTemplate(
+    'Gmail SMTP & Notification Test',
+    `<p>Hello!</p>
+     <p>This is a verification email from your <strong>Tauhid Shekhar Portfolio CMS</strong>.</p>
+     <p style="color:#10b981;font-weight:600;">Your Gmail SMTP setup and notification pipeline are operational!</p>
+     <p style="font-size:13px;color:#6b7280;">Timestamp: ${new Date().toLocaleString()}</p>`
+  );
+  await sendEmail(targetEmail, '✅ TS Portfolio CMS: Email Notification Test', html);
 };
 
 /**
@@ -329,6 +448,7 @@ const sendContactAdminReply = async (userEmail, name, originalMessage, replyText
 };
 
 module.exports = {
+  getAdminNotificationEmail,
   sendVerificationEmail,
   sendPasswordResetEmail,
   sendOTPEmail,
@@ -338,4 +458,7 @@ module.exports = {
   sendContactAdminReply,
   sendOrderAdminNotification,
   sendOrderUserConfirmation,
+  sendInquiryAdminNotification,
+  sendInquiryUserConfirmation,
+  sendTestNotificationEmail,
 };

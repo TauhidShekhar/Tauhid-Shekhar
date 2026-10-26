@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
-import { FaSave, FaLock, FaGlobe } from 'react-icons/fa';
+import { FaSave, FaLock, FaGlobe, FaEnvelope, FaPaperPlane } from 'react-icons/fa';
 
 const DEFAULT_LEGAL = `1. Disclaimer
 The information, software, and services provided on this website are on an "as is" and "as available" basis without any warranties of any kind. While we strive to present accurate and updated information, we do not guarantee the completeness, accuracy, or availability of the site contents or related tools.
@@ -96,7 +96,14 @@ const SettingsManager = () => {
     websiteStatus: { enabled: true },
     announcementBanner: { show: false, text: '', link: '' },
     cookieSettings: { show: true, text: 'We use cookies to improve your user experience.' },
-    customFooterScripts: ''
+    customFooterScripts: '',
+    emailNotifications: {
+      orderRecipient: 'shekhartauhid@gmail.com',
+      inquiryRecipient: 'shekhartauhid@gmail.com',
+      contactRecipient: 'shekhartauhid@gmail.com',
+      senderName: 'Tauhid Shekhar',
+      enabled: true
+    }
   });
 
   const [logoFile, setLogoFile] = useState(null);
@@ -178,7 +185,14 @@ const SettingsManager = () => {
             websiteStatus: res.data.websiteStatus || { enabled: true },
             announcementBanner: res.data.announcementBanner || { show: false, text: '', link: '' },
             cookieSettings: res.data.cookieSettings || { show: true, text: 'We use cookies to improve your user experience.' },
-            customFooterScripts: res.data.customFooterScripts || ''
+            customFooterScripts: res.data.customFooterScripts || '',
+            emailNotifications: res.data.emailNotifications || {
+              orderRecipient: 'shekhartauhid@gmail.com',
+              inquiryRecipient: 'shekhartauhid@gmail.com',
+              contactRecipient: 'shekhartauhid@gmail.com',
+              senderName: 'Tauhid Shekhar',
+              enabled: true
+            }
           });
 
           if (res.data.logo?.url) setLogoPreview(res.data.logo.url);
@@ -418,7 +432,8 @@ const SettingsManager = () => {
           key === 'theme' ||
           key === 'navbarConfig' ||
           key === 'heroCtaButtons' ||
-          key === 'aboutStats'
+          key === 'aboutStats' ||
+          key === 'emailNotifications'
         ) {
           data.append(key, JSON.stringify(updatedSettings[key]));
         } else {
@@ -480,6 +495,35 @@ const SettingsManager = () => {
     } catch (err) {
       setPassError(err.message || 'Password update failed');
     }
+  };
+
+  const [testEmailStatus, setTestEmailStatus] = useState('');
+  const [isSendingTestEmail, setIsSendingTestEmail] = useState(false);
+
+  const handleTestEmail = async () => {
+    setIsSendingTestEmail(true);
+    setTestEmailStatus('');
+    try {
+      const recipient = settings.emailNotifications?.orderRecipient || settings.email || 'shekhartauhid@gmail.com';
+      const res = await api.testEmailNotification(recipient);
+      if (res.success) {
+        setTestEmailStatus(`✅ ${res.message}`);
+      }
+    } catch (err) {
+      setTestEmailStatus(`❌ Error: ${err.message}`);
+    } finally {
+      setIsSendingTestEmail(false);
+    }
+  };
+
+  const handleEmailNotificationChange = (field, value) => {
+    setSettings(prev => ({
+      ...prev,
+      emailNotifications: {
+        ...(prev.emailNotifications || {}),
+        [field]: value
+      }
+    }));
   };
 
   if (loading && settings.title === '') {
@@ -1329,6 +1373,85 @@ const SettingsManager = () => {
               <FaLock /> Update Password
             </button>
           </form>
+        </div>
+
+        {/* Centralized Email Notifications Configuration */}
+        <div className="lg:col-span-4 glass p-6 rounded-2xl border border-slate-200/60 dark:border-white/5 shadow-sm space-y-4">
+          <h3 className="text-lg font-bold font-title text-black dark:text-white flex items-center gap-2">
+            <FaEnvelope className="text-[#C2272D]" /> Email Notifications Pipeline
+          </h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Configure destination inbox for Service Orders, Inquiries, and Contact submissions.
+          </p>
+
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                Order Notifications Recipient
+              </label>
+              <input
+                type="email"
+                value={settings.emailNotifications?.orderRecipient || ''}
+                onChange={(e) => handleEmailNotificationChange('orderRecipient', e.target.value)}
+                placeholder="shekhartauhid@gmail.com"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                Inquiry Notifications Recipient
+              </label>
+              <input
+                type="email"
+                value={settings.emailNotifications?.inquiryRecipient || ''}
+                onChange={(e) => handleEmailNotificationChange('inquiryRecipient', e.target.value)}
+                placeholder="shekhartauhid@gmail.com"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                Sender Brand Name
+              </label>
+              <input
+                type="text"
+                value={settings.emailNotifications?.senderName || 'Tauhid Shekhar'}
+                onChange={(e) => handleEmailNotificationChange('senderName', e.target.value)}
+                placeholder="Tauhid Shekhar"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-xs text-slate-900 dark:text-slate-100 focus:outline-none"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 pt-1">
+              <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700 dark:text-slate-300">
+                <input
+                  type="checkbox"
+                  checked={settings.emailNotifications?.enabled !== false}
+                  onChange={(e) => handleEmailNotificationChange('enabled', e.target.checked)}
+                  className="w-4 h-4 accent-[#C2272D] rounded"
+                />
+                <span>Email Notifications Active</span>
+              </label>
+            </div>
+
+            {testEmailStatus && (
+              <div className="p-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-semibold">
+                {testEmailStatus}
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={handleTestEmail}
+              disabled={isSendingTestEmail}
+              className="w-full py-2.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-xl border border-slate-200 dark:border-white/10 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              <FaPaperPlane size={11} className="text-[#00FFFF]" />
+              <span>{isSendingTestEmail ? 'Sending Test...' : 'Send Test Notification Email'}</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

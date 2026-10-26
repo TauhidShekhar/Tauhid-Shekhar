@@ -352,6 +352,21 @@ app.get('/sitemap.xml', async (req, res, next) => {
       });
     });
 
+    // Fetch dynamic published services
+    const Service = require('./models/Service');
+    pages.push({ url: '/services', changefreq: 'weekly', priority: 0.8 });
+    const services = await Service.find({ status: 'published' }).select('slug updatedAt');
+    services.forEach(s => {
+      if (s.slug) {
+        pages.push({
+          url: `/services/${s.slug}`,
+          changefreq: 'weekly',
+          priority: 0.8,
+          lastmod: s.updatedAt ? s.updatedAt.toISOString().split('T')[0] : undefined
+        });
+      }
+    });
+
     // Build XML content
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
@@ -564,6 +579,8 @@ const runInitialSeeds = async () => {
     await seedFormTemplates();
     const { reconcileProjects } = require('./utils/projectReconciler');
     await reconcileProjects();
+    const { reconcileServices } = require('./utils/serviceReconciler');
+    await reconcileServices();
   } catch (err) {
     console.error('[Startup Seeding Error]:', err.message);
   }

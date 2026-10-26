@@ -320,9 +320,22 @@ const App = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // 4. Cross-page and Direct URL Hash Anchor Resolver (with Browser Back/Forward support)
+  // 4. Cross-page and Direct URL Hash Anchor Resolver (Smooth, Non-blocking)
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let scrollTimer = null;
+    let userInteracted = false;
+
+    const onUserInteraction = () => {
+      userInteracted = true;
+      if (scrollTimer) {
+        clearTimeout(scrollTimer);
+        scrollTimer = null;
+      }
+    };
+
+    window.addEventListener('wheel', onUserInteraction, { passive: true });
+    window.addEventListener('touchmove', onUserInteraction, { passive: true });
 
     const resolveTarget = (raw) => {
       if (!raw) return;
@@ -330,34 +343,33 @@ const App = () => {
       if (!targetId) return;
 
       let attempts = 0;
-      const maxAttempts = 35; // Retry while Suspense components are mounting
+      const maxAttempts = 12;
 
       const resolveScroll = () => {
+        if (userInteracted) return;
+
         const el = document.getElementById(targetId);
         if (el) {
-          el.scrollIntoView({
-            behavior: prefersReducedMotion ? 'auto' : 'smooth',
-            block: 'start'
-          });
-
           const rect = el.getBoundingClientRect();
-          if (Math.abs(rect.top - 80) > 40) {
-            const targetTop = rect.top + window.pageYOffset - 80;
-            window.scrollTo({
-              top: Math.max(0, targetTop),
-              behavior: prefersReducedMotion ? 'auto' : 'smooth'
-            });
-          }
+          const targetTop = rect.top + window.pageYOffset - 80;
+          window.scrollTo({
+            top: Math.max(0, targetTop),
+            behavior: prefersReducedMotion ? 'auto' : 'smooth'
+          });
           setActiveSection(targetId);
+
+          if (Math.abs(rect.top - 80) <= 40 || attempts >= 3) {
+            return;
+          }
         }
         
         attempts++;
-        if (attempts < maxAttempts) {
-          setTimeout(resolveScroll, 120);
+        if (attempts < maxAttempts && !userInteracted) {
+          scrollTimer = setTimeout(resolveScroll, 160);
         }
       };
 
-      resolveScroll();
+      scrollTimer = setTimeout(resolveScroll, 60);
     };
 
     // Handle initial mount or route navigation
@@ -369,6 +381,7 @@ const App = () => {
     // Handle Browser Back / Forward buttons and manual hash changes
     const handleHashOrPopState = () => {
       if (window.location.hash) {
+        userInteracted = false;
         resolveTarget(window.location.hash);
       }
     };
@@ -377,6 +390,9 @@ const App = () => {
     window.addEventListener('popstate', handleHashOrPopState);
 
     return () => {
+      if (scrollTimer) clearTimeout(scrollTimer);
+      window.removeEventListener('wheel', onUserInteraction);
+      window.removeEventListener('touchmove', onUserInteraction);
       window.removeEventListener('hashchange', handleHashOrPopState);
       window.removeEventListener('popstate', handleHashOrPopState);
     };

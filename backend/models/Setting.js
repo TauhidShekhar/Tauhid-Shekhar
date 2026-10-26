@@ -169,6 +169,15 @@ const settingSchema = new mongoose.Schema(
       text: { type: String, default: 'We use cookies to improve your user experience.' }
     },
 
+    // ── Email Notifications ─────────────────────────────────────────
+    emailNotifications: {
+      orderRecipient: { type: String, default: 'shekhartauhid@gmail.com' },
+      inquiryRecipient: { type: String, default: 'shekhartauhid@gmail.com' },
+      contactRecipient: { type: String, default: 'shekhartauhid@gmail.com' },
+      senderName: { type: String, default: 'Tauhid Shekhar' },
+      enabled: { type: Boolean, default: true }
+    },
+
     // ── Scripts ─────────────────────────────────────────────────────
     customFooterScripts: { type: String }
   },

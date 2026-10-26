@@ -59,6 +59,18 @@ const DynamicSEOHelper = () => {
       title = `DevCommunity Platform & Code Hub | ${siteName}`;
       description = 'Join our active developer community, discuss MERN stack engineering, ask questions, and share code portfolios.';
       keywords = 'Developer Community, Code Forum, MERN discussions, coding platform';
+    } else if (path === '/services') {
+      title = `Services & Engineering Solutions | ${siteName}`;
+      description = 'Explore professional web development, MERN stack solutions, React frontend engineering, and REST API development services.';
+      keywords = 'Web Development Services, MERN Stack Development, React Developer, Backend API Services, Freelance Engineer';
+    } else if (path.startsWith('/services/')) {
+      if (path.endsWith('/order')) {
+        title = `Place Service Order | ${siteName}`;
+        description = 'Submit your service order requirements, timeline expectations, and project specifications.';
+      } else {
+        title = `Service Details & Packages | ${siteName}`;
+        description = 'Comprehensive service specifications, deliverables, milestone timelines, and pricing packages.';
+      }
     } else if (path.startsWith('/features')) {
       title = `Platform Features & Interactive Capabilities | ${siteName}`;
       description = 'Explore interactive command palettes, AI ATS resume analyzer, real-time CMS sync, and responsive portfolio tools.';

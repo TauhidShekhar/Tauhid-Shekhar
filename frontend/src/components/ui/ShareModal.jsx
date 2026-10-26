@@ -51,6 +51,12 @@ const ShareModal = ({ isOpen, onClose, contentType, contentId, title, descriptio
   } else if (contentType === 'doubt') {
     shareUrl = `${getShareBaseUrl()}/doubt/${contentId}`;
     frontendPath = `/community/doubts?id=${contentId}`;
+  } else if (contentType === 'service') {
+    shareUrl = `${getDirectFrontEndUrl()}/services/${contentId}`;
+    frontendPath = `/services/${contentId}`;
+  } else if (contentType === 'form') {
+    shareUrl = `${getDirectFrontEndUrl()}/forms/${contentId}`;
+    frontendPath = `/forms/${contentId}`;
   } else {
     // Fallback for events, courses, achievements, portfolio, etc.
     shareUrl = `${getDirectFrontEndUrl()}/${contentId || ''}`;

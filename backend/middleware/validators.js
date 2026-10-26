@@ -252,16 +252,17 @@ const orderSchema = z.object({
     .string({ required_error: 'Selected service is required' })
     .min(1, 'Selected service is required')
     .trim(),
-  budget: z
-    .string({ required_error: 'Budget is required' })
-    .min(1, 'Budget is required')
-    .trim(),
+  budget: z.string().trim().optional().or(z.literal('')),
   projectType: z.string().trim().optional().or(z.literal('')),
   deadline: z.string().trim().optional().or(z.literal('')),
+  timelineExpectation: z.string().trim().optional().or(z.literal('')),
   description: z
-    .string({ required_error: 'Project description is required' })
-    .min(10, 'Description must be at least 10 characters')
+    .string({ required_error: 'Description is required' })
+    .min(5, 'Description must be at least 5 characters')
     .trim(),
+  requestType: z.enum(['order', 'inquiry']).optional(),
+  serviceId: z.string().trim().optional().or(z.literal('')),
+  packageName: z.string().trim().optional().or(z.literal('')),
 });
 
 // ===========================================================================

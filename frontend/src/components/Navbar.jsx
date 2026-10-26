@@ -7,7 +7,7 @@ import {
   FaHome, FaUser, FaCode, FaBriefcase, FaBookOpen, FaEnvelope,
   FaSun, FaMoon, FaBars, FaTimes, FaChevronRight,
   FaSignOutAlt, FaTachometerAlt, FaChevronDown,
-  FaGlobe, FaCog, FaSignInAlt, FaWpforms, FaFileAlt
+  FaGlobe, FaCog, FaSignInAlt, FaWpforms, FaLaptopCode
 } from 'react-icons/fa';
 
 const Navbar = ({ activeSection, toggleTheme: propsToggleTheme, isDark: propsIsDark, settingsData }) => {
@@ -94,14 +94,14 @@ const Navbar = ({ activeSection, toggleTheme: propsToggleTheme, isDark: propsIsD
     { name: 'Home', href: '#home', icon: FaHome },
     { name: 'About', href: '#about', icon: FaUser },
     { name: 'Projects', href: '#projects', icon: FaCode },
+    { name: 'Services', to: '/services', icon: FaLaptopCode },
     { name: 'Experience', href: '#experience', icon: FaBriefcase },
-    { name: 'Resume', href: '#resume', icon: FaFileAlt },
     { name: 'Forms', to: '/forms', icon: FaWpforms },
     { name: 'Community', to: '/community', icon: FaBookOpen },
     { name: 'Contact', href: '#contact', icon: FaEnvelope }
   ];
 
-  // Guaranteed direct scroll function that handles lazy-loading & dynamic height shifts
+  // Guaranteed direct scroll function that handles lazy-loading smoothly without locking the user
   const performDirectScroll = (targetId) => {
     if (scrollIntervalRef.current) {
       clearInterval(scrollIntervalRef.current);
@@ -110,45 +110,55 @@ const Navbar = ({ activeSection, toggleTheme: propsToggleTheme, isDark: propsIsD
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let attempts = 0;
-    const maxAttempts = 35; // Run up to 3.5s to ensure lazy components stabilize
+    const maxAttempts = 8;
+    let userScrolled = false;
 
-    const executeScroll = () => {
-      const el = document.getElementById(targetId);
-      if (el) {
-        // Native scroll with scroll-mt-24 ensures perfect header breathing space
-        el.scrollIntoView({
-          behavior: prefersReducedMotion ? 'auto' : 'smooth',
-          block: 'start'
-        });
-
-        // Also check exact header offset
-        const rect = el.getBoundingClientRect();
-        if (Math.abs(rect.top - 80) > 40) {
-          const targetTop = rect.top + window.pageYOffset - 80;
-          window.scrollTo({
-            top: Math.max(0, targetTop),
-            behavior: prefersReducedMotion ? 'auto' : 'smooth'
-          });
-        }
-      }
-      attempts++;
-      if (attempts >= maxAttempts && scrollIntervalRef.current) {
+    const stopScroll = () => {
+      userScrolled = true;
+      if (scrollIntervalRef.current) {
         clearInterval(scrollIntervalRef.current);
         scrollIntervalRef.current = null;
+      }
+      window.removeEventListener('wheel', stopScroll);
+      window.removeEventListener('touchmove', stopScroll);
+    };
+
+    window.addEventListener('wheel', stopScroll, { passive: true });
+    window.addEventListener('touchmove', stopScroll, { passive: true });
+
+    const executeScroll = () => {
+      if (userScrolled) {
+        stopScroll();
+        return;
+      }
+
+      const el = document.getElementById(targetId);
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        const targetTop = rect.top + window.pageYOffset - 80;
+        window.scrollTo({
+          top: Math.max(0, targetTop),
+          behavior: prefersReducedMotion ? 'auto' : 'smooth'
+        });
+
+        if (Math.abs(rect.top - 80) <= 30 || attempts >= 3) {
+          stopScroll();
+          return;
+        }
+      }
+
+      attempts++;
+      if (attempts >= maxAttempts) {
+        stopScroll();
       }
     };
 
     // First attempt immediately
     executeScroll();
 
-    // Re-verify at intervals to prevent layout shifts from lazy-loaded chunks
-    scrollIntervalRef.current = setInterval(executeScroll, 120);
-    setTimeout(() => {
-      if (scrollIntervalRef.current) {
-        clearInterval(scrollIntervalRef.current);
-        scrollIntervalRef.current = null;
-      }
-    }, 2500);
+    // Brief check for lazy components without fighting the user
+    scrollIntervalRef.current = setInterval(executeScroll, 200);
+    setTimeout(stopScroll, 800);
   };
 
   // Nav click handler for both same-page and cross-page anchor navigation
@@ -219,14 +229,14 @@ const Navbar = ({ activeSection, toggleTheme: propsToggleTheme, isDark: propsIsD
           </a>
 
           {/* ── Desktop Primary Links (Center) ── */}
-          <ul className="hidden xl:flex items-center gap-1.5 2xl:gap-2 mx-auto" role="menubar">
+          <ul className="hidden xl:flex items-center gap-1 2xl:gap-2 mx-auto" role="menubar">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isItemActive = item.href 
                 ? ((activeSection === item.href.substring(1) && location.pathname === '/') || (item.name === 'Forms' && location.pathname.startsWith('/forms')))
                 : (location.pathname.startsWith(item.to));
 
-              const linkClasses = `relative flex items-center gap-2 text-[14px] 2xl:text-[15px] font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF] rounded-full px-3.5 py-1.5 cursor-pointer whitespace-nowrap ${
+              const linkClasses = `relative flex items-center gap-1.5 2xl:gap-2 text-[13.5px] 2xl:text-[14.5px] font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FFFF] rounded-full px-3 2xl:px-3.5 py-1.5 cursor-pointer whitespace-nowrap ${
                 isItemActive
                   ? (isDark 
                       ? 'text-[#00FFFF] bg-[#00FFFF]/10 shadow-sm' 
@@ -264,7 +274,7 @@ const Navbar = ({ activeSection, toggleTheme: propsToggleTheme, isDark: propsIsD
           </ul>
 
           {/* ── Actions (Right): Theme Toggle and Auth Session ── */}
-          <div className="hidden xl:flex items-center gap-3.5 shrink-0">
+          <div className="hidden xl:flex items-center gap-2.5 2xl:gap-3.5 shrink-0">
             {/* Theme Toggle Button */}
             <button
               type="button"

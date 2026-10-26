@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../services/api';
-import { FaLaptopCode, FaServer, FaReact, FaPaintBrush, FaTimes, FaCheckCircle, FaPaperPlane } from 'react-icons/fa';
+import { FaLaptopCode, FaServer, FaReact, FaPaintBrush, FaTimes, FaCheckCircle, FaPaperPlane, FaArrowRight, FaClock, FaSync, FaShareAlt } from 'react-icons/fa';
+import InquireModal from './InquireModal';
+import ServiceShareModal from './ServiceShareModal';
+import { formatDualPrice } from '../utils/priceFormatter';
 
 const defaultServices = [
   {
@@ -79,6 +83,10 @@ const Services = ({ servicesData, error, isCachedData, lastUpdated, onRetry }) =
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [inquireService, setInquireService] = useState(null);
+  const [isInquireOpen, setIsInquireOpen] = useState(false);
+  const [shareService, setShareService] = useState(null);
+  const [isShareOpen, setIsShareOpen] = useState(false);
 
   if (servicesData === null) {
     return (
@@ -193,11 +201,11 @@ const Services = ({ servicesData, error, isCachedData, lastUpdated, onRetry }) =
   };
 
   const cardVariants = {
-    hidden: { y: 30, opacity: 0 },
+    hidden: { y: 15, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
-      transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
+      transition: { duration: 0.22, ease: 'easeOut' },
     },
   };
 
@@ -280,8 +288,30 @@ const Services = ({ servicesData, error, isCachedData, lastUpdated, onRetry }) =
                   </div>
                   <div className="text-right">
                     <span className="text-xs font-semibold text-[#525252] dark:text-[#9CA3AF] uppercase tracking-wider block mb-0.5">Starting From</span>
-                    <span className="text-2xl sm:text-[26px] font-bold text-[#C2272D] dark:text-[#00FFFF] font-title">{service.price}</span>
+                    {(() => {
+                      const p = formatDualPrice(service.price);
+                      return (
+                        <div>
+                          <span className="text-2xl sm:text-[26px] font-black text-[#C2272D] dark:text-[#00FFFF] font-title">{p.primary}</span>
+                          {p.secondary && (
+                            <span className="text-xs font-bold text-slate-400 block -mt-0.5">{p.secondary}</span>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
+                </div>
+
+                {/* Delivery Time & Revisions Pill */}
+                <div className="flex items-center gap-2 mb-3 text-xs text-slate-500 dark:text-slate-400 font-medium">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                    <FaClock size={10} className="text-[#C2272D] dark:text-[#00FFFF]" />
+                    <span>~{service.timeline?.estimatedDays || 7} Days</span>
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                    <FaSync size={10} className="text-[#C2272D] dark:text-[#00FFFF]" />
+                    <span>{service.timeline?.revisionsIncluded || 'Unlimited Revisions'}</span>
+                  </span>
                 </div>
 
                 {/* Title */}
@@ -306,25 +336,85 @@ const Services = ({ servicesData, error, isCachedData, lastUpdated, onRetry }) =
               </div>
 
               {/* Actions */}
-              <div className="flex flex-col xs:flex-row gap-2.5 sm:gap-3.5 border-t border-[#E5E7EB] dark:border-white/10 pt-4 sm:pt-5">
-                <button
-                  onClick={() => openOrderModal(service.title)}
-                  className="w-full xs:flex-1 py-2.5 sm:py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-xl text-center text-[15px] font-semibold shadow-md shadow-[#C2272D]/20 transition-all cursor-pointer"
-                >
-                  Order Service
-                </button>
-                <a
-                  href="#contact"
-                  className="w-full xs:flex-1 py-2.5 sm:py-3 bg-white dark:bg-[#1A1A1A] hover:bg-slate-100 dark:hover:bg-white/10 text-[#171717] dark:text-white rounded-xl text-center text-[15px] font-semibold border border-[#E5E7EB] dark:border-white/10 transition-all"
-                >
-                  Inquire Info
-                </a>
+              <div className="flex flex-col gap-2 border-t border-[#E5E7EB] dark:border-white/10 pt-4 sm:pt-5">
+                <div className="grid grid-cols-2 gap-2">
+                  <Link
+                    to={`/services/${service.slug || service.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+                    className="py-2.5 sm:py-3 bg-white dark:bg-[#1A1A1A] hover:bg-slate-100 dark:hover:bg-white/10 text-[#171717] dark:text-white rounded-xl text-center text-xs sm:text-[14px] font-semibold border border-[#E5E7EB] dark:border-white/10 transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <span>View Details</span>
+                    <FaArrowRight size={10} />
+                  </Link>
+                  <Link
+                    to={`/services/${service.slug || service.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}/order`}
+                    className="py-2.5 sm:py-3 bg-[#C2272D] hover:bg-[#A51E23] text-white rounded-xl text-center text-xs sm:text-[14px] font-semibold shadow-md shadow-[#C2272D]/20 transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <span>Order Service</span>
+                  </Link>
+                </div>
+                <div className="grid grid-cols-2 gap-2 mt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setInquireService(service);
+                      setIsInquireOpen(true);
+                    }}
+                    className="py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition-colors text-center cursor-pointer rounded-xl bg-slate-100/70 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 flex items-center justify-center gap-1.5"
+                  >
+                    <FaComments size={11} />
+                    <span>Inquire</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShareService(service);
+                      setIsShareOpen(true);
+                    }}
+                    className="py-2 text-xs font-bold text-[#C2272D] dark:text-[#00FFFF] hover:opacity-85 transition-all text-center cursor-pointer rounded-xl bg-[#C2272D]/10 dark:bg-[#00FFFF]/10 border border-[#C2272D]/20 dark:border-[#00FFFF]/20 flex items-center justify-center gap-1.5"
+                    title={`Share ${service.title}`}
+                  >
+                    <FaShareAlt size={10} />
+                    <span>Share</span>
+                  </button>
+                </div>
               </div>
             </motion.div>
           ))}
         </motion.div>
         )}
+
+        {/* Explore Full Services Catalog Link */}
+        <div className="mt-12 text-center">
+          <Link
+            to="/services"
+            className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-800 dark:text-white text-xs sm:text-sm font-bold border border-slate-200 dark:border-white/10 transition shadow-sm"
+          >
+            <span>Explore All Services & Packages</span>
+            <FaArrowRight size={12} className="text-[#C2272D]" />
+          </Link>
+        </div>
       </div>
+
+      {/* Inquire Modal */}
+      <InquireModal
+        isOpen={isInquireOpen}
+        onClose={() => {
+          setIsInquireOpen(false);
+          setInquireService(null);
+        }}
+        service={inquireService}
+      />
+
+      {/* Share Service Modal */}
+      <ServiceShareModal
+        isOpen={isShareOpen}
+        onClose={() => {
+          setIsShareOpen(false);
+          setShareService(null);
+        }}
+        service={shareService}
+      />
 
       {/* Transactional Service Order Modal */}
       <AnimatePresence>
