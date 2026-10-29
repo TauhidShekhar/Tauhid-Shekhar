@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../services/api';
-import { FaLaptopCode, FaServer, FaReact, FaPaintBrush, FaTimes, FaCheckCircle, FaPaperPlane, FaArrowRight, FaClock, FaSync, FaShareAlt } from 'react-icons/fa';
+import { FaLaptopCode, FaServer, FaReact, FaPaintBrush, FaTimes, FaCheckCircle, FaPaperPlane, FaArrowRight, FaClock, FaSync, FaShareAlt, FaComments } from 'react-icons/fa';
 import InquireModal from './InquireModal';
 import ServiceShareModal from './ServiceShareModal';
 import { formatDualPrice } from '../utils/priceFormatter';
