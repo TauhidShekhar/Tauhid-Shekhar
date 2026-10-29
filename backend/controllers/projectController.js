@@ -35,6 +35,45 @@ const getProjects = async (req, res) => {
   }
 };
 
+// @desc    Get single project by slug or ID
+// @route   GET /api/projects/:slugOrId
+// @access  Public
+const getProjectBySlugOrId = async (req, res) => {
+  try {
+    const { slugOrId } = req.params;
+    let project = null;
+
+    if (slugOrId.match(/^[0-9a-fA-F]{24}$/)) {
+      project = await Project.findById(slugOrId).lean();
+    }
+
+    if (!project) {
+      project = await Project.findOne({ slug: slugOrId.toLowerCase().trim() }).lean();
+    }
+
+    if (!project) {
+      const titleCandidate = slugOrId.replace(/-/g, ' ');
+      project = await Project.findOne({
+        title: { $regex: new RegExp(`^${titleCandidate}$`, 'i') }
+      }).lean();
+    }
+
+    if (!project) {
+      return res.status(404).json({ success: false, message: 'Project not found' });
+    }
+
+    // Get 3 related projects
+    const related = await Project.find({
+      _id: { $ne: project._id },
+      tag: project.tag
+    }).limit(3).lean();
+
+    res.json({ success: true, data: project, relatedProjects: related });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // @desc    Create a project
 // @route   POST /api/projects
 // @access  Private
@@ -191,6 +230,7 @@ const reorderProjects = async (req, res) => {
 
 module.exports = { 
   getProjects, 
+  getProjectBySlugOrId,
   createProject, 
   updateProject, 
   deleteProject, 

@@ -275,7 +275,7 @@ const SEOManager = () => {
             <div className="flex flex-col gap-2">
               <div className="flex justify-between items-center">
                 <label className="font-bold text-slate-550 dark:text-slate-450 uppercase">Robots.txt Specifications</label>
-                <a href={`${seo.siteUrl || 'https://tauhidshekhar.vercel.app'}/robots.txt`} target="_blank" rel="noreferrer" className="text-[10px] text-primary-blue font-bold hover:underline">View live robots.txt</a>
+                <a href={`${seo.siteUrl || 'https://tauhidshekhar.com'}/robots.txt`} target="_blank" rel="noreferrer" className="text-[10px] text-primary-blue font-bold hover:underline">View live robots.txt</a>
               </div>
               <textarea name="robotsTxt" rows="4" value={seo.robotsTxt} onChange={handleInputChange} required className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none resize-none font-mono text-[11px]" />
             </div>
@@ -283,7 +283,7 @@ const SEOManager = () => {
             <div className="flex flex-col gap-2">
               <div className="flex justify-between items-center">
                 <label className="font-bold text-slate-550 dark:text-slate-450 uppercase">JSON-LD Structured Data Schema Config</label>
-                <a href={`${seo.siteUrl || 'https://tauhidshekhar.vercel.app'}/sitemap.xml`} target="_blank" rel="noreferrer" className="text-[10px] text-primary-blue font-bold hover:underline">View live sitemap.xml</a>
+                <a href={`${seo.siteUrl || 'https://tauhidshekhar.com'}/sitemap.xml`} target="_blank" rel="noreferrer" className="text-[10px] text-primary-blue font-bold hover:underline">View live sitemap.xml</a>
               </div>
               <textarea name="schemaSettings" rows="6" value={seo.schemaSettings} onChange={handleInputChange} required className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none resize-none font-mono text-[11px]" />
               <span className="text-[10px] text-slate-450 mt-0.5">Please specify as stringified key-value configurations for the dynamic JSON-LD schema builder.</span>

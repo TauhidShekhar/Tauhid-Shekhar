@@ -28,12 +28,11 @@ const ALL_MODULES = [
   { name: 'Resume Manager', path: '/admin/resume', category: 'Content', icon: FaFileAlt },
   { name: 'Blog Articles', path: '/admin/blogs', category: 'Engagement', icon: FaBook },
   { name: 'Client Testimonials', path: '/admin/testimonials', category: 'Engagement', icon: FaQuoteLeft },
-  { name: 'Media Gallery', path: '/admin/gallery', category: 'Engagement', icon: FaImages },
+  { name: 'Portfolio Gallery', path: '/admin/gallery', category: 'Engagement', icon: FaImages },
   { name: 'Contact Messages', path: '/admin/messages', category: 'Engagement', icon: FaEnvelope },
   { name: 'Service Orders', path: '/admin/orders', category: 'Engagement', icon: FaShoppingBag },
   { name: 'Community CMS', path: '/admin/community', category: 'Engagement', icon: FaUsers },
   { name: 'Forms Management', path: '/admin/forms', category: 'Engagement', icon: FaWpforms },
-  { name: 'Form Categories', path: '/admin/forms?tab=categories', category: 'Engagement', icon: FaLayerGroup },
   { name: 'Media Library', path: '/admin/media', category: 'Management', icon: FaImages },
   { name: 'Users Directory', path: '/admin/users', category: 'Management', icon: FaUserCog },
   { name: 'Doubts Lounge', path: '/admin/doubts', category: 'Management', icon: FaQuestionCircle },
@@ -82,7 +81,7 @@ const AdminLayout = () => {
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   const clientUrl = (import.meta.env.VITE_CLIENT_URL && import.meta.env.VITE_CLIENT_URL !== 'undefined' && import.meta.env.VITE_CLIENT_URL !== 'null')
     ? import.meta.env.VITE_CLIENT_URL
-    : (isLocal ? 'http://localhost:5173' : 'https://tauhidshekhar.vercel.app');
+    : (isLocal ? 'http://localhost:5173' : 'https://tauhidshekhar.com');
 
   // Real-time Database Health State
   const [dbHealth, setDbHealth] = useState({
@@ -384,7 +383,7 @@ const AdminLayout = () => {
               <Link to="/admin/gallery" onClick={handleLinkClick} className={isActive('/admin/gallery') ? activeLinkClass : inactiveLinkClass}>
                 <div className="flex items-center gap-2.5">
                   <FaImages size={13} className={isActive('/admin/gallery') ? 'text-white' : 'text-slate-400 group-hover:text-[#C2272D] dark:group-hover:text-[#00FFFF]'} />
-                  <span>Media Gallery</span>
+                  <span>Portfolio Gallery</span>
                 </div>
               </Link>
               <Link to="/admin/messages" onClick={handleLinkClick} className={isActive('/admin/messages') ? activeLinkClass : inactiveLinkClass}>
@@ -410,16 +409,10 @@ const AdminLayout = () => {
                   <span>Community CMS</span>
                 </div>
               </Link>
-              <Link to="/admin/forms" onClick={handleLinkClick} className={isActive('/admin/forms') && !location.search.includes('tab=categories') ? activeLinkClass : inactiveLinkClass}>
+              <Link to="/admin/forms" onClick={handleLinkClick} className={isActive('/admin/forms') ? activeLinkClass : inactiveLinkClass}>
                 <div className="flex items-center gap-2.5">
-                  <FaWpforms size={13} className={isActive('/admin/forms') && !location.search.includes('tab=categories') ? 'text-white' : 'text-slate-400 group-hover:text-[#C2272D] dark:group-hover:text-[#00FFFF]'} />
+                  <FaWpforms size={13} className={isActive('/admin/forms') ? 'text-white' : 'text-slate-400 group-hover:text-[#C2272D] dark:group-hover:text-[#00FFFF]'} />
                   <span>Forms Management</span>
-                </div>
-              </Link>
-              <Link to="/admin/forms?tab=categories" onClick={handleLinkClick} className={location.pathname === '/admin/forms' && location.search.includes('tab=categories') ? activeLinkClass : inactiveLinkClass}>
-                <div className="flex items-center gap-2.5">
-                  <FaLayerGroup size={13} className={location.pathname === '/admin/forms' && location.search.includes('tab=categories') ? 'text-white' : 'text-slate-400 group-hover:text-[#C2272D] dark:group-hover:text-[#00FFFF]'} />
-                  <span>Form Categories</span>
                 </div>
               </Link>
             </div>

@@ -961,6 +961,19 @@ const getUserOrders = async (req, res, next) => {
   }
 };
 
+// @desc    Check OAuth Providers Availability
+// @route   GET /api/auth/oauth-status
+// @access  Public
+const getOAuthStatus = (req, res) => {
+  res.json({
+    success: true,
+    providers: {
+      google: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
+      github: !!(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET)
+    }
+  });
+};
+
 // @desc    Initiate Google OAuth flow
 // @route   GET /api/auth/google
 // @access  Public
@@ -1317,6 +1330,7 @@ module.exports = {
   googleCallback,
   githubLogin,
   githubCallback,
+  getOAuthStatus,
   logoutAll,
   downloadPersonalData
 };

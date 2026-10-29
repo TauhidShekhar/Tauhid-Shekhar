@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { 
   getProjects, 
+  getProjectBySlugOrId,
   createProject, 
   updateProject, 
   deleteProject,
@@ -16,6 +17,8 @@ router.route('/')
   .post(protect, createProject);
 
 router.post('/reorder', protect, reorderProjects);
+
+router.get('/:slugOrId', getProjectBySlugOrId);
 
 router.route('/:id')
   .put(protect, updateProject)

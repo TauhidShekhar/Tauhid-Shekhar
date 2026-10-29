@@ -193,7 +193,7 @@ const Resume = ({ resumeData, settingsData }) => {
     address: parsed.address || 'Noida / Gurugram, India',
     linkedin: parsed.linkedin || 'https://www.linkedin.com/in/TauhidShekhar',
     github: parsed.github || 'https://github.com/TauhidShekhar',
-    portfolio: parsed.portfolio || 'https://tauhidshekhar.vercel.app',
+    portfolio: parsed.portfolio || 'https://tauhidshekhar.com',
     summary: parsed.summary || 'Results-driven Full-Stack MERN Developer passionate about building robust, scalable web applications with seamless user experiences. Experienced in developing responsive frontends with React and designing high-performance REST APIs with Node.js and Express. Proficient in database modeling with MongoDB and MySQL.',
     skills: {
       frontend: ['React.js', 'Tailwind CSS', 'JavaScript (ES6+)', 'HTML5', 'CSS3', 'Vite', 'Framer Motion'],

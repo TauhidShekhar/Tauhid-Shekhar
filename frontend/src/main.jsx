@@ -45,8 +45,8 @@ import ErrorBoundary from './components/ErrorBoundary.jsx';
 import AppLoader from './components/common/AppLoader.jsx';
 
 const LoadingScreen = () => (
-  <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-    <div className="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+  <div className="min-h-screen bg-slate-50 dark:bg-[#070709] flex items-center justify-center transition-colors duration-200">
+    <div className="w-8 h-8 border-2 border-[#C2272D] dark:border-cyan-400 border-t-transparent rounded-full animate-spin" />
   </div>
 );
 
@@ -93,6 +93,7 @@ const DynamicPublicForm = lazy(() => import('./components/DynamicPublicForm.jsx'
 const ServicesPage = lazy(() => import('./pages/ServicesPage.jsx'));
 const ServiceDetails = lazy(() => import('./pages/ServiceDetails.jsx'));
 const ServiceOrderPage = lazy(() => import('./pages/ServiceOrderPage.jsx'));
+const ProjectDetails = lazy(() => import('./pages/ProjectDetails.jsx'));
 
 // Community Platform Pages (Lazy Loaded)
 const CommunityLayout = lazy(() => import('./components/CommunityLayout.jsx'));
@@ -165,6 +166,10 @@ createRoot(document.getElementById('root')).render(
             <Route path="/services/:slug" element={<ServiceDetails />} />
             <Route path="/services/:slug/order" element={<ServiceOrderPage />} />
             <Route path="/services/order" element={<ServiceOrderPage />} />
+
+            {/* Public Projects Routes */}
+            <Route path="/projects" element={<Navigate to="/#projects" replace />} />
+            <Route path="/projects/:slug" element={<ProjectDetails />} />
 
             {/* Public Auth Routes */}
             <Route path="/login" element={<Auth />} />

@@ -4,6 +4,7 @@ const { protect, optionalAuth } = require('../middleware/authMiddleware');
 const { upload } = require('../middleware/upload');
 const {
   getPosts,
+  getPostDetails,
   createPost,
   updatePost,
   deletePost,
@@ -115,6 +116,7 @@ const {
 
 // ─── PUBLIC COMMUNITY GET ROUTES (Using optionalAuth) ─────────────────
 router.get('/posts', optionalAuth, getPosts);
+router.get('/posts/:id', optionalAuth, getPostDetails);
 router.get('/posts/:id/comments', optionalAuth, getComments);
 router.get('/groups', optionalAuth, getGroups);
 router.get('/questions', optionalAuth, getQuestions);

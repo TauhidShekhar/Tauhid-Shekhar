@@ -43,7 +43,7 @@ const seoSchema = new mongoose.Schema(
     // ── Crawling ───────────────────────────────────────────────────
     robotsTxt: {
       type: String,
-      default: 'User-agent: *\nAllow: /\nSitemap: https://tauhidshekhar.vercel.app/sitemap.xml'
+      default: 'User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /api/\nDisallow: /login\nDisallow: /register\nDisallow: /forgot-password\nDisallow: /user/\n\nSitemap: https://tauhidshekhar.com/sitemap.xml'
     },
 
     // ── Structured Data / JSON-LD ─────────────────────────────────

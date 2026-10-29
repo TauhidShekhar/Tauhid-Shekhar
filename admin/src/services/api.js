@@ -7,6 +7,9 @@ const getApiBase = () => {
   if (port === '5173' || port === '5174') {
     return `${protocol}//${hostname}:5000/api`;
   }
+  if (hostname === 'tauhidshekhar.com' || hostname.endsWith('.tauhidshekhar.com') || hostname.includes('hostinger') || hostname.includes('hosting')) {
+    return `${protocol}//${hostname}/api`;
+  }
   return 'https://tauhid-shekhar-portfolio.onrender.com/api';
 };
 const API_BASE = getApiBase();

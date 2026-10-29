@@ -7,6 +7,12 @@ const projectSchema = new mongoose.Schema(
       required: [true, 'Project title is required'],
       trim: true
     },
+    slug: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      index: true
+    },
     subtitle: {
       type: String,
       trim: true
@@ -63,5 +69,16 @@ const projectSchema = new mongoose.Schema(
 );
 
 projectSchema.index({ displayOrder: 1, createdAt: -1 });
+
+projectSchema.pre('save', function (next) {
+  if (!this.slug && this.title) {
+    this.slug = this.title
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '');
+  }
+  next();
+});
 
 module.exports = mongoose.model('Project', projectSchema);

@@ -7,6 +7,9 @@ const getApiBase = () => {
   if (port === '5173' || port === '5174') {
     return `${protocol}//${hostname}:5000/api`;
   }
+  if (hostname === 'tauhidshekhar.com' || hostname.endsWith('.tauhidshekhar.com') || hostname.includes('hostinger') || hostname.includes('hosting')) {
+    return `${protocol}//${hostname}/api`;
+  }
   return 'https://tauhid-shekhar-portfolio.onrender.com/api';
 };
 const API_BASE = getApiBase();
@@ -192,6 +195,9 @@ export const api = {
       body: JSON.stringify({ identifier, otp, password, confirmPassword })
     });
   },
+  getOAuthStatus: async () => {
+    return apiRequest('/auth/oauth-status');
+  },
   sendOTP: async () => {
     return apiRequest('/auth/send-otp', { method: 'POST' });
   },
@@ -237,6 +243,9 @@ export const api = {
   // Projects
   getProjects: async () => {
     return apiRequest('/projects');
+  },
+  getProjectBySlug: async (slugOrId) => {
+    return apiRequest(`/projects/${encodeURIComponent(slugOrId)}`);
   },
   createProject: async (projectData) => {
     return apiRequest('/projects', {
@@ -718,6 +727,9 @@ export const api = {
   getCommunityPosts: async (params = {}) => {
     const query = new URLSearchParams(params).toString();
     return apiRequest(`/community/posts?${query}`);
+  },
+  getSingleCommunityPost: async (id) => {
+    return apiRequest(`/community/posts/${id}`);
   },
   createCommunityPost: async (payload) => {
     return apiRequest('/community/posts', {

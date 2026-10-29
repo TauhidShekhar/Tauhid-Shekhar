@@ -125,6 +125,27 @@ const getPosts = async (req, res, next) => {
   }
 };
 
+const getPostDetails = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(404).json({ success: false, message: 'Invalid post ID' });
+    }
+    const post = await CommunityPost.findById(id)
+      .populate('author', 'fullName username avatar role xp reputation')
+      .populate('group', 'name')
+      .lean();
+
+    if (!post || post.status !== 'active') {
+      return res.status(404).json({ success: false, message: 'Post not found or unavailable' });
+    }
+
+    res.json({ success: true, data: post });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const createPost = async (req, res, next) => {
   try {
     const { title, content, mediaUrl, mediaUrls, mediaType, group, category, tags, postType, link, codeSnippet, poll } = req.body;
@@ -1997,6 +2018,7 @@ const deleteCommunityImageController = async (req, res, next) => {
 module.exports = {
   awardXP,
   getPosts,
+  getPostDetails,
   createPost,
   updatePost,
   deletePost,

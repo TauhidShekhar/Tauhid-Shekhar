@@ -21,7 +21,7 @@ const ProtectedRoute = ({ children, allowedRoles = ['Admin'] }) => {
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const clientUrl = (import.meta.env.VITE_CLIENT_URL && import.meta.env.VITE_CLIENT_URL !== 'undefined' && import.meta.env.VITE_CLIENT_URL !== 'null')
       ? import.meta.env.VITE_CLIENT_URL
-      : (isLocal ? 'http://localhost:5173' : 'https://tauhidshekhar.vercel.app');
+      : (isLocal ? 'http://localhost:5173' : 'https://tauhidshekhar.com');
     window.location.href = `${clientUrl}/user/dashboard`;
     return null;
   }

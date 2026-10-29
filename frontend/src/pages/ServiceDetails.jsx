@@ -60,6 +60,57 @@ const ServiceDetails = () => {
     fetchServiceData();
   }, [slug]);
 
+  // Inject Service Schema.org JSON-LD
+  useEffect(() => {
+    if (!service) return;
+
+    const schemaId = 'service-details-json-ld';
+    let script = document.getElementById(schemaId);
+    if (!script) {
+      script = document.createElement('script');
+      script.id = schemaId;
+      script.type = 'application/ld+json';
+      document.head.appendChild(script);
+    }
+
+    const price = service.priceINR || service.priceUSD || 0;
+    const schemaData = {
+      '@context': 'https://schema.org',
+      '@type': 'Service',
+      'name': service.title,
+      'description': service.shortDescription || service.description,
+      'provider': {
+        '@type': 'Person',
+        'name': 'Tauhid Shekhar',
+        'url': 'https://tauhidshekhar.com'
+      },
+      'areaServed': [
+        {
+          '@type': 'Country',
+          'name': 'India'
+        },
+        {
+          '@type': 'AdministrativeArea',
+          'name': 'Worldwide'
+        }
+      ],
+      'offers': {
+        '@type': 'Offer',
+        'price': price,
+        'priceCurrency': 'INR',
+        'availability': 'https://schema.org/InStock',
+        'url': `https://tauhidshekhar.com/services/${service.slug}`
+      }
+    };
+
+    script.innerHTML = JSON.stringify(schemaData);
+
+    return () => {
+      const el = document.getElementById(schemaId);
+      if (el) el.remove();
+    };
+  }, [service]);
+
   const getServiceIcon = (iconName) => {
     switch (iconName) {
       case 'FaReact':

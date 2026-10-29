@@ -389,7 +389,7 @@ exports.getPublicForms = async (req, res, next) => {
     }
 
     const forms = await Form.find(filter)
-      .select('title slug description appearance closingDate isSubmissionsEnabled templateCategory category categoryId submissionCount fields')
+      .select('title slug description status appearance closingDate isSubmissionsEnabled templateCategory category categoryId submissionCount fields')
       .sort({ createdAt: -1 });
 
     res.json({

@@ -9,12 +9,12 @@ const getSEO = async (req, res, next) => {
     if (!seo) {
       seo = await SEO.create({
         siteName: 'Tauhid Shekhar',
-        siteUrl: 'https://tauhidshekhar.vercel.app',
-        metaTitle: 'Tauhid Shekhar | Full Stack Web Developer Portfolio',
-        metaDescription: 'Portfolio of Tauhid Shekhar - Full Stack Developer specializing in React, Node, Express, MongoDB, and UI/UX design.',
+        siteUrl: 'https://tauhidshekhar.com',
+        metaTitle: 'Tauhid Shekhar | Full-Stack Software Engineer & MERN Developer',
+        metaDescription: 'Portfolio of Tauhid Shekhar - Full-Stack Developer specializing in React, Node, Express, MongoDB, REST APIs, and UI/UX design.',
         metaKeywords: 'Full Stack Developer, MERN Stack, React Developer, Node Developer, Portfolio, Freelancer, India',
         author: 'Tauhid Shekhar',
-        robotsTxt: 'User-agent: *\nAllow: /\nSitemap: https://tauhidshekhar.vercel.app/sitemap.xml',
+        robotsTxt: 'User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /api/\nDisallow: /login\nDisallow: /register\nDisallow: /forgot-password\nDisallow: /user/\n\nSitemap: https://tauhidshekhar.com/sitemap.xml',
         schemaSettings: '{}'
       });
     }

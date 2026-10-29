@@ -39,7 +39,29 @@ const DynamicSEOHelper = () => {
     let robotsIndex = 'index, follow';
 
     // Route-specific metadata mapping
-    if (path.startsWith('/community/projects')) {
+    if (path.startsWith('/projects/')) {
+      const slugPart = path.replace('/projects/', '').replace(/-/g, ' ');
+      const formattedTitle = slugPart ? slugPart.charAt(0).toUpperCase() + slugPart.slice(1) : 'Showcase';
+      title = `${formattedTitle} | Projects & Case Studies - ${siteName}`;
+      description = `Detailed technical case study, architecture, features, and source code of ${formattedTitle} built by ${siteName}.`;
+      keywords = `${formattedTitle}, Software Project, React Application, MERN Stack Case Study, Full Stack Developer Portfolio`;
+    } else if (path === '/projects') {
+      title = `Projects & Case Studies | ${siteName} - Full-Stack Engineer`;
+      description = 'Explore interactive web applications, SaaS platforms, e-commerce solutions, and open-source software built by Tauhid Shekhar.';
+      keywords = 'Web Applications, React Projects, MERN Stack Portfolio, Full Stack Developer India, Case Studies';
+    } else if (path === '/forms' || path === '/forms-center') {
+      title = `Dynamic Forms Center & Client Inquiries | ${siteName}`;
+      description = 'Submit project briefs, recruitment requests, consultation inquiries, and feedback directly to Tauhid Shekhar.';
+      keywords = 'Forms Center, Project Inquiries, Client Briefs, Web Development Quote, Hire Developer';
+    } else if (path.startsWith('/forms/')) {
+      const formSlug = path.replace('/forms/', '').replace(/-/g, ' ');
+      const formattedFormTitle = formSlug ? formSlug.charAt(0).toUpperCase() + formSlug.slice(1) : 'Inquiry';
+      title = `${formattedFormTitle} | Forms Center - ${siteName}`;
+      description = `Secure online form for ${formattedFormTitle}. Submit your specifications and project details directly.`;
+    } else if (path.startsWith('/community/post/')) {
+      title = `Community Discussion & Developer Post | DevCommunity - ${siteName}`;
+      description = 'Read technical discussions, developer thoughts, code questions, and resources in the DevCommunity.';
+    } else if (path.startsWith('/community/projects')) {
       title = `Project Discussions & Showcases | DevCommunity - ${siteName}`;
       description = 'Explore open-source project discussions, code feedback, and architectural reviews by fellow software engineers.';
       keywords = 'Software Projects, React Showcases, Code Review, MERN discussions';

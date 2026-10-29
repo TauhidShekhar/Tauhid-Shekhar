@@ -14,6 +14,7 @@
     "backend": "npm run dev --prefix backend",
     "build:frontend": "npm run build --prefix frontend",
     "build:admin": "npm run build --prefix admin",
+    "build:all": "npm run build:frontend && npm run build:admin",
     "build": "node build-vercel.cjs",
     "lint": "oxlint",
     "postinstall": "npm install --prefix backend && npm install --prefix admin && npm install --prefix frontend",

@@ -512,7 +512,9 @@ const Projects = ({ projectsData, error, isCachedData, lastUpdated, onRetry }) =
                       {project.subtitle}
                     </span>
                     <h3 className="text-[19px] sm:text-[20px] md:text-[22px] font-bold font-title text-[#171717] dark:text-white mb-2.5">
-                      {project.title}
+                      <Link to={`/projects/${project.slug || project._id}`} className="hover:text-[#C2272D] dark:hover:text-[#00FFFF] transition">
+                        {project.title}
+                      </Link>
                     </h3>
                     <p className="text-sm sm:text-base text-[#525252] dark:text-[#D1D5DB] mb-5 leading-relaxed line-clamp-3">
                       {project.description}
@@ -813,6 +815,13 @@ const Projects = ({ projectsData, error, isCachedData, lastUpdated, onRetry }) =
                     </button>
 
                     <div className="flex items-center gap-2 sm:gap-3 ml-auto">
+                      <Link
+                        to={`/projects/${activeCaseStudy.slug || activeCaseStudy._id}`}
+                        className="py-2.5 px-3.5 sm:px-4 bg-[#00FFFF]/10 hover:bg-[#00FFFF]/20 text-cyan-600 dark:text-[#00FFFF] rounded-xl text-xs sm:text-sm font-semibold border border-cyan-500/30 transition-all flex items-center gap-1.5"
+                      >
+                        <span>Full Page</span>
+                        <FaExternalLinkAlt size={10} />
+                      </Link>
                       {activeCaseStudy.github && (
                         <a
                           href={activeCaseStudy.github}

@@ -25,6 +25,7 @@ const {
   googleCallback,
   githubLogin,
   githubCallback,
+  getOAuthStatus,
   logoutAll,
   downloadPersonalData
 } = require('../controllers/authController');
@@ -65,6 +66,7 @@ router.get('/google', googleLogin);
 router.get('/google/callback', googleCallback);
 router.get('/github', githubLogin);
 router.get('/github/callback', githubCallback);
+router.get('/oauth-status', getOAuthStatus);
 
 // Protected endpoints
 router.get('/me', requireAuth, getProfile);

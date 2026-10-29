@@ -14,7 +14,7 @@ const getClientUrl = async () => {
   } catch (err) {
     console.error('Failed to get siteUrl from SEO:', err);
   }
-  return process.env.CLIENT_URL || 'https://tauhidshekhar.vercel.app';
+  return process.env.CLIENT_URL || 'https://tauhidshekhar.com';
 };
 
 // POST /api/share/track

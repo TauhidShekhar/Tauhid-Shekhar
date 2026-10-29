@@ -7,10 +7,10 @@ const {
   getVersions, 
   restoreVersion 
 } = require('../controllers/cmsController');
-const { requireAuth } = require('../middleware/authMiddleware');
+const { requireAuth, requireAdmin } = require('../middleware/authMiddleware');
 
-// All CMS draft/publish/version operations require authentication
-router.use(requireAuth);
+// All CMS draft/publish/version operations require Admin authentication
+router.use(requireAuth, requireAdmin);
 
 router.get('/draft/:model/:id', getDraft);
 router.get('/draft/:model', getDraft);
